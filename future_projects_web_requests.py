@@ -28,17 +28,18 @@
 import pandas as pd
 import requests
 from io import StringIO
-url = 'https://download.bls.gov/pub/time.series/wp/wp.data.0.Current'
-url = 'https://download.bls.gov/pub/time.series/pc/pc.data.0.Current'
-url = 'https://download.bls.gov/pub/time.series/compressed/tape.format/bls.wp.date201807.gz'
-url = 'https://download.bls.gov/pub/time.series/compressed/tape.format/bls.pc.date201807.gz'
-url = 'https://www.bls.gov/opub/ted/2011/ted_20110224.htm'
-url = 'https://thecode.media/einstein/'
-url = 'https://www.rfbr.ru/rffi/ru/books/o_58886#213'
-request = requests.get(url).text
+url  =  "https://download.bls.gov/pub/time.series/wp/wp.data.0.Current"
+url  =  "https://download.bls.gov/pub/time.series/pc/pc.data.0.Current"
+url  =  "https://download.bls.gov/pub/time.series/compressed/tape.format/bls.wp.date201807.gz"
+url  =  "https://download.bls.gov/pub/time.series/compressed/tape.format/bls.pc.date201807.gz"
+url  =  "https://www.bls.gov/opub/ted/2011/ted_20110224.htm"
+url  =  "https://thecode.media/einstein/"
+url  =  "https://www.rfbr.ru/rffi/ru/books/o_58886#213"
+request  =  requests.get(url).text
 print(request)
 ####for i in range(1):
-####    file.retrieve(f[i], 'wp.data.0.Current')
-source_frame = pd.read_csv(StringIO(request), compression = 'gzip',  header = 0,  sep = ' ',  quotechar = '"',  error_bad_lines = False)
+####    file.retrieve(f[i],  "wp.data.0.Current")
+source_frame  =  pd.read_csv(StringIO(request),  compression = "gzip",  header = 0, 
+                          sep = " ",  quotechar = '"',  error_bad_lines = False)
 print(source_frame)
-source_frame.to_csv('dataset_USA_BLS_pc_data_0_Current.csv', index = False)
+source_frame.to_csv("dataset_USA_BLS_pc_data_0_Current.csv",  index = False)

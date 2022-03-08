@@ -4,7 +4,7 @@ Created on Wed Dec 18 21:04:02 2019
 
 @author: Mastermind
 """
-def plotISLM():
+def plot_is_lm():
     """Data Fetch"""
     source_frame  =  pd.read_csv('datasetRUSM1.zip')
     """Plotting"""
@@ -15,7 +15,7 @@ def plotISLM():
     plt.title('M1 Dependency on Prime Rate')
     plt.grid(True)
     plt.show()
-def plotGrigoriev():
+def plot_grigoriev():
     source_frame  =  pd.read_csv('dataset RUS Grigoriev V-.csv')
     for s in source_frame.iloc[:, 2].sort_values().unique():
         current_frame  =  source_frame[source_frame.iloc[:, 2] == s]
@@ -26,5 +26,5 @@ def plotGrigoriev():
         current_frame.plot(grid = True)
 import pandas as pd
 import matplotlib.pyplot as plt
-plotISLM()
-plotGrigoriev()
+plot_is_lm()
+plot_grigoriev()
