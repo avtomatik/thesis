@@ -1,3 +1,10 @@
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import requests
+import zipfile
+
+
 def fetch_from_url(url):
 # =============================================================================
 #     '''Downloading zip file from url'''
@@ -249,11 +256,6 @@ def cobb_douglas_3d(source_frame):
 
 
 print(__doc__)
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-import requests
-import zipfile
 # result_frame = dataset_canada()
 # result_frame.to_excel('result.xlsx')
 # # cobb_douglas_canada(result_frame)

@@ -5,6 +5,12 @@ Created on Sun Mar 15 16:17:13 2020
 @author: Mastermind
 """
 
+import os
+import matplotlib.pyplot as plt
+import pandas as pd
+import scipy as sp
+
+
 def beaFetch(source, wrkbk, wrksht, start, finish, line):
     '''Data _frame Fetching from Bureau of Economic Analysis Zip Archives'''
     '''
@@ -31,6 +37,8 @@ def beaFetch(source, wrkbk, wrksht, start, finish, line):
     result_frame.columns = result_frame.columns.to_series().replace({'^Unnamed: \d':'Period'}, regex = True)
     result_frame = result_frame.set_index('Period')
     return result_frame
+
+
 def fetchBEA(source, string):
     '''`dataset-usa-bea-NipaDataA.txt`: U.S. Bureau of Economic Analysis
     Archived: https://www.bea.gov/National/FAweb/Details/Index.html
@@ -78,6 +86,8 @@ def fetchBEA(source, string):
         pass
     result_frame = result_frame.drop_duplicates()
     return result_frame
+
+
 def fetchClassic(source, string):
     if source =='brown.zip':
         source_frame = pd.read_csv(source, skiprows=4, usecols=range(3, 6))
@@ -101,6 +111,8 @@ def fetchClassic(source, string):
     result_frame = result_frame.sort_values('Period')
     result_frame = result_frame.set_index('Period')
     return result_frame
+
+
 def fetchCensus(source, string, index):
     '''Selected Series by U.S. Bureau of the Census
     U.S. Bureau of the Census,  Historical Statistics of the United States,  1789--1945,  Washington,  D.C.,  1949.
@@ -130,23 +142,31 @@ def fetchCensus(source, string, index):
         result_frame = pd.read_csv('temporary.txt')
         os.unlink('temporary.txt')
         return result_frame
+
+
 def pricesInverseSingle(source_frame):
     '''Intent: Returns Prices Icrement Series from Cumulative Deflator Series;
     source: pandas Data_frame'''
     D = source_frame.iloc[:, 0].div(source_frame.iloc[:, 0].shift(1))-1
     return D
+
+
 def processing(source_frame, col):
     interim_frame = source_frame[source_frame.columns[[col]]]
     interim_frame = interim_frame.dropna()
     result_frame = pricesInverseSingle(interim_frame)
     result_frame = result_frame.dropna()
     return result_frame
+
+
 def indexswitch(source_frame):
     source_frame.to_csv('temporary.txt')
     del source_frame
     result_frame = pd.read_csv('temporary.txt')
     os.unlink('temporary.txt')
     return result_frame
+
+
 def cobbDouglasPreprocessing():
     '''Original Cobb--Douglas Data Preprocessing'''
     semi_frameA = fetchClassic('dataset-usa-cobb-douglas.zip', 'CDT2S4') ## Total Fixed Capital in 1880 dollars (4)
@@ -159,6 +179,8 @@ def cobbDouglasPreprocessing():
     result_frame = result_frame.dropna()
     result_frame = result_frame.div(result_frame.iloc[0, :])
     return result_frame
+
+
 def archivedBEALabor():
     '''Labor Series: H4313C0,  1929--1948'''
     semi_frameA = beaFetch('dataset USA BEA Release 2013-01-31 SectionAll_xls_1929_1969.zip', 'Section6ALL_Hist.xls', '60500A Ann', 1929, 1948, 14)
@@ -175,6 +197,8 @@ def archivedBEALabor():
     result_frame = result_frame.mean(1)
     result_frame = result_frame.to_frame(name = 'Labor')
     return result_frame
+
+
 def BEALabor():
     '''Labor Series: H4313C0,  1929--1948'''
     semi_frameA = beaFetch('dataset USA BEA Release 2013-01-31 SectionAll_xls_1929_1969.zip', 'Section6ALL_Hist.xls', '60500A Ann', 1929, 1948, 14)
@@ -191,6 +215,8 @@ def BEALabor():
     result_frame = result_frame.mean(1)
     result_frame = result_frame.to_frame(name = 'Labor')
     return result_frame
+
+
 def FRBCU():
     '''Indexed Capacity Utilization Series: CAPUTL.B50001.A,  1967--2012
     CAPUTL.B50001.A Fetching'''
@@ -209,6 +235,8 @@ def FRBCU():
     result_frame.iloc[:, 0] = result_frame.iloc[:, 0].astype(int)
     result_frame = result_frame.set_index('Period')
     return result_frame
+
+
 def FRBIP():
     '''Indexed Manufacturing Series: FRB G17 IP,  AIPMA_SA_IX,  1919--2018'''
     source_frame = pd.read_csv('dataset USA FRB US3_IP 2018-09-02.csv', skiprows=7)
@@ -221,6 +249,8 @@ def FRBIP():
     os.unlink('temporary.txt')
     result_frame = result_frame.set_index('Period')
     return result_frame
+
+
 def FRBFA():
     '''Returns _frame of Manufacturing Fixed Assets Series,  Billion USD:
     result_frame.iloc[:, 0]: Nominal;
@@ -238,6 +268,8 @@ def FRBFA():
     source_frame['FRB_real'] = source_frame.iloc[:, 2].div(1000)+source_frame.iloc[:, 5].div(1000)
     result_frame = source_frame[source_frame.columns[[6, 7]]]
     return result_frame
+
+
 def FRBFADEF():
     '''Returns _frame of Deflator for Manufacturing Fixed Assets Series,  Index:
     result_frame.iloc[:, 0]: Deflator
@@ -253,6 +285,8 @@ def FRBFADEF():
     source_frame['fa_def_frb'] = (source_frame.iloc[:, 1]+source_frame.iloc[:, 4]).div(source_frame.iloc[:, 0]+source_frame.iloc[:, 3])
     result_frame = source_frame[source_frame.columns[[6]]]
     return result_frame
+
+
 def fetchINFCF():
     '''Retrieve Yearly Price Rates from `infcf16652007.zip`'''
     source_frame = pd.read_csv('infcf16652007.zip', usecols=range(4, 7))
@@ -276,6 +310,8 @@ def fetchINFCF():
     result_frame['cpiu_fused'] = result_frame.mean(1)
     result_frame = result_frame[result_frame.columns[[14]]]
     return result_frame
+
+
 def RMF(source_frame, k = 1):
     '''Rolling Mean Filter
     source_frame.iloc[:, 0]: Period, 
@@ -296,6 +332,8 @@ def RMF(source_frame, k = 1):
     odd_frame = odd_frame.set_index('Period')
     even_frame = even_frame.set_index('Period')
     return odd_frame, even_frame
+
+
 def KZF(source_frame, k = 1):
     '''Kolmogorov--Zurbenko Filter
     source_frame.iloc[:, 0]: Period, 
@@ -317,6 +355,8 @@ def KZF(source_frame, k = 1):
     odd_frame = odd_frame.set_index('Period')
     even_frame = even_frame.set_index('Period')
     return odd_frame, even_frame
+
+
 def SES(source_frame, window = 5, alpha = 0.5):
     '''Single Exponential Smoothing
     Robert Goodell Brown,  1956
@@ -334,6 +374,8 @@ def SES(source_frame, window = 5, alpha = 0.5):
     result_frame = pd.concat([source_frame, ses], axis = 1, sort = True)
     result_frame = result_frame.set_index('Period')
     return result_frame
+
+
 def fetchCapital():
     '''Series Not Used - `k3ntotl1si000`'''
     semi_frameA = fetchClassic('dataset-usa-cobb-douglas.zip', 'CDT2S1') ##Annual Increase in Terms of Cost Price (1)
@@ -356,6 +398,8 @@ def fetchCapital():
                            semi_frameF, semi_frameG, semi_frameH, semi_frameI, semi_frameJ, \
                            semi_frameK], axis = 1, sort = True)
     return result_frame
+
+
 def cobbDouglasCapitalExtension():
     '''Existing Capital Dataset'''
     source_frame = fetchCapital()
@@ -381,6 +425,8 @@ def cobbDouglasCapitalExtension():
     source_frame = source_frame[source_frame.columns[[20]]]
     source_frame.dropna(inplace=True)
     return source_frame
+
+
 def cobbDouglasCapitalDeflator():
     '''Fixed Assets Deflator,  2009 = 100'''
     base = [84, 177, 216] ##2009,  1970,  2009
@@ -486,6 +532,8 @@ def cobbDouglasCapitalDeflator():
     result_frame = result_frame[result_frame.columns[[9]]]
     result_frame.dropna(inplace=True)
     return result_frame
+
+
 def cobbDouglasLaborExtension():
     '''Manufacturing Laborers` Series Comparison
     semi_frameA: Cobb C.W.,  Douglas P.H. Labor Series
@@ -524,6 +572,8 @@ def cobbDouglasLaborExtension():
     result_frame.dropna(inplace=True)
     result_frame = result_frame[2:]
     return result_frame
+
+
 def cobbDouglasProductExtension():
     base = [109, 149] ##1899,  1939
     '''Bureau of the Census,  1949,  Page 179,  J13: National Bureau of Economic Research Index of Physical Output,  All Manufacturing Industries.'''
@@ -549,6 +599,8 @@ def cobbDouglasProductExtension():
     result_frame['fused'] = result_frame.iloc[:, [4, 6]].mean(1)
     result_frame = result_frame[result_frame.columns[[7]]]
     return result_frame
+
+
 def datasetVersionA():
     '''Returns  result_frameA: Capital,  Labor,  Product;
                 result_frameB: Capital,  Labor,  Product Adjusted to Capacity Utilisation'''
@@ -572,6 +624,8 @@ def datasetVersionA():
     result_frameA = result_frameA.div(result_frameA.iloc[0, :])
     result_frameB = result_frameB.div(result_frameB.iloc[0, :])
     return result_frameA, result_frameB
+
+
 def datasetVersionB():
     '''Returns  result_frameA: Capital,  Labor,  Product;
                 result_frameB: Capital,  Labor,  Product;
@@ -595,6 +649,8 @@ def datasetVersionB():
     result_frameB = result_frameB.div(result_frameB.iloc[0, :])
     result_frameC = result_frameC.div(result_frameC.iloc[0, :])
     return result_frameA, result_frameB, result_frameC
+
+
 def datasetVersionC():
     '''Data Fetch'''
     '''Data Fetch for Capital'''
@@ -611,6 +667,8 @@ def datasetVersionC():
     result_frame = pd.concat([capital_frame.iloc[:, 2], labor_frame, product_frame], axis = 1, sort = True).dropna()
     result_frame = result_frame.div(result_frame.iloc[0, :])
     return result_frame
+
+
 def cd_original(source_frame):
     '''Cobb--Douglas Algorithm as per C.W. Cobb,  P.H. Douglas. A Theory of Production,  1928;
     source_frame.index: Period, 
@@ -664,6 +722,8 @@ def cd_original(source_frame):
     plt.title(functionDict['FigureD'] %(source_frame.index[0], source_frame.index[len(source_frame)-1]))
     plt.grid(True)
     plt.show()
+
+
 def cobbDouglas3D(source_frame):
     '''Cobb--Douglas 3D-Plotting
     source_frame.index: Period, 
@@ -679,6 +739,8 @@ def cobbDouglas3D(source_frame):
     ax.set_ylabel('Labor')
     ax.set_zlabel('Production')
     plt.show()
+
+
 def plotLabProdPolynomial(source_frame):
     '''Static Labor Productivity Approximation
     source_frame.index: Period, 
@@ -736,6 +798,8 @@ def plotLabProdPolynomial(source_frame):
     plt.grid(True)
     plt.legend()
     plt.show()
+
+
 def plotSimpleLinear(source_frame, coef1, coef2, E):
     '''
     Labor Productivity on Labor Capital Intensity Plot;
@@ -756,6 +820,8 @@ def plotSimpleLinear(source_frame, coef1, coef2, E):
     plt.grid(True)
     plt.legend()
     plt.show()
+
+
 def plotSimpleLog(source_frame, coef1, coef2, E):
     '''
     Log Labor Productivity on Log Labor Capital Intensity Plot;
@@ -776,6 +842,8 @@ def plotSimpleLog(source_frame, coef1, coef2, E):
     plt.grid(True)
     plt.legend()
     plt.show()
+
+
 def plotTurnover(source_frame):
     '''Static Fixed Assets Turnover Approximation
     source_frame.iloc[:, 0]: Period, 
@@ -819,6 +887,8 @@ def plotTurnover(source_frame):
     plt.grid(True)
     plt.legend()
     plt.show()
+
+
 def plotBlockZero(source_frame):
     '''
     source_frame.index: Period, 
@@ -837,6 +907,8 @@ def plotBlockZero(source_frame):
     plotSimpleLinear(result_frameA, A0, A1, EA)
     B0, B1, EB = simpleLinearRegression(result_frameB)
     plotSimpleLog(result_frameB, B0, B1, EB)
+
+
 def plotBlockOne(source_frame):
     '''
     source_frame.iloc[:, 0]: Period, 
@@ -864,6 +936,8 @@ def plotBlockOne(source_frame):
     plt.legend()
     plt.grid(True)
     plt.show()
+
+
 def plotBlockTwo(source_frame):
     '''
     source_frame.iloc[:, 0]: Period, 
@@ -902,6 +976,8 @@ def plotBlockTwo(source_frame):
     plt.legend()
     plt.grid(True)
     plt.show()
+
+
 def simpleLinearRegression(source_frame):
     '''Determining of Coefficients of Regression
     source_frame.index: Period, 
@@ -928,6 +1004,8 @@ def simpleLinearRegression(source_frame):
     print('Model Parameter: A1 = {:, .4f}'.format(A1))
     print('Model Result: ESS = {:, .4f}; TSS = {:, .4f}; R**2 = {:, .4f}'.format(ESS, TSS, R2))
     return A0, A1, E
+
+
 def complexCobbDouglas(source_frame):
     modified_frameA = indexswitch(source_frame)
     modified_frameB = source_frame[source_frame.columns[[0, 2]]]
@@ -942,11 +1020,9 @@ def complexCobbDouglas(source_frame):
     del source_frame
     del modified_frameA
     del modified_frameB
+
+
 '''On Original Dataset'''
-import os
-import matplotlib.pyplot as plt
-import pandas as pd
-import scipy as sp
 source_frame = cobbDouglasPreprocessing()
 result_frameA = source_frame[source_frame.columns[[0, 1, 2]]]
 result_frameB = source_frame[source_frame.columns[[0, 1, 3]]]

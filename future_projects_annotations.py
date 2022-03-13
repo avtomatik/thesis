@@ -1,7 +1,17 @@
-##D:\archiveProjectUSACobbDouglasOptions.py
+# =============================================================================
+# D:\archiveProjectUSACobbDouglasOptions.py
+# =============================================================================
+import os
+import pandas as pd
+import matplotlib.pyplot as plt
+import zipfile
+import scipy as sp
+from datafetch import archivedCommonFetch
 from datafetch import beaFetch
 from datafetch import beaFetch
 from datafetch import FRBCU
+
+
 def preprocessingDXDY(start, stop, period, capital, labor, product):
     period = period[start:stop].reset_index(drop = True)
     capital = capital[start:stop].reset_index(drop = True)
@@ -13,8 +23,9 @@ def preprocessingDXDY(start, stop, period, capital, labor, product):
     DX = X/X.shift(1) ##Labor Capital Intensity Increment
     DY = Y/Y.shift(1) ##Labor Productivity Increment
     return X, Y, DX, DY
+
+
 def procedureA(X, Y, DX, DY):
-    import matplotlib.pyplot as plt
     '''Scenario I'''
     ##plt.figure(1)
     ####plt.plot(X, Y, '--', X, Y, '+') # Description Here
@@ -39,8 +50,9 @@ def procedureA(X, Y, DX, DY):
     ##result_frame = pd.concat([period, capital, labor, product, X, Y, DX, DY], axis = 1, sort = False)
     ##result_frame.to_csv('dataset USA Cobb-Douglas Modern Dataset-Out.csv', index = False)
     plt.show()
+
+
 def procedureB(X, Y, DX, DY):
-    import matplotlib.pyplot as plt
     '''Scenario I'''
     fig = plt.figure()
     ax = fig.add_subplot(111)
@@ -57,11 +69,12 @@ def procedureB(X, Y, DX, DY):
     ##plt.xlabel('Labor Capital Intensity')
     ##plt.ylabel('Labor Productivity')
     ##plt.show()
-'''To Do: Revise Dataset'''
-import os
+
+
+# =============================================================================
+# TODO: Revise Dataset
+# =============================================================================
 os.chdir('D:')
-import pandas as pd
-from datafetch import archivedCommonFetch
 frame = archivedCommonFetch()
 T = frame.iloc[:, 0]
 d = frame.iloc[:, 8]/frame.iloc[:, 7] ##Deflator,  2009 = 100
@@ -106,8 +119,9 @@ X1, X2, X3, X4 = preprocessingDXDY(42, 87, T, C12, L, P11)
 procedureA(X1, X2, X3, X4)
 ##procedureB(X1, X2, X3, X4)
 """Update from `project.py`"""
+
+
 def fetchClassic(source, string):
-    import pandas as pd
     if source == 'brown.zip':
         source_frame = pd.read_csv(source, skiprows=4, usecols=range(3, 6))
         source_frame.rename(columns = {'Данные по отработанным человеко-часам заимствованы из: Kendrick,  op. cit.,  pp. 311-313,  Table A. 10.':'series', 
@@ -130,6 +144,8 @@ def fetchClassic(source, string):
     result_frame = result_frame.sort_values('Period')
     result_frame = result_frame.set_index('Period')
     return result_frame
+
+
 def beaFetch(zpfl, wrkbk, wrksht, start, finish, line):
     '''Data _frame Fetching from Bureau of Economic Analysis Zip Archives'''
     '''
@@ -138,13 +154,10 @@ def beaFetch(zpfl, wrkbk, wrksht, start, finish, line):
     wrksht: Name of Worksheet within Excel File within Zip Archive, 
     boundary: 4+<Period_Finish>-<Period_Start>, 
     line: Line'''
-    import os
-    import pandas as pd
     boundary = 4-start+finish
     if zpfl == None:
         xl = pd.ExcelFile(wrkbk)
     else:
-        import zipfile
         zf = zipfile.ZipFile(zpfl, 'r')
         xl = pd.ExcelFile(zf.open(wrkbk))
         del zf
@@ -158,12 +171,12 @@ def beaFetch(zpfl, wrkbk, wrksht, start, finish, line):
     result_frame.columns = result_frame.columns.to_series().replace({'^Unnamed: \d':'Period'}, regex = True)
     result_frame = result_frame.set_index('Period')
     return result_frame
+
+
 def fetchCensus(source, string, index):
     '''Selected Series by U.S. Bureau of the Census
     U.S. Bureau of the Census,  Historical Statistics of the United States,  1789--1945,  Washington,  D.C.,  1949.
     U.S. Bureau of the Census. Historical Statistics of the United States,  Colonial Times to 1970,  Bicentennial Edition. Washington,  D.C.,  1975.'''
-    import os
-    import pandas as pd
     if source == 'census1975.zip':
         source_frame = pd.read_csv(source, usecols=range(8, 11), dtype = {'vector':str, 'period':str, 'value':str})
     else:
@@ -189,9 +202,10 @@ def fetchCensus(source, string, index):
         result_frame = pd.read_csv('temporary.txt')
         os.unlink('temporary.txt')
         return result_frame
+
+
 def fetchCapital():
     """Series Not Used - `k3ntotl1si000`"""
-    import pandas as pd
     semi_frameA = fetchClassic('cobbdouglas.zip', 'CDT2S1') ##Annual Increase in Terms of Cost Price (1)
     semi_frameB = fetchClassic('cobbdouglas.zip', 'CDT2S3') ##Annual Increase in Terms of 1880 dollars (3)
     semi_frameC = fetchClassic('cobbdouglas.zip', 'CDT2S4') ##Total Fixed Capital in 1880 dollars (4)
@@ -212,13 +226,13 @@ def fetchCapital():
                            semi_frameF, semi_frameG, semi_frameH, semi_frameI, semi_frameJ, \
                            semi_frameK], axis = 1, sort = True)
     return result_frame
+
+
 def FRBFA():
     '''Returns _frame of Manufacturing Fixed Assets Series,  Billion USD:
         _frame.iloc[:, 0]: Nominal;
         _frame.iloc[:, 1]: Real
     '''
-    import os
-    import pandas as pd
     source_frame = pd.read_csv('dataset USA FRB invest_capital.csv', skiprows=4, skipfooter = 688, engine = 'python')
     source_frame = source_frame.T
     source_frame.to_csv('temporary.txt')
@@ -231,12 +245,12 @@ def FRBFA():
     source_frame['real_frb'] = source_frame.iloc[:, 2].div(1000)+source_frame.iloc[:, 5].div(1000)
     result_frame = source_frame[source_frame.columns[[6, 7]]]
     return result_frame
+
+
 def FRBFADEF():
     """Returns _frame of Deflator for Manufacturing Fixed Assets Series,  Index:
         _frame.iloc[:, 0]: Deflator
     """
-    import os
-    import pandas as pd
     source_frame = pd.read_csv('dataset USA FRB invest_capital.csv', skiprows=4, skipfooter = 688, engine = 'python')
     source_frame = source_frame.T
     source_frame.to_csv('temporary.txt')
@@ -248,23 +262,27 @@ def FRBFADEF():
     source_frame['fa_def_frb'] = (source_frame.iloc[:, 1]+source_frame.iloc[:, 4]).div(source_frame.iloc[:, 0]+source_frame.iloc[:, 3])
     result_frame = source_frame[source_frame.columns[[6]]]
     return result_frame
+
+
 def pricesInverseSingle(frame):
     '''Intent: Returns Prices Icrement Series from Cumulative Deflator Series;
     source: pandas Data_frame'''
-    import pandas as pd
     D = frame.iloc[:, 0].div(frame.iloc[:, 0].shift(1))-1
     return D
+
+
 def processing(frame, col):
     interim_frame = frame[frame.columns[[col]]]
     interim_frame = interim_frame.dropna()
     result_frame = pricesInverseSingle(interim_frame)
     result_frame = result_frame.dropna()
     return result_frame
+
+
 def fetchBEA(source, string):
     '''`dataset USA BEA NipaDataA.txt`: U.S. Bureau of Economic Analysis
     Archived: https://www.bea.gov/National/FAweb/Details/Index.html
     https://www.bea.gov//national/FA2004/DownSS2.asp,  Accessed May 26,  2018'''
-    import pandas as pd
     if source == 'beanipa20131202.zip':
         source_frame = pd.read_csv(source, usecols=range(8, 11))
         source_frame.columns = source_frame.columns.str.title()
@@ -300,7 +318,6 @@ def fetchBEA(source, string):
     result_frame.to_csv('temporary.txt')
     del result_frame
     result_frame = pd.read_csv('temporary.txt')
-    import os
     os.unlink('temporary.txt')
     result_frame = result_frame.set_index('Period')
     if source == 'beanipa20170823sfat.zip':
@@ -309,9 +326,10 @@ def fetchBEA(source, string):
         pass
     result_frame = result_frame.drop_duplicates()
     return result_frame
+
+
 def FRBIP():
     '''Indexed Manufacturing Series: FRB G17 IP,  AIPMA_SA_IX,  1919--2018'''
-    import pandas as pd
     source_frame = pd.read_csv('dataset USA FRB US3_IP 2018-09-02.csv', skiprows=7)
     source_frame.columns = source_frame.columns.to_series().replace({'[ .:;@_]':''}, regex = True)
     source_frame['Period'], source_frame['Mnth'] = source_frame['Unnamed0'].str.split('-').str
@@ -319,14 +337,13 @@ def FRBIP():
     source_frame.to_csv('temporary.txt')
     del source_frame
     result_frame = pd.read_csv('temporary.txt', usecols=[0, 3])
-    import os
     os.unlink('temporary.txt')
     result_frame = result_frame.set_index('Period')
     return result_frame
+
+
 def fetchINFCF():
     '''Retrieve Yearly Price Rates from `infcf16652007.zip`'''
-    import os
-    import pandas as pd
     os.chdir('D:')
     source_frame = pd.read_csv('infcf16652007.zip', usecols=range(4, 7))
     series = source_frame.iloc[:, 0].unique()
@@ -349,10 +366,10 @@ def fetchINFCF():
     result_frame['cpiu_fused'] = result_frame.mean(1)
     result_frame = result_frame[result_frame.columns[[14]]]
     return result_frame
+
+
 def cobbDouglasCapitalDeflator():
     """Fixed Assets Deflator,  2009 = 100"""
-    import pandas as pd
-    import scipy as sp
     base = 84 ## 2009 = 100
     """Combine L2,  L15,  E7,  E23,  E40,  E68 & P107/P110"""
     """Bureau of Labor Statistics
@@ -456,6 +473,8 @@ def cobbDouglasCapitalDeflator():
     result_frame = result_frame[result_frame.columns[[9]]]
     result_frame.dropna(inplace=True)
     return result_frame
+
+
 def cobbDouglasCapitalExtension():
     """Existing Capital Dataset"""
     source_frame = fetchCapital()
@@ -481,6 +500,8 @@ def cobbDouglasCapitalExtension():
     source_frame = source_frame[source_frame.columns[[20]]]
     source_frame.dropna(inplace=True)
     return source_frame
+
+
 def cobbDouglasLaborExtension():
     """Manufacturing Laborers` Series Comparison
     semi_frameA: Cobb C.W.,  Douglas P.H. Labor Series
@@ -494,7 +515,6 @@ def cobbDouglasLaborExtension():
     semi_frameI: Yu.V. Kurenkov
     Bureau of Labor Statistics
     Federal Reserve Board"""
-    import pandas as pd
     semi_frameA = fetchClassic('cobbdouglas.zip', 'CDT3S1') ## Average Number Employed (in thousands)
     semi_frameB = fetchCensus('census1949.zip', 'D0069', True)
     semi_frameC = fetchCensus('census1949.zip', 'J0004', True)
@@ -520,8 +540,9 @@ def cobbDouglasLaborExtension():
     result_frame.dropna(inplace=True)
     result_frame = result_frame[2:]
     return result_frame
+
+
 def cobbDouglasProductExtension():
-    import pandas as pd
     base = [109, 149] ##1899,  1939
     """Bureau of the Census,  1949,  Page 179,  J13: National Bureau of Economic Research Index of Physical Output,  All Manufacturing Industries."""
     semi_frameA = fetchCensus('census1949.zip', 'J0013', True)
@@ -546,9 +567,10 @@ def cobbDouglasProductExtension():
     result_frame['fused'] = result_frame.iloc[:, [4, 6]].mean(1)
     result_frame = result_frame[result_frame.columns[[7]]]
     return result_frame
-def datasetVersionC():
+
+
+def get_dataset_version_C():
     """Data Fetch"""
-    import pandas as pd
     """Data Fetch for Capital"""
     capital_frameA = cobbDouglasCapitalExtension()
     """Data Fetch for Capital Deflator"""
@@ -563,6 +585,8 @@ def datasetVersionC():
     result_frame = pd.concat([capital_frame.iloc[:, 2], labor_frame, product_frame], axis = 1, sort = True).dropna()
     result_frame = result_frame.div(result_frame.iloc[0, :])
     return result_frame
+
+
 def service(source_frame):
     """
     source_frame.iloc[:, 0]: Capital Series;
@@ -575,8 +599,9 @@ def service(source_frame):
     source_frame['labprd_inc'] = source_frame.iloc[:, 4].div(source_frame.iloc[:, 4].shift(1))    ##Labor Productivity Increment
     source_frame = source_frame[source_frame.columns[[3, 4, 5, 6]]]
     return source_frame
+
+
 def increment_plot(frame):
-    import matplotlib.pyplot as plt
     fig, axs = plt.subplots(2, 1) ##fig, axs = plt.subplots()
     axs[0].plot(frame.iloc[:, 0], frame.iloc[:, 1], label = 'Description Here')
     axs[0].set_xlabel('Labor Capital Intensity')
@@ -592,11 +617,10 @@ def increment_plot(frame):
     axs[1].legend()
     for i in range(3, len(frame), 5):
         axs[1].annotate(frame.index[i], (frame.iloc[i, 2], frame.iloc[i, 3]))
-#    import os
 #    os.chdir('C:\\Projects')
 #    plt.tight_layout()
 #    fig.set_size_inches(10., 25.)
 #    fig.savefig('nameFigure1.pdf', format = 'pdf', dpi = 900)
     plt.show()
-source_frame = service(datasetVersionC())
+source_frame = service(get_dataset_version_C())
 increment_plot(source_frame)

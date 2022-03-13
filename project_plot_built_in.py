@@ -1,3 +1,10 @@
+import matplotlib.pyplot as plt
+import pandas as pd
+from pandas.plotting import autocorrelation_plot
+from pandas.plotting import bootstrap_plot
+from pandas.plotting import lag_plot
+
+
 def fetch_world_bank(source,  string):
     source_frame  =  pd.read_csv(source)
     source_frame  =  source_frame[source_frame.columns[[1, 0, 2]]]
@@ -43,11 +50,6 @@ def plot_built_in(module):
 Correlogram,  Pandas;
 Bootstrap Plot,  Pandas;
 Lag Plot,  Pandas'''
-import matplotlib.pyplot as plt
-import pandas as pd
-from pandas.plotting import autocorrelation_plot
-from pandas.plotting import bootstrap_plot
-from pandas.plotting import lag_plot
 plot_built_in(autocorrelation_plot)
 plot_built_in(bootstrap_plot)
 plot_built_in(lag_plot)

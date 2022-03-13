@@ -4,6 +4,11 @@ Created on Fri Nov  8 23:41:12 2019
 
 @author: Mastermind
 """
+import os
+from datafetch import fetchClassic
+from datafetch import fetchCensus
+
+
 #Section5ALL_Hist
 ##www.bea.gov/histdata/Releases/GDP_and_PI/2012/Q1/Second_May-31-2012/Section5ALL_Hist.xls
 ##Metadata: `Section5ALL_Hist.xls`@[`dataset USA BEA Release 2010-08-05 Section5ALL_Hist.xls` Offsets `dataset USA BEA Release 2013-01-31 SectionAll_xls_1929_1969.zip`]'''
@@ -63,6 +68,8 @@ def cd_original(frame):
     plt.tight_layout()
     plt.savefig('view.pdf', format = 'pdf', dpi = 900)
     plt.show()
+
+
 def dataCombined():
     '''Most Up-To-Date Version'''
     '''US BEA Fixed Assets Series Tests'''
@@ -203,6 +210,8 @@ def dataCombined():
                            semi_frameP, semi_frameQ, semi_frameR, semi_frameS, semi_frameT, \
                            semi_frameU], axis = 1, sort = True)
     return result_frame
+
+
 def plotKZFB(source_frame):
     """Kolmogorov--Zurbenko Filter
     source_frame.iloc[:, 0]: Period, 
@@ -248,6 +257,8 @@ def plotKZFB(source_frame):
     plt.grid(True)
     plt.legend()
     plt.show()
+
+
 def fetchXLSM():
     '''Indexed'''
     import os
@@ -281,6 +292,8 @@ def fetchXLSM():
     semi_frameE = semi_frameE.set_index('Period')
     result_frame = pd.concat([semi_frameA, semi_frameB, semi_frameC, semi_frameD, semi_frameE], axis = 1, sort = True).dropna(how = 'all')
     return result_frame
+
+
 #def fetch(string):
 #    """The GDELT Project"""
 #    import os
@@ -289,6 +302,8 @@ def fetchXLSM():
 #    print(source_frame.describe())
 #fetch('20180822')
 ##'''https://stackoverflow.com/questions/32788526/python-scipy-kolmogorov-zurbenko-filter'''
+
+
 ##def kz(series,  window,  iterations):
 ##    """KZ filter implementation
 ##    series is a pandas series
@@ -334,6 +349,8 @@ sub_frameB = BEASingleXL('dataset USA BEA Release 2013-09-26 Section1All_xls.xls
 semi_frameD = sub_frameA.append(sub_frameB).drop_duplicates()
 del sub_frameA, sub_frameB
 semi_frameD = semi_frameD.set_index('Period')
+
+
 def approxPowerFunctionA(period, series, q1, q2, alpha):
     import pandas as pd
     result_frame = pd.Data_frame() ##Data_frame for Based Log-Linear Approximation Results
@@ -367,6 +384,8 @@ def approxPowerFunctionA(period, series, q1, q2, alpha):
     print('Estimator Result: Mean Value: %f' %(z1))
     print('Estimator Result: Mean Squared Deviation (MSD): %f' %(z2))
     print('Estimator Result: Root-Mean-Square Deviation (RMSD): %f' %(math.sqrt(z2)))
+
+
 def approxPowerFunctionB(period, ser_in, ser_ou, p1, p2, p3, p4, alpha):
     import pandas as pd
     result_frame = pd.Data_frame() ##Data_frame for Approximation Results
@@ -396,6 +415,8 @@ def approxPowerFunctionB(period, ser_in, ser_ou, p1, p2, p3, p4, alpha):
     print('Estimator Result: Mean Value: %f' %(z1))
     print('Estimator Result: Mean Squared Deviation (MSD): %f' %(z2))
     print('Estimator Result: Root-Mean-Square Deviation (RMSD): %f' %(math.sqrt(z2)))
+
+
 def approxPowerFunctionC(period, ser_in, ser_ou, p1, p2, p3, p4):
     import math
     alpha = math.log(p4/p3)/math.log(p1/p2)
@@ -426,6 +447,8 @@ def approxPowerFunctionC(period, ser_in, ser_ou, p1, p2, p3, p4):
     print('Estimator Result: Mean Value: %f' %(z1))
     print('Estimator Result: Mean Squared Deviation (MSD): %f' %(z2))
     print('Estimator Result: Root-Mean-Square Deviation (RMSD): %f' %(math.sqrt(z2)))
+
+
 def datasetCanada():
     '''Number 1. CANSIM Table 282-0012 Labour Force Survey Estimates (LFS),  employment by class of worker,  North American Industry Classification\
     System (NAICS) and sex'''
@@ -517,6 +540,8 @@ def datasetCanada():
     import os
     os.unlink('temporary.txt')
     return result_frame
+
+
 def douglasTest(control, series):
     '''control from Original Dataset;
     series from Douglas Theory of Wages'''
@@ -541,6 +566,8 @@ def douglasTest(control, series):
     control_frame = control_frame.dropna()
 #    control_frame.plot(title = 'Cobb--Douglas Data Comparison', legend = True, grid = True)
     print(control_frame)
+
+
 def options():
     '''The Revised Index of Physical Production for All Manufacturing In the United States,  1899--1926'''
     fetchClassic('douglas.zip', 'DT24AS01')
@@ -550,6 +577,8 @@ def options():
     fetchClassic('douglas.zip', 'DT63AS02')
     '''Not Suitable: Percentage Rate of Growth'''
     fetchClassic('douglas.zip', 'DT63AS03')
+
+
 def douglasTest(control, series):
     '''control from Original Dataset;
     series from Douglas Theory of Wages'''
@@ -572,6 +601,8 @@ def douglasTest(control, series):
     else:
         pass
     print(control_frame)
+
+
 def archivedCommonFetch():
     """Data Fetch"""
     import os
@@ -642,6 +673,8 @@ def archivedCommonFetch():
                            semi_frameF, semi_frameG, semi_frameH, semi_frameI, semi_frameJ, \
                            semi_frameK, semi_frameL, semi_frameM], axis = 1, sort = True)
     return result_frame
+
+
 def archivedCombinedCapital():
 #    from datafetch import archivedBEALabor
 #    from datafetch import FRBCU
@@ -697,6 +730,8 @@ def archivedCombinedCapital():
     result_frame = pd.concat([semi_frameA, semi_frameB, semi_frameC, semi_frameD, semi_frameE, 
                            semi_frameF, semi_frameG, semi_frameH], axis = 1, sort = True).dropna(how = 'all')
     return result_frame
+
+
 def BEASingle(zpfl, wrkbk, wrksht, clmn_0, clmn_1, ftr_0):
     '''Data _frame Fetching from Bureau of Economic Analysis Zip Archives'''
     '''clmn_0 = source_frame.shape[1]
@@ -716,6 +751,8 @@ def BEASingle(zpfl, wrkbk, wrksht, clmn_0, clmn_1, ftr_0):
     os.unlink('temporary.txt')
     del zf, xl
     return result_frame
+
+
 def BEASingleXL(wrkbk, wrksht, yr, ln, index):
     '''Data _frame Fetching from Bureau of Economic Analysis'''
     import os
@@ -732,9 +769,8 @@ def BEASingleXL(wrkbk, wrksht, yr, ln, index):
     if index:
         result_frame = result_frame.set_index('Period')
     return result_frame
-import os
-from datafetch import fetchClassic
-from datafetch import fetchCensus
+
+
 os.chdir('D:')
 douglasTest('J0014', 'DT24AS01')
 douglasTest('CDT2S4', 'DT63AS01')

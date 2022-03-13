@@ -1,4 +1,9 @@
-'''Scipy Univariate Spline'''
+# =============================================================================
+# Scipy Univariate Spline
+# =============================================================================
+from scipy.interpolate import UnivariateSpline
+
+
 def fetchClassic(source, string):
     import pandas as pd
     if source == 'brown.zip':
@@ -16,13 +21,15 @@ def fetchClassic(source, string):
     del source_frame
     result_frame = result_frame[result_frame.columns[[1, 2]]]
     result_frame.columns = result_frame.columns.str.title()
-    result_frame.rename(columns = {'Value':string}, inplace=True)
+    result_frame.rename(columns={'Value':string}, inplace=True)
     result_frame.iloc[:, 0] = result_frame.iloc[:, 0].astype(int)
-    result_frame.iloc[:, 1] = pd.to_numeric(result_frame.iloc[:, 1], errors = 'coerce')
+    result_frame.iloc[:, 1] = pd.to_numeric(result_frame.iloc[:, 1], errors='coerce')
     result_frame = result_frame.dropna()
     result_frame = result_frame.sort_values('Period')
     result_frame = result_frame.set_index('Period')
     return result_frame
+
+
 def fetchCensus(source, string, index):
     '''Selected Series by U.S. Bureau of the Census
     U.S. Bureau of the Census,  Historical Statistics of the United States,  1789--1945,  Washington,  D.C.,  1949.
@@ -30,7 +37,7 @@ def fetchCensus(source, string, index):
     import os
     import pandas as pd
     if source == 'census1975.zip':
-        source_frame = pd.read_csv(source, usecols=range(8, 11), dtype = {'vector':str, 'period':str, 'value':str})
+        source_frame = pd.read_csv(source, usecols=range(8, 11), dtype={'vector':str, 'period':str, 'value':str})
     else:
         source_frame = pd.read_csv(source, usecols=range(8, 11))
     source_frame = source_frame[source_frame.iloc[:, 0] == string]
@@ -41,10 +48,10 @@ def fetchCensus(source, string, index):
         pass
     source_frame.iloc[:, 1] = source_frame.iloc[:, 1].astype(float)
     source_frame.columns = source_frame.columns.str.title()
-    source_frame.rename(columns = {'Value':string}, inplace=True)
+    source_frame.rename(columns={'Value':string}, inplace=True)
     source_frame.iloc[:, 0] = source_frame.iloc[:, 0].astype(int)
     source_frame = source_frame.sort_values('Period')
-    source_frame = source_frame.reset_index(drop = True)
+    source_frame = source_frame.reset_index(drop=True)
     source_frame = source_frame.groupby('Period').mean()
     if index:
         return source_frame
@@ -54,19 +61,25 @@ def fetchCensus(source, string, index):
         result_frame = pd.read_csv('temporary.txt')
         os.unlink('temporary.txt')
         return result_frame
+
+
 def cobbDouglasPreprocessing():
-    '''Original Cobb--Douglas Data Preprocessing'''
+# =============================================================================
+# Original Cobb--Douglas Data Preprocessing
+# =============================================================================
     import pandas as pd
     semi_frameA = fetchClassic('cobbdouglas.zip', 'CDT2S4') ## Total Fixed Capital in 1880 dollars (4)
     semi_frameB = fetchClassic('cobbdouglas.zip', 'CDT3S1') ## Average Number Employed (in thousands)
     semi_frameC = fetchCensus('census1949.zip', 'J0014', True)
     semi_frameD = fetchCensus('census1949.zip', 'J0013', True)
     semi_frameE = fetchClassic('douglas.zip', 'DT24AS01') ## The Revised Index of Physical Production for All Manufacturing In the United States,  1899--1926
-    result_frame = pd.concat([semi_frameA, semi_frameB, semi_frameC, semi_frameD, semi_frameE], axis = 1, sort = True)
+    result_frame = pd.concat([semi_frameA, semi_frameB, semi_frameC, semi_frameD, semi_frameE], axis=1, sort=True)
     del semi_frameA, semi_frameB, semi_frameC, semi_frameD, semi_frameE
     result_frame = result_frame.dropna()
     result_frame = result_frame.div(result_frame.iloc[0, :])
     return result_frame
+
+
 def splineProcedure(source_frame):
     '''
     source_frame.index: Period, 
@@ -82,7 +95,7 @@ def splineProcedure(source_frame):
     Z = np.linspace(X.min(), X.max(), len(source_frame)-1)
     import matplotlib.pyplot as plt
     plt.figure()
-    plt.scatter(X, Y, label = 'Original')
+    plt.scatter(X, Y, label='Original')
     plt.plot(Z, spl(Z))
     plt.title('Labor Capital Intensity & Labor Productivity,  {}$-${}'.format(source_frame.index[0], source_frame.index[len(source_frame)-1]))
     plt.xlabel('Labor Capital Intensity')
@@ -99,6 +112,7 @@ def splineProcedure(source_frame):
     ##print(spl.roots)
     ##print(spl.set_smoothing_factor)
     plt.show()
-from scipy.interpolate import UnivariateSpline
+
+
 source_frame = cobbDouglasPreprocessing()
 splineProcedure(source_frame)

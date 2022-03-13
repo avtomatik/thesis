@@ -1,3 +1,7 @@
+import os
+import pandas as pd
+
+
 def fetchBEA(source, string):
     '''`dataset USA BEA NipaDataA.txt`: U.S. Bureau of Economic Analysis
     Archived: https://www.bea.gov/National/FAweb/Details/Index.html
@@ -45,6 +49,8 @@ def fetchBEA(source, string):
         pass
     result_frame = result_frame.drop_duplicates()
     return result_frame
+
+
 def fetchMCB(string, index):
     '''Data _frame Fetching from McConnell C.R. & Brue S.L.'''
     source_frame = pd.read_csv('mcConnellBrue.zip', usecols=range(1, 4))
@@ -62,12 +68,16 @@ def fetchMCB(string, index):
         result_frame = pd.read_csv('temporary.txt')
         os.unlink('temporary.txt')
         return result_frame
+
+
 def indexswitch(source_frame):
     source_frame.to_csv('temporary.txt')
     del source_frame
     result_frame = pd.read_csv('temporary.txt')
     os.unlink('temporary.txt')
     return result_frame
+
+
 def periodCentering(source_frame):
     '''
     source_frame.iloc[:, 0]: Period, 
@@ -87,9 +97,9 @@ def periodCentering(source_frame):
         seriesDiff = (seriesRoll.shift(-2)-seriesRoll).div(2*seriesRoll.shift(-1))
         result_frame = pd.concat([result_frame, periodRoll, seriesRoll, seriesFrac, seriesDiff], axis = 1, sort = True)
     return result_frame
+
+
 '''A032RC1'''
-import os
-import pandas as pd
 source_frame = fetchMCB('Национальный доход,  млрд долл. США', False)
 result_frame = periodCentering(source_frame)
 print(result_frame)

@@ -1,3 +1,8 @@
+import pandas as pd
+import scipy as sp
+import matplotlib.pyplot as plt
+
+
 def fetchClassic(source, string):
     if source == 'brown.zip':
         source_frame = pd.read_csv(source, skiprows=4, usecols=range(3, 6))
@@ -21,6 +26,8 @@ def fetchClassic(source, string):
     result_frame = result_frame.sort_values('Period')
     result_frame = result_frame.set_index('Period')
     return result_frame
+
+
 def douglasPreprocessing():
     '''Douglas Data Preprocessing'''
     semi_frameA = fetchClassic('douglas.zip', 'DT19AS03')
@@ -29,6 +36,8 @@ def douglasPreprocessing():
     result_frame = pd.concat([semi_frameA, semi_frameB, semi_frameC], axis = 1, sort = True)
     result_frame = result_frame.div(result_frame.iloc[9, :])
     return result_frame
+
+
 def plotDouglas(source, dictionary, num, start, stop, step, title, measure, label = None):
     '''
     source: Source Database, 
@@ -51,6 +60,8 @@ def plotDouglas(source, dictionary, num, start, stop, step, title, measure, labe
         plt.legend()
     else:
         plt.legend(label)
+
+
 def cd_modified(source_frame):
     '''Cobb--Douglas Algorithm as per C.W. Cobb,  P.H. Douglas. A Theory of Production,  1928 & P.H. Douglas. The Theory of Wages,  1934;
     source_frame.index: Period, 
@@ -105,6 +116,8 @@ def cd_modified(source_frame):
     plt.title(functionDict['FigureD'] %(source_frame.index[0], source_frame.index[len(source_frame)-1]))
     plt.grid(True)
     plt.show()
+
+
 def base_dict(source):
     '''Returns Dictionary for Series from Database'''
     series_dict = pd.read_csv(source, usecols=range(3, 5))
@@ -113,10 +126,9 @@ def base_dict(source):
     series_dict = series_dict.sort_values('vector')
     series_dict = series_dict.reset_index(drop = True)
     return series_dict
+
+
 '''Douglas European Demographics & Growth of US Capital'''
-import pandas as pd
-import scipy as sp
-import matplotlib.pyplot as plt
 series_dict = base_dict('douglas.zip')
 titles_deu = ['Germany Birth Rate', 'Germany Death Rate', 'Germany Net Fertility Rate', 'Prussia Birth Rate', 'Prussia Death Rate', 'Prussia Net Fertility Rate']
 titles_eur = ['Sweden', 'Norway', 'Denmark', 'England & Wales', 'France', 'Germany', 'Prussia', 'Switzerland', 'Italy']

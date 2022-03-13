@@ -5,6 +5,9 @@ Created on Tue Nov  2 21:10:29 2021
 @author: Mastermind
 """
 
+import pandas as pd
+
+
 # =============================================================================
 # Labor
 # =============================================================================
@@ -67,7 +70,6 @@ def find_mean_for_min_std():
             result.loc[result.iloc[:, [-1]].idxmin()[0], :][:-1].mean())
 
 
-import pandas as pd
 result = pd.Data_frame()
 
 

@@ -5,6 +5,11 @@ Created on Tue Sep 10 23:12:03 2019
 @author: Mastermind
 """
 
+import os
+import pandas as pd
+import matplotlib.pyplot as plt
+
+
 def fetchCensus(source, string, index):
     '''Selected Series by U.S. Bureau of the Census
     U.S. Bureau of the Census,  Historical Statistics of the United States,  1789--1945,  Washington,  D.C.,  1949.
@@ -36,6 +41,8 @@ def fetchCensus(source, string, index):
         result_frame = pd.read_csv('temporary.txt')
         os.unlink('temporary.txt')
         return result_frame
+
+
 def BLSLNU(source):
     '''LNU04000000: Bureau of Labor Statistics Unemployment Rate'''
     string = 'LNU04000000'
@@ -50,9 +57,8 @@ def BLSLNU(source):
     result_frame.iloc[:, 1] = result_frame.iloc[:, 1].astype(float)
     result_frame = result_frame.set_index('Period')
     return result_frame
-import os
-import pandas as pd
-import matplotlib.pyplot as plt
+
+
 os.chdir('D:')
 semi_frameA = fetchCensus('census1975.zip', 'D0086', True)
 semi_frameB = BLSLNU('dataset USA BLS 2017-07-06 ln.data.1.AllData')

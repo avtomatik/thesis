@@ -4,6 +4,11 @@ Created on Sat Nov 16 20:45:44 2019
 
 @author: Mastermind
 """
+import os
+import pandas as pd
+import matplotlib.pyplot as plt
+
+
 def fetchCensus(source, string, index):
     '''Selected Series by U.S. Bureau of the Census
     U.S. Bureau of the Census,  Historical Statistics of the United States,  1789--1945,  Washington,  D.C.,  1949.
@@ -33,6 +38,8 @@ def fetchCensus(source, string, index):
         result_frame = pd.read_csv('temporary.txt')
         os.unlink('temporary.txt')
         return result_frame
+
+
 def plotRMF(source_frame):
     """
     source_frame.iloc[:, 0]: Period;
@@ -70,6 +77,8 @@ def plotRMF(source_frame):
     plt.grid(True)
     plt.legend()
     plt.show()
+
+
 def plotGrowthElasticity(source_frame):
     '''Growth Elasticity Plotting
     source_frame.iloc[:, 0]: Period, 
@@ -99,9 +108,8 @@ def plotGrowthElasticity(source_frame):
     plt.grid(True)
     plt.legend()
     plt.show()
-import os
-import pandas as pd
-import matplotlib.pyplot as plt
+
+
 source_frame = fetchCensus('census1949.zip', 'J0014', False)
 plotGrowthElasticity(source_frame)
 plotRMF(source_frame)

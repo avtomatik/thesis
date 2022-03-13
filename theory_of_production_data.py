@@ -9,7 +9,7 @@ import os
 import pandas as pd
 
 
-# # pd.options.display.max_columns = 8
+pd.options.display.max_columns = 8
 
 
 # period = [1899, 

@@ -5,6 +5,10 @@ Created on Sat Jan 18 00:13:17 2020
 @author: Mastermind
 """
 
+import pandas as pd
+import matplotlib.pyplot as plt
+
+
 def bln_to_mln(source_frame,  column):
     """Convert Series in Billions of Dollars to Series in Millions of Dollars"""
     source_frame.iloc[:, column]  =  1000*source_frame.iloc[:, column]
@@ -659,8 +663,6 @@ def plotting_census_j(source_frame,  base):
     plt.show()
 
 
-import pandas as pd
-import matplotlib.pyplot as plt
 result_frame,  base  =  datafetch_census_a()
 plotting_census_a(result_frame,  base)
 capital      =  datafetch_census_ba()

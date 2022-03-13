@@ -4,6 +4,10 @@ Created on Thu Jan  9 21:17:48 2020
 
 @author: Mastermind
 """
+import pandas as pd
+import matplotlib.pyplot as plt
+
+
 def beaFetch(zpfl, wrkbk, wrksht, start, finish, line):
     """Data _frame Fetching from Bureau of Economic Analysis Zip Archives"""
     """
@@ -32,6 +36,8 @@ def beaFetch(zpfl, wrkbk, wrksht, start, finish, line):
     result_frame.columns = result_frame.columns.to_series().replace({'^Unnamed: \d':'Period'}, regex = True)
     result_frame = result_frame.set_index('Period')
     return result_frame
+
+
 def fetchCensus(source, string, index):
     """Selected Series by U.S. Bureau of the Census
     U.S. Bureau of the Census,  Historical Statistics of the United States,  1789--1945,  Washington,  D.C.,  1949.
@@ -63,6 +69,8 @@ def fetchCensus(source, string, index):
         result_frame = pd.read_csv('temporary.txt')
         os.unlink('temporary.txt')
         return result_frame
+
+
 def FRBIP():
     """Indexed Manufacturing Series: FRB G17 IP,  AIPMA_SA_IX,  1919--2018"""
     import pandas as pd
@@ -77,6 +85,8 @@ def FRBIP():
     os.unlink('temporary.txt')
     result_frame = result_frame.set_index('Period')
     return result_frame
+
+
 def FRBMS():
     """Indexed Money Stock Measures (H.6) Series:
     https://www.federalreserve.gov/datadownload/Download.aspx?rel = h6&series = 5398d8d1734b19f731aba3105eb36d47&filetype = csv&label = include&layout = seriescolumn&from = 01/01/1959&to = 12/31/2018"""
@@ -93,6 +103,8 @@ def FRBMS():
     os.unlink('temporary.txt')
     result_frame = result_frame.set_index('Period')
     return result_frame
+
+
 def fetchBEA(source, string):
     """`dataset USA BEA NipaDataA.txt`: U.S. Bureau of Economic Analysis
     Archived: https://www.bea.gov/National/FAweb/Details/Index.html
@@ -142,6 +154,8 @@ def fetchBEA(source, string):
         pass
     result_frame = result_frame.drop_duplicates()
     return result_frame
+
+
 def FRBCU():
     """Indexed Capacity Utilization Series: CAPUTL.B50001.A,  1967--2012
     CAPUTL.B50001.A Fetching"""
@@ -162,6 +176,8 @@ def FRBCU():
     result_frame.iloc[:, 0] = result_frame.iloc[:, 0].astype(int)
     result_frame = result_frame.set_index('Period')
     return result_frame
+
+
 def archivedBEALabor():
     import pandas as pd
     """Labor Series: H4313C0,  1929--1948"""
@@ -179,6 +195,8 @@ def archivedBEALabor():
     result_frame = result_frame.mean(1)
     result_frame = result_frame.to_frame(name = 'Labor')
     return result_frame
+
+
 def archivedDataCombined():
     """Version: 02 December 2013"""
     import pandas as pd
@@ -269,6 +287,8 @@ def archivedDataCombined():
                            semi_frameP, semi_frameQ, semi_frameR, semi_frameS, semi_frameT, \
                            semi_frameU], axis = 1, sort = True)
     return result_frame
+
+
 def dataCombined():
     """Most Up-To-Date Version"""
     """US BEA Fixed Assets Series Tests"""
@@ -409,6 +429,8 @@ def dataCombined():
                            semi_frameP, semi_frameQ, semi_frameR, semi_frameS, semi_frameT, \
                            semi_frameU], axis = 1, sort = True)
     return result_frame
+
+
 def indexswitch(source_frame):
     import os
     import pandas as pd
@@ -417,17 +439,23 @@ def indexswitch(source_frame):
     result_frame = pd.read_csv('temporary.txt')
     os.unlink('temporary.txt')
     return result_frame
+
+
 def preprocessingA(source_frame):
     source_frame = source_frame[source_frame.columns[[0, 4, 6, 7]]]
     source_frame = source_frame.dropna()
     source_frame = source_frame.div(source_frame.iloc[0, :])
     source_frame = indexswitch(source_frame)
     return source_frame
+
+
 def preprocessingB(source_frame):
     source_frame = source_frame[source_frame.columns[[0, 6, 7, 20]]]
     source_frame = source_frame.dropna()
     source_frame = indexswitch(source_frame)
     return source_frame
+
+
 def preprocessingC(source_frame):
     import pandas as pd
     source_frameProduction = source_frame[source_frame.columns[[0, 6, 7]]]
@@ -443,11 +471,15 @@ def preprocessingC(source_frame):
     result_frame = result_frame.div(result_frame.iloc[0, :])
     result_frame = indexswitch(result_frame)
     return result_frame
+
+
 def preprocessingD(source_frame):
     source_frame = source_frame[source_frame.columns[[0, 1, 2, 3, 7]]]
     source_frame = source_frame.dropna()
     source_frame = indexswitch(source_frame)
     return source_frame
+
+
 def dataFetchPlottingA(source_frame):
     """
     source_frame.iloc[:, 0]: Period, 
@@ -474,6 +506,8 @@ def dataFetchPlottingA(source_frame):
     plt.grid()
     plt.legend()
     plt.show()
+
+
 def dataFetchPlottingB(source_frame):
     """
     source_frame.iloc[:, 0]: Period, 
@@ -492,6 +526,8 @@ def dataFetchPlottingB(source_frame):
     plt.ylabel('Millions of Dollars')
     plt.grid(True)
     plt.show()
+
+
 def dataFetchPlottingC(source_frame):
     """
     source_frame.iloc[:, 0]: Period, 
@@ -513,6 +549,8 @@ def dataFetchPlottingC(source_frame):
     plt.legend()
     plt.grid(True)
     plt.show()
+
+
 def dataFetchPlottingD(source_frame):
     """
     source_frame.iloc[:, 0]: Period, 
@@ -559,6 +597,8 @@ def dataFetchPlottingD(source_frame):
     plt.ylabel('Billions of Dollars')
     plt.grid(True)
     plt.show()
+
+
 def preprocessingE(source_frame):
     """Works on Result of `archivedDataCombined`"""
     """`Real` Investment"""
@@ -570,6 +610,8 @@ def preprocessingE(source_frame):
     """`Real` DataSet"""
     real_frame = source_frame[source_frame.columns[[21, 7, 22]]].dropna()
     return nominal_frame, real_frame
+
+
 def plottingE(source_frame):
     """
     source_frame.iloc[:, 0]: Investment, 
@@ -599,6 +641,8 @@ def plottingE(source_frame):
     print(source_frame.iloc[:, 4].describe())
     print(QL)    
     plt.show()
+
+
 def preprocessingF(testing_frame):
     """testing_frame: Test _frame"""
     import pandas as pd    
@@ -626,6 +670,8 @@ def preprocessingF(testing_frame):
     semi_frameDB = FRBCU()
     result_frameD = pd.concat([semi_frameDA, semi_frameDB], axis = 1, sort = True)
     return result_frameA, result_frameB, result_frameC, result_frameD
+
+
 def plottingF(source_frameA, source_frameB, source_frameC, source_frameD):
     """
     source_frameA: Production _frame, 
@@ -668,8 +714,8 @@ def plottingF(source_frameA, source_frameB, source_frameC, source_frameD):
     axs[3].grid(True)
     fig.set_size_inches(10., 20.)
     ##fig.savefig('view.pdf', format = 'pdf', dpi = 900)
-import pandas as pd
-import matplotlib.pyplot as plt
+
+
 source_frameA = archivedDataCombined()
 source_frameB = dataCombined()
 """Project: Initial Version Dated: 05 October 2012"""

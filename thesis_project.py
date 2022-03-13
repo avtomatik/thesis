@@ -6,6 +6,21 @@ Thesis Project
 
 @author: Alexander Mikhailov
 '''
+import os
+import matplotlib.pyplot as plt
+import pandas as pd
+import scipy as sp
+import scipy.special
+from mpl_toolkits.mplot3d import Axes3D
+from pandas.plotting import autocorrelation_plot
+from pandas.plotting import bootstrap_plot
+from pandas.plotting import lag_plot
+from scipy import signal
+from scipy import stats
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import r2_score
+
+
 def base_dict(source):
     '''Returns Dictionary for Series from Douglas's & Kendrick's Databases'''
     series_dict = pd.read_csv(source, usecols=range(3, 5))
@@ -14,6 +29,8 @@ def base_dict(source):
     series_dict = series_dict.sort_values('vector')
     series_dict = series_dict.reset_index(drop = True)
     return series_dict
+
+
 def beaFetch(source, wrkbk, wrksht, start, finish, line):
     '''Data _frame Fetching from Bureau of Economic Analysis Zip Archives'''
     '''
@@ -40,6 +57,8 @@ def beaFetch(source, wrkbk, wrksht, start, finish, line):
     result_frame.columns = result_frame.columns.to_series().replace({'^Unnamed: \d':'Period'}, regex = True)
     result_frame = result_frame.set_index('Period')
     return result_frame
+
+
 def fetchBEA(source, string):
     '''`dataset USA BEA NipaDataA.txt`: U.S. Bureau of Economic Analysis
     Archived: https://www.bea.gov/National/FAweb/Details/Index.html
@@ -87,6 +106,8 @@ def fetchBEA(source, string):
         pass
     result_frame = result_frame.drop_duplicates()
     return result_frame
+
+
 def fetchCANSIM(source, vector, index):
     '''Data _frame Fetching from CANSIM Zip Archives
     Should Be [x 7 columns]
@@ -120,6 +141,8 @@ def fetchCANSIM(source, vector, index):
         result_frame = pd.read_csv('dataset CAN {} {}.csv'.format(source, vector))
         os.unlink('dataset CAN {} {}.csv'.format(source, vector))
         return result_frame
+
+
 def fetchCANSIMFA(sequence):
     '''Fetch `Series Sequence` from CANSIM Table 031-0004: Flows and stocks of fixed non-residential capital,  total all industries,  by asset,  provinces\
     and territories,  annual (dollars x 1, 000, 000)'''
@@ -146,6 +169,8 @@ def fetchCANSIMFA(sequence):
         i+ = 1
     result_frame = result_frame.sum(axis = 1)
     return result_frame
+
+
 def fetchCANSIMQ(source, vector, index):
     '''Data _frame Fetching from Quarterly Data within CANSIM Zip Archives
     Should Be [x 7 columns]
@@ -184,6 +209,8 @@ def fetchCANSIMQ(source, vector, index):
         result_frame = pd.read_csv('temporary.txt')
         os.unlink('temporary.txt')
         return result_frame
+
+
 def fetchCANSIMSeries():
     '''Fetch `Series Sequence` from CANSIM Table 031-0004: Flows and stocks of fixed non-residential capital,  total all industries,  by asset, \
     provinces and territories,  annual (dollars x 1, 000, 000)'''
@@ -195,6 +222,8 @@ def fetchCANSIMSeries():
     source_frame = source_frame.drop_duplicates()
     slist = source_frame.iloc[:, 0].values.tolist()
     return slist
+
+
 def fetchCensus(source, string, index):
     '''Selected Series by U.S. Bureau of the Census
     U.S. Bureau of the Census,  Historical Statistics of the United States,  1789--1945,  Washington,  D.C.,  1949.
@@ -224,6 +253,8 @@ def fetchCensus(source, string, index):
         result_frame = pd.read_csv('temporary.txt')
         os.unlink('temporary.txt')
         return result_frame
+
+
 def fetchCensusDescription(source, string):
     '''Retrieve Series Description U.S. Bureau of the Census'''
     source_frame = pd.read_csv(source, usecols=[0, 1, 3, 4, 5, 6, 8], low_memory = False)
@@ -246,6 +277,8 @@ def fetchCensusDescription(source, string):
         else:
             description = '{} -\n{} -\n{}; {}'.format(source_frame.iloc[0, 3], source_frame.iloc[0, 4], source_frame.iloc[0, 5], source_frame.iloc[0, 2])
     return description
+
+
 def fetchClassic(source, string):
     if source == 'brown.zip':
         source_frame = pd.read_csv(source, skiprows=4, usecols=range(3, 6))
@@ -269,6 +302,8 @@ def fetchClassic(source, string):
     result_frame = result_frame.sort_values('Period')
     result_frame = result_frame.set_index('Period')
     return result_frame
+
+
 def fetchMCB(string, index):
     '''Data _frame Fetching from McConnell C.R. & Brue S.L.'''
     source_frame = pd.read_csv('mcConnellBrue.zip', usecols=range(1, 4))
@@ -286,12 +321,16 @@ def fetchMCB(string, index):
         result_frame = pd.read_csv('temporary.txt')
         os.unlink('temporary.txt')
         return result_frame
+
+
 def indexswitch(source_frame):
     source_frame.to_csv('temporary.txt')
     del source_frame
     result_frame = pd.read_csv('temporary.txt')
     os.unlink('temporary.txt')
     return result_frame
+
+
 def savezip(result_frame, string):
     import zipfile
     result_frame.to_csv('{}.csv'.format(string), index = False, encoding = 'utf-8')
@@ -301,6 +340,8 @@ def savezip(result_frame, string):
     archive.close()
     os.unlink('{}.csv'.format(string))
     del archive
+
+
 def archivedBEALabor():
     '''Labor Series: H4313C0,  1929--1948'''
     semi_frameA = beaFetch('dataset USA BEA Release 2013-01-31 SectionAll_xls_1929_1969.zip', 'Section6ALL_Hist.xls', '60500A Ann', 1929, 1948, 14)
@@ -317,6 +358,8 @@ def archivedBEALabor():
     result_frame = result_frame.mean(1)
     result_frame = result_frame.to_frame(name = 'Labor')
     return result_frame
+
+
 def archivedDataCombined():
     '''Version: 02 December 2013'''
     '''Nominal Investment Series: A006RC1,  1929--1969'''
@@ -412,6 +455,8 @@ def archivedDataCombined():
                            semi_frameP, semi_frameQ, semi_frameR, semi_frameS, semi_frameT, \
                            semi_frameU], axis = 1, sort = True)
     return result_frame
+
+
 def archivedSet():
     base = 54 ##Year 2005
     semi_frameA = BLSCPIU()
@@ -451,6 +496,8 @@ def archivedSet():
     result_frameA = indexswitch(result_frameA).dropna()
     result_frameB = indexswitch(result_frameB).dropna()
     return result_frameA, result_frameB, base
+
+
 def BEALabor():
     '''Labor Series: H4313C0,  1929--1948'''
     semi_frameA = beaFetch('dataset USA BEA Release 2013-01-31 SectionAll_xls_1929_1969.zip', 'Section6ALL_Hist.xls', '60500A Ann', 1929, 1948, 14)
@@ -467,6 +514,8 @@ def BEALabor():
     result_frame = result_frame.mean(1)
     result_frame = result_frame.to_frame(name = 'Labor')
     return result_frame
+
+
 def BLSCPIU():
     '''BLS CPI-U Price Index Fetch'''
     source_frame = pd.read_csv('dataset USA BLS cpiai.txt', sep = '\s+', skiprows=16)
@@ -485,6 +534,8 @@ def BLSCPIU():
     result_frame = pd.read_csv('temporary.txt')
     os.unlink('temporary.txt')
     return result_frame
+
+
 def cobbDouglasCapitalDeflator():
     '''Fixed Assets Deflator,  2009 = 100'''
     base = [84, 177, 216] ##2009,  1970,  2009
@@ -590,6 +641,8 @@ def cobbDouglasCapitalDeflator():
     result_frame = result_frame[result_frame.columns[[9]]]
     result_frame.dropna(inplace=True)
     return result_frame
+
+
 def cobbDouglasCapitalExtension():
     '''Existing Capital Dataset'''
     source_frame = fetchCapital()
@@ -615,6 +668,8 @@ def cobbDouglasCapitalExtension():
     source_frame = source_frame[source_frame.columns[[20]]]
     source_frame.dropna(inplace=True)
     return source_frame
+
+
 def cobbDouglasLaborExtension():
     '''Manufacturing Laborers` Series Comparison
     semi_frameA: Cobb C.W.,  Douglas P.H. Labor Series
@@ -653,6 +708,8 @@ def cobbDouglasLaborExtension():
     result_frame.dropna(inplace=True)
     result_frame = result_frame[2:]
     return result_frame
+
+
 def cobbDouglasPreprocessing():
     '''Original Cobb--Douglas Data Preprocessing'''
     semi_frameA = fetchClassic('cobbdouglas.zip', 'CDT2S4') ## Total Fixed Capital in 1880 dollars (4)
@@ -665,6 +722,8 @@ def cobbDouglasPreprocessing():
     result_frame = result_frame.dropna()
     result_frame = result_frame.div(result_frame.iloc[0, :])
     return result_frame
+
+
 def cobbDouglasProductExtension():
     base = [109, 149] ##1899,  1939
     '''Bureau of the Census,  1949,  Page 179,  J13: National Bureau of Economic Research Index of Physical Output,  All Manufacturing Industries.'''
@@ -690,6 +749,8 @@ def cobbDouglasProductExtension():
     result_frame['fused'] = result_frame.iloc[:, [4, 6]].mean(1)
     result_frame = result_frame[result_frame.columns[[7]]]
     return result_frame
+
+
 def dataCombined():
     semi_frameA = fetchBEA('dataset USA BEA NipaDataA.txt', 'A006RC')
     semi_frameB = fetchBEA('dataset USA BEA NipaDataA.txt', 'A006RD')
@@ -737,11 +798,15 @@ def dataCombined():
                            semi_frameP, semi_frameQ, semi_frameR, semi_frameS, semi_frameT, \
                            semi_frameU], axis = 1, sort = True)
     return result_frame
+
+
 def dataFetchA():
     base = 28 ##1980
     result_frame = fetchMCB('Валовой внутренний продукт,  млрд долл. США', True)
     result_frame = indexswitch(result_frame[base:])
     return result_frame
+
+
 def dataFetchB():
     base = 28 ##1980
     semi_frameA = fetchMCB('Ставка прайм-рейт,  %', True)
@@ -752,6 +817,8 @@ def dataFetchB():
     del semi_frameA, semi_frameB
     result_frame = indexswitch(result_frame[base:])
     return result_frame
+
+
 def dataFetchC():
     base = 28 ##1980
     semi_frameA = fetchMCB('Ставка прайм-рейт,  %', True)
@@ -762,6 +829,8 @@ def dataFetchC():
     del semi_frameA, semi_frameB
     result_frame = indexswitch(result_frame[base:])
     return result_frame
+
+
 def dataFetchCensusA():
     '''Census Manufacturing Indexes,  1899 = 100'''
     base = 39 ##1899 = 100
@@ -774,6 +843,8 @@ def dataFetchCensusA():
     result_frame = pd.concat([semi_frameA, semi_frameB, semi_frameC], axis = 1, sort = True)
     result_frame.iloc[:, 1] = result_frame.iloc[:, 1].div(result_frame.iloc[base, 1]/100)
     return result_frame, base
+
+
 def dataFetchCensusBA():
     '''Returns Nominal Million-Dollar Capital,  Including Structures & Equipment,  Series'''
     from scipy import signal
@@ -812,6 +883,8 @@ def dataFetchCensusBA():
     result_frame.iloc[:, 21] = signal.wiener(result_frame.iloc[:, 21]).round()
     result_frame = result_frame[result_frame.columns[[19, 20, 21]]]
     return result_frame
+
+
 def dataFetchCensusBB():
     '''Returns Census Fused Capital Deflator'''
     semi_frameA = fetchCensus('census1975.zip', 'P0107', True) ##Nominal
@@ -850,6 +923,8 @@ def dataFetchCensusBB():
     interim_frame['census_fused'] = interim_frame.mean(1)
     result_frame = interim_frame[interim_frame.columns[[6]]]
     return result_frame
+
+
 def dataFetchCensusC():
     '''Census Primary Metals & Railroad-Related Products Manufacturing Series'''
     base = [15, 20, 49] ## 1875 = 100,  1880 = 100,  1909 = 100
@@ -874,6 +949,8 @@ def dataFetchCensusC():
     result_frame.iloc[:, 7] = result_frame.iloc[:, 7].div(result_frame.iloc[base[0], 7]/100)
     result_frame.iloc[:, 8] = result_frame.iloc[:, 8].div(result_frame.iloc[base[0], 8]/100)
     return result_frame, base
+
+
 def dataFetchCensusE():
     '''Census Total Immigration Series'''
     semi_frameAA = fetchCensus('census1975.zip', 'C0091', True)
@@ -917,6 +994,8 @@ def dataFetchCensusE():
     result_frame['C89'] = result_frame.sum(1)
     result_frame = result_frame[result_frame.columns[[result_frame.shape[1]-1]]]
     return result_frame
+
+
 def dataFetchCensusF():
     '''Census Employment Series'''
     semi_frameA = fetchCensus('census1975.zip', 'D0085', True)
@@ -932,6 +1011,8 @@ def dataFetchCensusF():
     result_frame.iloc[:, 4].fillna(result_frame.iloc[:25, 4].mean(), inplace=True)
     result_frame.iloc[:, 5].fillna(result_frame.iloc[:25, 5].mean(), inplace=True)
     return result_frame
+
+
 def dataFetchCensusG():
     '''Census Gross National Product Series'''
     semi_frameAA = fetchCensus('census1975.zip', 'F0003', True)
@@ -941,6 +1022,8 @@ def dataFetchCensusG():
     result_frame = result_frame[2:]
     result_frame = result_frame.div(result_frame.iloc[0, :]/100)
     return result_frame
+
+
 def dataFetchCensusI():
     '''Census Foreign Trade Series'''
     semi_frameAA = fetchCensus('census1975.zip', 'U0001', True)
@@ -995,6 +1078,8 @@ def dataFetchCensusI():
     result_frameC['Exports'] = result_frameC.iloc[:, 0:14].sum(1)
     result_frameC['Imports'] = result_frameC.iloc[:, 14:28].sum(1)
     return result_frameA, result_frameB, result_frameC
+
+
 def dataFetchCensusJ():
     '''Census Money Supply Aggregates'''
     base = 48 ## 1915 = 100
@@ -1005,6 +1090,8 @@ def dataFetchCensusJ():
     del semi_frameAA, semi_frameAB, semi_frameAC
     result_frame = result_frame.div(result_frame.iloc[base, :]/100)
     return result_frame, base
+
+
 def datasetCanada():
     '''A. Fixed Assets Block: `Industrial buildings`, `Industrial machinery` for `Newfoundland and Labrador`, `Prince Edward Island`, `Nova Scotia`, `New Brunswick`, \
     `Quebec`, `Ontario`, `Manitoba`, `Saskatchewan`, `Alberta`, `British Columbia`, `Yukon`, `Northwest Territories`, `Nunavut`'''
@@ -1027,6 +1114,8 @@ def datasetCanada():
     result_frame = result_frame.dropna()
     result_frame.rename(columns = {0:'capital', 'v2523012':'labor', 'v65201809':'product'}, inplace=True)
     return result_frame
+
+
 def datasetVersionA():
     '''Returns  result_frameA: Capital,  Labor,  Product;
                 result_frameB: Capital,  Labor,  Product Adjusted to Capacity Utilisation'''
@@ -1050,6 +1139,8 @@ def datasetVersionA():
     result_frameA = result_frameA.div(result_frameA.iloc[0, :])
     result_frameB = result_frameB.div(result_frameB.iloc[0, :])
     return result_frameA, result_frameB
+
+
 def datasetVersionB():
     '''Returns  result_frameA: Capital,  Labor,  Product;
                 result_frameB: Capital,  Labor,  Product;
@@ -1073,6 +1164,8 @@ def datasetVersionB():
     result_frameB = result_frameB.div(result_frameB.iloc[0, :])
     result_frameC = result_frameC.div(result_frameC.iloc[0, :])
     return result_frameA, result_frameB, result_frameC
+
+
 def datasetVersionC():
     '''Data Fetch'''
     '''Data Fetch for Capital'''
@@ -1089,6 +1182,8 @@ def datasetVersionC():
     result_frame = pd.concat([capital_frame.iloc[:, 2], labor_frame, product_frame], axis = 1, sort = True).dropna()
     result_frame = result_frame.div(result_frame.iloc[0, :])
     return result_frame
+
+
 def douglasPreprocessing():
     '''Douglas Data Preprocessing'''
     semi_frameA = fetchClassic('douglas.zip', 'DT19AS03')
@@ -1097,6 +1192,8 @@ def douglasPreprocessing():
     result_frame = pd.concat([semi_frameA, semi_frameB, semi_frameC], axis = 1, sort = True)
     result_frame = result_frame.div(result_frame.iloc[9, :])
     return result_frame
+
+
 def fetchCapital():
     '''Series Not Used - `k3ntotl1si000`'''
     semi_frameA = fetchClassic('cobbdouglas.zip', 'CDT2S1') ##Annual Increase in Terms of Cost Price (1)
@@ -1119,6 +1216,8 @@ def fetchCapital():
                            semi_frameF, semi_frameG, semi_frameH, semi_frameI, semi_frameJ, \
                            semi_frameK], axis = 1, sort = True)
     return result_frame
+
+
 def fetchINFCF():
     '''Retrieve Yearly Price Rates from `infcf16652007.zip`'''
     source_frame = pd.read_csv('infcf16652007.zip', usecols=range(4, 7))
@@ -1142,6 +1241,8 @@ def fetchINFCF():
     result_frame['cpiu_fused'] = result_frame.mean(1)
     result_frame = result_frame[result_frame.columns[[14]]]
     return result_frame
+
+
 def FRBCU():
     '''Indexed Capacity Utilization Series: CAPUTL.B50001.A,  1967--2012
     CAPUTL.B50001.A Fetching'''
@@ -1160,6 +1261,8 @@ def FRBCU():
     result_frame.iloc[:, 0] = result_frame.iloc[:, 0].astype(int)
     result_frame = result_frame.set_index('Period')
     return result_frame
+
+
 def FRBFA():
     '''Returns _frame of Manufacturing Fixed Assets Series,  Billion USD:
     result_frame.iloc[:, 0]: Nominal;
@@ -1177,6 +1280,8 @@ def FRBFA():
     source_frame['FRB_real'] = source_frame.iloc[:, 2].div(1000)+source_frame.iloc[:, 5].div(1000)
     result_frame = source_frame[source_frame.columns[[6, 7]]]
     return result_frame
+
+
 def FRBFADEF():
     '''Returns _frame of Deflator for Manufacturing Fixed Assets Series,  Index:
     result_frame.iloc[:, 0]: Deflator
@@ -1192,6 +1297,8 @@ def FRBFADEF():
     source_frame['fa_def_frb'] = (source_frame.iloc[:, 1]+source_frame.iloc[:, 4]).div(source_frame.iloc[:, 0]+source_frame.iloc[:, 3])
     result_frame = source_frame[source_frame.columns[[6]]]
     return result_frame
+
+
 def FRBIP():
     '''Indexed Manufacturing Series: FRB G17 IP,  AIPMA_SA_IX,  1919--2018'''
     source_frame = pd.read_csv('dataset USA FRB US3_IP 2018-09-02.csv', skiprows=7)
@@ -1204,6 +1311,8 @@ def FRBIP():
     os.unlink('temporary.txt')
     result_frame = result_frame.set_index('Period')
     return result_frame
+
+
 def FRBMS():
     '''Indexed Money Stock Measures (H.6) Series:
     https://www.federalreserve.gov/datadownload/Download.aspx?rel = h6&series = 5398d8d1734b19f731aba3105eb36d47&filetype = csv&label = include&layout = seriescolumn&from = 01/01/1959&to = 12/31/2018'''
@@ -1218,6 +1327,8 @@ def FRBMS():
     os.unlink('temporary.txt')
     result_frame = result_frame.set_index('Period')
     return result_frame
+
+
 def localFetch():
     '''Nominal Investment Series: A006RC1,  1929--1969'''
     sub_frameA = beaFetch('dataset USA BEA Release 2013-01-31 SectionAll_xls_1929_1969.zip', 'Section1ALL_Hist.xls', '10105 Ann', 1929, 1968, 7)
@@ -1249,17 +1360,23 @@ def localFetch():
     result_frame = pd.concat([semi_frameA, semi_frameB, semi_frameC, semi_frameD, semi_frameE, \
                            semi_frameF], axis = 1, sort = True)
     return result_frame
+
+
 def preprocessingA(source_frame):
     source_frame = source_frame[source_frame.columns[[0, 4, 6, 7]]]
     source_frame = source_frame.dropna()
     source_frame = source_frame.div(source_frame.iloc[0, :])
     source_frame = indexswitch(source_frame)
     return source_frame
+
+
 def preprocessingB(source_frame):
     source_frame = source_frame[source_frame.columns[[0, 6, 7, 20]]]
     source_frame = source_frame.dropna()
     source_frame = indexswitch(source_frame)
     return source_frame
+
+
 def preprocessingC(source_frame):
     source_frameProduction = source_frame[source_frame.columns[[0, 6, 7]]]
     source_frameProduction = source_frameProduction.dropna()
@@ -1274,11 +1391,15 @@ def preprocessingC(source_frame):
     result_frame = result_frame.div(result_frame.iloc[0, :])
     result_frame = indexswitch(result_frame)
     return result_frame
+
+
 def preprocessingD(source_frame):
     source_frame = source_frame[source_frame.columns[[0, 1, 2, 3, 7]]]
     source_frame = source_frame.dropna()
     source_frame = indexswitch(source_frame)
     return source_frame
+
+
 def preprocessingE(source_frame):
     '''Works on Result of `archivedDataCombined`'''
     '''`Real` Investment'''
@@ -1290,6 +1411,8 @@ def preprocessingE(source_frame):
     '''`Real` DataSet'''
     real_frame = source_frame[source_frame.columns[[21, 7, 22]]].dropna()
     return nominal_frame, real_frame
+
+
 def preprocessingF(testing_frame):
     '''testing_frame: Test _frame'''
     '''Control _frame'''
@@ -1316,6 +1439,8 @@ def preprocessingF(testing_frame):
     semi_frameDB = FRBCU()
     result_frameD = pd.concat([semi_frameDA, semi_frameDB], axis = 1, sort = True)
     return result_frameA, result_frameB, result_frameC, result_frameD
+
+
 def updatedSet():
     semi_frameA = fetchBEA('dataset USA BEA NipaDataA.txt', 'A006RC')
     semi_frameB = fetchBEA('dataset USA BEA NipaDataA.txt', 'A006RD')
@@ -1339,10 +1464,14 @@ def updatedSet():
     result_frameA = indexswitch(result_frameA).dropna()
     result_frameB = indexswitch(result_frameB).dropna()
     return result_frameA, result_frameB, base
+
+
 def blnTomln(source_frame, column):
     '''Convert Series in Billions of Dollars to Series in Millions of Dollars'''
     source_frame.iloc[:, column] = 1000*source_frame.iloc[:, column]
     return source_frame
+
+
 def capital(source_frame, A, B, C, D, Pi):
     '''
     source_frame.iloc[:, 0]: Period, 
@@ -1358,6 +1487,8 @@ def capital(source_frame, A, B, C, D, Pi):
     '''
     series = source_frame.iloc[:, 3].shift(1)*(1+(B*source_frame.iloc[:, 0].shift(1)+A)*(D*source_frame.iloc[:, 0].shift(1)+C)*Pi-source_frame.iloc[:, 4].shift(1))
     return series
+
+
 def KZF(source_frame, k = 1):
     '''Kolmogorov--Zurbenko Filter
     source_frame.iloc[:, 0]: Period, 
@@ -1379,6 +1510,8 @@ def KZF(source_frame, k = 1):
     odd_frame = odd_frame.set_index('Period')
     even_frame = even_frame.set_index('Period')
     return odd_frame, even_frame
+
+
 def MSplineEA(source_frame, intervals, k):
     '''Exponential Spline,  Type A
     source_frame.iloc[:, 0]: Period, 
@@ -1403,6 +1536,8 @@ def MSplineEA(source_frame, intervals, k):
     S = pd.Data_frame(S, columns = ['Spline']) ##Convert List to Dataframe
     result_frame = pd.concat([source_frame, S], axis = 1, sort = True)
     return K, result_frame
+
+
 def MSplineEB(source_frame, intervals, k):
     '''Exponential Spline,  Type B
     source_frame.iloc[:, 0]: Period, 
@@ -1421,6 +1556,8 @@ def MSplineEB(source_frame, intervals, k):
     S = pd.Data_frame(S, columns = ['Spline']) ##Convert List to Dataframe
     result_frame = pd.concat([source_frame, S], axis = 1, sort = True)
     return K, result_frame
+
+
 def MSplineLA(source_frame, intervals, k):
     '''Linear Spline,  Type A
     source_frame.iloc[:, 0]: Period, 
@@ -1445,6 +1582,8 @@ def MSplineLA(source_frame, intervals, k):
     S = pd.Data_frame(S, columns = ['Spline']) ##Convert List to Dataframe
     result_frame = pd.concat([source_frame, S], axis = 1, sort = True)
     return K, result_frame
+
+
 def MSplineLB(source_frame, intervals, k):
     '''Linear Spline,  Type B
     source_frame.iloc[:, 0]: Period, 
@@ -1463,6 +1602,8 @@ def MSplineLB(source_frame, intervals, k):
     S = pd.Data_frame(S, columns = ['Spline']) ##Convert List to Dataframe
     result_frame = pd.concat([source_frame, S], axis = 1, sort = True)
     return K, result_frame
+
+
 def MSplineLLS(source_frame, intervals, k):
     '''Linear Spline,  Linear Regression Kernel
     source_frame.iloc[:, 0]: Period, 
@@ -1502,17 +1643,23 @@ def MSplineLLS(source_frame, intervals, k):
     S = pd.Data_frame(S, columns = ['Spline']) ##Convert List to Dataframe
     result_frame = pd.concat([source_frame, S], axis = 1, sort = True)
     return A, result_frame
+
+
 def pricesInverseSingle(source_frame):
     '''Intent: Returns Prices Icrement Series from Cumulative Deflator Series;
     source: pandas Data_frame'''
     D = source_frame.iloc[:, 0].div(source_frame.iloc[:, 0].shift(1))-1
     return D
+
+
 def processing(source_frame, col):
     interim_frame = source_frame[source_frame.columns[[col]]]
     interim_frame = interim_frame.dropna()
     result_frame = pricesInverseSingle(interim_frame)
     result_frame = result_frame.dropna()
     return result_frame
+
+
 def RMF(source_frame, k = 1):
     '''Rolling Mean Filter
     source_frame.iloc[:, 0]: Period, 
@@ -1533,6 +1680,8 @@ def RMF(source_frame, k = 1):
     odd_frame = odd_frame.set_index('Period')
     even_frame = even_frame.set_index('Period')
     return odd_frame, even_frame
+
+
 def SES(source_frame, window = 5, alpha = 0.5):
     '''Single Exponential Smoothing
     Robert Goodell Brown,  1956
@@ -1550,6 +1699,8 @@ def SES(source_frame, window = 5, alpha = 0.5):
     result_frame = pd.concat([source_frame, ses], axis = 1, sort = True)
     result_frame = result_frame.set_index('Period')
     return result_frame
+
+
 def approxPowerFunctionA(source_frame, q1, q2, alpha):
     '''
     source_frame.iloc[:, 0]: Regressor: = Period, 
@@ -1584,6 +1735,8 @@ def approxPowerFunctionA(source_frame, q1, q2, alpha):
     print('Estimator Result: Mean Value: {:, .4f}'.format(sp.mean(Z)))
     print('Estimator Result: Mean Squared Deviation,  MSD: {:, .4f}'.format(mean_squared_error(source_frame.iloc[:, 1], Z)))
     print('Estimator Result: Root-Mean-Square Deviation,  RMSD: {:, .4f}'.format(math.sqrt(mean_squared_error(source_frame.iloc[:, 1], Z))))
+
+
 def approxPowerFunctionB(source_frame, q1, q2, q3, q4, alpha):
     '''
     source_frame.iloc[:, 0]: Period, 
@@ -1615,6 +1768,8 @@ def approxPowerFunctionB(source_frame, q1, q2, q3, q4, alpha):
     print('Estimator Result: Mean Value: {:, .4f}'.format(sp.mean(Z)))
     print('Estimator Result: Mean Squared Deviation,  MSD: {:, .4f}'.format(mean_squared_error(source_frame.iloc[:, 2], Z)))
     print('Estimator Result: Root-Mean-Square Deviation,  RMSD: {:, .4f}'.format(math.sqrt(mean_squared_error(source_frame.iloc[:, 2], Z))))
+
+
 def approxPowerFunctionC(source_frame, q1, q2, q3, q4):
     '''
     source_frame.iloc[:, 0]: Period, 
@@ -1648,24 +1803,32 @@ def approxPowerFunctionC(source_frame, q1, q2, q3, q4):
     print('Estimator Result: Mean Value: {:, .4f}'.format(sp.mean(Z)))
     print('Estimator Result: Mean Squared Deviation,  MSD: {:, .4f}'.format(mean_squared_error(source_frame.iloc[:, 2], Z)))
     print('Estimator Result: Root-Mean-Square Deviation,  RMSD: {:, .4f}'.format(math.sqrt(mean_squared_error(source_frame.iloc[:, 2], Z))))
+
+
 def errorMetrics(source_frame):
     '''Error Metrics Module'''
     DX = (source_frame.iloc[:, 2]-source_frame.iloc[:, 1]).div(source_frame.iloc[:, 1])
     DX = DX.abs()
     C = sp.mean(DX)
     print('Criterion,  C: {:.6f}'.format(C))
+
+
 def resultsDeliveryA(intervals, coefficients):
     '''Results Delivery Module
     intervals (1+N): 1+Number of Intervals
     coefficients: A-Coefficients'''
     for i in range(1+intervals):
         print('Model Parameter: A{:02d} = {:.6f}'.format(i, coefficients[i]))
+
+
 def resultsDeliveryK(intervals, coefficients):
     '''Results Delivery Module
     intervals: Number of Intervals
     coefficients: K-Coefficients'''
     for i in range(intervals):
         print('Model Parameter: K{:02d} = {:.6f}'.format(1+i, coefficients[i]))
+
+
 def simpleLinearRegression(source_frame):
     '''Determining of Coefficients of Regression
     source_frame.index: Period, 
@@ -1692,6 +1855,8 @@ def simpleLinearRegression(source_frame):
     print('Model Parameter: A1 = {:, .4f}'.format(A1))
     print('Model Result: ESS = {:, .4f}; TSS = {:, .4f}; R**2 = {:, .4f}'.format(ESS, TSS, R2))
     return A0, A1, E
+
+
 def capitalAcquisitions(source_frame):
     '''
     source_frame.iloc[:, 0]: Period
@@ -1814,6 +1979,8 @@ def capitalAcquisitions(source_frame):
         plt.show()
     else:
         print('N> = 1 is Required,  N = {} Was Provided'.format(N))
+
+
 def capitalRetirement(source_frame):
     '''
     source_frame.iloc[:, 0]: Period
@@ -1940,6 +2107,8 @@ def capitalRetirement(source_frame):
         plt.show()
     else:
         print('N> = 1 is Required,  N = {} Was Provided'.format(N))
+
+
 def cd_original(source_frame):
     '''Cobb--Douglas Algorithm as per C.W. Cobb,  P.H. Douglas. A Theory of Production,  1928;
     source_frame.index: Period, 
@@ -1993,6 +2162,8 @@ def cd_original(source_frame):
     plt.title(functionDict['FigureD'] %(source_frame.index[0], source_frame.index[len(source_frame)-1]))
     plt.grid(True)
     plt.show()
+
+
 def cd_modified(source_frame):
     '''Cobb--Douglas Algorithm as per C.W. Cobb,  P.H. Douglas. A Theory of Production,  1928 & P.H. Douglas. The Theory of Wages,  1934;
     source_frame.index: Period, 
@@ -2047,6 +2218,8 @@ def cd_modified(source_frame):
     plt.title(functionDict['FigureD'] %(source_frame.index[0], source_frame.index[len(source_frame)-1]))
     plt.grid(True)
     plt.show()
+
+
 def cd_canada(source_frame):
     '''Cobb--Douglas Algorithm as per C.W. Cobb,  P.H. Douglas. A Theory of Production,  1928;
     source_frame.index: Period, 
@@ -2101,6 +2274,8 @@ def cd_canada(source_frame):
     plt.title(functionDict['FigureD'] %(source_frame.index[0], source_frame.index[len(source_frame)-1]))
     plt.grid(True)
     plt.show()
+
+
 def cobbDouglas3D(source_frame):
     '''Cobb--Douglas 3D-Plotting
     source_frame.index: Period, 
@@ -2116,6 +2291,8 @@ def cobbDouglas3D(source_frame):
     ax.set_ylabel('Labor')
     ax.set_zlabel('Production')
     plt.show()
+
+
 def dataFetchPlottingA(source_frame):
     '''
     source_frame.iloc[:, 0]: Period, 
@@ -2141,6 +2318,8 @@ def dataFetchPlottingA(source_frame):
     plt.grid()
     plt.legend()
     plt.show()
+
+
 def dataFetchPlottingB(source_frame):
     '''
     source_frame.iloc[:, 0]: Period, 
@@ -2158,6 +2337,8 @@ def dataFetchPlottingB(source_frame):
     plt.ylabel('Millions of Dollars')
     plt.grid(True)
     plt.show()
+
+
 def dataFetchPlottingC(source_frame):
     '''
     source_frame.iloc[:, 0]: Period, 
@@ -2178,6 +2359,8 @@ def dataFetchPlottingC(source_frame):
     plt.legend()
     plt.grid(True)
     plt.show()
+
+
 def dataFetchPlottingCensusD(series):
     '''series: List for Series'''
     for i in range(len(series)):
@@ -2198,6 +2381,8 @@ def dataFetchPlottingCensusD(series):
     plt.grid(True)
     plt.legend(series)
     plt.show()
+
+
 def dataFetchPlottingCensusH():
     '''Census 1975,  Land in Farms'''
     result_frame = fetchCensus('census1975.zip', 'K0005', True)
@@ -2208,6 +2393,8 @@ def dataFetchPlottingCensusH():
     plt.ylabel('1, 000 acres')
     plt.grid()
     plt.show()
+
+
 def dataFetchPlottingCensusK():
     '''Census Financial Markets & Institutions Series'''
     series = ['X0410', 'X0411', 'X0412', 'X0413', 'X0414', 'X0415', 'X0416', 'X0417', 'X0418', \
@@ -2237,6 +2424,8 @@ def dataFetchPlottingCensusK():
         plt.legend()
         plt.show()
         del current_frame
+
+
 def dataFetchPlottingD(source_frame):
     '''
     source_frame.iloc[:, 0]: Period, 
@@ -2282,6 +2471,8 @@ def dataFetchPlottingD(source_frame):
     plt.ylabel('Billions of Dollars')
     plt.grid(True)
     plt.show()
+
+
 def plotApproxLinear(source_frame):
     '''
     source_frame.iloc[:, 0]: Period, 
@@ -2336,6 +2527,8 @@ def plotApproxLinear(source_frame):
     plt.grid(True)
     plt.legend()
     plt.show()
+
+
 def plotApproxLogLinear(source_frame):
     '''
     source_frame.iloc[:, 0]: Period, 
@@ -2395,6 +2588,8 @@ def plotApproxLogLinear(source_frame):
     plt.grid(True)
     plt.legend()
     plt.show()
+
+
 def plotBlockZero(source_frame):
     '''
     source_frame.index: Period, 
@@ -2413,6 +2608,8 @@ def plotBlockZero(source_frame):
     plotSimpleLinear(result_frameA, A0, A1, EA)
     B0, B1, EB = simpleLinearRegression(result_frameB)
     plotSimpleLog(result_frameB, B0, B1, EB)
+
+
 def plotBlockOne(source_frame):
     '''
     source_frame.iloc[:, 0]: Period, 
@@ -2440,6 +2637,8 @@ def plotBlockOne(source_frame):
     plt.legend()
     plt.grid(True)
     plt.show()
+
+
 def plotBlockTwo(source_frame):
     '''
     source_frame.iloc[:, 0]: Period, 
@@ -2478,6 +2677,8 @@ def plotBlockTwo(source_frame):
     plt.legend()
     plt.grid(True)
     plt.show()
+
+
 def plotBuiltin(module):
     source_frame = pd.read_csv('datasetAutocorrelation.txt')
     source_frame = source_frame[source_frame.columns[[1, 0, 2]]]
@@ -2502,6 +2703,8 @@ def plotBuiltin(module):
         del current
     del series
     plt.show()
+
+
 def plotCapitalModelling(source_frame, base):
     '''
     source_frame.iloc[:, 0]: Period, 
@@ -2558,6 +2761,8 @@ def plotCapitalModelling(source_frame, base):
     plt.grid(True)
     plt.legend()
     plt.show()
+
+
 def plotDiscreteFourier(source_frame, precision = 10):
     '''
     source_frame.iloc[:, 0]: Period;
@@ -2587,6 +2792,8 @@ def plotDiscreteFourier(source_frame, precision = 10):
     plt.grid(True)
     plt.legend()
     plt.show()
+
+
 def plotDouglas(source, dictionary, num, start, stop, step, title, measure, label = None):
     '''
     source: Source Database, 
@@ -2609,6 +2816,8 @@ def plotDouglas(source, dictionary, num, start, stop, step, title, measure, labe
         plt.legend()
     else:
         plt.legend(label)
+
+
 def plotElasticity(source):
     '''
     source.iloc[:, 0]: Period, 
@@ -2657,6 +2866,8 @@ def plotElasticity(source):
     plt.grid(True)
     plt.legend()
     plt.show()
+
+
 def plotGrowthElasticity(source_frame):
     '''Growth Elasticity Plotting
     source_frame.iloc[:, 0]: Period, 
@@ -2686,6 +2897,8 @@ def plotGrowthElasticity(source_frame):
     plt.grid(True)
     plt.legend()
     plt.show()
+
+
 def plotKZF(source_frame):
     '''Kolmogorov--Zurbenko Filter
     source_frame.iloc[:, 0]: Period, 
@@ -2733,6 +2946,8 @@ def plotKZF(source_frame):
     plt.grid(True)
     plt.legend()
     plt.show()
+
+
 def plotLabProdPolynomial(source_frame):
     '''Static Labor Productivity Approximation
     source_frame.index: Period, 
@@ -2790,6 +3005,8 @@ def plotLabProdPolynomial(source_frame):
     plt.grid(True)
     plt.legend()
     plt.show()
+
+
 def plotPearsonRTest(source_frame):
     '''Left-Side & Right-Side Rolling Means' Calculation & Plotting
     source_frame.index: Period, 
@@ -2813,6 +3030,8 @@ def plotPearsonRTest(source_frame):
     plt.grid(True)
     plt.legend()
     plt.show()
+
+
 def plotRMF(source_frame):
     '''
     source_frame.iloc[:, 0]: Period;
@@ -2849,6 +3068,8 @@ def plotRMF(source_frame):
     plt.grid(True)
     plt.legend()
     plt.show()
+
+
 def plotSES(source_frame, window, step):
     '''Single Exponential Smoothing
     Robert Goodell Brown,  1956
@@ -2889,6 +3110,8 @@ def plotSES(source_frame, window, step):
     plt.grid(True)
     plt.legend()
     plt.show()
+
+
 def plotSimpleLinear(source_frame, coef1, coef2, E):
     '''
     Labor Productivity on Labor Capital Intensity Plot;
@@ -2909,6 +3132,8 @@ def plotSimpleLinear(source_frame, coef1, coef2, E):
     plt.grid(True)
     plt.legend()
     plt.show()
+
+
 def plotSimpleLog(source_frame, coef1, coef2, E):
     '''
     Log Labor Productivity on Log Labor Capital Intensity Plot;
@@ -2929,6 +3154,8 @@ def plotSimpleLog(source_frame, coef1, coef2, E):
     plt.grid(True)
     plt.legend()
     plt.show()
+
+
 def plottingCensusA(source_frame, base):
     plt.figure()
     plt.plot(source_frame.iloc[:, 0], label = 'Fabricant S.,  Shiskin J.,  NBER')
@@ -2941,6 +3168,8 @@ def plottingCensusA(source_frame, base):
     plt.grid()
     plt.legend()
     plt.show()
+
+
 def plottingCensusB(capital_frame, deflator_frame):
     '''Census Manufacturing Fixed Assets Series'''
     plt.figure(1)
@@ -2959,6 +3188,8 @@ def plottingCensusB(capital_frame, deflator_frame):
     plt.ylabel('Index')
     plt.grid(True)
     plt.show()
+
+
 def plottingCensusC(source_frame, base):
     plt.figure(1)
     plt.semilogy(source_frame.index, source_frame.iloc[:, 1], label = 'P265 - Raw Steel Produced - Total,  {} = 100'.format(source_frame.index[base[0]]))
@@ -2986,6 +3217,8 @@ def plottingCensusC(source_frame, base):
     plt.grid(True)
     plt.legend()
     plt.show()
+
+
 def plottingCensusE(source_frame):
     plt.figure()
     plt.plot(source_frame.index, source_frame.iloc[:, 0])
@@ -2994,6 +3227,8 @@ def plottingCensusE(source_frame):
     plt.ylabel('People')
     plt.grid()
     plt.show()
+
+
 def plottingCensusFA(source_frame):
     plt.figure(1)
     source_frame.iloc[:, 1].plot()
@@ -3016,6 +3251,8 @@ def plottingCensusFA(source_frame):
     plt.ylabel('Persons')
     plt.grid()
     plt.show()
+
+
 def plottingCensusFB(source_frame):
     fig,  axA  =  plt.subplots()
     color  =  'tab:red'
@@ -3034,6 +3271,8 @@ def plottingCensusFB(source_frame):
     axB.tick_params(axis = 'y',  labelcolor = color)
     fig.tight_layout()
     plt.show()
+
+
 def plottingCensusG(source_frame):
     plt.figure()
     plt.plot(source_frame.index, source_frame.iloc[:, 0], label = 'Gross National Product')
@@ -3044,6 +3283,8 @@ def plottingCensusG(source_frame):
     plt.grid()
     plt.legend()
     plt.show()
+
+
 def plottingCensusI(source_frameA, source_frameB, source_frameC):
     plt.figure(1)
     plt.plot(source_frameA.iloc[:, 0], label = 'Exports,  U1')
@@ -3104,6 +3345,8 @@ def plottingCensusI(source_frameA, source_frameB, source_frameC):
     plt.grid()
     plt.legend()
     plt.show()
+
+
 def plottingCensusJ(source_frame, base):
     plt.figure()
     plt.semilogy(source_frame.index, source_frame.iloc[:, 0], label = 'Currency Held by the Public')
@@ -3116,6 +3359,8 @@ def plottingCensusJ(source_frame, base):
     plt.grid()
     plt.legend()
     plt.show()
+
+
 def plottingE(source_frame):
     '''
     source_frame.iloc[:, 0]: Investment, 
@@ -3143,6 +3388,8 @@ def plottingE(source_frame):
     print(source_frame.iloc[:, 4].describe())
     print(QL)
     plt.show()
+
+
 def plottingF(source_frameA, source_frameB, source_frameC, source_frameD):
     '''
     source_frameA: Production _frame, 
@@ -3183,6 +3430,8 @@ def plottingF(source_frameA, source_frameB, source_frameC, source_frameD):
     axs[3].legend()
     axs[3].grid(True)
     fig.set_size_inches(10., 20.)
+
+
 def plotTurnover(source_frame):
     '''Static Fixed Assets Turnover Approximation
     source_frame.iloc[:, 0]: Period, 
@@ -3226,12 +3475,16 @@ def plotTurnover(source_frame):
     plt.grid(True)
     plt.legend()
     plt.show()
+
+
 def complexCensus(source_frame):
     plotPearsonRTest(source_frame)
     source_frame = indexswitch(source_frame)
     plotKZF(source_frame)
     plotSES(source_frame, 5, 0.1)
     del source_frame
+
+
 def complexCobbDouglas(source_frame):
     modified_frameA = indexswitch(source_frame)
     modified_frameB = source_frame[source_frame.columns[[0, 2]]]
@@ -3246,6 +3499,8 @@ def complexCobbDouglas(source_frame):
     del source_frame
     del modified_frameA
     del modified_frameB
+
+
 def processingSpline(source_frame, kernelModule, deliveryModule):
     source_frame.columns = ['Period', 'Original']
     N = int(input('Define Number of Interpolation Intervals: ')) ##Number of Periods
@@ -3300,20 +3555,9 @@ def processingSpline(source_frame, kernelModule, deliveryModule):
             pass
     else:
         print('N> = 2 is Required,  N = {} Was Provided'.format(N))
+
+
 print(__doc__)
-import os
-import matplotlib.pyplot as plt
-import pandas as pd
-import scipy as sp
-import scipy.special
-from mpl_toolkits.mplot3d import Axes3D
-from pandas.plotting import autocorrelation_plot
-from pandas.plotting import bootstrap_plot
-from pandas.plotting import lag_plot
-from scipy import signal
-from scipy import stats
-from sklearn.metrics import mean_squared_error
-from sklearn.metrics import r2_score
 '''Subproject I. Approximation'''
 '''
 `plotApproxLinear`: Linear Approximation, 

@@ -4,6 +4,12 @@ Created on Sat Sep 18 22:20:54 2021
 
 @author: Mastermind
 """
+import os
+import pandas as pd
+import requests
+import zipfile
+
+
 # =============================================================================
 # Capital
 # # 16100077-eng.xlsx: NO;
@@ -134,12 +140,6 @@ def procedure(output_name,  criteria):
             chunk.rename(columns = {'VALUE':vector},  inplace=True)
             result = pd.concat([result,  chunk],  axis = 1,  sort = True)
     result.to_excel(output_name)
-
-
-import os
-import pandas as pd
-import requests
-import zipfile
 
 
 CAPITAL = (

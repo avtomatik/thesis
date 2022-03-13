@@ -5,6 +5,12 @@ Created on Mon Apr 12 22:46:08 2021
 @author: Mastermind
 """
 
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import requests
+
+
 def fetch_bea_from_url(url):
     '''Downloading zip file from url'''
     r = requests.get(url)
@@ -573,9 +579,5 @@ def cobb_douglas_plot(source_frame):
     plt.show()
 
 
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-import requests
 result_frame = dataset()
 cobb_douglas_plot(result_frame)
