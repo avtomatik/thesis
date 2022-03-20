@@ -1,14 +1,9 @@
-# -*- coding: utf-8 -*-
+#-*- coding: utf-8 -*-
 """
 Created on Mon Mar  2 21:32:51 2020
 
 @author: Mastermind
 """
-import os
-import pandas as pd
-import numpy as np
-import scipy as sp
-import matplotlib.pyplot as plt
 
 
 source_frame = get_dataset_cobb_douglas()
@@ -26,10 +21,8 @@ Y = sp.log(source_frame.iloc[:, 2].div(source_frame.iloc[:, 1]))
 # =============================================================================
 # Discrete Laplace Transform
 # =============================================================================
-# =============================================================================
-# Spectrum Representations:
-# https://matplotlib.org/3.1.1/gallery/lines_bars_and_markers/spectrum_demo.html
-# =============================================================================
+'''Spectrum Representations:
+    https://matplotlib.org/3.1.1/gallery/lines_bars_and_markers/spectrum_demo.html'''
 # =============================================================================
 # Lasso
 # =============================================================================
@@ -45,11 +38,11 @@ def cobb_douglas_new_features(source_frame):
     from sklearn.linear_model import Lasso
     from sklearn.linear_model import LassoCV
     from sklearn.linear_model import LinearRegression
-    from sklearn.linear_model import Ridge    
-    functionDict = {'FigureA':'Chart I Progress in Manufacturing %d$-$%d (%d=100)',
-                  'FigureB':'Chart II Theoretical and Actual Curves of Production %d$-$%d (%d=100)',
-                  'FigureC':'Chart III Percentage Deviations of $P$ and $P\'$ from Their Trend Lines\nTrend Lines = 3 Year Moving Average',
-                  'FigureD':'Chart IV Percentage Deviations of Computed from Actual Product %d$-$%d'}
+    from sklearn.linear_model import Ridge
+    figures_dict = {'figure_a':'Chart I Progress in Manufacturing %d$-$%d (%d=100)',
+                  'figure_b':'Chart II Theoretical and Actual Curves of Production %d$-$%d (%d=100)',
+                  'figure_c':'Chart III Percentage Deviations of $P$ and $P\'$ from Their Trend Lines\nTrend Lines = 3 Year Moving Average',
+                  'figure_d':'Chart IV Percentage Deviations of Computed from Actual Product %d$-$%d'}
     x = sp.log(source_frame.iloc[:, 0].div(source_frame.iloc[:, 1]))
     y = sp.log(source_frame.iloc[:, 2].div(source_frame.iloc[:, 1]))
     X = np.vstack((np.zeros((len(x), 1)).T, x)).T
@@ -70,7 +63,7 @@ def cobb_douglas_new_features(source_frame):
     plt.plot(source_frame.index, source_frame.iloc[:, 2], label='Physical Product')
     plt.xlabel('Period')
     plt.ylabel('Indexes')
-    plt.title(functionDict['FigureA'] %(source_frame.index[0], source_frame.index[len(source_frame)-1], source_frame.index[0]))
+    plt.title(figures_dict['figure_a'] %(source_frame.index[0], source_frame.index[-1], source_frame.index[0]))
     plt.legend()
     plt.grid(True)
     plt.figure(2)
@@ -78,7 +71,7 @@ def cobb_douglas_new_features(source_frame):
     plt.plot(source_frame.index, PP, label='Computed Product, $P\' = %fL^{%f}C^{%f}$' %(A, 1-las.coef_[1], las.coef_[1]))
     plt.xlabel('Period')
     plt.ylabel('Production')
-    plt.title(functionDict['FigureB'] %(source_frame.index[0], source_frame.index[len(source_frame)-1], source_frame.index[0]))
+    plt.title(figures_dict['figure_b'] %(source_frame.index[0], source_frame.index[-1], source_frame.index[0]))
     plt.legend()
     plt.grid(True)
     plt.figure(3)
@@ -86,39 +79,39 @@ def cobb_douglas_new_features(source_frame):
     plt.plot(source_frame.index, PP-PPR, '--', label='Deviations of $P\'$')
     plt.xlabel('Period')
     plt.ylabel('Percentage Deviation')
-    plt.title(functionDict['FigureC'])
+    plt.title(figures_dict['figure_c'])
     plt.legend()
     plt.grid(True)
     plt.figure(4)
     plt.plot(source_frame.index, PP.div(source_frame.iloc[:, 2])-1)
     plt.xlabel('Period')
     plt.ylabel('Percentage Deviation')
-    plt.title(functionDict['FigureD'] %(source_frame.index[0], source_frame.index[len(source_frame)-1]))
+    plt.title(figures_dict['figure_d'] %(source_frame.index[0], source_frame.index[-1]))
     plt.grid(True)
     plt.show()
 
 
 cobb_douglas_new_features(source_frame)
-#from sklearn.linear_model import LassoCV
-#reg = LassoCV(cv = 4,  random_state = 0).fit(X,  y)
-#print(reg.score(X,  y))
-#print(reg)
-#print(reg.predict(X[:1, ]))
+# from sklearn.linear_model import LassoCV
+# reg = LassoCV(cv = 4, random_state = 0).fit(X, y)
+# print(reg.score(X, y))
+# print(reg)
+# print(reg.predict(X[:1, ]))
 
-#from sklearn.linear_model import LinearRegression
-#X
-#y
-#reg = LinearRegression().fit(X,  y)
-#reg.score(X,  y)
-#reg.coef_
-#reg.intercept_
+# from sklearn.linear_model import LinearRegression
+# X
+# y
+# reg = LinearRegression().fit(X, y)
+# reg.score(X, y)
+# reg.coef_
+# reg.intercept_
 
-#from sklearn import linear_model
-#clf = linear_model.Lasso(alpha = 0.000001)
-#clf.fit([[0,  0],  [1,  2],  [2,  4]],  [0,  2,  4])
-#print(clf.coef_)
-#print(clf.intercept_)
-#print(sp.polyfit([0,  1,  2],  [0,  2,  4],  1))
+# from sklearn import linear_model
+# clf = linear_model.Lasso(alpha = 0.000001)
+# clf.fit([[0, 0], [1, 2], [2, 4]], [0, 2, 4])
+# print(clf.coef_)
+# print(clf.intercept_)
+# print(sp.polyfit([0, 1, 2], [0, 2, 4], 1))
 '''Elastic Net'''
 from sklearn import linear_model
 las = linear_model.Lasso(normalize = 1)
@@ -130,131 +123,133 @@ ax.set_scale('log')
 ax.set_xlim(alphas.max(), alphas.min())
 plt.show()
 '''Cross Validation'''
-################>K-Fold
-##############from sklearn.model_selection import KFold
-##############kf = KFold(n_splits = 4)
-##############>Repeated K-Fold
-############from sklearn.model_selection import RepeatedKFold
-############random_state = 12883823
-############rkf = RepeatedKFold(n_splits = 2, n_repeats = 2, random_state = random_state)
-############>Leave One Out (LOO)
-##########from sklearn.model_selection import LeaveOneOut
-##########loo = LeaveOneOut()
-########>Leave P Out (LPO)
-########>Random Permutations Cross-Validation a.k.a. Shuffle & Split
-######from sklearn.model_selection import LeavePOut
-######lpo = LeavePOut(p = 2)
-####from sklearn.model_selection import ShuffleSplit
-####ss = ShuffleSplit(n_splits = 2, test_size = 0.25, random_state = 0)
-####>Time Series Split
-#from sklearn.model_selection import TimeSeriesSplit
-#tscv = TimeSeriesSplit(n_splits = 3)
-#plt.figure()
-#plt.scatter(X, Y)
-#i = 0
-############for train, test in kf.split(X):
-##########for train, test in rkf.split(X):
-########for train, test in loo.split(X):
-######for train, test in lpo.split(X):
-####for train, test in ss.split(X):
-#for train, test in tscv.split(X):
-#    i+ = 1
+# # # # # # # # # # # # # # # # >K-Fold
+# # # # # # # # # # # # # # from sklearn.model_selection import KFold
+# # # # # # # # # # # # # # kf = KFold(n_splits = 4)
+# # # # # # # # # # # # # # >Repeated K-Fold
+# # # # # # # # # # # # from sklearn.model_selection import RepeatedKFold
+# # # # # # # # # # # # random_state = 12883823
+# # # # # # # # # # # # rkf = RepeatedKFold(n_splits = 2, n_repeats = 2, random_state = random_state)
+# # # # # # # # # # # # >Leave One Out (LOO)
+# # # # # # # # # # from sklearn.model_selection import LeaveOneOut
+# # # # # # # # # # loo = LeaveOneOut()
+# # # # # # # # >Leave P Out (LPO)
+# # # # # # # # >Random Permutations Cross-Validation a.k.a. Shuffle & Split
+# # # # # # from sklearn.model_selection import LeavePOut
+# # # # # # lpo = LeavePOut(p = 2)
+# # # # from sklearn.model_selection import ShuffleSplit
+# # # # ss = ShuffleSplit(n_splits = 2, test_size = 0.25, random_state = 0)
+# # # # >Time Series Split
+# from sklearn.model_selection import TimeSeriesSplit
+# tscv = TimeSeriesSplit(n_splits = 3)
+# plt.figure()
+# plt.scatter(X, Y)
+# i = 0
+# # # # # # # # # # # # for train, test in kf.split(X):
+# # # # # # # # # # for train, test in rkf.split(X):
+# # # # # # # # for train, test in loo.split(X):
+# # # # # # for train, test in lpo.split(X):
+# # # # for train, test in ss.split(X):
+# for train, test in tscv.split(X):
+#    i += 1
 #    f1p = sp.polyfit(X[train], Y[train], 1)
 #    a1, a0 = f1p
-#    Z = a0+a1*X
+#    Z = a0 + a1*X
 #    plt.plot(X, Z, label = 'Test {:02d}'.format(i))
-###    a0 = sp.exp(a0)
-#    del f1p
-#f1p = sp.polyfit(X, Y, 1)
-#a1, a0 = f1p
-#Z = a0+a1*X
-#plt.plot(X, Z, label = 'Test {:02d}'.format(0))
-#plt.grid(True)
-#plt.legend()
-#plt.show()
-'''Cross Validation Alternative'''
-###X = np.transpose(np.atleast_2d(X)) ## Required
-###print(X)
-###from sklearn import cross_validation,  linear_model
-###
-#####X = sp.log(X)
-###Y = sp.log(Y)
-###loo = cross_validation.LeaveOneOut(len(Y))
-###regr = linear_model.LinearRegression()
-###scores = cross_validation.cross_val_score(regr,  X,  Y,  scoring = 'mean_squared_error',  cv = loo, )
-###print(scores.mean())
-#####from sklearn.linear_model import LinearRegression
-#####lr = LinearRegression()
-#####lr.fit(X, Y)
-#####from sklearn.metrics import r2_score
-#####r2 = r2_score(Y, lr.predict(X)) ##r2 = lr.score(X, Y)
-#####print('R2 (test data): {:.2}'.format(r2))
-#####from sklearn.cross_validation import Kfold
-#####kf = Kfold(len(X),  n_folds = 4)
-#######p = np.zeros_like(Y)
-#####for train,  test in kf:
-#####    lr.fit(X[train],  Y[train])
-#####    p[test] = lr.predict(X[test])
-###print(lr.predict(X))
-#####plt.figure(1)
-#####plt.scatter(X,  Y,  label = 'Original')
-#####plt.scatter(p,  Y,  label = 'Linear Fit')
-#####plt.title('Labor Capital Intensity & Labor Productivity,  1899--1922')
-#####plt.xlabel('Labor Capital Intensity')
-#####plt.ylabel('Labor Productivity')
-#####plt.grid(True)
-#######plt.legend()
-#######plt.show()
-###http://scikit-learn.org/stable/modules/cross_validation.html
+# # #    a0 = sp.exp(a0)
 #
-#from sklearn.model_selection import train_test_split
-#from sklearn import datasets
-#from sklearn import svm ##Support Vector Machine
-#iris = datasets.load_iris()
-###X_train, X_test, y_train, y_test = train_test_split(iris.data,  iris.target,  test_size = 0.4,  random_state = 0)
-###clf = svm.SVC(kernel = 'linear',  C = 1).fit(X_train,  y_train)
-###SVC: Support Vector Classification
-#from sklearn.model_selection import cross_val_score
-#clf = svm.SVC(kernel = 'linear',  C = 1)
-###1
-###scores = cross_val_score(clf, iris.data, iris.target, cv = 5)
-###2
-###from sklearn import metrics
-###scores = cross_val_score(clf, iris.data, iris.target, cv = 5, scoring = 'f1_macro')
-###print(scores)
-###print('Accuracy: %0.2f (+/- %0.2f)' %(scores.mean(), 2*scores.std()))
-###3
-###from sklearn.model_selection import ShuffleSplit
-#####print(iris.data.shape[0])
-###cv = ShuffleSplit(n_splits = 5, test_size = 0.3, random_state = 0)
-###result = cross_val_score(clf, iris.data, iris.target, cv = cv)
-###print(result)
-###4
-###def custom_cv_2folds(X):
-###    n = X.shape[0]
-###    i = 1
-###    while i< = 2:
-###        idx = np.range(n*(i-1)/2, n*i/s, dtype = int)
-###        yield idx,  idx
-###        i+ = 1
-###custom_cv = custom_cv_2folds(iris.data)
-###cross_val_score(clf, iris.data, iris.target, cv = custom_cv)
-###5
-###from sklearn import preprocessing
-###X_train, X_test, y_train, y_test = train_test_split(iris.data, iris.target, test_size = 0.4, random_state = 0)
-###scaler = preprocessing.StandardScaler().fit(X_train)
-###X_train_transformed = scaler.transform(X_train)
-###clf = svm.SVC(C = 1).fit(X_train_transformed, y_train)
-###X_test_transformed = scaler.transform(X_test)
-###result = clf.score(X_test_transformed, y_test)
-###print(result)
-###6
-###from sklearn.model_selection import ShuffleSplit
-###from sklearn.pipeline import make_pipeline
-###from sklearn import preprocessing
-###cv = ShuffleSplit(n_splits = 5, test_size = 0.3, random_state = 0)
-###clf = make_pipeline(preprocessing.StandardScaler(),  svm.SVC(C = 1))
-###result = cross_val_score(clf, iris.data, iris.target, cv = cv)
-###print(result)
+# f1p = sp.polyfit(X, Y, 1)
+# a1, a0 = f1p
+# Z = a0 + a1*X
+# plt.plot(X, Z, label = 'Test {:02d}'.format(0))
+# plt.grid(True)
+# plt.legend()
+# plt.show()
+'''Cross Validation Alternative'''
+# # # X = np.transpose(np.atleast_2d(X)) # # Required
+# # # print(X)
+# # # from sklearn import cross_validation, linear_model
+# # #
+# # # # # X = sp.log(X)
+# # # Y = sp.log(Y)
+# # # loo = cross_validation.LeaveOneOut(len(Y))
+# # # regr = linear_model.LinearRegression()
+# # # scores = cross_validation.cross_val_score(regr, X, Y, scoring = 'mean_squared_error', cv = loo,)
+# # # print(scores.mean())
+# # # # # from sklearn.linear_model import LinearRegression
+# # # # # lr = LinearRegression()
+# # # # # lr.fit(X, Y)
+# # # # # from sklearn.metrics import r2_score
+# # # # # r2 = r2_score(Y, lr.predict(X)) # # r2 = lr.score(X, Y)
+# # # # # print('R2 (test data): {:.2}'.format(r2))
+# # # # # from sklearn.cross_validation import Kfold
+# # # # # kf = Kfold(len(X), n_folds = 4)
+# # # # # # # p = np.zeros_like(Y)
+# # # # # for train, test in kf:
+# # # # #    lr.fit(X[train], Y[train])
+# # # # #    p[test] = lr.predict(X[test])
+# # # print(lr.predict(X))
+# # # # # plt.figure(1)
+# # # # # plt.scatter(X, Y, label = 'Original')
+# # # # # plt.scatter(p, Y, label = 'Linear Fit')
+# # # # # plt.title('Labor Capital Intensity & Labor Productivity, 1899--1922')
+# # # # # plt.xlabel('Labor Capital Intensity')
+# # # # # plt.ylabel('Labor Productivity')
+# # # # # plt.grid(True)
+# # # # # # # plt.legend()
+# # # # # # # plt.show()
+# =============================================================================
+# http://scikit-learn.org/stable/modules/cross_validation.html
+# =============================================================================
+
+# from sklearn.model_selection import train_test_split
+# from sklearn import datasets
+# from sklearn import svm # # Support Vector Machine
+# iris = datasets.load_iris()
+# # # X_train, X_test, y_train, y_test = train_test_split(iris.data, iris.target, test_size = 0.4, random_state = 0)
+# # # clf = svm.SVC(kernel = 'linear', C = 1).fit(X_train, y_train)
+# # # SVC: Support Vector Classification
+# from sklearn.model_selection import cross_val_score
+# clf = svm.SVC(kernel = 'linear', C = 1)
+# # # 1
+# # # scores = cross_val_score(clf, iris.data, iris.target, cv = 5)
+# # # 2
+# # # from sklearn import metrics
+# # # scores = cross_val_score(clf, iris.data, iris.target, cv = 5, scoring = 'f1_macro')
+# # # print(scores)
+# # # print('Accuracy: %0.2f (+/- %0.2f)' %(scores.mean(), 2*scores.std()))
+# # # 3
+# # # from sklearn.model_selection import ShuffleSplit
+# # # # # print(iris.data.shape[0])
+# # # cv = ShuffleSplit(n_splits = 5, test_size = 0.3, random_state = 0)
+# # # result = cross_val_score(clf, iris.data, iris.target, cv = cv)
+# # # print(result)
+# # # 4
+# # # def custom_cv_2folds(X):
+# # #    n = X.shape[0]
+# # #    i = 1
+# # #    while i< = 2:
+# # #        idx = np.range(n*(i-1)/2, n*i/s, dtype = int)
+# # #        yield idx, idx
+# # #        i += 1
+# # # custom_cv = custom_cv_2folds(iris.data)
+# # # cross_val_score(clf, iris.data, iris.target, cv = custom_cv)
+# # # 5
+# # # from sklearn import preprocessing
+# # # X_train, X_test, y_train, y_test = train_test_split(iris.data, iris.target, test_size = 0.4, random_state = 0)
+# # # scaler = preprocessing.StandardScaler().fit(X_train)
+# # # X_train_transformed = scaler.transform(X_train)
+# # # clf = svm.SVC(C = 1).fit(X_train_transformed, y_train)
+# # # X_test_transformed = scaler.transform(X_test)
+# # # result = clf.score(X_test_transformed, y_test)
+# # # print(result)
+# # # 6
+# # # from sklearn.model_selection import ShuffleSplit
+# # # from sklearn.pipeline import make_pipeline
+# # # from sklearn import preprocessing
+# # # cv = ShuffleSplit(n_splits = 5, test_size = 0.3, random_state = 0)
+# # # clf = make_pipeline(preprocessing.StandardScaler(), svm.SVC(C = 1))
+# # # result = cross_val_score(clf, iris.data, iris.target, cv = cv)
+# # # print(result)
 '''Kolmogorov-Smirnov Test for Goodness of Fit'''
-#scipy.stats.kstest
+# scipy.stats.kstest

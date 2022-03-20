@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+#-*- coding: utf-8 -*-
 """
 Created on Wed Sep  1 21:22:23 2021
 
@@ -6,31 +6,23 @@ Created on Wed Sep  1 21:22:23 2021
 """
 
 def convert_url(string):
-    return '/'.join(('https://www150.statcan.gc.ca/n1/tbl/csv',  '{}-eng.zip'.format(string.split(' = ')[1][:-2])))
+    return '/'.join(('https://www150.statcan.gc.ca/n1/tbl/csv', '{}-eng.zip'.format(string.split(' = ')[1][:-2])))
 
 
-def fetch_from_url(url):
-# =============================================================================
-#     '''Downloading zip file from url'''
-# =============================================================================
-    print('{}: Processing'.format(url))
-    r = requests.get(url)
-    with open(url.split('/')[-1],  'wb') as s:
-        s.write(r.content)
-    if zipfile.is_zipfile(url.split('/')[-1]):
-        with zipfile.ZipFile(url.split('/')[-1],  'r') as z:
-            with z.open(url.split('/')[-1].replace('-eng.zip',  '.csv')) as f:
-              data_frame = pd.read_csv(f)
-        print('{}: Complete'.format(url))
-        return data_frame
+def fetch_from_url(url, usecols=None):
+    '''Downloading zip file from url'''
+    # r = requests.get(url)
+    # with open(name, 'wb') as s:
+    #     s.write(r.content)
+    name = url.split('/')[-1]
+    with ZipFile(name, 'r').open(name.replace('-eng.zip', '.csv')) as f:
+        print(f'{url}: Read')
+        return pd.read_csv(f, usecols=usecols)
 
 
-import os
-import pandas as pd
-import requests
-import zipfile
-os.chdir('C:\\Projects')
-df = pd.read_excel('stat_can_selected.xlsx')
+os.chdir('/media/alexander/321B-6A94')
+file_name = '/home/alexander/projects/stat_can_selected.xlsx'
+df = pd.read_excel(file_name)
 # urls = set()
 # for i in range(df.shape[0]):
 #     try:
@@ -43,31 +35,31 @@ df = pd.read_excel('stat_can_selected.xlsx')
 
 
 # downloaded = set()
-# for filename in os.listdir():
-#     if filename.endswith(('-eng.zip')):
-#         downloaded.add(filename)
+# for file_name in os.listdir():
+#     if file_name.endswith(('-eng.zip')):
+#         downloaded.add(file_name)
 
 
 # difference = set(filedict.keys()) - downloaded
 
 
 # urls = []
-# for filename in difference:
-#     urls.append(filedict[filename])
+# for file_name in difference:
+#     urls.append(filedict[file_name])
 
 
-# with open('output_b.txt',  'w') as f:
+# with open('output_b.txt', 'w') as f:
 #     for url in sorted(urls):
 #         data = fetch_from_url(url)
-#         print(url,  file = f)
-#         print('Periods Length {}'.format(len(data['REF_DATE'].unique())),  file = f)
-#         print(data['REF_DATE'].unique(),  file = f)
+#         print(url, file = f)
+#         print('Periods Length {}'.format(len(data['REF_DATE'].unique())), file = f)
+#         print(data['REF_DATE'].unique(), file = f)
 # # # # urls = sorted(list(urls))
-# # # # with open('output.txt',  'w') as f:
+# # # # with open('output.txt', 'w') as f:
 # # # #     for url in urls:
 # # # #         data = fetch_from_url(url)
-# # # #         print(url,  file = f)
-# # # #         print('Periods Length {}'.format(len(data['REF_DATE'].unique())),  file = f)
-# # # #         print(data['REF_DATE'].unique(),  file = f)
-# # # # # df.dropna(how = 'all',  inplace=True)
-# # # # # df.to_excel('stat_can_selected.xlsx',  index = False)
+# # # #         print(url, file = f)
+# # # #         print('Periods Length {}'.format(len(data['REF_DATE'].unique())), file = f)
+# # # #         print(data['REF_DATE'].unique(), file = f)
+# # # # # df.dropna(how='all', inplace=True)
+# # # # # df.to_excel('/home/alexander/projects/stat_can_selected.xlsx', index=False)

@@ -1,14 +1,9 @@
-# -*- coding: utf-8 -*-
+#-*- coding: utf-8 -*-
 """
 Created on Mon Apr 12 22:46:08 2021
 
 @author: Mastermind
 """
-
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-import requests
 
 
 def fetch_bea_from_url(url):
@@ -17,43 +12,15 @@ def fetch_bea_from_url(url):
     with open(url.split('/')[-1], 'wb') as s:
         s.write(r.content)
     with open(url.split('/')[-1]) as f:
-      data_frame = pd.read_csv(f, thousands = ',')
+      data_frame = pd.read_csv(f, thousands=',')
     print('{}: Complete'.format(url))
     return data_frame
 
 
-def bea_fetch(source, wkbk, wkst, start, finish, line):
-    '''Data Frame Fetching from Bureau of Economic Analysis Zip Archives'''
-    '''
-    source: Name of Zip Archive,
-    wkbk: Name of Excel File within Zip Archive,
-    wkst: Name of Worksheet within Excel File within Zip Archive,
-    boundary: 4+<Period_Finish>-<Period_Start>,
-    line: Line'''
-    boundary = 4-start+finish
-    if source == None:
-        xl = pd.ExcelFile(wkbk)
-        source_frame = pd.read_excel(xl, wkst, usecols=range(2, boundary),
-                                     skiprows=7)
-    else:
-        import zipfile
-        with zipfile.ZipFile(source, 'r') as zf:
-            with pd.ExcelFile(zf.open(wkbk)) as xl:
-                source_frame = pd.read_excel(xl, wkst, usecols=range(2, boundary),
-                                             skiprows=7)
-    source_frame.dropna(inplace=True)
-    source_frame.columns = source_frame.columns.to_series().replace({'^Unnamed: \d':'Period'},
-                                                                    regex=True)
-    source_frame = source_frame.set_index('Period').transpose()
-    source_frame.index.name = 'Period'
-    source_frame = source_frame[source_frame.columns[[line-1]]]
-    return source_frame
-
-
-def fetch_bea_from_loaded(source_frame, string):
+def fetch_bea_from_loaded(source_frame, series_id):
     '''`NipaDataA.txt`: U.S. Bureau of Economic Analysis'''
-    source_frame.rename(columns = {'Value':string}, inplace=True)
-    result_frame = source_frame[source_frame.iloc[:,0] == string]
+    source_frame.rename(columns={'Value':series_id}, inplace=True)
+    result_frame = source_frame[source_frame.iloc[:,0] == series_id]
     result_frame = result_frame[result_frame.columns[[1,2]]]
     result_frame = result_frame.reset_index(drop=True)
     result_frame = result_frame.set_index('Period')
@@ -62,75 +29,10 @@ def fetch_bea_from_loaded(source_frame, string):
     return result_frame
 
 
-def fetch_classic(source, string):
-    if source == 'dataset-usa-cobb-douglas.zip':
-        source_frame = pd.read_csv(source, usecols=range(5, 8))
-    elif source == 'dataset-douglas.zip':
-        source_frame = pd.read_csv(source, usecols=range(4, 7))
-    elif source == 'dataset-usa-kendrick.zip':
-        source_frame = pd.read_csv(source, usecols=range(4, 7))
-    result_frame = source_frame[source_frame.iloc[:,0] == string]
-    del source_frame
-    result_frame = result_frame[result_frame.columns[[1,2]]]
-    result_frame.columns = result_frame.columns.str.title()
-    result_frame.rename(columns={'Value':string}, inplace=True)
-    result_frame.iloc[:,0] = result_frame.iloc[:,0].astype(int)
-    result_frame.iloc[:,1] = pd.to_numeric(result_frame.iloc[:,1], errors='coerce')
-    result_frame = result_frame.dropna()
-    result_frame = result_frame.sort_values('Period')
-    result_frame = result_frame.set_index('Period')
-    return result_frame
-
-
-def fetch_census(source, string, index):
-    '''Selected Series by U.S. Bureau of the Census
-    U.S. Bureau of the Census, Historical Statistics of the United States,\
-        1789--1945, Washington, D.C., 1949.
-    U.S. Bureau of the Census. Historical Statistics of the United States,\
-        Colonial Times to 1970, Bicentennial Edition. Washington, D.C., 1975.'''
-    if source == 'dataset-usa-census1975.zip':
-        source_frame = pd.read_csv(source, usecols=range(8, 11),
-                                   dtype={'vector':str, 'period':str, 'value':str})
-    else:
-        source_frame = pd.read_csv(source, usecols=range(8, 11))
-    source_frame = source_frame[source_frame.iloc[:,0] == string]
-    source_frame = source_frame[source_frame.columns[[1,2]]]
-    if source == 'dataset-usa-census1975.zip':
-        source_frame.iloc[:,0] = source_frame.iloc[:,0].str[:4]
-    else:
-        pass
-    source_frame.iloc[:,1] = source_frame.iloc[:,1].astype(float)
-    source_frame.columns = source_frame.columns.str.title()
-    source_frame.rename(columns={'Value':string}, inplace=True)
-    source_frame.iloc[:,0] = source_frame.iloc[:,0].astype(int)
-    source_frame = source_frame.sort_values('Period')
-    source_frame = source_frame.reset_index(drop=True)
-    source_frame = source_frame.groupby('Period').mean()
-    if index:
-        return source_frame
-    else:
-        source_frame.reset_index(level=0, inplace=True)
-        return source_frame
-
-
-def prices_inverse_single(source_frame):
-    '''Intent: Returns Prices Icrement Series from Cumulative Deflator Series;
-    source: pandas DataFrame'''
-    D = source_frame.iloc[:,0].div(source_frame.iloc[:,0].shift(1))-1
-    return D
-
-
-def processing(source_frame, col):
-    interim_frame = source_frame[source_frame.columns[[col]]]
-    interim_frame = interim_frame.dropna()
-    result_frame = prices_inverse_single(interim_frame)
-    result_frame = result_frame.dropna()
-    return result_frame
-
-
-def frb_ip():
+def fetch_usa_frb_ip():
     '''Indexed Manufacturing Series: FRB G17 IP, AIPMA_SA_IX, 1919--2018'''
-    source_frame = pd.read_csv('dataset-usa-frb-US3_IP 2018-09-02.csv',
+    file_name = 'dataset_usa_frb-US3_IP 2018-09-02.csv'
+    source_frame = pd.read_csv(file_name,
                                skiprows=7)
     source_frame.columns = source_frame.columns.to_series().replace({'[ .:;@_]':''},
                                                                     regex=True)
@@ -143,73 +45,53 @@ def frb_ip():
     return result_frame
 
 
-def frb_fa():
+def fetch_usa_frb_fa():
     '''Returns Frame of Manufacturing Fixed Assets Series, Billion USD:
     result_frame.iloc[:,0]: Nominal;
     result_frame.iloc[:,1]: Real
     '''
-    source_frame = pd.read_csv('dataset-usa-frb-invest_capital.csv',
+    file_name = 'dataset_usa_frb-invest_capital.csv'
+    source_frame = pd.read_csv(file_name,
                                skiprows=4, skipfooter=688, engine='python')
     source_frame.columns = source_frame.columns.to_series().replace({'Manufacturing':'Period'})
     source_frame = source_frame.set_index(source_frame.columns[0]).transpose()
     source_frame['frb_nominal'] = \
-    source_frame.iloc[:,1]*source_frame.iloc[:,2].div(1000*source_frame.iloc[:,0])+\
+    source_frame.iloc[:,1]*source_frame.iloc[:,2].div(1000*source_frame.iloc[:,0]) + \
     source_frame.iloc[:,4]*source_frame.iloc[:,5].div(1000*source_frame.iloc[:,3])
-    source_frame['frb_real'] = source_frame.iloc[:,2].div(1000)+\
+    source_frame['frb_real'] = source_frame.iloc[:,2].div(1000) + \
     source_frame.iloc[:,5].div(1000)
-    source_frame.index = pd.to_numeric(source_frame.index, errors='ignore',
+    source_frame.index = pd.to_numeric(source_frame.index,
+                                       errors='ignore',
                                        downcast='integer')
     result_frame = source_frame[source_frame.columns[[6,7]]]
     return result_frame
 
 
-def frb_fa_def():
+def fetch_usa_frb_fa_def():
     '''Returns Frame of Deflator for Manufacturing Fixed Assets Series, Index:
     result_frame.iloc[:,0]: Deflator
     '''
-    source_frame = pd.read_csv('dataset-usa-frb-invest_capital.csv',
+    file_name = 'dataset_usa_frb-invest_capital.csv'
+    source_frame = pd.read_csv(file_name,
                                skiprows=4, skipfooter=688, engine='python')
     source_frame.columns = source_frame.columns.to_series().replace({'Manufacturing':'Period'})
     source_frame = source_frame.set_index(source_frame.columns[0]).transpose()
-    source_frame.index = pd.to_numeric(source_frame.index, errors='ignore',
+    source_frame.index = pd.to_numeric(source_frame.index,
+                                       errors='ignore',
                                        downcast='integer')
-    source_frame['fa_def_frb'] = (source_frame.iloc[:,1]+source_frame.iloc[:,4]).div(source_frame.iloc[:,0]+source_frame.iloc[:,3])
+    source_frame['fa_def_frb'] = (source_frame.iloc[:,1] + source_frame.iloc[:,4]).div(source_frame.iloc[:,0] + source_frame.iloc[:,3])
     result_frame = source_frame[source_frame.columns[[6]]]
     return result_frame
 
 
-def fetch_infcf():
-    '''Retrieve Yearly Price Rates from `dataset-usa-infcf16652007.zip`'''
-    source_frame = pd.read_csv('dataset-usa-infcf16652007.zip',
-                               usecols=range(4,7))
-    series = source_frame.iloc[:,0].unique()
-    i = 0
-    for ser in series:
-        current_frame = source_frame[source_frame.iloc[:,0] == ser]
-        current_frame = current_frame[current_frame.columns[[1,2]]]
-        current_frame.columns = current_frame.columns.str.title()
-        current_frame.rename(columns={'Value':ser}, inplace=True)
-        current_frame = current_frame.set_index('Period')
-        current_frame.iloc[:,0] = current_frame.iloc[:,0].rdiv(1)
-        current_frame = -prices_inverse_single(current_frame) ## Put '-' Is the Only Way to Comply with the Rest of Study
-        if i == 0:
-            result_frame = current_frame
-        elif i >= 1:
-            result_frame = pd.concat([result_frame, current_frame],
-                                     axis=1, sort=True)
-        del current_frame
-        i += 1
-    result_frame = result_frame[result_frame.columns[range(14)]]
-    result_frame['cpiu_fused'] = result_frame.mean(1)
-    result_frame = result_frame[result_frame.columns[[14]]]
-    return result_frame
-
-
-def fetch_capital():
+def fetch_usa_capital():
     '''Series Not Used - `k3ntotl1si00`'''
-    semi_frame_a = fetch_classic('dataset-usa-cobb-douglas.zip', 'CDT2S1') ##Annual Increase in Terms of Cost Price (1)
-    semi_frame_b = fetch_classic('dataset-usa-cobb-douglas.zip', 'CDT2S3') ##Annual Increase in Terms of 1880 dollars (3)
-    semi_frame_c = fetch_classic('dataset-usa-cobb-douglas.zip', 'CDT2S4') ##Total Fixed Capital in 1880 dollars (4)
+    file_name = 'dataset_usa_cobb-douglas.zip'
+    semi_frame_a = fetch_classic(file_name, 'CDT2S1') # # Annual Increase in Terms of Cost Price (1)
+    file_name = 'dataset_usa_cobb-douglas.zip'
+    semi_frame_b = fetch_classic(file_name, 'CDT2S3') # # Annual Increase in Terms of 1880 dollars (3)
+    file_name = 'dataset_usa_cobb-douglas.zip'
+    semi_frame_c = fetch_classic(file_name, 'CDT2S4') # # Total Fixed Capital in 1880 dollars (4)
     loaded_frame = fetch_bea_from_url('https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt')
     '''Fixed Assets: k1n31gd1es00, 1925--2019, Table 4.1. Current-Cost Net\
         Stock of Private Nonresidential Fixed Assets by Industry Group and\
@@ -219,15 +101,20 @@ def fetch_capital():
         Historical-Cost Net Stock of Private Nonresidential Fixed Assets by\
             Industry Group and Legal Form of Organization'''
     semi_frame_e = fetch_bea_from_loaded(loaded_frame, 'k3n31gd1es00')
-    semi_frame_f = fetch_census('dataset-usa-census1975.zip', 'P0107', True)
-    semi_frame_g = fetch_census('dataset-usa-census1975.zip', 'P0110', True)
-    semi_frame_h = fetch_census('dataset-usa-census1975.zip', 'P0119', True)
+    file_name = 'dataset_usa_census1975.zip'
+    semi_frame_f = fetch_census(file_name, 'P0107')
+    file_name = 'dataset_usa_census1975.zip'
+    semi_frame_g = fetch_census(file_name, 'P0110')
+    file_name = 'dataset_usa_census1975.zip'
+    semi_frame_h = fetch_census(file_name, 'P0119')
     '''Kendrick J.W., Productivity Trends in the United States, Page 320'''
-    semi_frame_i = fetch_classic('dataset-usa-kendrick.zip', 'KTA15S08')
+    file_name = 'dataset_usa_kendrick.zip'
+    semi_frame_i = fetch_classic(file_name, 'KTA15S08')
     '''Douglas P.H., Theory of Wages, Page 332'''
-    semi_frame_j = fetch_classic('dataset-douglas.zip', 'DT63AS01')
+    file_name = 'dataset_douglas.zip'
+    semi_frame_j = fetch_classic(file_name, 'DT63AS01')
     '''FRB Data'''
-    semi_frame_k = frb_fa()
+    semi_frame_k = fetch_usa_frb_fa()
     result_frame = pd.concat([semi_frame_a, semi_frame_b, semi_frame_c,\
                               semi_frame_d, semi_frame_e, semi_frame_f,\
                               semi_frame_g, semi_frame_h, semi_frame_i,\
@@ -235,9 +122,9 @@ def fetch_capital():
     return result_frame
 
 
-def cobb_douglas_capital_extension():
+def cobb_douglas_extension_capital():
     '''Existing Capital Dataset'''
-    source_frame = fetch_capital()
+    source_frame = fetch_usa_capital()
     '''Convert Capital Series into Current (Historical) Prices'''
     source_frame['nominal_cbb_dg'] = source_frame.iloc[:,0]*source_frame.iloc[:,2].div(1000*source_frame.iloc[:,1])
     source_frame['nominal_census'] = source_frame.iloc[:,5]*source_frame.iloc[:,7].div(source_frame.iloc[:,6])
@@ -264,44 +151,70 @@ def cobb_douglas_capital_extension():
     return source_frame
 
 
-def cobb_douglas_capital_deflator():
+def cobb_douglas_deflator():
     '''Fixed Assets Deflator, 2009=100'''
-    base = (84, 177, 216) ##2009, 1970, 2009
+    base = (84, 177, 216) # # 2009, 1970, 2009
     '''Combine L2, L15, E7, E23, E40, E68 & P107/P110'''
     '''Bureau of Labor Statistics
     Data Not Used As It Covers Only Years of 1998--2017'''
     '''Results:
-    fetch_census('dataset-usa-census1949.zip', 'L0036', True) Offset with\
-        fetch_census('dataset-usa-census1975.zip', 'E0183', True)
-    fetch_census('dataset-usa-census1949.zip', 'L0038', True) Offset with\
-        fetch_census('dataset-usa-census1975.zip', 'E0184', True)
-    fetch_census('dataset-usa-census1949.zip', 'L0039', True) Offset with\
-        fetch_census('dataset-usa-census1975.zip', 'E0185', True)
-    fetch_census('dataset-usa-census1975.zip', 'E0052', True) Offset With\
-        fetch_census('dataset-usa-census1949.zip', 'L0002', True)'''
+        file_name = 'dataset_usa_census1949.zip'
+    fetch_census(file_name, 'L0036') Offset with\
+        file_name = 'dataset_usa_census1975.zip'
+        fetch_census(file_name, 'E0183')
+        file_name = 'dataset_usa_census1949.zip'
+    fetch_census(file_name, 'L0038') Offset with\
+        file_name = 'dataset_usa_census1975.zip'
+        fetch_census(file_name, 'E0184')
+        file_name = 'dataset_usa_census1949.zip'
+    fetch_census(file_name, 'L0039') Offset with\
+        file_name = 'dataset_usa_census1975.zip'
+        fetch_census(file_name, 'E0185')
+        file_name = 'dataset_usa_census1975.zip'
+    fetch_census(file_name, 'E0052') Offset With\
+        file_name = 'dataset_usa_census1949.zip'
+        fetch_census(file_name, 'L0002')'''
     '''Cost-Of-Living Indexes'''
     '''E183: Federal Reserve Bank, 1913=100'''
     '''E184: Burgess, 1913=100'''
     '''E185: Douglas, 1890-99=100'''
-    sub_frame_a = fetch_classic('dataset-usa-cobb-douglas.zip', 'CDT2S1')
-    sub_frame_b = fetch_classic('dataset-usa-cobb-douglas.zip', 'CDT2S3')
-    sub_frame_c = fetch_census('dataset-usa-census1949.zip', 'L0001', True)
-    sub_frame_d = fetch_census('dataset-usa-census1949.zip', 'L0002', True)
-    sub_frame_e = fetch_census('dataset-usa-census1949.zip', 'L0015', True)
-    sub_frame_f = fetch_census('dataset-usa-census1949.zip', 'L0037', True)
-    sub_frame_g = fetch_census('dataset-usa-census1975.zip', 'E0007', True)
-    sub_frame_h = fetch_census('dataset-usa-census1975.zip', 'E0008', True)
-    sub_frame_i = fetch_census('dataset-usa-census1975.zip', 'E0009', True)
-    sub_frame_j = fetch_census('dataset-usa-census1975.zip', 'E0023', True)
-    sub_frame_k = fetch_census('dataset-usa-census1975.zip', 'E0040', True)
-    sub_frame_l = fetch_census('dataset-usa-census1975.zip', 'E0068', True)
-    sub_frame_m = fetch_census('dataset-usa-census1975.zip', 'E0183', True)
-    sub_frame_n = fetch_census('dataset-usa-census1975.zip', 'E0184', True)
-    sub_frame_o = fetch_census('dataset-usa-census1975.zip', 'E0185', True)
-    sub_frame_p = fetch_census('dataset-usa-census1975.zip', 'E0186', True)
-    sub_frame_q = fetch_census('dataset-usa-census1975.zip', 'P0107', True)
-    sub_frame_r = fetch_census('dataset-usa-census1975.zip', 'P0110', True)
-    sub_frame_s = frb_fa_def()
+    file_name = 'dataset_usa_cobb-douglas.zip'
+    sub_frame_a = fetch_classic(file_name, 'CDT2S1')
+    file_name = 'dataset_usa_cobb-douglas.zip'
+    sub_frame_b = fetch_classic(file_name, 'CDT2S3')
+    file_name = 'dataset_usa_census1949.zip'
+    sub_frame_c = fetch_census(file_name, 'L0001')
+    file_name = 'dataset_usa_census1949.zip'
+    sub_frame_d = fetch_census(file_name, 'L0002')
+    file_name = 'dataset_usa_census1949.zip'
+    sub_frame_e = fetch_census(file_name, 'L0015')
+    file_name = 'dataset_usa_census1949.zip'
+    sub_frame_f = fetch_census(file_name, 'L0037')
+    file_name = 'dataset_usa_census1975.zip'
+    sub_frame_g = fetch_census(file_name, 'E0007')
+    file_name = 'dataset_usa_census1975.zip'
+    sub_frame_h = fetch_census(file_name, 'E0008')
+    file_name = 'dataset_usa_census1975.zip'
+    sub_frame_i = fetch_census(file_name, 'E0009')
+    file_name = 'dataset_usa_census1975.zip'
+    sub_frame_j = fetch_census(file_name, 'E0023')
+    file_name = 'dataset_usa_census1975.zip'
+    sub_frame_k = fetch_census(file_name, 'E0040')
+    file_name = 'dataset_usa_census1975.zip'
+    sub_frame_l = fetch_census(file_name, 'E0068')
+    file_name = 'dataset_usa_census1975.zip'
+    sub_frame_m = fetch_census(file_name, 'E0183')
+    file_name = 'dataset_usa_census1975.zip'
+    sub_frame_n = fetch_census(file_name, 'E0184')
+    file_name = 'dataset_usa_census1975.zip'
+    sub_frame_o = fetch_census(file_name, 'E0185')
+    file_name = 'dataset_usa_census1975.zip'
+    sub_frame_p = fetch_census(file_name, 'E0186')
+    file_name = 'dataset_usa_census1975.zip'
+    sub_frame_q = fetch_census(file_name, 'P0107')
+    file_name = 'dataset_usa_census1975.zip'
+    sub_frame_r = fetch_census(file_name, 'P0110')
+    sub_frame_s = fetch_usa_frb_fa_def()
     sub_frame_q = sub_frame_q[22:]
     sub_frame_r = sub_frame_r[22:]
     basis_frame = pd.concat([sub_frame_a, sub_frame_b, sub_frame_c,\
@@ -311,10 +224,6 @@ def cobb_douglas_capital_deflator():
                              sub_frame_m, sub_frame_n, sub_frame_o,\
                              sub_frame_p, sub_frame_q, sub_frame_r,\
                              sub_frame_s], axis=1, sort=True)
-    del sub_frame_a, sub_frame_b, sub_frame_c, sub_frame_d, sub_frame_e,\
-        sub_frame_f, sub_frame_g, sub_frame_h, sub_frame_i, sub_frame_j,\
-        sub_frame_k, sub_frame_l, sub_frame_m, sub_frame_n, sub_frame_o,\
-        sub_frame_p, sub_frame_q, sub_frame_r, sub_frame_s
     basis_frame['fa_def_cd'] = basis_frame.iloc[:,0].div(basis_frame.iloc[:,1])
     basis_frame['fa_def_cn'] = basis_frame.iloc[:,16].div(basis_frame.iloc[:,17])
     '''Cobb--Douglas'''
@@ -347,8 +256,6 @@ def cobb_douglas_capital_deflator():
     sub_frame_f = fetch_bea_from_loaded(loaded_frame, 'mcntotl1si00')
     '''Real Values'''
     semi_frame_b = pd.concat([sub_frame_a, sub_frame_b], axis=1, sort=True)
-    del loaded_frame, sub_frame_a, sub_frame_b, sub_frame_c, sub_frame_d,\
-        sub_frame_e, sub_frame_f
     semi_frame_b['ppi_bea'] = 100*semi_frame_b.iloc[:,0].div(semi_frame_b.iloc[base[0],0]*semi_frame_b.iloc[:,1])
     semi_frame_b.iloc[:,2] = processing(semi_frame_b, 2)
     semi_frame_b = semi_frame_b[semi_frame_b.columns[[2]]]
@@ -368,8 +275,6 @@ def cobb_douglas_capital_deflator():
     semi_frame_c = pd.concat([sub_frame_a, sub_frame_b, sub_frame_c,\
                               sub_frame_d, sub_frame_e, sub_frame_f,\
                                   sub_frame_g], axis=1, sort=True)
-    del sub_frame_a, sub_frame_b, sub_frame_c, sub_frame_d, sub_frame_e,\
-        sub_frame_f, sub_frame_g
     semi_frame_c['ppi_census_fused'] = semi_frame_c.mean(1)
     semi_frame_c = semi_frame_c[semi_frame_c.columns[[7]]]
     '''Federal Reserve'''
@@ -378,12 +283,12 @@ def cobb_douglas_capital_deflator():
     semi_frame_e = fetch_infcf()
     result_frame = pd.concat([semi_frame_a, semi_frame_b, semi_frame_c,\
                               semi_frame_d, semi_frame_e], axis=1, sort=True)
-    del semi_frame_a, semi_frame_b, semi_frame_c, semi_frame_d, semi_frame_e
+
     result_frame = result_frame[128:]
-    result_frame['def_cum_bea'] = np.cumprod(1+result_frame.iloc[:,1])
-    result_frame['def_cum_cen'] = np.cumprod(1+result_frame.iloc[:,2])
-    result_frame['def_cum_frb'] = np.cumprod(1+result_frame.iloc[:,3])
-    result_frame['def_cum_sah'] = np.cumprod(1+result_frame.iloc[:,4])
+    result_frame['def_cum_bea'] = np.cumprod(1 + result_frame.iloc[:,1])
+    result_frame['def_cum_cen'] = np.cumprod(1 + result_frame.iloc[:,2])
+    result_frame['def_cum_frb'] = np.cumprod(1 + result_frame.iloc[:,3])
+    result_frame['def_cum_sah'] = np.cumprod(1 + result_frame.iloc[:,4])
     result_frame.iloc[:,5] = result_frame.iloc[:,5].div(result_frame.iloc[base[1],5])
     result_frame.iloc[:,6] = result_frame.iloc[:,6].div(result_frame.iloc[base[1],6])
     result_frame.iloc[:,7] = result_frame.iloc[:,7].div(result_frame.iloc[base[1],7])
@@ -396,8 +301,8 @@ def cobb_douglas_capital_deflator():
     return result_frame
 
 
-def cobb_douglas_labor_extension():
-    base = 14 ##1899
+def cobb_douglas_extension_labor():
+    base = 14 # # 1899
     '''Manufacturing Laborers` Series Comparison
     semi_frame_a: Cobb C.W., Douglas P.H. Labor Series
     semi_frame_b: Census Bureau 1949, D69
@@ -411,12 +316,18 @@ def cobb_douglas_labor_extension():
     semi_frame_i: Yu.V. Kurenkov
     Bureau of Labor Statistics
     Federal Reserve Board'''
-    semi_frame_a = fetch_classic('dataset-usa-cobb-douglas.zip', 'CDT3S1') ## Average Number Employed (in thousands)
-    semi_frame_b = fetch_census('dataset-usa-census1949.zip', 'D0069', True)
-    semi_frame_c = fetch_census('dataset-usa-census1949.zip', 'J0004', True)
-    semi_frame_d = fetch_census('dataset-usa-census1975.zip', 'D0130', True)
-    semi_frame_e = fetch_census('dataset-usa-census1975.zip', 'P0005', True)
-    semi_frame_f = fetch_census('dataset-usa-census1975.zip', 'P0062', True)
+    file_name = 'dataset_usa_cobb-douglas.zip'
+    semi_frame_a = fetch_classic(file_name, 'CDT3S1') # # Average Number Employed (in thousands)
+    file_name = 'dataset_usa_census1949.zip'
+    semi_frame_b = fetch_census(file_name, 'D0069')
+    file_name = 'dataset_usa_census1949.zip'
+    semi_frame_c = fetch_census(file_name, 'J0004')
+    file_name = 'dataset_usa_census1975.zip'
+    semi_frame_d = fetch_census(file_name, 'D0130')
+    file_name = 'dataset_usa_census1975.zip'
+    semi_frame_e = fetch_census(file_name, 'P0005')
+    file_name = 'dataset_usa_census1975.zip'
+    semi_frame_f = fetch_census(file_name, 'P0062')
     loaded_frame = fetch_bea_from_url('https://apps.bea.gov/national/Release/TXT/NipaDataA.txt')
     sub_frame_a = fetch_bea_from_loaded(loaded_frame, 'H4313C')
     sub_frame_b = fetch_bea_from_loaded(loaded_frame, 'J4313C')
@@ -424,11 +335,13 @@ def cobb_douglas_labor_extension():
     sub_frame_d = fetch_bea_from_loaded(loaded_frame, 'N4313C')
     semi_frame_g = pd.concat([sub_frame_a, sub_frame_b, sub_frame_c, sub_frame_d],
                              axis=1, sort=True)
-    del loaded_frame, sub_frame_a, sub_frame_b, sub_frame_c, sub_frame_d
+
     semi_frame_g = semi_frame_g.mean(1)
     semi_frame_g = semi_frame_g.to_frame(name='BEA')
-    semi_frame_h = fetch_classic('dataset-usa-kendrick.zip', 'KTD02S02')
-    semi_frame_i = pd.read_csv('dataset-usa-reference-ru-kurenkov-yu-v.csv',
+    file_name = 'dataset_usa_kendrick.zip'
+    semi_frame_h = fetch_classic(file_name, 'KTD02S02')
+    file_name = 'dataset_usa_reference_ru_kurenkov-yu-v.csv'
+    semi_frame_i = pd.read_csv(file_name,
                                usecols=[0,2])
     semi_frame_i = semi_frame_i.set_index('Period')
     result_frame = pd.concat([semi_frame_a, semi_frame_b, semi_frame_c,\
@@ -443,24 +356,29 @@ def cobb_douglas_labor_extension():
     return result_frame
 
 
-def cobb_douglas_product_extension():
-    base = (109, 149) ##1899, 1939
+def cobb_douglas_extension_product():
+    base = (109, 149) # # 1899, 1939
     '''Bureau of the Census, 1949, Page 179, J13: National Bureau of Economic\
         Research Index of Physical Output, All Manufacturing Industries.'''
-    semi_frame_a = fetch_census('dataset-usa-census1949.zip', 'J0013', True)
+    file_name = 'dataset_usa_census1949.zip'
+    semi_frame_a = fetch_census(file_name, 'J0013')
     '''Bureau of the Census, 1949, Page 179, J14: Warren M. Persons, Index of\
         Physical Production of Manufacturing'''
-    semi_frame_b = fetch_census('dataset-usa-census1949.zip', 'J0014', True)
+    file_name = 'dataset_usa_census1949.zip'
+    semi_frame_b = fetch_census(file_name, 'J0014')
     '''Bureau of the Census, 1975, Page 667, P17: Edwin Frickey Index of\
         Manufacturing Production'''
-    semi_frame_c = fetch_census('dataset-usa-census1975.zip', 'P0017', True)
+    file_name = 'dataset_usa_census1975.zip'
+    semi_frame_c = fetch_census(file_name, 'P0017')
     '''The Revised Index of Physical Production for All Manufacturing In the\
         United States, 1899--1926'''
-    semi_frame_d = fetch_classic('dataset-douglas.zip', 'DT24AS01')
+    file_name = 'dataset_douglas.zip'
+    semi_frame_d = fetch_classic(file_name, 'DT24AS01')
     '''Federal Reserve, AIPMASAIX'''
-    semi_frame_e = frb_ip()
+    semi_frame_e = fetch_usa_frb_ip()
     '''Joseph H. Davis Production Index'''
-    semi_frame_f = pd.read_excel('dataset-usa-davis-j-h-ip-total.xls', skiprows=4)
+    file_name = 'dataset_usa_davis-j-h-ip-total.xls'
+    semi_frame_f = pd.read_excel(file_name, skiprows=4)
     semi_frame_f.columns = ['Period', 'davis_index']
     semi_frame_f = semi_frame_f.set_index('Period')
     result_frame = pd.concat([semi_frame_a, semi_frame_b, semi_frame_c,\
@@ -479,23 +397,23 @@ def cobb_douglas_product_extension():
 def dataset():
     '''Data Fetch'''
     '''Data Fetch for Capital'''
-    capital_frame_a = cobb_douglas_capital_extension()
+    capital_frame_a = cobb_douglas_extension_capital()
     '''Data Fetch for Capital Deflator'''
-    capital_frame_b = cobb_douglas_capital_deflator()
+    capital_frame_b = cobb_douglas_deflator()
     capital_frame = pd.concat([capital_frame_a, capital_frame_b], axis=1, sort=True)
     capital_frame.dropna(inplace=True)
     capital_frame['capital_real'] = capital_frame.iloc[:,0].div(capital_frame.iloc[:,1])
     '''Data Fetch for Labor'''
-    labor_frame = cobb_douglas_labor_extension()
+    labor_frame = cobb_douglas_extension_labor()
     '''Data Fetch for Product'''
-    product_frame = cobb_douglas_product_extension()
+    product_frame = cobb_douglas_extension_product()
     result_frame = pd.concat([capital_frame.iloc[:,2], labor_frame, product_frame],
                              axis=1, sort=True).dropna()
     result_frame = result_frame.div(result_frame.iloc[0,:])
     return result_frame
 
 
-def cobb_douglas_plot(source_frame):
+def cobb_douglas_original(source_frame):
     '''Cobb--Douglas Algorithm as per C.W. Cobb, P.H. Douglas. A Theory of Production, 1928;
     source_frame.index: Period,
     source_frame.iloc[:, 0]: Capital,
@@ -516,10 +434,10 @@ def cobb_douglas_plot(source_frame):
                 'figure_d':'Chart IV Percentage Deviations of Computed from Actual Product %d$-$%d'}
     X = source_frame.iloc[:, 0].div(source_frame.iloc[:, 1])
     Y = source_frame.iloc[:, 2].div(source_frame.iloc[:, 1])
-    from numpy.lib.scimath import log
+
     X = log(X.astype('float64'))
     Y = log(Y.astype('float64'))
-    k, b = np.polyfit(X, Y, 1) ## Original: k = 0.25
+    k, b = np.polyfit(X, Y, 1) # # Original: k = 0.25
     b = np.exp(b)
     source_frame['prod_comp'] = b*(source_frame.iloc[:, 0]**k)*(source_frame.iloc[:, 1]**(1-k))
     source_frame['prod_roll'] = source_frame.iloc[:, 2].rolling(window=3, center=True).mean()
@@ -534,7 +452,7 @@ def cobb_douglas_plot(source_frame):
     plt.xlabel('Period')
     plt.ylabel('Indexes')
     plt.title(function_dict['figure_a'] %(source_frame.index[0],
-                                          source_frame.index[len(source_frame)-1],
+                                          source_frame.index[-1],
                                           source_frame.index[0]))
     plt.legend()
     plt.grid(True)
@@ -544,7 +462,7 @@ def cobb_douglas_plot(source_frame):
     plt.xlabel('Period')
     plt.ylabel('Production')
     plt.title(function_dict['figure_b'] %(source_frame.index[0],
-                                          source_frame.index[len(source_frame)-1],
+                                          source_frame.index[-1],
                                           source_frame.index[0]))
     plt.legend()
     plt.grid(True)
@@ -561,7 +479,7 @@ def cobb_douglas_plot(source_frame):
     plt.xlabel('Period')
     plt.ylabel('Percentage Deviation')
     plt.title(function_dict['figure_d'] %(source_frame.index[0],
-                                        source_frame.index[len(source_frame)-1]))
+                                        source_frame.index[-1]))
     plt.grid(True)
     plt.figure(5, figsize=(5, 8))
     lc = np.arange(0.2, 1.0, 0.005)
@@ -580,4 +498,4 @@ def cobb_douglas_plot(source_frame):
 
 
 result_frame = dataset()
-cobb_douglas_plot(result_frame)
+cobb_douglas_original(result_frame)
