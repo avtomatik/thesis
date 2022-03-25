@@ -209,11 +209,11 @@ def data_сombined():
     semi_frame_j = fetch_bea_usa('dataset_usa_bea_nipadataa.txt', 'W170RC')
     semi_frame_k = fetch_bea_usa('dataset_usa_bea_nipadataa.txt', 'W170RX')
     """Fixed Assets Series: K100701, 1951--1969"""
-    file_name = 'dataset_usa_bea-release-2015-03-02 Section5ALL_Hist.xls'
-    sub_frame_a = fetch_usa_bea(None, file_name, '51000 Ann', 'K100701')
+    file_name = 'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1929_1969.zip'
+    sub_frame_a = fetch_usa_bea_single(file_name, 'Section5ALL_Hist.xls', '51000 Ann', 'K100701')
     """Fixed Assets Series: K100701, 1969--2013"""
-    file_name = 'dataset_usa_bea-release-2015-03-02 Section5all_xls.xls'
-    sub_frame_b = fetch_usa_bea(None, file_name, '51000 Ann', 'K100701')
+    file_name = 'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1969_2015.zip'
+    sub_frame_b = fetch_usa_bea_single(file_name, 'Section5all_xls.xls', '51000 Ann', 'K100701')
     semi_frame_l = sub_frame_a.append(sub_frame_b).drop_duplicates()
 
     """Investment in Fixed Assets, Private, i3ptotl1es000, 1901--2016"""
@@ -247,7 +247,7 @@ def data_сombined():
 
 
 def preprocessing_a(source_frame):
-    source_frame = source_frame[source_frame.columns[[0, 4, 6, 7]]]
+    source_frame = source_frame.iloc[:, [0, 4, 6, 7]]
     source_frame = source_frame.dropna()
     source_frame = source_frame.div(source_frame.iloc[0, :])
     source_frame.reset_index(level=0, inplace=True)
@@ -255,14 +255,14 @@ def preprocessing_a(source_frame):
 
 
 def preprocessing_b(source_frame):
-    source_frame = source_frame[source_frame.columns[[0, 6, 7, 20]]]
+    source_frame = source_frame.iloc[:, [0, 6, 7, 20]]
     source_frame = source_frame.dropna()
     source_frame.reset_index(level=0, inplace=True)
     return source_frame
 
 
 def preprocessing_c(source_frame):
-    source_frame_production = source_frame[source_frame.columns[[0, 6, 7]]]
+    source_frame_production = source_frame.iloc[:, [0, 6, 7]]
     source_frame_production = source_frame_production.dropna()
     source_frame_production = source_frame_production.div(source_frame_production.iloc[0, :])
     source_frame_money = source_frame.iloc[:, 18:20]
@@ -278,7 +278,7 @@ def preprocessing_c(source_frame):
 
 
 def preprocessing_d(source_frame):
-    source_frame = source_frame[source_frame.columns[[0, 1, 2, 3, 7]]]
+    source_frame = source_frame.iloc[:, [0, 1, 2, 3, 7]]
     source_frame = source_frame.dropna()
     source_frame.reset_index(level=0, inplace=True)
     return source_frame
@@ -291,36 +291,37 @@ def preprocessing_e(source_frame):
     """`Real` Capital"""
     source_frame['cap'] = source_frame.iloc[:, 11]*source_frame.iloc[:, 7].div(source_frame.iloc[:, 6])
     """Nominal DataSet"""
-    nominal_frame = source_frame[source_frame.columns[[0, 6, 11]]].dropna()
+    nominal_frame = source_frame.iloc[:, [0, 6, 11]].dropna()
     """`Real` DataSet"""
-    real_frame = source_frame[source_frame.columns[[21, 7, 22]]].dropna()
+    real_frame = source_frame.iloc[:, [21, 7, 22]].dropna()
     return nominal_frame, real_frame
 
 
 source_frame_a = data_сombined_archived()
 source_frame_b = data_сombined()
 """Project: Initial Version Dated: 05 October 2012"""
-result_frame_ab = preprocessing_a(source_frame_a)
-result_frame_ac = preprocessing_a(source_frame_b)
-data_fetch_plot_a(result_frame_ab)
-data_fetch_plot_a(result_frame_ac)
+result_frame_a_b = preprocessing_a(source_frame_a)
+result_frame_a_c = preprocessing_a(source_frame_b)
+data_fetch_plot_a(result_frame_a_b)
+data_fetch_plot_a(result_frame_a_c)
 """Project: Initial Version Dated: 23 November 2012"""
-result_frame_bb = preprocessing_b(source_frame_a)
-result_frame_bc = preprocessing_b(source_frame_b)
-data_fetch_plot_b(result_frame_bb)
-data_fetch_plot_b(result_frame_bc)
+result_frame_b_b = preprocessing_b(source_frame_a)
+result_frame_b_c = preprocessing_b(source_frame_b)
+data_fetch_plot_b(result_frame_b_b)
+data_fetch_plot_b(result_frame_b_c)
 """Project: Initial Version Dated: 16 June 2013"""
-result_frame_cb = preprocessing_c(source_frame_a)
-result_frame_cc = preprocessing_c(source_frame_b)
-data_fetch_plot_c(result_frame_cb)
-data_fetch_plot_c(result_frame_cc)
+result_frame_c_b = preprocessing_c(source_frame_a)
+result_frame_c_c = preprocessing_c(source_frame_b)
+data_fetch_plot_c(result_frame_c_b)
+data_fetch_plot_c(result_frame_c_c)
 """Project: Initial Version Dated: 15 June 2015"""
 result_frame_d = preprocessing_d(source_frame_b)
 data_fetch_plot_d(result_frame_d)
 """Project: Initial Version Dated: 17 February 2013"""
-result_frame_ea, result_frame_eb = preprocessing_e(source_frame_a)
-plot_e(result_frame_ea)
-plot_e(result_frame_eb)
+result_frame_e_a, result_frame_e_b = preprocessing_e(source_frame_a)
+plot_e(result_frame_e_a)
+plot_e(result_frame_e_b)
 """Project: BEA Data Compared with Kurenkov Yu.V. Data"""
-result_frame_fa, result_frame_fb, result_frame_fc, result_frame_fd = preprocessing_f(source_frame_a)
-plot_f(result_frame_fa, result_frame_fb, result_frame_fc, result_frame_fd)
+result_frame_f_a, result_frame_f_b, result_frame_f_c, result_frame_f_d = preprocessing_f(source_frame_a)
+plot_f(result_frame_f_a, result_frame_f_b, result_frame_f_c, result_frame_f_d)
+

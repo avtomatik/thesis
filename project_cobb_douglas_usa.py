@@ -21,7 +21,7 @@ def fetch_bea_from_loaded(source_frame, series_id):
     '''`NipaDataA.txt`: U.S. Bureau of Economic Analysis'''
     source_frame.rename(columns={'Value':series_id}, inplace=True)
     result_frame = source_frame[source_frame.iloc[:,0] == series_id]
-    result_frame = result_frame[result_frame.columns[[1,2]]]
+    result_frame = result_frame.iloc[:, [1,2]]
     result_frame = result_frame.reset_index(drop=True)
     result_frame = result_frame.set_index('Period')
     result_frame.reset_index(level=0, inplace=True)
@@ -63,7 +63,7 @@ def fetch_usa_frb_fa():
     source_frame.index = pd.to_numeric(source_frame.index,
                                        errors='ignore',
                                        downcast='integer')
-    result_frame = source_frame[source_frame.columns[[6,7]]]
+    result_frame = source_frame.iloc[:, [6,7]]
     return result_frame
 
 
@@ -80,7 +80,7 @@ def fetch_usa_frb_fa_def():
                                        errors='ignore',
                                        downcast='integer')
     source_frame['fa_def_frb'] = (source_frame.iloc[:,1] + source_frame.iloc[:,4]).div(source_frame.iloc[:,0] + source_frame.iloc[:,3])
-    result_frame = source_frame[source_frame.columns[[6]]]
+    result_frame = source_frame.iloc[:, [6]]
     return result_frame
 
 
@@ -146,7 +146,7 @@ def cobb_douglas_extension_capital():
     source_frame['nominal_patch'] = source_frame.iloc[:,16].mul(source_frame.iloc[:,18])
     '''`Cobb C.W., Douglas P.H. -- FRB (Blended) Series` Patched with `Patch Series`'''
     source_frame['nominal_extended'] = source_frame.iloc[:,[17,19]].mean(1)
-    source_frame = source_frame[source_frame.columns[[20]]]
+    source_frame = source_frame.iloc[:, [20]]
     source_frame.dropna(inplace=True)
     return source_frame
 
@@ -258,7 +258,7 @@ def cobb_douglas_deflator():
     semi_frame_b = pd.concat([sub_frame_a, sub_frame_b], axis=1, sort=True)
     semi_frame_b['ppi_bea'] = 100*semi_frame_b.iloc[:,0].div(semi_frame_b.iloc[base[0],0]*semi_frame_b.iloc[:,1])
     semi_frame_b.iloc[:,2] = processing(semi_frame_b, 2)
-    semi_frame_b = semi_frame_b[semi_frame_b.columns[[2]]]
+    semi_frame_b = semi_frame_b.iloc[:, [2]]
     '''Bureau of the Census'''
     '''Correlation Test:
     `kendall_frame = result_frame.corr(method='kendall')`
@@ -276,7 +276,7 @@ def cobb_douglas_deflator():
                               sub_frame_d, sub_frame_e, sub_frame_f,\
                                   sub_frame_g], axis=1, sort=True)
     semi_frame_c['ppi_census_fused'] = semi_frame_c.mean(1)
-    semi_frame_c = semi_frame_c[semi_frame_c.columns[[7]]]
+    semi_frame_c = semi_frame_c.iloc[:, [7]]
     '''Federal Reserve'''
     semi_frame_d = processing(basis_frame, 18)
     '''Robert C. Sahr, 2007'''
@@ -296,7 +296,7 @@ def cobb_douglas_deflator():
     result_frame['def_cum_com'] = result_frame.iloc[:,[5,6,7]].mean(1)
     result_frame['fa_def_com'] = processing(result_frame, 9)
     result_frame.iloc[:,9] = result_frame.iloc[:,9].div(result_frame.iloc[base[2],9])
-    result_frame = result_frame[result_frame.columns[[9]]]
+    result_frame = result_frame.iloc[:, [9]]
     result_frame.dropna(inplace=True)
     return result_frame
 
@@ -350,7 +350,7 @@ def cobb_douglas_extension_labor():
                              axis=1, sort=True)
     result_frame['kendrick'] = result_frame.iloc[base,0]*result_frame.iloc[:,7].div(result_frame.iloc[base,7])
     result_frame['labor'] = result_frame.iloc[:,[0,1,3,6,8,9]].mean(1)
-    result_frame = result_frame[result_frame.columns[[10]]]
+    result_frame = result_frame.iloc[:, [10]]
     result_frame.dropna(inplace=True)
     result_frame = result_frame[2:]
     return result_frame
@@ -390,7 +390,7 @@ def cobb_douglas_extension_product():
     result_frame.iloc[:,4] = result_frame.iloc[:,4].div(result_frame.iloc[base[1],4]/100)
     result_frame.iloc[:,6] = result_frame.iloc[:,6].div(result_frame.iloc[base[1],6]/100)
     result_frame['fused'] = result_frame.iloc[:,[4,6]].mean(1)
-    result_frame = result_frame[result_frame.columns[[7]]]
+    result_frame = result_frame.iloc[:, [7]]
     return result_frame
 
 
@@ -499,3 +499,4 @@ def cobb_douglas_original(source_frame):
 
 result_frame = dataset()
 cobb_douglas_original(result_frame)
+

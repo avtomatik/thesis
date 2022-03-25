@@ -6,31 +6,16 @@ Created on Mon Jun 28 22:05:32 2021
 """
 
 
-def fetch_can(source_frame, vector):
+def fetch_can(source_frame, series_id):
 # =============================================================================
 #     '''Data Frame Fetching from CANSIM Zip Archives
 # =============================================================================
-    source_frame = source_frame[source_frame.iloc[:, 10] == vector]
-    source_frame = source_frame[source_frame.columns[[0, 12]]]
-    source_frame.columns = ['period', vector]
+    source_frame = source_frame[source_frame.iloc[:, 10] == series_id]
+    source_frame = source_frame.iloc[:, [0, 12]]
+    source_frame.columns = ['period', series_id]
     source_frame.iloc[:, 1] = pd.to_numeric(source_frame.iloc[:, 1])
     source_frame.reset_index(drop=True, inplace=True)
     source_frame = source_frame.set_index('period')
-    return source_frame
-
-
-def fetch_can_quarterly(source_frame, vector):
-# =============================================================================
-#     '''Data Frame Fetching from Quarterly Data within CANSIM Zip Archives
-# =============================================================================
-    source_frame = source_frame[source_frame.iloc[:, 10] == vector]
-    source_frame = source_frame[source_frame.columns[[0, 12]]]
-    source_frame[['period', 'Q']] = source_frame.iloc[:, 0].str.split('-',
-                                                                      n=1, expand=True)
-    source_frame = source_frame[source_frame.columns[[2, 1]]]
-    source_frame.iloc[:, 0] = source_frame.iloc[:, 0].astype(int)
-    source_frame = source_frame.groupby('period').sum()
-    source_frame.columns = [ vector ]
     return source_frame
 
 
@@ -121,3 +106,4 @@ def dataset_canada():
 # #     print(values)
 # capital = fetch_can_capital(fetch_can_capital_query())
 # capital = fetch_from_url('https://www150.statcan.gc.ca/n1/en/tbl/csv/36100096-eng.zip')
+

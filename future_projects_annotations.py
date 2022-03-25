@@ -24,7 +24,7 @@ def preprocessing_dx_dy_service(source_frame):
     source_frame['labprd'] = source_frame.iloc[:, 2].div(source_frame.iloc[:, 1])                 # # Labor Productivity
     source_frame['labcap_inc'] = source_frame.iloc[:, 3].div(source_frame.iloc[:, 3].shift(1))    # # Labor Capital Intensity Increment
     source_frame['labprd_inc'] = source_frame.iloc[:, 4].div(source_frame.iloc[:, 4].shift(1))    # # Labor Productivity Increment
-    source_frame = source_frame[source_frame.columns[[3, 4, 5, 6]]]
+    source_frame = source_frame.iloc[:, [3, 4, 5, 6]]
     return source_frame
 
 
@@ -108,48 +108,48 @@ os.chdir('/media/alexander/321B-6A94')
 data_frame = data_fetch_common_archived()
 T = data_frame.iloc[:, 0]
 d = data_frame.iloc[:, 8].div(data_frame.iloc[:, 7]) # # Deflator, 2009=100
-C11 = data_frame.iloc[:, 4]*d # # Fixed Assets, K160491
-C12 = data_frame.iloc[:, 2]*d # # Fixed Assets, k3n31gd1es000
-C21 = data_frame.iloc[:, 1]*data_frame.iloc[:, 10]
-C22 = data_frame.iloc[:, 1]*data_frame.iloc[:, 11].div(data_frame.iloc[:, 9])
-C23 = data_frame.iloc[:, 2]*data_frame.iloc[:, 10]
-C24 = data_frame.iloc[:, 2]*data_frame.iloc[:, 11].div(data_frame.iloc[:, 9])
+cap_a_a = data_frame.iloc[:, 4]*d # # Fixed Assets, K160491
+cap_a_b = data_frame.iloc[:, 2]*d # # Fixed Assets, k3n31gd1es000
+cap_b_a = data_frame.iloc[:, 1].mul(data_frame.iloc[:, 10])
+cap_b_b = data_frame.iloc[:, 1].mul(data_frame.iloc[:, 11]).div(data_frame.iloc[:, 9])
+cap_b_c = data_frame.iloc[:, 2].mul(data_frame.iloc[:, 10])
+cap_b_d = data_frame.iloc[:, 2].mul(data_frame.iloc[:, 11]).div(data_frame.iloc[:, 9])
 L = data_frame.iloc[:, 5]
-P11 = d*data_frame.iloc[:, 6] # # Production
-P12 = 100*d*data_frame.iloc[:, 6].div(data_frame.iloc[:, 12]) # # Production Maximum
-P21 = data_frame.iloc[:, 9]*data_frame.iloc[:, 10]
-P22 = data_frame.iloc[:, 11]
-P23 = data_frame.iloc[:, 13]*data_frame.iloc[:, 10]
-P24 = data_frame.iloc[:, 13]*data_frame.iloc[:, 11].div(data_frame.iloc[:, 9])
+prd_a_a = d*data_frame.iloc[:, 6] # # Production
+prd_a_b = 100*d*data_frame.iloc[:, 6].div(data_frame.iloc[:, 12]) # # Production Maximum
+prd_b_a = data_frame.iloc[:, 9].mul(data_frame.iloc[:, 10])
+prd_b_b = data_frame.iloc[:, 11]
+prd_b_c = data_frame.iloc[:, 13].mul(data_frame.iloc[:, 10])
+prd_b_d = data_frame.iloc[:, 13].mul(data_frame.iloc[:, 11]).div(data_frame.iloc[:, 9])
 # # '''Option 1'''
-# # X1, X2, X3, X4 = preprocessing_dx_dy(42, 87, T, C11, L, P11)
+# # x_a, x_b, x_c, x_d = preprocessing_dx_dy(42, 87, T, cap_a_a, L, prd_a_a)
 # # '''Option 2'''
-# # X1, X2, X3, X4 = preprocessing_dx_dy(42, 87, T, C11, L, P12)
+# # x_a, x_b, x_c, x_d = preprocessing_dx_dy(42, 87, T, cap_a_a, L, prd_a_b)
 # # '''Option 3'''
-X1, X2, X3, X4 = preprocessing_dx_dy(42, 87, T, C12, L, P11)
+x_a, x_b, x_c, x_d = preprocessing_dx_dy(42, 87, T, cap_a_b, L, prd_a_a)
 # # '''Option 4'''
-# # x1, x2, x3, x4 = preprocessing_dx_dy(42, 87, T, C12, L, P12)
+# # x_a, x_b, x_c, x_d = preprocessing_dx_dy(42, 87, T, cap_a_b, L, prd_a_b)
 # =============================================================================
 # TODO: test `k1ntotl1si000`
 # =============================================================================
 # # '''Option 1'''
-# # X1, X2, X3, X4 = preprocessing_dx_dy(4, 88, T, C21, L, P21)
+# # x_a, x_b, x_c, x_d = preprocessing_dx_dy(4, 88, T, cap_b_a, L, prd_b_a)
 # # '''Option 2'''
-# # X1, X2, X3, X4 = preprocessing_dx_dy(4, 88, T, C22, L, P22)
+# # x_a, x_b, x_c, x_d = preprocessing_dx_dy(4, 88, T, cap_b_b, L, prd_b_b)
 # # '''Option 3'''
-# # X1, X2, X3, X4 = preprocessing_dx_dy(4, 88, T, C21, L, P23)
+# # x_a, x_b, x_c, x_d = preprocessing_dx_dy(4, 88, T, cap_b_a, L, prd_b_c)
 # # '''Option 4'''
-# # X1, X2, X3, X4 = preprocessing_dx_dy(4, 88, T, C22, L, P24)
+# # x_a, x_b, x_c, x_d = preprocessing_dx_dy(4, 88, T, cap_b_b, L, prd_b_d)
 # # '''Option 5'''
-# # X1, X2, X3, X4 = preprocessing_dx_dy(4, 88, T, C23, L, P21)
+# # x_a, x_b, x_c, x_d = preprocessing_dx_dy(4, 88, T, cap_b_c, L, prd_b_a)
 # # '''Option 6'''
-# # X1, X2, X3, X4 = preprocessing_dx_dy(4, 88, T, C24, L, P22)
+# # x_a, x_b, x_c, x_d = preprocessing_dx_dy(4, 88, T, cap_b_d, L, prd_b_b)
 # # '''Option 7'''
-# # X1, X2, X3, X4 = preprocessing_dx_dy(4, 88, T, C23, L, P23)
+# # x_a, x_b, x_c, x_d = preprocessing_dx_dy(4, 88, T, cap_b_c, L, prd_b_c)
 # # '''Option 8'''
-# # X1, X2, X3, X4 = preprocessing_dx_dy(4, 88, T, C24, L, P24)
-procedure_a(x1, x2, x3, x4)
-# # procedure_b(x1, x2, x3, x4)
+# # x_a, x_b, x_c, x_d = preprocessing_dx_dy(4, 88, T, cap_b_d, L, prd_b_d)
+procedure_a(x_a, x_b, x_c, x_d)
+# # procedure_b(x_a, x_b, x_c, x_d)
 """Update from `project.py`"""
 
 
@@ -160,7 +160,7 @@ def prices_inverse_single(data_series):
 
 
 def processing(data_frame, col):
-    interim_frame = data_frame[data_frame.columns[[col]]]
+    interim_frame = data_frame.iloc[:, [col]]
     interim_frame = interim_frame.dropna()
     result_frame = prices_inverse_single(interim_frame)
     result_frame = result_frame.dropna()
@@ -230,3 +230,4 @@ def plot_increment(frame):
     plt.show()
 source_frame = preprocessing_dx_dy_service(get_dataset_version_c())
 plot_increment(source_frame)
+

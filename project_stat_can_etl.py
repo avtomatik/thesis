@@ -113,104 +113,104 @@ def procedure(output_name, criteria):
     result = pd.DataFrame()
     for item in criteria:
         data = fetch_from_url(string_to_url(item['file_name']))
-        data = data[data['VECTOR'].isin(item['vectors'])]
+        data = data[data['VECTOR'].isin(item['series_ids'])]
         data = data[['REF_DATE', 'VECTOR', 'VALUE']]
-        for vector in item['vectors']:
-            chunk = data[data['VECTOR'] == vector]
+        for series_id in item['series_ids']:
+            chunk = data[data['VECTOR'] == series_id]
             chunk.set_index(chunk.columns[0], inplace=True)
             chunk = chunk.iloc[:, [1]]
             chunk = mean_by_year(chunk)
-            chunk.rename(columns={'VALUE':vector}, inplace=True)
+            chunk.rename(columns={'VALUE':series_id}, inplace=True)
             result = pd.concat([result, chunk], axis=1, sort=True)
     result.to_excel(output_name)
 
 
 CAPITAL = (
             {'file_name':'36100096-eng.zip',
-            'vectors':
+            'series_ids':
             ['v90968617', 'v90968618', 'v90968619', 'v90968620', 'v90968621',
               'v90971177', 'v90971178', 'v90971179', 'v90971180', 'v90971181',
               'v90973737', 'v90973738', 'v90973739', 'v90973740', 'v90973741', ], },
             {'file_name':'36100210-eng.zip',
-            'vectors':
+            'series_ids':
             ['v46444563', 'v46444624', 'v46444685', 'v46444746', 'v46444807',
               'v46444929', 'v46444990', 'v46445051', 'v46445112', 'v46445173',
               'v46445295', 'v46445356', 'v46445417', 'v46445478', 'v46445539',
               'v46445661', 'v46445722', 'v46445783', 'v46445844', 'v46445905', ], },
             {'file_name':'36100236-eng.zip',
-            'vectors':
+            'series_ids':
             ['v1071434', 'v1071435', 'v1071436', 'v1071437', 'v64498363',
               'v1119722', 'v1119723', 'v1119724', 'v1119725', 'v64498371',
               'v4421025', 'v4421026', 'v4421027', 'v4421028', 'v64498379', ], },
             )
 LABOUR = (
             {'file_name':'14100027-eng.zip',
-              'vectors':
+              'series_ids':
             ['v2523013', ], },
             {'file_name':'14100221-eng.zip',
-              'vectors':
+              'series_ids':
             ['v54027148', 'v54027152', ], },
             {'file_name':'14100235-eng.zip',
-              'vectors':
+              'series_ids':
             ['v74989', ], },
             {'file_name':'14100238-eng.zip',
-              'vectors':
+              'series_ids':
             ['v1596771', ], },
             {'file_name':'14100243-eng.zip',
-              'vectors':
+              'series_ids':
             ['v78931172', 'v78931174', 'v78931173', ], },
             {'file_name':'14100265-eng.zip',
-              'vectors':
+              'series_ids':
             ['v249139', 'v249703', 'v250265', ], },
             {'file_name':'14100355-eng.zip',
-              'vectors':
+              'series_ids':
             ['v2057609', 'v123355112', 'v2057818', ], },
             {'file_name':'14100392-eng.zip',
-              'vectors':
+              'series_ids':
             ['v1235071986', ], },
             {'file_name':'36100489-eng.zip',
-              'vectors':
+              'series_ids':
             ['v65521825',
              # 'v65522120', # Not Useful
              # 'v65522415', # Not Useful
              ], },
             )
 PRODUCT = ({'file_name':'10100094-eng.zip',
-            'vectors':['v37482', ], },
+            'series_ids':['v37482', ], },
             {'file_name':'16100053-eng.zip',
-            'vectors':['v535579', 'v535593', 'v535663', 'v535677', ], },
+            'series_ids':['v535579', 'v535593', 'v535663', 'v535677', ], },
             {'file_name':'16100054-eng.zip',
-            'vectors':['v761808', 'v761927', ], },
+            'series_ids':['v761808', 'v761927', ], },
             {'file_name':'16100109-eng.zip',
-            'vectors':['v4331088', ], },
+            'series_ids':['v4331088', ], },
             {'file_name':'16100111-eng.zip',
-            'vectors':['v142817', ], },
+            'series_ids':['v142817', ], },
             {'file_name':'36100207-eng.zip',
-            'vectors':['v21573668', 'v21573686', ], },
+            'series_ids':['v21573668', 'v21573686', ], },
             {'file_name':'36100208-eng.zip',
-            'vectors':[
+            'series_ids':[
                     # 'v41712954', # Not Useful: Labour input
                     'v41713056', 'v41713073', 'v41713243', ], },
             {'file_name':'36100217-eng.zip',
-            'vectors':['v86718697', 'v86719219', ], },
+            'series_ids':['v86718697', 'v86719219', ], },
             {'file_name':'36100303-eng.zip',
-            'vectors':['v716397', 'v718173', ], },
+            'series_ids':['v716397', 'v718173', ], },
             {'file_name':'36100305-eng.zip',
-            'vectors':['v719421', ], },
+            'series_ids':['v719421', ], },
             {'file_name':'36100309-eng.zip',
-            'vectors':['v41707475',
+            'series_ids':['v41707475',
                        # 'v41707595', # Not Useful: Labour input
                        'v41707775', 'v41708195', 'v41708375', ], },
             {'file_name':'36100310-eng.zip',
-            'vectors':['v42189127',
+            'series_ids':['v42189127',
                        # 'v42189231', # Not Useful: Labour input
                        'v42189387', 'v42189751', 'v42189907', ], },
             {'file_name':'36100386-eng.zip',
-            'vectors':['v11567', ], },
+            'series_ids':['v11567', ], },
             {'file_name':'36100480-eng.zip',
-            'vectors':['v111382232', ], },
+            'series_ids':['v111382232', ], },
             {'file_name':'36100488-eng.zip',
-            'vectors':['v64602050', ], },
+            'series_ids':['v64602050', ], },
             )
 
 
@@ -239,3 +239,4 @@ combined = pd.merge(titles.set_index(titles.columns[0]),
                     right_index=True,
                     sort=False)
 combined.T.to_excel('/home/alexander/projects/stat_can_combined.xlsx')
+

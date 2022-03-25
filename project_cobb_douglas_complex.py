@@ -1,3 +1,6 @@
+# ================================================================================
+# project_cobb_douglas_complex.py
+# ================================================================================
 #-*- coding: utf-8 -*-
 """
 Created on Sun Mar 15 16:17:13 2020
@@ -211,8 +214,8 @@ def plot_block_zero(source_frame):
     source_frame['lab_product'] = source_frame.iloc[:, 2].div(source_frame.iloc[:, 1]) # # Labor Productivity
     source_frame['log_lab_c'] = sp.log(source_frame.iloc[:, 0].div(source_frame.iloc[:, 1]))
     source_frame['log_lab_p'] = sp.log(source_frame.iloc[:, 2].div(source_frame.iloc[:, 1]))
-    result_frame_a = source_frame[source_frame.columns[[3, 4]]]
-    result_frame_b = source_frame[source_frame.columns[[5, 6]]]
+    result_frame_a = source_frame.iloc[:, [3, 4]]
+    result_frame_b = source_frame.iloc[:, [5, 6]]
     a0, a1, ea = simple_linear_regression(result_frame_a)
     plot_simple_linear(result_frame_a, a0, a1, ea)
     b0, b1, eb = simple_linear_regression(result_frame_b)
@@ -227,7 +230,7 @@ def plot_block_one(source_frame):
     source_frame.iloc[:, 3]: Product
     '''
     source_frame['lab_cap_int'] = source_frame.iloc[:, 1].div(source_frame.iloc[:, 2]) # # Labor Capital Intensity
-    labcap_frame = source_frame[source_frame.columns[[0, 4]]]
+    labcap_frame = source_frame.iloc[:, [0, 4]]
     semi_frame_a, semi_frame_b = RMF(labcap_frame)
     semi_frame_c, semi_frame_d = KZF(labcap_frame)
     semi_frame_e = SES(labcap_frame, 5, 0.25)
@@ -256,7 +259,7 @@ def plot_block_two(source_frame):
     source_frame.iloc[:, 3]: Product
     '''
     source_frame['lab_product'] = source_frame.iloc[:, 3].div(source_frame.iloc[:, 2]) # # Labor Productivity
-    labpro_frame = source_frame[source_frame.columns[[0, 4]]]
+    labpro_frame = source_frame.iloc[:, [0, 4]]
     semi_frame_a, semi_frame_b = RMF(labpro_frame, 3)
     semi_frame_c, semi_frame_d = KZF(labpro_frame, 3)
     semi_frame_c = semi_frame_c.iloc[:, 1]
@@ -318,7 +321,7 @@ def simple_linear_regression(source_frame):
 
 def plot_cobb_douglas_complex(source_frame):
     modified_frame_a = source_frame.reset_index(level=0)
-    modified_frame_b = source_frame[source_frame.columns[[0, 2]]]
+    modified_frame_b = source_frame.iloc[:, [0, 2]]
     modified_frame_b = modified_frame_b.reset_index(level=0)
     cobb_douglas_original(source_frame)
     cobb_douglas_3d(source_frame)
@@ -331,9 +334,9 @@ def plot_cobb_douglas_complex(source_frame):
 
 '''On Original Dataset'''
 source_frame = get_dataset_cobb_douglas()
-result_frame_a = source_frame[source_frame.columns[[0, 1, 2]]]
-result_frame_b = source_frame[source_frame.columns[[0, 1, 3]]]
-result_frame_c = source_frame[source_frame.columns[[0, 1, 4]]]
+result_frame_a = source_frame.iloc[:, [0, 1, 2]]
+result_frame_b = source_frame.iloc[:, [0, 1, 3]]
+result_frame_c = source_frame.iloc[:, [0, 1, 4]]
 '''On Expanded Dataset'''
 result_frame_d, result_frame_e = get_dataset_version_a()
 result_frame_f, result_frame_g, result_frame_h = get_dataset_version_b()
@@ -352,3 +355,4 @@ plot_cobb_douglas_complex(result_frame_g)
 '''Option: 1967--2012, Capacity Utilization Adjustment'''
 plot_cobb_douglas_complex(result_frame_h)
 plot_cobb_douglas_complex(result_frame_i)
+

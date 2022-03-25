@@ -579,11 +579,11 @@ file_name = 'theory_of_production_table3.dat'
 # df_b = pd.read_csv(file_name, sep='\t')
 # df_a.set_index('period', inplace=True)
 # df_b.set_index('period', inplace=True)
-# df_a = df_a[df_a.columns[4]]
-# df_b = df_b[df_b.columns[1]]
+# df_a = df_a.iloc[:, 4]
+# df_b = df_b.iloc[:, 1]
 # df = pd.concat([df_a, df_b], axis=1)
 # df['lab_to_cap'] = (100*df.iloc[:, 1].div(df.iloc[:, 0])).round().astype(int)
-# df = df[df.columns[2]]
+# df = df.iloc[:, 2]
 # df.to_csv('theory_of_production_table5.dat', sep='\t')
 
 # period = [1899,
@@ -1137,3 +1137,4 @@ file_name = 'theory_of_production_table4.dat'
 # df.insert(loc = 3, column = 'ba', value = ba)
 
 # df.to_csv('theory_of_production_table11.dat', sep='\t')
+

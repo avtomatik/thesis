@@ -18,7 +18,7 @@ def fetch_usa_bls_cpiu():
     result_frame['mean_less_sqroot'] = result_frame.iloc[:, 1]-result_frame.iloc[:, 2]
     result_frame['dec_on_dec'] = (source_frame.iloc[:, 12]-source_frame.iloc[:, 12].shift(1)).div(source_frame.iloc[:, 12].shift(1))
     result_frame['mean_on_mean'] = (result_frame.iloc[:, 1]-result_frame.iloc[:, 1].shift(1)).div(result_frame.iloc[:, 1].shift(1))
-    result_frame = result_frame[result_frame.columns[[0, 5]]]
+    result_frame = result_frame.iloc[:, [0, 5]]
     result_frame = result_frame.dropna()
     result_frame = result_frame.set_index('Period')
     return result_frame
@@ -30,7 +30,7 @@ def data_bea_def():
     source_frame = pd.read_excel(file_name, skiprows=15)
     source_frame['DATE'] = source_frame['DATE'].astype(str)
     source_frame['Period'], source_frame['mnth'], source_frame['day'] = source_frame['DATE'].str.split('-').str
-    source_frame = source_frame[source_frame.columns[[2, 1]]]
+    source_frame = source_frame.iloc[:, [2, 1]]
     source_frame = source_frame.groupby('Period').prod()**(1/4)
     return source_frame
 
@@ -64,7 +64,7 @@ def prices_direct(source_frame, base):
     source_frame['p_i'] = sp.cumprod(1 + source_frame.iloc[:, 0])
     '''Cumulative Price Index for the Base Year'''
     source_frame['cpi'] = source_frame.iloc[:, 1].div(source_frame.iloc[base-source_frame.index[0], 1])
-    result_frame = source_frame[source_frame.columns[[2]]]
+    result_frame = source_frame.iloc[:, [2]]
     return result_frame
 
 
@@ -72,7 +72,7 @@ def inverse_single(source_frame):
     '''Intent: Returns Growth Rate from Cumulative Price Index for Some Base Year;
     source_frame.iloc[:, 0]: Cumulative Price Index for Some Base Year'''
     source_frame['gri'] = source_frame.iloc[:, 0].div(source_frame.iloc[:, 0].shift(1))-1
-    result_frame = source_frame[source_frame.columns[[1]]].dropna()
+    result_frame = source_frame.iloc[:, [1]].dropna()
     return result_frame
 
 
@@ -82,7 +82,7 @@ def inverse_double(source_frame):
     source_frame.iloc[:, 1]: Real Prices'''
     source_frame['cpi'] = source_frame.iloc[:, 0].div(source_frame.iloc[:, 1])
     source_frame['gri'] = source_frame.iloc[:, 2].div(source_frame.iloc[:, 2].shift(1))-1
-    result_frame = source_frame[source_frame.columns[[3]]].dropna()
+    result_frame = source_frame.iloc[:, [3]].dropna()
     return result_frame
 
 
@@ -95,3 +95,4 @@ def price_base(source_frame):
         i -= 1
         base = i # # Basic Year
     base = source_frame.index[base]
+

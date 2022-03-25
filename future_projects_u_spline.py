@@ -39,3 +39,4 @@ def spline_procedure(source_frame):
 
 source_frame = get_dataset_cobb_douglas()
 spline_procedure(source_frame)
+

@@ -59,37 +59,41 @@ def fetch_usa_bea(archive_name, wb_name, sh_name, series_id):
     return data_frame.loc[:, [series_id]]
 
 
-def fetch_can_quarterly(file_name, vector):
+def fetch_can_quarterly(file_id, series_id):
 # =============================================================================
 # Data Frame Fetching from Quarterly Data within CANSIM Zip Archives
 # Should Be [x 7 columns]
 # =============================================================================
-    data_frame = pd.read_csv(f'dataset_can_{file_name}-eng.zip')
-    data_frame = data_frame[data_frame.Vector == vector]
-    if file_name == '02820011':
-        data_frame = data_frame[data_frame.columns[[0, 7]]]
-    elif file_name == '02820012':
-        data_frame = data_frame[data_frame.columns[[0, 7]]]
-    elif file_name == '03790031':
-        data_frame = data_frame[data_frame.columns[[0, 7]]]
-    elif file_name == '03800068':
-        data_frame = data_frame[data_frame.columns[[0, 7]]]
+    RESERVED_FILE_IDS = ('02820011', '02820012', '03790031', '03800068',)
+    RESERVED_COMBINATIONS = (('03790031', 'v65201809',),
+                             ('03800084', 'v62306938',),)
+    USECOLS = ((4, 6,), (5, 7,),)
+    usecols = (USECOLS[0], USECOLS[1])[file_id in RESERVED_FILE_IDS]
+    data_frame = pd.read_csv(f'dataset_can_{file_id}-eng.zip',
+                             usecols=[0, *usecols])
+    data_frame = data_frame[data_frame.iloc[:, 1] == series_id].iloc[:,[0, 2]]
+    data_frame.columns = [data_frame.columns[0], series_id]
+    data_frame[['period',
+                'sub_period',]] = data_frame.iloc[:, 0].str.split('/', expand=True)
+    data_frame.iloc[:, 1] = data_frame.iloc[:, 1].astype(float)
+    data_frame.iloc[:, -2] = data_frame.iloc[:, -2].astype(int)
+    if (file_id, series_id,) in RESERVED_COMBINATIONS:
+        return data_frame.groupby(data_frame.columns[-2]).sum()
     else:
-        data_frame = data_frame[data_frame.columns[[0, 6]]] # # Should Be [x 7 columns]
-    data_frame.rename(columns={'Value':vector}, inplace=True)
-    data_frame['Period'], data_frame['Q'] = data_frame.iloc[:, 0].str.split('/').str
-    data_frame = data_frame[data_frame.columns[[2, 1]]]
-    data_frame.iloc[:, 0] = data_frame.iloc[:, 0].astype(int)
-    data_frame.iloc[:, 1] = pd.to_numeric(data_frame.iloc[:, 1])
-    if (file_name == '03800084' and vector == 'v62306938'):
-        data_frame = data_frame.groupby('Period').sum()
-    elif (file_name == '03790031' and vector == 'v65201536'):
-        data_frame = data_frame.groupby('Period').mean()
-    elif (file_name == '03790031' and vector == 'v65201809'):
-        data_frame = data_frame.groupby('Period').sum()
-    else:
-        data_frame = data_frame.groupby('Period').mean()
-    return data_frame
+        return data_frame.groupby(data_frame.columns[-2]).mean()
+
+
+def fetch_can_quarterly(data_frame, series_id):
+# =============================================================================
+#     '''Data Frame Fetching from Quarterly Data within CANSIM Zip Archives
+# =============================================================================
+    data_frame = data_frame[data_frame.iloc[:, 10] == series_id].iloc[:,[0, 12]]
+    data_frame.columns = [data_frame.columns[0], series_id]
+    data_frame[['period',
+                'sub_period',]] = data_frame.iloc[:, 0].str.split('-', expand=True)
+    data_frame.iloc[:, 1] = data_frame.iloc[:, 1].astype(float)
+    data_frame.iloc[:, -2] = data_frame.iloc[:, -2].astype(int)
+    return data_frame.groupby(data_frame.columns[-2]).sum()
 
 
 def fetch_can_annually(file_id, series_id):
@@ -146,15 +150,17 @@ def fetch_usa_bls_lnu(file_name):
 # LNU04000000: Bureau of Labor Statistics Unemployment Rate
 # =============================================================================
     series_id = 'LNU04000000'
-    data_frame = pd.read_csv(file_name, sep='\t', low_memory=False)
-    data_frame = data_frame[data_frame.iloc[:, 0].str.contains(series_id)]
-    data_frame = data_frame[data_frame.iloc[:, 2] == 'M13']
-    result_frame = data_frame[data_frame.columns[[1, 3]]]
-    result_frame.rename(columns={'year':'period'}, inplace=True)
-    result_frame.columns = result_frame.columns.str.title()
-    result_frame.rename(columns={'Value':series_id}, inplace=True)
-    result_frame.iloc[:, 1] = result_frame.iloc[:, 1].astype(float)
-    return result_frame
+    data_frame = pd.read_csv(file_name,
+                             sep='\t',
+                             usecols=range(4),
+                             low_memory=False)
+    query = (data_frame.iloc[:, 0].str.contains(series_id)) & \
+            (data_frame.iloc[:, 2] == 'M13')
+    data_frame = data_frame[ query ].iloc[:, [1, 3]]
+    data_frame.columns = [data_frame.columns[0], series_id]
+    data_frame.iloc[:, 0] = data_frame.iloc[:, 0].astype(int)
+    data_frame.iloc[:, 1] = data_frame.iloc[:, 1].astype(float)   
+    return data_frame.set_index(data_frame.columns[0])
 
 
 def fetch_usa_bls_ppi(file_name):
@@ -165,7 +171,7 @@ def fetch_usa_bls_ppi(file_name):
     data_frame = pd.read_csv(file_name, sep='\t', low_memory=False)
     data_frame = data_frame[data_frame.iloc[:, 0].str.contains(series_id)]
     data_frame = data_frame[data_frame.iloc[:, 2] == 'M13']
-    result_frame = data_frame[data_frame.columns[[1, 3]]]
+    result_frame = data_frame.iloc[:, [1, 3]]
     result_frame.rename(columns={'year':'period'}, inplace=True)
     result_frame.columns = result_frame.columns.str.title()
     result_frame.rename(columns={'Value':series_id}, inplace=True)
@@ -286,7 +292,7 @@ def fetch_usa_bea_sfat_series():
     file_name = 'dataset_usa_bea-nipa-selected.zip'
     control_frame = pd.read_csv(file_name)
     control_header = control_frame.iloc[:, 8].unique().tolist()[0]
-    control_frame = control_frame[control_frame.columns[[9, 10]]]
+    control_frame = control_frame.iloc[:, [9, 10]]
     control_frame.columns = control_frame.columns.str.title()
     control_frame.rename(columns={'Value':control_header}, inplace=True)
     control_frame = control_frame.reset_index(drop=True)
@@ -403,9 +409,9 @@ def test_data_consistency_c():
     '''Project III: USA BLS Unemployment Rate & Producer Price Index Manufacturing'''
     print(__doc__)
     '''LNU04000000: Bureau of Labor Statistics Unemployment Rate'''
-    print(fetch_usa_bls_lnu('dataset USA BLS 2015-02-23 ln.data.1.AllData'))
+    print(fetch_usa_bls_lnu('dataset_usa_bls-2015-02-23-ln.data.1.AllData'))
     '''LNU04000000: Bureau of Labor Statistics Unemployment Rate'''
-    print(fetch_usa_bls_lnu('dataset USA BLS 2017-07-06 ln.data.1.AllData'))
+    print(fetch_usa_bls_lnu('dataset_usa_bls-2017-07-06-ln.data.1.AllData'))
     '''PCUOMFG--OMFG--: Bureau of Labor Statistics Producer Price Index Manufacturing'''
     print(fetch_usa_bls_ppi('dataset USA BLS pc.data.0.Current'))
 
@@ -457,3 +463,4 @@ test_data_consistency_b()
 test_data_consistency_c()
 # test_data_consistency_d()
 test_data_consistency_e()
+

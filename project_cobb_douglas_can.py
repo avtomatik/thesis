@@ -9,7 +9,7 @@ def fetch_can_capital_query(source_frame):
             (source_frame.iloc[:, 5] == 'Straight-line end-year net stock') &\
             (source_frame.iloc[:, 6].str.contains('Industrial'))
     source_frame = source_frame[ query ]
-    source_frame = source_frame[source_frame.columns[[11]]]
+    source_frame = source_frame.iloc[:, [11]]
     source_frame.drop_duplicates(inplace=True)
     series_ids = source_frame.iloc[:, 0].values.tolist()
     return series_ids
@@ -129,3 +129,4 @@ print(__doc__)
 # # cobb_douglas_3d(result_frame)
 # df = fetch_from_url('https://www150.statcan.gc.ca/n1/en/tbl/csv/36100210-eng.zip')
 df = fetch_from_url('https://www150.statcan.gc.ca/n1/tbl/csv/18100081-eng.zip')
+

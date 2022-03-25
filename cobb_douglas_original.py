@@ -6,31 +6,24 @@ Created on Sun Jul 12 18:28:15 2020
 """
 
 
-def fetch_classic(file_name: str, series_id: str) -> pd.DataFrame:
+def fetch_classic(file_id: str, series_id: str) -> pd.DataFrame:
 # =============================================================================
 # Data Fetch Procedure for Enumerated Classical Datasets
 # =============================================================================
-    if file_name == 'dataset_usa_brown.zip':
-        data_frame = pd.read_csv(file_name, skiprows=4, usecols=range(3, 6))
-        data_frame.rename(columns={'Данные по отработанным человеко-часам заимствованы из: Kendrick, op. cit., pp. 311-313, Table A. 10.':'series',
-                                     'Unnamed: 4':'period',
-                                     'Unnamed: 5':'value'}, inplace=True)
-    elif file_name == 'dataset_usa_cobb-douglas.zip':
-        data_frame = pd.read_csv(file_name, usecols=range(5, 8))
-    elif file_name == 'dataset_douglas.zip':
-        data_frame = pd.read_csv(file_name, usecols=range(4, 7))
-    elif file_name == 'dataset_usa_kendrick.zip':
-        data_frame = pd.read_csv(file_name, usecols=range(4, 7))
-    result_frame = data_frame[data_frame.iloc[:, 0] == series_id]
-    result_frame = result_frame[result_frame.columns[[1, 2]]]
-    result_frame.columns = result_frame.columns.str.title()
-    result_frame.rename(columns={'Value':series_id}, inplace=True)
-    result_frame.iloc[:, 0] = result_frame.iloc[:, 0].astype(int)
-    result_frame.iloc[:, 1] = pd.to_numeric(result_frame.iloc[:, 1], errors='coerce')
-    result_frame = result_frame.dropna()
-    result_frame = result_frame.sort_values('Period')
-    result_frame = result_frame.set_index('Period')
-    return result_frame
+    usecols = {
+        'douglas': (4, 7,),
+        'usa_brown': (3, 6,),
+        'usa_cobb-douglas': (5, 8,),
+        'usa_kendrick': (4, 7,),
+        }
+    data_frame = pd.read_csv(f'dataset_{file_id}.zip',
+                          skiprows=(None, 4)[file_id == 'usa_brown'],
+                          usecols=range(*usecols[file_id]))
+    data_frame = data_frame[data_frame.iloc[:, 0] == series_id].iloc[:,[1, 2]]
+    data_frame.iloc[:, 0] = data_frame.iloc[:, 0].astype(int)
+    data_frame.iloc[:, 1] = data_frame.iloc[:, 1].astype(float)
+    data_frame.columns = [data_frame.columns[0], series_id]
+    return data_frame.set_index(data_frame.columns[0])
 
 
 def fetch_census(file_name: str, series_id: str, index: bool=True) -> pd.DataFrame:
@@ -199,14 +192,15 @@ result_frame = cobb_douglas_original(get_dataset_cobb_douglas())
 result_frame['lab_cap'] = result_frame.iloc[:, 1].div(result_frame.iloc[:, 0])
 result_frame['lab_pro'] = result_frame.iloc[:, 2].div(result_frame.iloc[:, 1])
 result_frame['cap_pro'] = result_frame.iloc[:, 2].div(result_frame.iloc[:, 0])
-result_frame = result_frame[result_frame.columns[range(6, 9)]]
+result_frame = result_frame.iloc[:, range(6, 9)]
 result_frame = 100*result_frame
 result_frame.set_index('lab_cap', inplace=True)
 # result_frame.dropna(inplace=True)
 result_frame.to_csv('cobb_douglas_usa_pro.dat', sep=' ')
 # result_frame = get_dataset_cobb_douglas()
 # result_frame.columns = ['capital', 'labor', 'product']
-# result_frame = result_frame[result_frame.columns[2]]
+# result_frame = result_frame.iloc[:, 2]
 # result_frame = 100*result_frame
 # result_frame.to_csv('cobb_douglas_usa_pro.dat', sep=' ')
 print(result_frame)
+

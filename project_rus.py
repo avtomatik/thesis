@@ -25,7 +25,7 @@ def plot_grigoriev():
     source_frame = pd.read_csv(file_name)
     for series_id in source_frame.iloc[:, 2].sort_values().unique():
         current_frame = source_frame[source_frame.iloc[:, 2] == series_id]
-        current_frame = current_frame[current_frame.columns[[3, 4]]]
+        current_frame = current_frame.iloc[:, [3, 4]]
         current_frame.set_index('period', inplace=True)
         current_frame.sort_values('period', inplace=True)
         current_frame.rename(columns={'value':series_id}, inplace=True)
@@ -34,3 +34,4 @@ def plot_grigoriev():
 
 plot_is_lm()
 plot_grigoriev()
+

@@ -12,8 +12,8 @@ def get_series_ids(file_name):
     '''Returns Dictionary for Series from Douglas's & Kendrick's Databases'''
     series_dict = pd.read_csv(file_name, usecols=range(3, 5))
     series_dict = series_dict.drop_duplicates()
-    series_dict = series_dict[series_dict.columns[[1, 0]]]
-    series_dict = series_dict.sort_values('vector')
+    series_dict = series_dict.iloc[:, [1, 0]]
+    series_dict = series_dict.sort_values('series_id')
     series_dict = series_dict.reset_index(drop=True)
     return series_dict
 
@@ -228,8 +228,8 @@ def get_dataset_archived():
     source_frame['cap'] = source_frame.iloc[:, 3]*source_frame.iloc[:, 4]
     '''Capital Retirement Ratio'''
     source_frame['rto'] = 1 + (1*source_frame.iloc[:, 5]-source_frame.iloc[:, 6].shift(-1)).div(source_frame.iloc[:, 6])
-    result_frame_a = source_frame[source_frame.columns[[5, 2, 6, 7]]]
-    result_frame_b = source_frame[source_frame.columns[[7]]]
+    result_frame_a = source_frame.iloc[:, [5, 2, 6, 7]]
+    result_frame_b = source_frame.iloc[:, [7]]
     result_frame_a.dropna().reset_index(level=0, inplace=True)
     result_frame_b.dropna().reset_index(level=0, inplace=True)
     return result_frame_a, result_frame_b, base
@@ -313,7 +313,7 @@ def data_fetch_census_b_b():
                           semi_frame_f], axis=1, sort=True)
 
     interim_frame['census_fused'] = interim_frame.mean(1)
-    result_frame = interim_frame[interim_frame.columns[[6]]]
+    result_frame = interim_frame.iloc[:, [6]]
     return result_frame
 
 
@@ -403,22 +403,22 @@ def preprocessing_f(testing_frame):
     control_frame = control_frame.set_index('Period')
     '''Data Fetch'''
     '''Production'''
-    semi_frame_aa = control_frame[control_frame.columns[[0]]]
-    semi_frame_ab = testing_frame[testing_frame.columns[[7]]].dropna()
-    semi_frame_ac = fetch_usa_frb_ip()
-    result_frame_a = pd.concat([semi_frame_aA, semi_frame_aB, semi_frame_aC], axis=1, sort=True)
+    semi_frame_a_a = control_frame.iloc[:, [0]]
+    semi_frame_a_b = testing_frame.iloc[:, [7]].dropna()
+    semi_frame_a_c = fetch_usa_frb_ip()
+    result_frame_a = pd.concat([semi_frame_a_a, semi_frame_a_b, semi_frame_a_c], axis=1, sort=True)
     result_frame_a = result_frame_a.div(result_frame_a.iloc[31, :]/100)
     '''Labor'''
-    semi_frame_ba = control_frame[control_frame.columns[[1]]]
-    semi_frame_bb = testing_frame[testing_frame.columns[[8]]].dropna()
-    result_frame_b = pd.concat([semi_frame_bA, semi_frame_bB], axis=1, sort=True)
+    semi_frame_b_a = control_frame.iloc[:, [1]]
+    semi_frame_b_b = testing_frame.iloc[:, [8]].dropna()
+    result_frame_b = pd.concat([semi_frame_b_a, semi_frame_b_b], axis=1, sort=True)
     '''Capital'''
-    semi_frame_ca = control_frame[control_frame.columns[[2]]]
-    semi_frame_cb = testing_frame[testing_frame.columns[[11]]].dropna()
-    result_frame_c = pd.concat([semi_frame_ca, semi_frame_cb], axis=1, sort=True)
+    semi_frame_c_a = control_frame.iloc[:, [2]]
+    semi_frame_c_b = testing_frame.iloc[:, [11]].dropna()
+    result_frame_c = pd.concat([semi_frame_c_a, semi_frame_c_b], axis=1, sort=True)
     result_frame_c = result_frame_c.div(result_frame_c.iloc[1, :]/100)
     '''Capacity Utilization'''
-    semi_frame_dA = control_frame[control_frame.columns[[3]]]
+    semi_frame_dA = control_frame.iloc[:, [3]]
     semi_frame_dB = fetch_usa_frb_cu()
     result_frame_d = pd.concat([semi_frame_dA, semi_frame_dB], axis=1, sort=True)
     return result_frame_a, result_frame_b, result_frame_c, result_frame_d
@@ -444,8 +444,8 @@ def get_dataset_updated():
     source_frame['cap'] = 1000*source_frame.iloc[base, 5]*source_frame.iloc[:, 4].div(100)
     '''Capital Retirement Ratio'''
     source_frame['rto'] = 1 + (1*source_frame.iloc[:, 6]-source_frame.iloc[:, 7].shift(-1)).div(source_frame.iloc[:, 7])
-    result_frame_a = source_frame[source_frame.columns[[6, 3, 7, 8]]]
-    result_frame_b = source_frame[source_frame.columns[[8]]]
+    result_frame_a = source_frame.iloc[:, [6, 3, 7, 8]]
+    result_frame_b = source_frame.iloc[:, [8]]
     result_frame_a.dropna().reset_index(level=0, inplace=True)
     result_frame_b.dropna().reset_index(level=0, inplace=True)
     return result_frame_a, result_frame_b, base
@@ -1269,7 +1269,7 @@ def plot_approx_log_linear(source_frame):
 def plot_built_in(module):
     file_name = 'datasetAutocorrelation.txt'
     source_frame = pd.read_csv(file_name)
-    source_frame = source_frame[source_frame.columns[[1, 0, 2]]]
+    source_frame = source_frame.iloc[:, [1, 0, 2]]
     series_ids = source_frame.iloc[:, 0].sort_values().unique()
 
     for i, series_id in enumerate(series_ids):
@@ -1281,7 +1281,7 @@ def plot_built_in(module):
 
     file_name = 'chn_tur_gdp.zip'
     source_frame = pd.read_csv(file_name)
-    source_frame = source_frame[source_frame.columns[[1, 0, 2]]]
+    source_frame = source_frame.iloc[:, [1, 0, 2]]
     series_ids = source_frame.iloc[:, 0].sort_values().unique()
 
     for i, series_id in enumerate(series_ids):
@@ -1404,7 +1404,7 @@ def plot_elasticity(source):
     source['elb'] = (source.iloc[:, 4].shift(-1)-source.iloc[:, 4].shift(1)).div(2*source.iloc[:, 4])
     source['elc'] = 2*(source.iloc[:, 4].shift(-1)-source.iloc[:, 4].shift(1)).div(source.iloc[:, 4].shift(1) + 2*source.iloc[:, 4] + source.iloc[:, 4].shift(-1))
     source['eld'] = (-source.iloc[:, 4].shift(1)-source.iloc[:, 4] + source.iloc[:, 4].shift(-1) + source.iloc[:, 4].shift(-2)).div(2*source.iloc[:, 4] + 2*source.iloc[:, 4].shift(-1))
-    result_frame = source[source.columns[[0, 4, 5, 6, 7, 8, 9]]]
+    result_frame = source.iloc[:, [0, 4, 5, 6, 7, 8, 9]]
     plt.figure(1)
     plt.title('{}, {}, {}=100'.format(desc, source.columns[3], result_frame.iloc[base, 0]))
     plt.xlabel('Period')
@@ -1774,13 +1774,13 @@ print(__doc__)
 `approx_power_function_c`: Power Function Approximation
 '''
 source_frame = data_сombined_archived()
-result_frame_a = source_frame[source_frame.columns[[7, 6, 0, 6]]]
+result_frame_a = source_frame.iloc[:, [7, 6, 0, 6]]
 result_frame_a = result_frame_a.dropna()
 result_frame_a.reset_index(level=0, inplace=True)
-result_frame_b = source_frame[source_frame.columns[[7, 6, 20, 4]]]
+result_frame_b = source_frame.iloc[:, [7, 6, 20, 4]]
 result_frame_b = result_frame_b.dropna()
 result_frame_b.reset_index(level=0, inplace=True)
-result_frame_c = source_frame[source_frame.columns[[7, 6, 20, 6]]]
+result_frame_c = source_frame.iloc[:, [7, 6, 20, 6]]
 result_frame_c = result_frame_c.dropna()
 result_frame_c.reset_index(level=0, inplace=True)
 plot_approx_linear(result_frame_a)
@@ -1875,9 +1875,9 @@ result_frame['PRM'] = result_frame.iloc[:, 2].div(result_frame.iloc[:, 3]/100)
 result_frame.rename(columns={'Labor':'LUU'}, inplace=True)
 '''Fixed Assets, End-Period'''
 result_frame['CRU'] = result_frame.iloc[:, 4]*result_frame.iloc[:, 2].div(result_frame.iloc[:, 1])
-result_frame_a = result_frame[result_frame.columns[[6, 7, 8, 10, 11, 5]]].dropna()
-result_frame_b = result_frame[result_frame.columns[[6, 7, 8, 11, 5]]].dropna()
-result_frame_c = result_frame[result_frame.columns[[6, 9, 10, 11, 5]]].dropna()
+result_frame_a = result_frame.iloc[:, [6, 7, 8, 10, 11, 5]].dropna()
+result_frame_b = result_frame.iloc[:, [6, 7, 8, 11, 5]].dropna()
+result_frame_c = result_frame.iloc[:, [6, 9, 10, 11, 5]].dropna()
 result_frame_a.reset_index(level=0, inplace=True)
 result_frame_b.reset_index(level=0, inplace=True)
 result_frame_c.reset_index(level=0, inplace=True)
@@ -1888,9 +1888,9 @@ capital_retirement(result_frame_c)
 '''Subproject IV. Cobb--Douglas'''
 '''On Original Dataset'''
 source_frame = get_dataset_cobb_douglas()
-result_frame_a = source_frame[source_frame.columns[[0, 1, 2]]]
-result_frame_b = source_frame[source_frame.columns[[0, 1, 3]]]
-result_frame_c = source_frame[source_frame.columns[[0, 1, 4]]]
+result_frame_a = source_frame.iloc[:, [0, 1, 2]]
+result_frame_b = source_frame.iloc[:, [0, 1, 3]]
+result_frame_c = source_frame.iloc[:, [0, 1, 4]]
 '''On Expanded Dataset'''
 result_frame_d, result_frame_e = get_dataset_version_a()
 result_frame_f, result_frame_g, result_frame_h = get_dataset_version_b()
@@ -1919,8 +1919,8 @@ cobb_douglas_3d(source_frame)
 
 '''Subproject VI. Elasticity'''
 source_frame = data_сombined_archived()
-result_frame_a = source_frame[source_frame.columns[[7, 6, 4]]]
-result_frame_b = source_frame[source_frame.columns[[4]]]
+result_frame_a = source_frame.iloc[:, [7, 6, 4]]
+result_frame_b = source_frame.iloc[:, [4]]
 result_frame_a = result_frame_a.dropna()
 result_frame_b = result_frame_b.dropna()
 result_frame_a.reset_index(level=0, inplace=True)
@@ -1932,7 +1932,7 @@ plot_growth_elasticity(result_frame_b)
 '''Makeshift Splines'''
 result_frame = get_dataset_cobb_douglas()
 result_frame['turnover'] = result_frame.iloc[:, 2].div(result_frame.iloc[:, 0]) # # Fixed Assets Turnover
-result_frame = result_frame[result_frame.columns[[5]]]
+result_frame = result_frame.iloc[:, [5]]
 result_frame.reset_index(level=0, inplace=True)
 '''Option 1'''
 processing_spline(result_frame, m_spline_lls, results_delivery_a)
@@ -1949,11 +1949,11 @@ processing_spline(result_frame, m_spline_lb, results_delivery_k)
 source_frame = get_dataset_cobb_douglas()
 source_frame['lab_cap_int'] = source_frame.iloc[:, 0].div(source_frame.iloc[:, 1])
 source_frame['lab_product'] = source_frame.iloc[:, 2].div(source_frame.iloc[:, 1])
-result_frame_a = source_frame[source_frame.columns[[0]]]
-result_frame_b = source_frame[source_frame.columns[[1]]]
-result_frame_c = source_frame[source_frame.columns[[2]]]
-result_frame_d = source_frame[source_frame.columns[[5]]]
-result_frame_e = source_frame[source_frame.columns[[6]]]
+result_frame_a = source_frame.iloc[:, [0]]
+result_frame_b = source_frame.iloc[:, [1]]
+result_frame_c = source_frame.iloc[:, [2]]
+result_frame_d = source_frame.iloc[:, [5]]
+result_frame_e = source_frame.iloc[:, [6]]
 plot_census_complex(result_frame_a)
 plot_census_complex(result_frame_b)
 plot_census_complex(result_frame_c)
@@ -1975,30 +1975,30 @@ for series_id in series_ids:
 source_frame_a = data_сombined_archived()
 source_frame_b = data_сombined()
 '''Project: Initial Version Dated: 05 October 2012'''
-result_frame_ab = preprocessing_a(source_frame_a)
-result_frame_ac = preprocessing_a(source_frame_b)
-data_fetch_plot_a(result_frame_ab)
-data_fetch_plot_a(result_frame_ac)
+result_frame_a_b = preprocessing_a(source_frame_a)
+result_frame_a_c = preprocessing_a(source_frame_b)
+data_fetch_plot_a(result_frame_a_b)
+data_fetch_plot_a(result_frame_a_c)
 '''Project: Initial Version Dated: 23 November 2012'''
-result_frame_bb = preprocessing_b(source_frame_a)
-result_frame_bc = preprocessing_b(source_frame_b)
-data_fetch_plot_b(result_frame_bb)
-data_fetch_plot_b(result_frame_bc)
+result_frame_b_b = preprocessing_b(source_frame_a)
+result_frame_b_c = preprocessing_b(source_frame_b)
+data_fetch_plot_b(result_frame_b_b)
+data_fetch_plot_b(result_frame_b_c)
 '''Project: Initial Version Dated: 16 June 2013'''
-result_frame_cb = preprocessing_c(source_frame_a)
-result_frame_cc = preprocessing_c(source_frame_b)
-data_fetch_plot_c(result_frame_cb)
-data_fetch_plot_c(result_frame_cc)
+result_frame_c_b = preprocessing_c(source_frame_a)
+result_frame_c_c = preprocessing_c(source_frame_b)
+data_fetch_plot_c(result_frame_c_b)
+data_fetch_plot_c(result_frame_c_c)
 '''Project: Initial Version Dated: 15 June 2015'''
 result_frame_d = preprocessing_d(source_frame_b)
 data_fetch_plot_d(result_frame_d)
 '''Project: Initial Version Dated: 17 February 2013'''
-result_frame_ea, result_frame_eb = preprocessing_e(source_frame_a)
-plot_e(result_frame_ea)
-plot_e(result_frame_eb)
+result_frame_e_a, result_frame_e_b = preprocessing_e(source_frame_a)
+plot_e(result_frame_e_a)
+plot_e(result_frame_e_b)
 '''Project: BEA Data Compared with Kurenkov Yu.V. Data'''
-result_frame_fa, result_frame_fb, result_frame_fc, result_frame_fd = preprocessing_f(source_frame_a)
-plot_f(result_frame_fa, result_frame_fb, result_frame_fc, result_frame_fd)
+result_frame_f_a, result_frame_f_b, result_frame_f_c, result_frame_f_d = preprocessing_f(source_frame_a)
+plot_f(result_frame_f_a, result_frame_f_b, result_frame_f_c, result_frame_f_d)
 
 '''Subproject X. USA Census'''
 result_frame, base = data_fetch_census_a()
@@ -2154,3 +2154,4 @@ plot_douglas(file_name, series_dict, 12, 100, 111, 1, titles[11], 'Percentage')
 file_name = 'dataset_usa_kendrick.zip'
 plot_douglas(file_name, series_dict, 13, 111, 118, 1, titles[12], 'Percentage')
 plt.show()
+

@@ -41,3 +41,4 @@ source_frame = fetch_bea_usa('dataset_usa_bea_nipadataa.txt', 'A032RC')
 source_frame.reset_index(level=0, inplace=True)
 result_frame = period_centering(source_frame)
 print(result_frame)
+

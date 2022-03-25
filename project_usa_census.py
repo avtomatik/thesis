@@ -104,7 +104,7 @@ def data_fetch_census_b_a():
 #    result_frame.iloc[:, 19] = signal.wiener(result_frame.iloc[:, 19]).round()
 #    result_frame.iloc[:, 20] = signal.wiener(result_frame.iloc[:, 20]).round()
 #    result_frame.iloc[:, 21] = signal.wiener(result_frame.iloc[:, 21]).round()
-    result_frame = result_frame[result_frame.columns[[19, 20, 21]]]
+    result_frame = result_frame.iloc[:, [19, 20, 21]]
     return result_frame
 
 
@@ -147,69 +147,69 @@ def data_fetch_census_c():
 def data_fetch_census_e():
     """Census Total Immigration Series"""
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_aa = fetch_census(file_name, 'C0091')
+    semi_frame_a_a = fetch_census(file_name, 'C0091')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_ab = fetch_census(file_name, 'C0092')
+    semi_frame_a_b = fetch_census(file_name, 'C0092')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_ac = fetch_census(file_name, 'C0093')
+    semi_frame_a_c = fetch_census(file_name, 'C0093')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_ad = fetch_census(file_name, 'C0094')
+    semi_frame_a_d = fetch_census(file_name, 'C0094')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_ae = fetch_census(file_name, 'C0095')
+    semi_frame_a_e = fetch_census(file_name, 'C0095')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_af = fetch_census(file_name, 'C0096')
+    semi_frame_a_f = fetch_census(file_name, 'C0096')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_ag = fetch_census(file_name, 'C0097')
+    semi_frame_a_g = fetch_census(file_name, 'C0097')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_ah = fetch_census(file_name, 'C0098')
+    semi_frame_a_h = fetch_census(file_name, 'C0098')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_ai = fetch_census(file_name, 'C0099')
+    semi_frame_a_i = fetch_census(file_name, 'C0099')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_aj = fetch_census(file_name, 'C0100')
+    semi_frame_a_j = fetch_census(file_name, 'C0100')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_ak = fetch_census(file_name, 'C0101')
+    semi_frame_a_k = fetch_census(file_name, 'C0101')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_al = fetch_census(file_name, 'C0103')
+    semi_frame_a_l = fetch_census(file_name, 'C0103')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_am = fetch_census(file_name, 'C0104')
+    semi_frame_a_m = fetch_census(file_name, 'C0104')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_an = fetch_census(file_name, 'C0105')
+    semi_frame_a_n = fetch_census(file_name, 'C0105')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_ao = fetch_census(file_name, 'C0106')
+    semi_frame_a_o = fetch_census(file_name, 'C0106')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_ap = fetch_census(file_name, 'C0107')
+    semi_frame_a_p = fetch_census(file_name, 'C0107')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_aq = fetch_census(file_name, 'C0108')
+    semi_frame_a_q = fetch_census(file_name, 'C0108')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_ar = fetch_census(file_name, 'C0109')
+    semi_frame_a_r = fetch_census(file_name, 'C0109')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_as = fetch_census(file_name, 'C0111')
+    semi_frame_a_s = fetch_census(file_name, 'C0111')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_at = fetch_census(file_name, 'C0112')
+    semi_frame_a_t = fetch_census(file_name, 'C0112')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_au = fetch_census(file_name, 'C0113')
+    semi_frame_a_u = fetch_census(file_name, 'C0113')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_av = fetch_census(file_name, 'C0114')
+    semi_frame_a_v = fetch_census(file_name, 'C0114')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_aw = fetch_census(file_name, 'C0115')
+    semi_frame_a_w = fetch_census(file_name, 'C0115')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_ax = fetch_census(file_name, 'C0117')
+    semi_frame_a_x = fetch_census(file_name, 'C0117')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_ay = fetch_census(file_name, 'C0118')
+    semi_frame_a_y = fetch_census(file_name, 'C0118')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_az = fetch_census(file_name, 'C0119')
-    result_frame = pd.concat([semi_frame_aa, semi_frame_ab, semi_frame_ac, \
-                              semi_frame_ad, semi_frame_ae, semi_frame_af, \
-                              semi_frame_ag, semi_frame_ah, semi_frame_ai, \
-                              semi_frame_aj, semi_frame_ak, semi_frame_al, \
-                              semi_frame_am, semi_frame_an, semi_frame_ao, \
-                              semi_frame_ap, semi_frame_aq, semi_frame_ar, \
-                              semi_frame_as, semi_frame_at, semi_frame_au, \
-                              semi_frame_av, semi_frame_aw, semi_frame_ax, \
-                              semi_frame_ay, semi_frame_az], axis=1, sort=True)
+    semi_frame_a_z = fetch_census(file_name, 'C0119')
+    result_frame = pd.concat([semi_frame_a_a, semi_frame_a_b, semi_frame_a_c, \
+                              semi_frame_a_d, semi_frame_a_e, semi_frame_a_f, \
+                              semi_frame_a_g, semi_frame_a_h, semi_frame_a_i, \
+                              semi_frame_a_j, semi_frame_a_k, semi_frame_a_l, \
+                              semi_frame_a_m, semi_frame_a_n, semi_frame_a_o, \
+                              semi_frame_a_p, semi_frame_a_q, semi_frame_a_r, \
+                              semi_frame_a_s, semi_frame_a_t, semi_frame_a_u, \
+                              semi_frame_a_v, semi_frame_a_w, semi_frame_a_x, \
+                              semi_frame_a_y, semi_frame_a_z], axis=1, sort=True)
 
     result_frame['C89'] = result_frame.sum(1)
-    result_frame = result_frame[result_frame.columns[[result_frame.shape[1]-1]]]
+    result_frame = result_frame.iloc[:, [result_frame.shape[1]-1]]
     return result_frame
 
 
@@ -239,10 +239,10 @@ def data_fetch_census_f():
 def data_fetch_census_g():
     """Census Gross National Product Series"""
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_aa = fetch_census(file_name, 'F0003')
+    semi_frame_a_a = fetch_census(file_name, 'F0003')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_ab = fetch_census(file_name, 'F0004')
-    result_frame = pd.concat([semi_frame_aa, semi_frame_ab], axis=1, sort=True)
+    semi_frame_a_b = fetch_census(file_name, 'F0004')
+    result_frame = pd.concat([semi_frame_a_a, semi_frame_a_b], axis=1, sort=True)
     result_frame = result_frame[2:]
     result_frame = result_frame.div(result_frame.iloc[0, :]/100)
     return result_frame
@@ -251,86 +251,86 @@ def data_fetch_census_g():
 def data_fetch_census_i():
     """Census Foreign Trade Series"""
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_aa = fetch_census(file_name, 'U0001')
+    semi_frame_a_a = fetch_census(file_name, 'U0001')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_ab = fetch_census(file_name, 'U0008')
-    result_frame_a = pd.concat([semi_frame_aa, semi_frame_ab], axis=1, sort=True)
+    semi_frame_a_b = fetch_census(file_name, 'U0008')
+    result_frame_a = pd.concat([semi_frame_a_a, semi_frame_a_b], axis=1, sort=True)
 
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_aa = fetch_census(file_name, 'U0187')
+    semi_frame_a_a = fetch_census(file_name, 'U0187')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_ab = fetch_census(file_name, 'U0188')
+    semi_frame_a_b = fetch_census(file_name, 'U0188')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_ac = fetch_census(file_name, 'U0189')
-    result_frame_b = pd.concat([semi_frame_aa, semi_frame_ab, semi_frame_ac],
+    semi_frame_a_c = fetch_census(file_name, 'U0189')
+    result_frame_b = pd.concat([semi_frame_a_a, semi_frame_a_b, semi_frame_a_c],
                                axis=1, sort=True)
 
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_aa = fetch_census(file_name, 'U0319')
+    semi_frame_a_a = fetch_census(file_name, 'U0319')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_ab = fetch_census(file_name, 'U0320')
+    semi_frame_a_b = fetch_census(file_name, 'U0320')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_ac = fetch_census(file_name, 'U0321')
+    semi_frame_a_c = fetch_census(file_name, 'U0321')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_ad = fetch_census(file_name, 'U0322')
+    semi_frame_a_d = fetch_census(file_name, 'U0322')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_ae = fetch_census(file_name, 'U0323')
+    semi_frame_a_e = fetch_census(file_name, 'U0323')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_af = fetch_census(file_name, 'U0325')
+    semi_frame_a_f = fetch_census(file_name, 'U0325')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_ag = fetch_census(file_name, 'U0326')
+    semi_frame_a_g = fetch_census(file_name, 'U0326')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_ah = fetch_census(file_name, 'U0327')
+    semi_frame_a_h = fetch_census(file_name, 'U0327')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_ai = fetch_census(file_name, 'U0328')
+    semi_frame_a_i = fetch_census(file_name, 'U0328')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_aj = fetch_census(file_name, 'U0330')
+    semi_frame_a_j = fetch_census(file_name, 'U0330')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_ak = fetch_census(file_name, 'U0331')
+    semi_frame_a_k = fetch_census(file_name, 'U0331')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_al = fetch_census(file_name, 'U0332')
+    semi_frame_a_l = fetch_census(file_name, 'U0332')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_am = fetch_census(file_name, 'U0333')
+    semi_frame_a_m = fetch_census(file_name, 'U0333')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_an = fetch_census(file_name, 'U0334')
+    semi_frame_a_n = fetch_census(file_name, 'U0334')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_ao = fetch_census(file_name, 'U0337')
+    semi_frame_a_o = fetch_census(file_name, 'U0337')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_ap = fetch_census(file_name, 'U0338')
+    semi_frame_a_p = fetch_census(file_name, 'U0338')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_aq = fetch_census(file_name, 'U0339')
+    semi_frame_a_q = fetch_census(file_name, 'U0339')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_ar = fetch_census(file_name, 'U0340')
+    semi_frame_a_r = fetch_census(file_name, 'U0340')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_as = fetch_census(file_name, 'U0341')
+    semi_frame_a_s = fetch_census(file_name, 'U0341')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_at = fetch_census(file_name, 'U0343')
+    semi_frame_a_t = fetch_census(file_name, 'U0343')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_au = fetch_census(file_name, 'U0344')
+    semi_frame_a_u = fetch_census(file_name, 'U0344')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_av = fetch_census(file_name, 'U0345')
+    semi_frame_a_v = fetch_census(file_name, 'U0345')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_aw = fetch_census(file_name, 'U0346')
+    semi_frame_a_w = fetch_census(file_name, 'U0346')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_ax = fetch_census(file_name, 'U0348')
+    semi_frame_a_x = fetch_census(file_name, 'U0348')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_ay = fetch_census(file_name, 'U0349')
+    semi_frame_a_y = fetch_census(file_name, 'U0349')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_az = fetch_census(file_name, 'U0350')
+    semi_frame_a_z = fetch_census(file_name, 'U0350')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_ba = fetch_census(file_name, 'U0351')
+    semi_frame_b_a = fetch_census(file_name, 'U0351')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_bb = fetch_census(file_name, 'U0352')
-    result_frame_c = pd.concat([semi_frame_aa, semi_frame_ab, semi_frame_ac, \
-                                semi_frame_ad, semi_frame_ae, semi_frame_af, \
-                                semi_frame_ag, semi_frame_ah, semi_frame_ai, \
-                                semi_frame_aj, semi_frame_ak, semi_frame_al, \
-                                semi_frame_am, semi_frame_an, semi_frame_ao, \
-                                semi_frame_ap, semi_frame_aq, semi_frame_ar, \
-                                semi_frame_as, semi_frame_at, semi_frame_au, \
-                                semi_frame_av, semi_frame_aw, semi_frame_ax, \
-                                semi_frame_ay, semi_frame_az, semi_frame_ba, \
-                                semi_frame_bb], axis=1, sort=True)
+    semi_frame_b_b = fetch_census(file_name, 'U0352')
+    result_frame_c = pd.concat([semi_frame_a_a, semi_frame_a_b, semi_frame_a_c, \
+                                semi_frame_a_d, semi_frame_a_e, semi_frame_a_f, \
+                                semi_frame_a_g, semi_frame_a_h, semi_frame_a_i, \
+                                semi_frame_a_j, semi_frame_a_k, semi_frame_a_l, \
+                                semi_frame_a_m, semi_frame_a_n, semi_frame_a_o, \
+                                semi_frame_a_p, semi_frame_a_q, semi_frame_a_r, \
+                                semi_frame_a_s, semi_frame_a_t, semi_frame_a_u, \
+                                semi_frame_a_v, semi_frame_a_w, semi_frame_a_x, \
+                                semi_frame_a_y, semi_frame_a_z, semi_frame_b_a, \
+                                semi_frame_b_b], axis=1, sort=True)
 
     result_frame_c['Exports'] = result_frame_c.iloc[:, 0:14].sum(1)
     result_frame_c['Imports'] = result_frame_c.iloc[:, 14:28].sum(1)
@@ -341,12 +341,12 @@ def data_fetch_census_j():
     """Census Money Supply Aggregates"""
     base = 48 # # 1915=100
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_aa = fetch_census(file_name, 'X0410')
+    semi_frame_a_a = fetch_census(file_name, 'X0410')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_ab = fetch_census(file_name, 'X0414')
+    semi_frame_a_b = fetch_census(file_name, 'X0414')
     file_name = 'dataset_usa_census1975.zip'
-    semi_frame_ac = fetch_census(file_name, 'X0415')
-    result_frame = pd.concat([semi_frame_aa, semi_frame_ab, semi_frame_ac],
+    semi_frame_a_c = fetch_census(file_name, 'X0415')
+    result_frame = pd.concat([semi_frame_a_a, semi_frame_a_b, semi_frame_a_c],
                              axis=1, sort=True)
     result_frame = result_frame.div(result_frame.iloc[base, :]/100)
     return result_frame, base
@@ -589,3 +589,4 @@ plot_census_i(result_framea, result_frameb, result_framec)
 result_frame, base = data_fetch_census_j()
 plot_census_j(result_frame, base)
 data_fetch_plot_census_k()
+

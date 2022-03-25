@@ -63,3 +63,4 @@ df = pd.read_excel(file_name)
 # # # #         print(data['REF_DATE'].unique(), file = f)
 # # # # # df.dropna(how='all', inplace=True)
 # # # # # df.to_excel('/home/alexander/projects/stat_can_selected.xlsx', index=False)
+

@@ -15,3 +15,4 @@ source_frame.drop(['IndicatorName'], axis=1, inplace=True)
 source_frame = source_frame.set_index('Country').transpose()
 result_frame = source_frame.iloc[:, 206].div(source_frame.mean(1))
 result_frame.plot(grid=True)
+

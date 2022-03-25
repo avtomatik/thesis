@@ -65,7 +65,7 @@ def get_dataset_version_a():
     result_frame_b = pd.concat([semi_frame_a, semi_frame_b, semi_frame_c, semi_frame_d], axis=1, sort=True).dropna()
 
     result_frame_b.iloc[:, 2] = result_frame_b.iloc[:, 2].div(result_frame_b.iloc[:, 3]/100)
-    result_frame_b = result_frame_b[result_frame_b.columns[[0, 1, 2]]]
+    result_frame_b = result_frame_b.iloc[:, [0, 1, 2]]
     result_frame_a = result_frame_a.div(result_frame_a.iloc[0, :])
     result_frame_b = result_frame_b.div(result_frame_b.iloc[0, :])
     return result_frame_a, result_frame_b
@@ -90,7 +90,7 @@ def get_dataset_version_b():
     result_frame_b = result_frame_a[base:]
     result_frame_c = pd.concat([semi_frame_a, semi_frame_b, semi_frame_c, semi_frame_d], axis=1, sort=True).dropna()
     result_frame_c.iloc[:, 2] = result_frame_c.iloc[:, 2].div(result_frame_c.iloc[:, 3]/100)
-    result_frame_c = result_frame_c[result_frame_c.columns[[0, 1, 2]]]
+    result_frame_c = result_frame_c.iloc[:, [0, 1, 2]]
     result_frame_a = result_frame_a.div(result_frame_a.iloc[0, :])
     result_frame_b = result_frame_b.div(result_frame_b.iloc[0, :])
     result_frame_c = result_frame_c.div(result_frame_c.iloc[0, :])
@@ -322,13 +322,13 @@ print(__doc__)
 """Project I. Classified"""
 source_frame = get_dataset_cobb_douglas()
 result_frame_a = source_frame.iloc[:,range(4)]
-result_frame_b = source_frame[source_frame.columns[[0, 1, 2, 4]]]
+result_frame_b = source_frame.iloc[:, [0, 1, 2, 4]]
 cobb_douglas_alternative(result_frame_a)
 cobb_douglas_alternative(result_frame_b)
 
-result_frame_a = source_frame[source_frame.columns[[0, 1, 2]]]
-result_frame_b = source_frame[source_frame.columns[[0, 1, 3]]]
-result_frame_c = source_frame[source_frame.columns[[0, 1, 4]]]
+result_frame_a = source_frame.iloc[:, [0, 1, 2]]
+result_frame_b = source_frame.iloc[:, [0, 1, 3]]
+result_frame_c = source_frame.iloc[:, [0, 1, 4]]
 result_frame_d, result_frame_e = get_dataset_version_a()
 result_frame_f, result_frame_g, result_frame_h = get_dataset_version_b()
 result_frame_i = dataset_version_c()
@@ -371,3 +371,4 @@ procedure(result_frame_c)
 """Project III. Scipy Signal Wiener Filter"""
 purchases_frame = fetch_capital_purchases()
 plot_capital_purchases(purchases_frame)
+

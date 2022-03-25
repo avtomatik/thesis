@@ -526,9 +526,9 @@ def fetch_usa_bea_single(archive_name, wb_name, sh_name, series_id):
 #         Re-Load
 # =============================================================================
         data_frame = pd.read_excel(xl_file,
-                                    sh_name,
-                                    usecols=range(2, data_frame.shape[1]),
-                                    skiprows=7)
+                                   sh_name,
+                                   usecols=range(2, data_frame.shape[1]),
+                                   skiprows=7)
     data_frame.dropna(inplace=True)
     data_frame.columns = ['period', *data_frame.columns[1:]]
     data_frame = data_frame.set_index(data_frame.columns[0]).transpose()
@@ -538,3 +538,4 @@ def fetch_usa_bea_single(archive_name, wb_name, sh_name, series_id):
 os.chdir('/media/alexander/321B-6A94')
 test_douglas('J0014', 'DT24AS01')
 test_douglas('CDT2S4', 'DT63AS01')
+

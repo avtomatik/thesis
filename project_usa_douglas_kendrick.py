@@ -207,3 +207,4 @@ plot_douglas(file_name, series_dict, 12, 100, 111, 1, titles[11], 'Percentage')
 file_name = 'dataset_usa_kendrick.zip'
 plot_douglas(file_name, series_dict, 13, 111, 118, 1, titles[12], 'Percentage')
 plt.show()
+

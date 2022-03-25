@@ -82,7 +82,7 @@ def fetch_brown():
                                    XBB = result_frame.iloc[:, 3] + result_frame.iloc[:, 4],
                                    XCC = result_frame.iloc[:, 5]*(result_frame.iloc[:, 3].rolling(window=2).mean() + result_frame.iloc[:, 4].rolling(window=2).mean())/100,
                                    XDD = result_frame.iloc[:, 2])
-    result_frame = result_frame[result_frame.columns[[6, 7, 8, 9]]]
+    result_frame = result_frame.iloc[:, [6, 7, 8, 9]]
     result_frame = result_frame.dropna()
     result_frame = result_frame.append(semi_frame_c)
     result_frame = result_frame.round()
@@ -112,8 +112,8 @@ for series_id in series_ids:
 # =============================================================================
 # Bureau of Labor Statistics
 # =============================================================================
-# fetch_usa_bls_lnu('dataset USA BLS 2015-02-23 ln.data.1.AllData')
-# fetch_usa_bls_lnu('dataset USA BLS 2017-07-06 ln.data.1.AllData')
+# fetch_usa_bls_lnu('dataset_usa_bls-2015-02-23-ln.data.1.AllData')
+# fetch_usa_bls_lnu('dataset_usa_bls-2017-07-06-ln.data.1.AllData')
 # fetch_usa_bls_ppi('dataset USA BLS pc.data.0.Current')
 # =============================================================================
 # FN:Murray Brown
@@ -128,3 +128,4 @@ def save_zip(data_frame, file_name):
     with zipfile.ZipFile(f'{file_name}.zip', 'w') as archive:
         archive.write(f'{file_name}.csv', compress_type=zipfile.ZIP_DEFLATED)
         os.unlink(f'{file_name}.csv')
+

@@ -7,15 +7,15 @@ Created on Tue Nov  2 21:10:29 2021
 
 
 def prices_cobb_douglas():
-file_name = 'dataset_usa_cobb-douglas.zip'
+    file_name = 'dataset_usa_cobb-douglas.zip'
     data = pd.read_csv(file_name)
-    vectors = ('CDT2S1', 'CDT2S3')
+    series_ids = ('CDT2S1', 'CDT2S3')
     combined = pd.DataFrame()
-    for vector in vectors:
-        chunk = data[data.iloc[:, 5] == vector].iloc[:, [6, 7]]
+    for series_id in series_ids:
+        chunk = data[data.iloc[:, 5] == series_id].iloc[:, [6, 7]]
         chunk.set_index(chunk.columns[0], inplace=True)
         chunk.rename_axis('REF_DATE', inplace=True)
-        chunk.columns = [vector]
+        chunk.columns = [series_id]
         combined = pd.concat([combined, chunk],
                               axis=1,
                               sort=False)
@@ -26,17 +26,17 @@ file_name = 'dataset_usa_cobb-douglas.zip'
 
 
 def prices_census():
-file_name = 'dataset_usa_census1975.zip'
+    file_name = 'dataset_usa_census1975.zip'
     data = pd.read_csv(file_name)
-    vectors = ('P0107', 'P0110')
+    series_ids = ('P0107', 'P0110')
     combined = pd.DataFrame()
-    for vector in vectors:
-        chunk = data[data.iloc[:, 8] == vector].iloc[:, [9, 10]]
+    for series_id in series_ids:
+        chunk = data[data.iloc[:, 8] == series_id].iloc[:, [9, 10]]
         chunk = chunk.apply(pd.to_numeric)
         chunk.set_index(chunk.columns[0], inplace=True)
         chunk.sort_index(inplace=True)
         chunk.rename_axis('REF_DATE', inplace=True)
-        chunk.columns = [vector]
+        chunk.columns = [series_id]
         combined = pd.concat([combined, chunk],
                               axis=1,
                               sort=False)
@@ -84,9 +84,9 @@ file_name = '/home/alexander/projects/stat_can_cap.xlsx'
 #     return combined
 
 
-def append_vectors(source_frame, data_frame, vectors):
-    for vector in vectors:
-        chunk = source_frame.loc[:, [vector]]
+def append_series_ids(source_frame, data_frame, series_ids):
+    for series_id in series_ids:
+        chunk = source_frame.loc[:, [series_id]]
         chunk.dropna(inplace=True)
         data_frame = pd.concat([data_frame, chunk], axis=1, sort=False)
     return data_frame
@@ -127,12 +127,12 @@ file_name = '/home/alexander/projects/stat_can_prd.xlsx'
 # # =============================================================================
 # # Capital cost
 # # =============================================================================
-# vectors = [
+# series_ids = [
 #             'v41713243',
 #             'v41708375',
 #             'v42189907',
 #             ]
-# combined = append_vectors(data, combined, vectors = vectors)
+# combined = append_series_ids(data, combined, series_ids = series_ids)
 # combined = combined.div(combined.loc[1997]).mul(100)
 # combined['mean_comb'] = combined.mean(1)
 # combined = combined.iloc[:, [-1]]
@@ -155,13 +155,13 @@ file_name = '/home/alexander/projects/stat_can_cap.xlsx'
 # data.set_index(data.columns[0], inplace=True)
 #
 #
-# result = pd.DataFrame(columns=['vector1', 'vector2', 'r2'])
+# result = pd.DataFrame(columns=['series_id1', 'series_id2', 'r2'])
 # for i, pair in enumerate(combinations(data.columns, 2)):
 #     chunk = data.loc[:, list(pair)]
 #     chunk.dropna(inplace=True)
 #     if not chunk.empty:
-#         result = result.append({'vector1': pair[0],
-#                                 'vector2': pair[1],
+#         result = result.append({'series_id1': pair[0],
+#                                 'series_id2': pair[1],
 #                                 'r2': r2_score(chunk.iloc[:, 0], chunk.iloc[:, 1])},
 #                                 ignore_index=True)
 # result.to_excel('result.xlsx', index=False)
@@ -184,25 +184,25 @@ file_name = '/home/alexander/projects/stat_can_prd.xlsx'
 # # # v86718697 # Production Indexes
 # # # v86719219 # Gross Output
 # # # =============================================================================
-# # # vectors = [
+# # # series_ids = [
 # # #             'v86718697',
 # # #             'v41707475',
 # # #             'v42189127',
 # # #             'v11567',
 # # #             ]
-# # # combined = append_vectors(data, combined, vectors = vectors)
+# # # combined = append_series_ids(data, combined, series_ids = series_ids)
 # # # combined = combined.div(combined.loc[1961]).mul(100)
 
 # # # =============================================================================
 # # # Gross Output
 # # # =============================================================================
-# # vectors = [
+# # series_ids = [
 # #             'v86719219',
 # #             'v41708195',
 # #             'v42189751',
 # #             'v64602050',
 # #             ]
-# # combined = append_vectors(data, combined, vectors = vectors)
+# # combined = append_series_ids(data, combined, series_ids = series_ids)
 # # combined = combined.div(combined.loc[1997]).mul(100)
 # # combined.plot(grid=True).get_figure().savefig('view.pdf', format = 'pdf', dpi = 900)
 # # combined.to_excel('/media/alexander/321B-6A94/result.xlsx')
@@ -236,7 +236,7 @@ file_name = '/home/alexander/projects/stat_can_cap_matching.xlsx'
 file_name = '/home/alexander/projects/stat_can_cap.xlsx'
 data = pd.read_excel(file_name)
 data.set_index(data.columns[0], inplace=True)
-vectors = (
+series_ids = (
     'v46444624',
     'v46444685',
     'v46444746',
@@ -250,15 +250,16 @@ vectors = (
     'v46445783',
     'v46445844',
     )
-for vector in vectors[::3]:
-    chunk = data.loc[:, [vector]]
+for series_id in series_ids[::3]:
+    chunk = data.loc[:, [series_id]]
     chunk.dropna(axis = 0, how='all', inplace=True)
     chunk.plot(grid=True).get_figure().savefig('temporary.pdf', format='pdf', dpi=900)
-# for vector in vectors[1::3]:
-#     chunk = data.loc[:, [vector]]
+# for series_id in series_ids[1::3]:
+#     chunk = data.loc[:, [series_id]]
 #     chunk.dropna(axis = 0, how='all', inplace=True)
 #     chunk.plot(grid=True)
-# for vector in vectors[2::3]:
-#     chunk = data.loc[:, [vector]]
+# for series_id in series_ids[2::3]:
+#     chunk = data.loc[:, [series_id]]
 #     chunk.dropna(axis = 0, how='all', inplace=True)
 #     chunk.plot(grid=True)
+
