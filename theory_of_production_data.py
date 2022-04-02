@@ -1,4 +1,4 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 Created on Thu Oct 29 23:21:52 2020
 
@@ -34,7 +34,7 @@ period = (
     1920,
     1921,
     1922,
-    )
+)
 value = (
     -1,
     -6,
@@ -60,7 +60,7 @@ value = (
     -2.2,
     -8.4,
     13,
-    )
+)
 
 
 data = {'period': period, 'value': value}
@@ -95,7 +95,7 @@ period = (
     1920,
     1921,
     1922,
-    )
+)
 product = (
     101,
     95,
@@ -121,7 +121,7 @@ product = (
     114,
     117,
     136,
-    )
+)
 wages = (
     99,
     98,
@@ -147,15 +147,16 @@ wages = (
     114,
     115,
     119,
-    )
+)
 
 
 data = {'period': period, 'product': product, 'wages': wages}
 df = pd.DataFrame.from_dict(data)
 df.set_index(df.columns[0], inplace=True, verify_integrity=True)
-df['dev'] = df.iloc[:, 1].sub(df.iloc[:, 0]).div(df.iloc[:, 0]).mul(100).round()
-df['product7'] = df.iloc[:, 0].rolling(7).mean()
-df['wages7'] = df.iloc[:, 1].rolling(7).mean()
+df['dev'] = df.iloc[:, 1].sub(df.iloc[:, 0]).div(
+    df.iloc[:, 0]).mul(100).round()
+df['product_7'] = df.iloc[:, 0].rolling(7).mean()
+df['wages_7'] = df.iloc[:, 1].rolling(7).mean()
 df['dev_abs'] = df.iloc[:, 2].abs()
 print(df.iloc[:, 3].mean())
 print(df.corr())
@@ -173,7 +174,7 @@ period = (
     1914,
     1916,
     1918,
-    )
+)
 value = (
     72.2,
     76.4,
@@ -185,7 +186,7 @@ value = (
     77.8,
     68.7,
     78.1,
-    )
+)
 
 
 data = {'period': period, 'value': value}
@@ -205,7 +206,7 @@ period = (
     1914,
     1919,
     1922,
-    )
+)
 bldg_per = (
     13.,
     13.4,
@@ -215,7 +216,7 @@ bldg_per = (
     16.2,
     16.4,
     16.5,
-    )
+)
 mach_per = (
     24.,
     24.3,
@@ -225,7 +226,7 @@ mach_per = (
     28.7,
     29.5,
     30.,
-    )
+)
 bldg_val = (
     363,
     879,
@@ -235,7 +236,7 @@ bldg_val = (
     3692,
     7293,
     8681,
-    )
+)
 mach_val = (
     670,
     1584,
@@ -245,16 +246,16 @@ mach_val = (
     6541,
     13118,
     15783,
-    )
+)
 
 
 data = {
-        'period': period,
-        'bldg_per': bldg_per,
-        'mach_per': mach_per,
-        'bldg_val': bldg_val,
-        'mach_val': mach_val,
-        }
+    'period': period,
+    'bldg_per': bldg_per,
+    'mach_per': mach_per,
+    'bldg_val': bldg_val,
+    'mach_val': mach_val,
+}
 df = pd.DataFrame.from_dict(data)
 df.set_index(df.columns[0], inplace=True, verify_integrity=True)
 df['val'] = df.iloc[:, 2].add(df.iloc[:, 3])
@@ -272,7 +273,7 @@ period = (
     1887,
     1888,
     1889,
-    )
+)
 val = (
     200,
     210,
@@ -284,7 +285,7 @@ val = (
     282,
     241,
     263,
-    )
+)
 per = (
     9.6,
     10,
@@ -296,14 +297,14 @@ per = (
     13.5,
     11.5,
     12.5,
-    )
+)
 
 
 data = {
-        'period': period,
-        'val': val,
-        'per': per,
-        }
+    'period': period,
+    'val': val,
+    'per': per,
+}
 df = pd.DataFrame.from_dict(data)
 df.set_index(df.columns[0], inplace=True, verify_integrity=True)
 df.loc['Total'] = df.sum()
@@ -335,7 +336,7 @@ period = (
     1920,
     1921,
     1922,
-    )
+)
 col_a = (
     339,
     264,
@@ -361,7 +362,7 @@ col_a = (
     2096,
     780,
     1177,
-    )
+)
 col_b = (
     88,
     89,
@@ -387,7 +388,7 @@ col_b = (
     237,
     184,
     181,
-    )
+)
 col_c = (
     387,
     297,
@@ -413,15 +414,15 @@ col_c = (
     884,
     424,
     650,
-    )
+)
 
 
 data = {
-        'period': period,
-        'col_a': col_a,
-        'col_b': col_b,
-        'col_c': col_c,
-        }
+    'period': period,
+    'col_a': col_a,
+    'col_b': col_b,
+    'col_c': col_c,
+}
 df = pd.DataFrame.from_dict(data)
 df.set_index(df.columns[0], inplace=True, verify_integrity=True)
 df['col_c'] = (100*df.iloc[:, 0].div(df.iloc[:, 1])).round().astype(int)
@@ -441,7 +442,7 @@ period = (
     1918,
     1919,
     1920,
-    )
+)
 ma = (
     105,
     110,
@@ -453,7 +454,7 @@ ma = (
     210,
     248,
     250,
-    )
+)
 us = (
     104,
     110,
@@ -465,12 +466,12 @@ us = (
     217,
     239,
     263,
-    )
+)
 data = {
-        'period': period,
-        'ma': ma,
-        'us': us,
-        }
+    'period': period,
+    'ma': ma,
+    'us': us,
+}
 df = pd.DataFrame.from_dict(data)
 df.set_index(df.columns[0], inplace=True, verify_integrity=True)
 df.to_csv('theory_of_production_table2_.dat', sep='\t')
@@ -501,7 +502,7 @@ period = (
     1920,
     1921,
     1922,
-    )
+)
 lab = (
     4713,
     4968,
@@ -527,11 +528,11 @@ lab = (
     9110,
     6947,
     7602,
-    )
+)
 data = {
-        'period': period,
-        'lab': lab,
-        }
+    'period': period,
+    'lab': lab,
+}
 df = pd.DataFrame.from_dict(data)
 df.set_index(df.columns[0], inplace=True, verify_integrity=True)
 df['idx'] = (100*df.iloc[:, 0].div(df.iloc[0, 0])).round().astype(int)
@@ -562,7 +563,7 @@ period = (
     1920,
     1921,
     1922,
-    )
+)
 pro = (
     100,
     101,
@@ -588,11 +589,11 @@ pro = (
     231,
     179,
     240,
-    )
+)
 data = {
-        'period': period,
-        'pro': pro,
-        }
+    'period': period,
+    'pro': pro,
+}
 df = pd.DataFrame.from_dict(data)
 df.set_index(df.columns[0], inplace=True, verify_integrity=True)
 df.to_csv('theory_of_production_table4.dat', sep='\t')
@@ -636,7 +637,7 @@ period = (
     1920,
     1921,
     1922,
-    )
+)
 pro_com = (
     101,
     107,
@@ -662,7 +663,7 @@ pro_com = (
     236,
     194,
     209,
-    )
+)
 pro = (
     100,
     101,
@@ -688,7 +689,7 @@ pro = (
     231,
     179,
     240,
-    )
+)
 dev = (
     -1,
     -6,
@@ -714,7 +715,7 @@ dev = (
     -2.2,
     -8.4,
     13,
-    )
+)
 ba = (
     'Подъём',
     'Подъём; Кратковременный Рецессия',
@@ -740,14 +741,14 @@ ba = (
     'Подъём; рецессия, спад',
     'Спад',
     'Оживление; подъём',
-    )
+)
 data = {
-        'period': period,
-        'pro_com': pro_com,
-        'pro': pro,
-        'dev': dev,
-        'ba': ba,
-        }
+    'period': period,
+    'pro_com': pro_com,
+    'pro': pro,
+    'dev': dev,
+    'ba': ba,
+}
 df = pd.DataFrame.from_dict(data)
 df.set_index(df.columns[0], inplace=True, verify_integrity=True)
 df.to_csv('theory_of_production_table6.dat', sep='\t')
@@ -756,8 +757,10 @@ df.to_csv('theory_of_production_table6.dat', sep='\t')
 file_name = 'theory_of_production_table6.dat'
 df = pd.read_csv(file_name, sep='\t', usecols=range(3))
 df.set_index(df.columns[0], inplace=True, verify_integrity=True)
-df['sub_pro'] = df.iloc[:, 1].sub(df.iloc[:, 1].rolling(window=3, center=True).mean())
-df['sub_pro_com'] = df.iloc[:, 0].sub(df.iloc[:, 0].rolling(window=3, center=True).mean())
+df['sub_pro'] = df.iloc[:, 1].sub(
+    df.iloc[:, 1].rolling(window=3, center=True).mean())
+df['sub_pro_com'] = df.iloc[:, 0].sub(
+    df.iloc[:, 0].rolling(window=3, center=True).mean())
 df.dropna(inplace=True)
 df = df.astype(int)
 df.to_csv('theory_of_production_table7.dat', sep='\t')
@@ -787,7 +790,7 @@ period = (
     1920,
     1921,
     1922,
-    )
+)
 pro = (
     100,
     101,
@@ -813,7 +816,7 @@ pro = (
     231,
     179,
     240,
-    )
+)
 pro_com = (
     101,
     106,
@@ -839,15 +842,16 @@ pro_com = (
     247,
     208,
     223,
-    )
+)
 data = {
-        'period': period,
-        'pro': pro,
-        'pro_com': pro_com,
-        }
+    'period': period,
+    'pro': pro,
+    'pro_com': pro_com,
+}
 df = pd.DataFrame.from_dict(data)
 df.set_index(df.columns[0], inplace=True, verify_integrity=True)
-df['dev'] = df.iloc[:, 0].sub(df.iloc[:, 1]).div(df.iloc[:, 0]).mul(100).round().astype(int)
+df['dev'] = df.iloc[:, 0].sub(df.iloc[:, 1]).div(
+    df.iloc[:, 0]).mul(100).round().astype(int)
 df.to_csv('theory_of_production_table8.dat', sep='\t')
 
 
@@ -876,7 +880,7 @@ period = (
     1920,
     1921,
     1922,
-    )
+)
 idx = (
     100,
     96,
@@ -902,11 +906,11 @@ idx = (
     119,
     121,
     149,
-    )
+)
 data = {
-        'period': period,
-        'idx': idx,
-        }
+    'period': period,
+    'idx': idx,
+}
 df = pd.DataFrame.from_dict(data)
 df.set_index(df.columns[0], inplace=True, verify_integrity=True)
 df.to_csv('theory_of_production_table8_.dat', sep='\t')
@@ -937,7 +941,7 @@ period = (
     1920,
     1921,
     1922,
-    )
+)
 def_mfg = (
     100,
     105,
@@ -963,7 +967,7 @@ def_mfg = (
     284,
     186,
     179,
-    )
+)
 def_all = (
     100,
     108,
@@ -989,12 +993,12 @@ def_all = (
     302,
     196,
     199,
-    )
+)
 data = {
-        'period': period,
-        'def_mfg': def_mfg,
-        'def_all': def_all,
-        }
+    'period': period,
+    'def_mfg': def_mfg,
+    'def_all': def_all,
+}
 df = pd.DataFrame.from_dict(data)
 df.set_index(df.columns[0], inplace=True, verify_integrity=True)
 df['ratio'] = df.iloc[:, 0].mul(100).div(df.iloc[:, 1]).round().astype(int)
@@ -1030,7 +1034,7 @@ period = (
     1920,
     1921,
     1922,
-    )
+)
 idx = (
     101,
     95,
@@ -1056,11 +1060,11 @@ idx = (
     114,
     117,
     136,
-    )
+)
 data = {
-        'period': period,
-        'idx': idx,
-        }
+    'period': period,
+    'idx': idx,
+}
 df = pd.DataFrame.from_dict(data)
 df.set_index(df.columns[0], inplace=True, verify_integrity=True)
 df.to_csv('theory_of_production_table10.dat', sep='\t')
@@ -1091,7 +1095,7 @@ period = (
     1920,
     1921,
     1922,
-    )
+)
 pro_val = (
     101,
     95,
@@ -1117,7 +1121,7 @@ pro_val = (
     114,
     117,
     136,
-    )
+)
 wages = (
     99,
     98,
@@ -1143,15 +1147,16 @@ wages = (
     114,
     115,
     119,
-    )
+)
 data = {
-        'period': period,
-        'pro_val': pro_val,
-        'wages': wages,
-        }
+    'period': period,
+    'pro_val': pro_val,
+    'wages': wages,
+}
 df = pd.DataFrame.from_dict(data)
 df.set_index(df.columns[0], inplace=True, verify_integrity=True)
-df['dev'] = df.iloc[:, 1].sub(df.iloc[:, 0]).div(df.iloc[:, 0]).mul(100).round().astype(int)
+df['dev'] = df.iloc[:, 1].sub(df.iloc[:, 0]).div(
+    df.iloc[:, 0]).mul(100).round().astype(int)
 ba = (
     '',
     'Brief Recession',
@@ -1177,7 +1182,7 @@ ba = (
     '',
     'Depression',
     '',
-    )
+)
 ba = pd.Series(data=ba, index=period, dtype=str)
 df.insert(loc=3, column='ba', value=ba)
 df.to_csv('theory_of_production_table11.dat', sep='\t')

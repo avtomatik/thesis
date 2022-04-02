@@ -1,4 +1,4 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 Created on Wed Dec 18 21:04:02 2019
 
@@ -28,10 +28,9 @@ def plot_grigoriev():
         current_frame = current_frame.iloc[:, [3, 4]]
         current_frame.set_index('period', inplace=True)
         current_frame.sort_values('period', inplace=True)
-        current_frame.rename(columns={'value':series_id}, inplace=True)
+        current_frame.rename(columns={'value': series_id}, inplace=True)
         current_frame.plot(grid=True)
 
 
 plot_is_lm()
 plot_grigoriev()
-

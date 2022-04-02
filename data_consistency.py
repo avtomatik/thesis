@@ -1,4 +1,4 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 Created on Wed Mar  4 20:39:06 2020
 
@@ -8,51 +8,71 @@ Created on Wed Mar  4 20:39:06 2020
 # =============================================================================
 # TODO: Refactor
 # =============================================================================
+
+
 def fetch_usa_bea(archive_name, wb_name, sh_name, series_id):
-# =============================================================================
-# Data Frame Fetching from Bureau of Economic Analysis Zip Archives
-# =============================================================================
-# =============================================================================
-# archive_name: Name of Zip Archive,
-# wb_name: Name of Excel File within Zip Archive,
-# sh_name: Name of Worksheet within Excel File within Zip Archive,
-# series_id: Series ID
-# =============================================================================
-# =============================================================================
-#     TODO: Eliminate Duplicate
-# =============================================================================
+    # =============================================================================
+    # Data Frame Fetching from Bureau of Economic Analysis Zip Archives
+    # =============================================================================
+    # =============================================================================
+    # archive_name: Name of Zip Archive,
+    # wb_name: Name of Excel File within Zip Archive,
+    # sh_name: Name of Worksheet within Excel File within Zip Archive,
+    # series_id: Series ID
+    # =============================================================================
+    # =============================================================================
+    # TODO: Eliminate Duplicate
+    # =============================================================================
     if not archive_name == None:
         with pd.ExcelFile(ZipFile(archive_name, 'r').open(wb_name)) as xl_file:
-# =============================================================================
-#             Duplicate
-# =============================================================================
-# =============================================================================
-#             Load
-# =============================================================================
+            # =============================================================================
+            # Duplicate
+            # =============================================================================
+            # =============================================================================
+            # Load
+            # =============================================================================
             data_frame = pd.read_excel(xl_file, sh_name, skiprows=7)
-# =============================================================================
-#             Re-Load
-# =============================================================================
-            data_frame = pd.read_excel(xl_file,
-                                       sh_name,
-                                       usecols=range(2, data_frame.shape[1]),
-                                       skiprows=7)
     else:
         with pd.ExcelFile(wb_name) as xl_file:
-# =============================================================================
-#             Duplicate
-# =============================================================================
-# =============================================================================
-#             Load
-# =============================================================================
+            # =============================================================================
+            # Duplicate
+            # =============================================================================
+            # =============================================================================
+            # Load
+            # =============================================================================
             data_frame = pd.read_excel(xl_file, sh_name, skiprows=7)
-# =============================================================================
-#             Re-Load
-# =============================================================================
-            data_frame = pd.read_excel(xl_file,
-                                       sh_name,
-                                       usecols=range(2, data_frame.shape[1]),
-                                       skiprows=7)
+    # =============================================================================
+    # Re-Load
+    # =============================================================================
+    data_frame = pd.read_excel(xl_file,
+                               sh_name,
+                               usecols=range(2, data_frame.shape[1]),
+                               skiprows=7)
+    data_frame.dropna(inplace=True)
+    data_frame.columns = ['period', *data_frame.columns[1:]]
+    data_frame = data_frame.set_index(data_frame.columns[0]).transpose()
+    return data_frame.loc[:, [series_id]]
+
+
+def fetch_usa_bea(archive_name, wb_name, sh_name, series_id):
+    # =============================================================================
+    # TODO: Eliminate This Function
+    # =============================================================================
+    # =============================================================================
+    # Data Frame Fetching from Bureau of Economic Analysis Zip Archives
+    # =============================================================================
+    with pd.ExcelFile(ZipFile(archive_name, 'r').open(wb_name)) as xl_file:
+        # =============================================================================
+        # Load
+        # =============================================================================
+        data_frame = pd.read_excel(xl_file, sh_name, skiprows=7)
+    # =============================================================================
+    # Re-Load
+    # =============================================================================
+    data_frame = pd.read_excel(xl_file,
+                               sh_name,
+                               usecols=range(2, data_frame.shape[1]),
+                               skiprows=7)
     data_frame.dropna(inplace=True)
     data_frame.columns = ['period', *data_frame.columns[1:]]
     data_frame = data_frame.set_index(data_frame.columns[0]).transpose()
@@ -60,10 +80,10 @@ def fetch_usa_bea(archive_name, wb_name, sh_name, series_id):
 
 
 def fetch_can_quarterly(file_id, series_id):
-# =============================================================================
-# Data Frame Fetching from Quarterly Data within CANSIM Zip Archives
-# Should Be [x 7 columns]
-# =============================================================================
+    # =============================================================================
+    # Data Frame Fetching from Quarterly Data within CANSIM Zip Archives
+    # Should Be [x 7 columns]
+    # =============================================================================
     RESERVED_FILE_IDS = ('02820011', '02820012', '03790031', '03800068',)
     RESERVED_COMBINATIONS = (('03790031', 'v65201809',),
                              ('03800084', 'v62306938',),)
@@ -71,10 +91,10 @@ def fetch_can_quarterly(file_id, series_id):
     usecols = (USECOLS[0], USECOLS[1])[file_id in RESERVED_FILE_IDS]
     data_frame = pd.read_csv(f'dataset_can_{file_id}-eng.zip',
                              usecols=[0, *usecols])
-    data_frame = data_frame[data_frame.iloc[:, 1] == series_id].iloc[:,[0, 2]]
+    data_frame = data_frame[data_frame.iloc[:, 1] == series_id].iloc[:, [0, 2]]
     data_frame.columns = [data_frame.columns[0], series_id]
     data_frame[['period',
-                'sub_period',]] = data_frame.iloc[:, 0].str.split('/', expand=True)
+                'sub_period', ]] = data_frame.iloc[:, 0].str.split('/', expand=True)
     data_frame.iloc[:, 1] = data_frame.iloc[:, 1].astype(float)
     data_frame.iloc[:, -2] = data_frame.iloc[:, -2].astype(int)
     if (file_id, series_id,) in RESERVED_COMBINATIONS:
@@ -84,22 +104,23 @@ def fetch_can_quarterly(file_id, series_id):
 
 
 def fetch_can_quarterly(data_frame, series_id):
-# =============================================================================
-#     '''Data Frame Fetching from Quarterly Data within CANSIM Zip Archives
-# =============================================================================
-    data_frame = data_frame[data_frame.iloc[:, 10] == series_id].iloc[:,[0, 12]]
+    # =============================================================================
+    # Data Frame Fetching from Quarterly Data within CANSIM Zip Archives
+    # =============================================================================
+    data_frame = data_frame[data_frame.iloc[:, 10]
+                            == series_id].iloc[:, [0, 12]]
     data_frame.columns = [data_frame.columns[0], series_id]
     data_frame[['period',
-                'sub_period',]] = data_frame.iloc[:, 0].str.split('-', expand=True)
+                'sub_period', ]] = data_frame.iloc[:, 0].str.split('-', expand=True)
     data_frame.iloc[:, 1] = data_frame.iloc[:, 1].astype(float)
     data_frame.iloc[:, -2] = data_frame.iloc[:, -2].astype(int)
     return data_frame.groupby(data_frame.columns[-2]).sum()
 
 
 def fetch_can_annually(file_id, series_id):
-# =============================================================================
-# Data Frame Fetching from CANSIM Zip Archives
-# =============================================================================
+    # =============================================================================
+    # Data Frame Fetching from CANSIM Zip Archives
+    # =============================================================================
     usecols = {
         '02820012': (5, 7,),
         '03800102': (4, 6,),
@@ -107,10 +128,10 @@ def fetch_can_annually(file_id, series_id):
         '03800518': (4, 6,),
         '03800566': (3, 5,),
         '03800567': (4, 6,),
-        }
+    }
     data_frame = pd.read_csv(f'dataset_can_{file_id}-eng.zip',
-                              usecols=[0, *usecols[file_id]])
-    data_frame = data_frame[data_frame.iloc[:, 1] == series_id].iloc[:,[0, 2]]
+                             usecols=[0, *usecols[file_id]])
+    data_frame = data_frame[data_frame.iloc[:, 1] == series_id].iloc[:, [0, 2]]
     data_frame.columns = [data_frame.columns[0].upper(), series_id]
     data_frame.set_index(data_frame.columns[0], inplace=True)
     data_frame.iloc[:, 0] = pd.to_numeric(data_frame.iloc[:, 0])
@@ -118,83 +139,79 @@ def fetch_can_annually(file_id, series_id):
 
 
 def fetch_can_group_a(file_id, skiprows):
-# =============================================================================
-# Not Used Anywhere
-# =============================================================================
+    # =============================================================================
+    # Not Used Anywhere
+    # =============================================================================
     data_frame = pd.read_csv(f'dataset_can_cansim{file_id}.csv',
-                              skiprows=skiprows)
+                             skiprows=skiprows)
     if file_id == '7931814471809016759':
         data_frame.columns = [column[:7] for column in data_frame.columns]
-        data_frame.iloc[:, -1] = pd.to_numeric(data_frame.iloc[:, -1].str.replace(';', ''))
+        data_frame.iloc[:, -
+                        1] = pd.to_numeric(data_frame.iloc[:, -1].str.replace(';', ''))
     data_frame = data_frame.set_index(data_frame.columns[0]).transpose()
     data_frame.reset_index(inplace=True)
     data_frame[['quarter',
-                'period',]] = data_frame.iloc[:, 0].str.split(expand=True)
+                'period', ]] = data_frame.iloc[:, 0].str.split(expand=True)
     data_frame.set_index(data_frame.columns[0], inplace=True)
     return data_frame.groupby(data_frame.columns[-1]).mean()
 
 
 def fetch_can_group_b(file_id, skiprows):
-# =============================================================================
-# Not Used Anywhere
-# =============================================================================
+    # =========================================================================
+    # Not Used Anywhere
+    # =========================================================================
     data_frame = pd.read_csv(f'dataset_can_cansim{file_id}.csv',
                              skiprows=skiprows)
     data_frame[['month',
-                'period',]] = data_frame.iloc[:, 0].str.split('-', expand=True)
+                'period', ]] = data_frame.iloc[:, 0].str.split('-', expand=True)
     return data_frame.groupby(data_frame.columns[-1]).mean()
 
 
-def fetch_usa_bls_lnu(file_name):
-# =============================================================================
-# LNU04000000: Bureau of Labor Statistics Unemployment Rate
-# =============================================================================
-    series_id = 'LNU04000000'
+def fetch_usa_bls(file_name, series_id):
+    # =========================================================================
+    # Bureau of Labor Statistics Data Fetch
+    # =========================================================================
     data_frame = pd.read_csv(file_name,
                              sep='\t',
                              usecols=range(4),
                              low_memory=False)
     query = (data_frame.iloc[:, 0].str.contains(series_id)) & \
             (data_frame.iloc[:, 2] == 'M13')
-    data_frame = data_frame[ query ].iloc[:, [1, 3]]
+    data_frame = data_frame[query].iloc[:, [1, 3]]
     data_frame.columns = [data_frame.columns[0], series_id]
     data_frame.iloc[:, 0] = data_frame.iloc[:, 0].astype(int)
-    data_frame.iloc[:, 1] = data_frame.iloc[:, 1].astype(float)   
+    data_frame.iloc[:, 1] = data_frame.iloc[:, 1].astype(float)
     return data_frame.set_index(data_frame.columns[0])
 
 
-def fetch_usa_bls_ppi(file_name):
-# =============================================================================
-# PCUOMFG--OMFG--: Bureau of Labor Statistics Producer Price Index Manufacturing
-# =============================================================================
-    series_id = 'PCUOMFG--OMFG--'
-    data_frame = pd.read_csv(file_name, sep='\t', low_memory=False)
-    data_frame = data_frame[data_frame.iloc[:, 0].str.contains(series_id)]
-    data_frame = data_frame[data_frame.iloc[:, 2] == 'M13']
-    result_frame = data_frame.iloc[:, [1, 3]]
-    result_frame.rename(columns={'year':'period'}, inplace=True)
-    result_frame.columns = result_frame.columns.str.title()
-    result_frame.rename(columns={'Value':series_id}, inplace=True)
-    result_frame.iloc[:, 1] = result_frame.iloc[:, 1].astype(float)
-    return result_frame
-
-
-def test_capital_combined_archived():
+def test_dataset_capital_combined_archived():
     '''Data Test'''
-    '''Nominal Investment Series: A006RC1, 1929--1969'''
+    # =========================================================================
+    # Nominal Investment Series: A006RC1, 1929--1969
+    # =========================================================================
     file_name = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(file_name, 'Section1ALL_Hist.xls', '10105 Ann', 'A006RC1')
-    '''Nominal Gross Domestic Product Series: A191RC1, 1929--1969'''
+    sub_frame_a = fetch_usa_bea(
+        file_name, 'Section1ALL_Hist.xls', '10105 Ann', 'A006RC1')
+    # =========================================================================
+    # Nominal Gross Domestic Product Series: A191RC1, 1929--1969
+    # =========================================================================
     file_name = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_b = fetch_usa_bea(file_name, 'Section1ALL_Hist.xls', '10105 Ann', 'A191RC1')
+    sub_frame_b = fetch_usa_bea(
+        file_name, 'Section1ALL_Hist.xls', '10105 Ann', 'A191RC1')
     control_frame = pd.concat([sub_frame_a, sub_frame_b], axis=1, sort=True)
 
-    '''Nominal Investment Series: A006RC1, 1929--1969'''
+    # =========================================================================
+    # Nominal Investment Series: A006RC1, 1929--1969
+    # =========================================================================
     file_name = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(file_name, 'Section1ALL_Hist.xls', '10105 Ann', 'A006RC1')
-    '''Nominal Gross Domestic Product Series: A191RC1, 1929--1969'''
+    sub_frame_a = fetch_usa_bea(
+        file_name, 'Section1ALL_Hist.xls', '10105 Ann', 'A006RC1')
+    # =========================================================================
+    # Nominal Gross Domestic Product Series: A191RC1, 1929--1969
+    # =========================================================================
     file_name = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_b = fetch_usa_bea(file_name, 'Section1ALL_Hist.xls', '10105 Ann', 'A191RC1')
+    sub_frame_b = fetch_usa_bea(
+        file_name, 'Section1ALL_Hist.xls', '10105 Ann', 'A191RC1')
     test_frame = pd.concat([sub_frame_a, sub_frame_b], axis=1, sort=True)
 
     if control_frame.equals(test_frame):
@@ -202,20 +219,32 @@ def test_capital_combined_archived():
     else:
         print('Data Varies from Worksheet `10105 Ann` to Worksheet `10505 Ann`')
 
-    '''Nominal Investment Series: A006RC1, 1969--2012'''
+    # =========================================================================
+    # Nominal Investment Series: A006RC1, 1969--2012
+    # =========================================================================
     file_name = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_a = fetch_usa_bea(file_name, 'Section1all_xls.xls', '10105 Ann', 'A006RC1')
-    '''Nominal Gross Domestic Product Series: A191RC1, 1969--2012'''
+    sub_frame_a = fetch_usa_bea(
+        file_name, 'Section1all_xls.xls', '10105 Ann', 'A006RC1')
+    # =========================================================================
+    # Nominal Gross Domestic Product Series: A191RC1, 1969--2012
+    # =========================================================================
     file_name = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_b = fetch_usa_bea(file_name, 'Section1all_xls.xls', '10105 Ann', 'A191RC1')
+    sub_frame_b = fetch_usa_bea(
+        file_name, 'Section1all_xls.xls', '10105 Ann', 'A191RC1')
     control_frame = pd.concat([sub_frame_a, sub_frame_b], axis=1, sort=True)
 
-    '''Nominal Investment Series: A006RC1, 1969--2012'''
+    # =========================================================================
+    # Nominal Investment Series: A006RC1, 1969--2012
+    # =========================================================================
     file_name = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_a = fetch_usa_bea(file_name, 'Section1all_xls.xls', '10105 Ann', 'A006RC1')
-    '''Nominal Gross Domestic Product Series: A191RC1, 1969--2012'''
+    sub_frame_a = fetch_usa_bea(
+        file_name, 'Section1all_xls.xls', '10105 Ann', 'A006RC1')
+    # =========================================================================
+    # Nominal Gross Domestic Product Series: A191RC1, 1969--2012
+    # =========================================================================
     file_name = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_b = fetch_usa_bea(file_name, 'Section1all_xls.xls', '10105 Ann', 'A191RC1')
+    sub_frame_b = fetch_usa_bea(
+        file_name, 'Section1all_xls.xls', '10105 Ann', 'A191RC1')
     test_frame = pd.concat([sub_frame_a, sub_frame_b], axis=1, sort=True)
 
     if control_frame.equals(test_frame):
@@ -225,25 +254,28 @@ def test_capital_combined_archived():
 
 
 def fetch_bea_usa(file_name, series_id):
-# =============================================================================
-# TODO: Replace with Other Fetch Procedures and Eliminate These Databases
-# =============================================================================
-# =============================================================================
-# `dataset_usa_bea_nipadataa.txt`: U.S. Bureau of Economic Analysis
-# Archived: https://www.bea.gov/National/FAweb/Details/Index.html
-# https://www.bea.gov//national/FA2004/DownSS2.asp, Accessed May 26, 2018
-# =============================================================================
+    # =========================================================================
+    # TODO: Replace with Other Fetch Procedures and Eliminate These Databases
+    # =========================================================================
+    # =========================================================================
+    # `dataset_usa_bea_nipadataa.txt`: U.S. Bureau of Economic Analysis
+    # Archived: https://www.bea.gov/National/FAweb/Details/Index.html
+    # https://www.bea.gov//national/FA2004/DownSS2.asp, Accessed May 26, 2018
+    # =========================================================================
     if file_name == 'dataset_usa_bea-nipa-2015-05-01.zip':
         data_frame = pd.read_csv(file_name, usecols=range(14, 18))
-        data_frame = data_frame[data_frame.iloc[:, 2] == int(0)].iloc[:,[0, 1, 3]]
+        data_frame = data_frame[data_frame.iloc[:, 2] == int(0)].iloc[:, [
+            0, 1, 3]]
     elif file_name == 'dataset_usa_bea_nipadataa.txt':
         data_frame = pd.read_csv(file_name, thousands=',')
     else:
         pass
-    result_frame = data_frame[data_frame.iloc[:, 0] == series_id].iloc[:,[1, 2]]
+    result_frame = data_frame[data_frame.iloc[:, 0]
+                              == series_id].iloc[:, [1, 2]]
     result_frame.columns = [result_frame.columns[0].lower(), series_id]
     result_frame.drop_duplicates(inplace=True)
-    result_frame.set_index(result_frame.columns[0], inplace=True, verify_integrity=True)
+    result_frame.set_index(
+        result_frame.columns[0], inplace=True, verify_integrity=True)
     return result_frame
 
 
@@ -252,14 +284,6 @@ def lookup(data_frame):
         series = data_frame.iloc[:, i].sort_values().unique()
         print('{:*^50}'.format(series_id))
         print(series)
-
-
-def retrieval(series_id):
-    file_name = 'dataset_usa_bea-nipa-2015-05-01.zip'
-    data_frame = pd.read_csv(file_name)
-    data_frame = data_frame[data_frame.iloc[:, 0].str.contains('Table 3.17. Selected Government Current and Capital Expenditures by Function')]
-    data_frame = data_frame[data_frame.iloc[:, 7].str.contains(series_id)]
-    lookup(data_frame)
 
 
 def test_procedure(series_ids: tuple) -> None:
@@ -273,46 +297,51 @@ def test_procedure(series_ids: tuple) -> None:
 
 
 def test_sub_a(data_frame):
-    data_frame['delta_sm'] = data_frame.iloc[:, 0]-data_frame.iloc[:, 3]-data_frame.iloc[:, 4]-data_frame.iloc[:, 5]
+    data_frame['delta_sm'] = data_frame.iloc[:, 0] - \
+        data_frame.iloc[:, 3]-data_frame.iloc[:, 4]-data_frame.iloc[:, 5]
     data_frame.dropna(inplace=True)
     autocorrelation_plot(data_frame.iloc[:, 7])
 
 
 def test_sub_b(data_frame):
-#    data_frame['delta_eq'] = data_frame.iloc[:, 0]-data_frame.iloc[:, 6]
-    data_frame['delta_eq'] = 2*(data_frame.iloc[:, 0]-data_frame.iloc[:, 6]).div(data_frame.iloc[:, 0] + data_frame.iloc[:, 6])
+    # data_frame['delta_eq'] = data_frame.iloc[:, 0]-data_frame.iloc[:, 6]
+    data_frame['delta_eq'] = 2*(data_frame.iloc[:, 0]-data_frame.iloc[:, 6]
+                                ).div(data_frame.iloc[:, 0] + data_frame.iloc[:, 6])
     data_frame.dropna(inplace=True)
     data_frame.iloc[:, 7].plot(grid=True)
 
 
 def fetch_usa_bea_sfat_series():
-# =============================================================================
-# Earlier Version of `k3n31gd1es000`
-# =============================================================================
-    file_name = 'dataset_usa_bea-nipa-selected.zip'
-    control_frame = pd.read_csv(file_name)
-    control_header = control_frame.iloc[:, 8].unique().tolist()[0]
-    control_frame = control_frame.iloc[:, [9, 10]]
-    control_frame.columns = control_frame.columns.str.title()
-    control_frame.rename(columns={'Value':control_header}, inplace=True)
-    control_frame = control_frame.reset_index(drop=True)
-    control_frame = control_frame.set_index('Period')
-    """Fixed Assets Series: k3n31gd1es000, 1925--2016"""
-    file_name = 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip'
-    semi_frame_a = fetch_usa_bea_single(file_name, 'Section4ALL_xls.xls', '403 Ann', 'k3n31gd1es000')
-    """Fixed Assets Series: k3n31gd1eq000, 1925--2016"""
-    file_name = 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip'
-    semi_frame_b = fetch_usa_bea_single(file_name, 'Section4ALL_xls.xls', '403 Ann', 'k3n31gd1eq000')
-    """Fixed Assets Series: k3n31gd1ip000, 1925--2016"""
-    file_name = 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip'
-    semi_frame_c = fetch_usa_bea_single(file_name, 'Section4ALL_xls.xls', '403 Ann', 'k3n31gd1ip000')
-    """Fixed Assets Series: k3n31gd1st000, 1925--2016"""
-    file_name = 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip'
-    semi_frame_d = fetch_usa_bea_single(file_name, 'Section4ALL_xls.xls', '403 Ann', 'k3n31gd1st000')
-    test_frame = pd.concat([semi_frame_a, semi_frame_b, semi_frame_c, semi_frame_d], axis=1, sort=True)
+    archive_name = 'dataset_usa_bea-nipa-selected.zip'
+    series_id = 'k3n31gd1es000'
+    data_frame = pd.read_csv(archive_name, usecols=[0, *range(8, 11)])
+    data_frame = data_frame[data_frame.iloc[:, 1] == series_id]
+    control_frame = pd.DataFrame()
+    for source_id in data_frame.iloc[:, 0].unique():
+        current_frame = data_frame[data_frame.iloc[:, 0]
+                                   == source_id].iloc[:, [2, 3]]
+        current_frame.columns = [current_frame.columns[0],
+                                 '{}{}'.format(source_id.split()[1].replace('.', '_'), series_id)]
+        current_frame.set_index(
+            current_frame.columns[0], inplace=True, verify_integrity=True)
+        control_frame = pd.concat(
+            [control_frame, current_frame], axis=1, sort=True)
 
-    result_frame = pd.concat([test_frame, control_frame], axis=1, sort=True)
-    return result_frame
+    archive_name = 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip'
+    wb_name = 'Section4ALL_xls.xls'
+    sh_name = '403 Ann'
+    # =========================================================================
+    # Fixed Assets Series, 1925--2016
+    # =========================================================================
+    SERIES_IDS = ('k3n31gd1es000', 'k3n31gd1eq000',
+                  'k3n31gd1ip000', 'k3n31gd1st000',)
+    test_frame = pd.concat(
+        [fetch_usa_bea(archive_name, wb_name, sh_name, series_id)
+         for series_id in SERIES_IDS],
+        axis=1,
+        sort=True)
+
+    return pd.concat([test_frame, control_frame], axis=1, sort=True)
 
 
 def plot_can_test(control, test):
@@ -372,35 +401,54 @@ def test_data_consistency_a():
     semi_frame_g = fetch_can_annually('03800566', 'v96391932')
     semi_frame_h = fetch_can_annually('03800567', 'v96730304')
     semi_frame_i = fetch_can_annually('03800567', 'v96730338')
-    result_frame = pd.concat([semi_frame_a, semi_frame_b, semi_frame_c, semi_frame_d, semi_frame_e, \
-                           semi_frame_f, semi_frame_g, semi_frame_h, semi_frame_i], axis=1, sort=True)
+    result_frame = pd.concat([semi_frame_a, semi_frame_b, semi_frame_c, semi_frame_d, semi_frame_e,
+                              semi_frame_f, semi_frame_g, semi_frame_h, semi_frame_i], axis=1, sort=True)
     result_frame = result_frame.dropna()
-    SERA = result_frame.iloc[:, 0].div(result_frame.iloc[0, 0])
-    SERB = result_frame.iloc[:, 4].div(result_frame.iloc[0, 4])
-    SERC = result_frame.iloc[:, 5].div(result_frame.iloc[0, 5])
-    SERD = result_frame.iloc[:, 7].div(result_frame.iloc[:, 6].div(result_frame.iloc[:, 5]/100))
-    SERE = result_frame.iloc[:, 8].div(result_frame.iloc[0, 8])
-    '''Option 1'''
+    ser_a = result_frame.iloc[:, 0].div(result_frame.iloc[0, 0])
+    ser_b = result_frame.iloc[:, 4].div(result_frame.iloc[0, 4])
+    ser_c = result_frame.iloc[:, 5].div(result_frame.iloc[0, 5])
+    ser_d = result_frame.iloc[:, 7].div(
+        result_frame.iloc[:, 6].div(result_frame.iloc[:, 5]).mul(100)
+    ser_e=result_frame.iloc[:, 8].div(result_frame.iloc[0, 8])
+    # =============================================================================
+    # Option 1
+    # =============================================================================
     plot_can_test(SERA, SERC)
-    '''Option 2'''
+    # =============================================================================
+    # Option 2
+    # =============================================================================
     plot_can_test(SERD, SERE)
-    '''Option 3'''
+    # =============================================================================
+    # Option 3
+    # =============================================================================
     plot_can_test(SERB, SERE)
-    '''Option 4'''
+    # =============================================================================
+    # Option 4
+    # =============================================================================
     plot_can_test(SERE.div(SERB), SERC)
 
 
 def test_data_consistency_b():
     '''Project II: USA Fixed Assets Data Comparison'''
     print(__doc__)
-    file_name = 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip'
-    """Fixed Assets Series: k1ntotl1si000, 1925--2016"""
-    semi_frame_a = fetch_usa_bea(file_name, 'Section2ALL_xls.xls', '201 Ann', 'k1ntotl1si000')
-    """Fixed Assets Series: kcntotl1si000, 1925--2016"""
-    semi_frame_b = fetch_usa_bea(file_name, 'Section2ALL_xls.xls', '202 Ann', 'kcntotl1si000')
-    """Not Used: Fixed Assets: k3ntotl1si000, 1925--2016, Table 2.3. Historical-Cost Net Stock of Private Fixed Assets, Equipment, Structures, and Intellectual Property Products by Type"""
-    semi_frame_c = fetch_usa_bea(file_name, 'Section2ALL_xls.xls', '203 Ann', 'k3ntotl1si000')
-    result_frame = pd.concat([semi_frame_a, semi_frame_b, semi_frame_c], axis=1, sort=True)
+    file_name='dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip'
+# =============================================================================
+# Fixed Assets Series: k1ntotl1si000, 1925--2016
+# =============================================================================
+    semi_frame_a=fetch_usa_bea(
+        file_name, 'Section2ALL_xls.xls', '201 Ann', 'k1ntotl1si000')
+# =============================================================================
+# Fixed Assets Series: kcntotl1si000, 1925--2016
+# =============================================================================
+    semi_frame_b=fetch_usa_bea(
+        file_name, 'Section2ALL_xls.xls', '202 Ann', 'kcntotl1si000')
+# =============================================================================
+# Not Used: Fixed Assets: k3ntotl1si000, 1925--2016, Table 2.3. Historical-Cost Net Stock of Private Fixed Assets, Equipment, Structures, and Intellectual Property Products by Type
+# =============================================================================
+    semi_frame_c=fetch_usa_bea(
+        file_name, 'Section2ALL_xls.xls', '203 Ann', 'k3ntotl1si000')
+    result_frame=pd.concat(
+        [semi_frame_a, semi_frame_b, semi_frame_c], axis=1, sort=True)
 
     print(result_frame)
 
@@ -409,44 +457,50 @@ def test_data_consistency_c():
     '''Project III: USA BLS Unemployment Rate & Producer Price Index Manufacturing'''
     print(__doc__)
     '''LNU04000000: Bureau of Labor Statistics Unemployment Rate'''
-    print(fetch_usa_bls_lnu('dataset_usa_bls-2015-02-23-ln.data.1.AllData'))
+    print(fetch_usa_bls('dataset_usa_bls-2015-02-23-ln.data.1.AllData', 'LNU04000000'))
     '''LNU04000000: Bureau of Labor Statistics Unemployment Rate'''
-    print(fetch_usa_bls_lnu('dataset_usa_bls-2017-07-06-ln.data.1.AllData'))
+    print(fetch_usa_bls('dataset_usa_bls-2017-07-06-ln.data.1.AllData', 'LNU04000000'))
     '''PCUOMFG--OMFG--: Bureau of Labor Statistics Producer Price Index Manufacturing'''
-    print(fetch_usa_bls_ppi('dataset USA BLS pc.data.0.Current'))
+    print(fetch_usa_bls('dataset_usa_bls-pc.data.0.Current', 'PCUOMFG--OMFG'))
 
 
 def test_data_consistency_d():
     '''Project IV: USA Macroeconomic & Fixed Assets Data Tests'''
     print(__doc__)
-    """Macroeconomic Data Tests"""
 # =============================================================================
-#     Tested: `A051RC1` != `A052RC1` + `A262RC1`
+# Macroeconomic Data Tests
 # =============================================================================
-    series_ids = ('A051RC1', 'A052RC1', 'A262RC1',)
-    test_procedure(series_ids)
 # =============================================================================
-#     Tested: `Government` = `Federal` + `State and local`
+# Tested: `A051RC1` != `A052RC1` + `A262RC1`
 # =============================================================================
-    series_ids = ('A822RC1', 'A823RC1', 'A829RC1',)
-    test_procedure(series_ids)
-    series_ids = ('A955RC1', 'A957RC1', 'A991RC1',)
-    test_procedure(series_ids)
+    SERIES_IDS=('A051RC1', 'A052RC1', 'A262RC1',)
+    test_procedure(SERIES_IDS)
 # =============================================================================
-#     Tested: `Federal` = `National defense` + `Nondefense`
+# Tested: `Government` = `Federal` + `State and local`
 # =============================================================================
-    series_ids = ('A823RC1', 'A824RC1', 'A825RC1',)
-    test_procedure(series_ids)
-    series_ids = ('A957RC1', 'A997RC1', 'A542RC1',)
-    test_procedure(series_ids)
-    """Fixed Assets Data Tests"""
-    result_frame = fetch_usa_bea_sfat_series()
+    SERIES_IDS=('A822RC1', 'A823RC1', 'A829RC1',)
+    test_procedure(SERIES_IDS)
+    SERIES_IDS=('A955RC1', 'A957RC1', 'A991RC1',)
+    test_procedure(SERIES_IDS)
+# =============================================================================
+# Tested: `Federal` = `National defense` + `Nondefense`
+# =============================================================================
+    SERIES_IDS=('A823RC1', 'A824RC1', 'A825RC1',)
+    test_procedure(SERIES_IDS)
+    SERIES_IDS=('A957RC1', 'A997RC1', 'A542RC1',)
+    test_procedure(SERIES_IDS)
+# =============================================================================
+# Fixed Assets Data Tests
+# =============================================================================
+    result_frame=fetch_usa_bea_sfat_series()
     """Tested: `k3n31gd1es000` = `k3n31gd1eq000` + `k3n31gd1ip000` + `k3n31gd1st000`"""
 #    test_sub_a(result_frame)
     """Comparison of `k3n31gd1es000` out of control_frame with `k3n31gd1es000` out of test_frame"""
 #    test_sub_b(result_frame)
     """Future Project: Test Ratio of Manufacturing Fixed Assets to Overall Fixed Assets"""
-    """To Do"""
+# =============================================================================
+# TODO:
+# =============================================================================
 
 
 def test_data_consistency_e():
@@ -463,4 +517,3 @@ test_data_consistency_b()
 test_data_consistency_c()
 # test_data_consistency_d()
 test_data_consistency_e()
-

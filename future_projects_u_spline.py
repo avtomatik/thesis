@@ -10,8 +10,10 @@ def spline_procedure(source_frame):
     source_frame.iloc[:, 1]: Labor,
     source_frame.iloc[:, 2]: Product
     '''
-    X = source_frame.iloc[:, 0].div(source_frame.iloc[:, 1]) # # Labor Capital Intensity
-    Y = source_frame.iloc[:, 2].div(source_frame.iloc[:, 1]) # # Labor Productivity
+    X = source_frame.iloc[:, 0].div(
+        source_frame.iloc[:, 1])  # Labor Capital Intensity
+    Y = source_frame.iloc[:, 2].div(
+        source_frame.iloc[:, 1])  # Labor Productivity
     X = X.sort_values()
     spl = UnivariateSpline(X, Y)
 
@@ -20,7 +22,8 @@ def spline_procedure(source_frame):
     plt.figure()
     plt.scatter(X, Y, label='Original')
     plt.plot(Z, spl(Z))
-    plt.title('Labor Capital Intensity & Labor Productivity, {}$-${}'.format(source_frame.index[0], source_frame.index[-1]))
+    plt.title('Labor Capital Intensity & Labor Productivity, {}$-${}'.format(source_frame.index[0],
+                                                                             source_frame.index[-1]))
     plt.xlabel('Labor Capital Intensity')
     plt.ylabel('Labor Productivity')
     plt.grid(True)
@@ -39,4 +42,3 @@ def spline_procedure(source_frame):
 
 source_frame = get_dataset_cobb_douglas()
 spline_procedure(source_frame)
-
