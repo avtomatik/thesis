@@ -603,8 +603,8 @@ file_name = 'theory_of_production_table2.dat'
 df_a = pd.read_csv(file_name, sep='\t')
 file_name = 'theory_of_production_table3.dat'
 df_b = pd.read_csv(file_name, sep='\t')
-df_a.set_index('period', inplace=True)
-df_b.set_index('period', inplace=True)
+df_a.set_index(df_a.columns[0], inplace=True)
+df_b.set_index(df_b.columns[0], inplace=True)
 df_a = df_a.iloc[:, 4]
 df_b = df_b.iloc[:, 1]
 df = pd.concat([df_a, df_b], axis=1)
