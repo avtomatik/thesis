@@ -3746,17 +3746,24 @@ def data_preprocessing_cobb_douglas(df: pd.DataFrame) -> tuple[pd.DataFrame, tup
     df['prod_roll_calc_dev'] = df.iloc[:, 5].sub(df.iloc[:, 7])
     df['cap_to_lab'] = df.iloc[:, 1].div(df.iloc[:, 0])
     df['c_turnover'] = df.iloc[:, 2].div(df.iloc[:, 0])
-
-
-# =============================================================================
-#     print(r2_score(df.iloc[:, 2], df.iloc[:, 3]))
-#     print(np.absolute(df.iloc[:, 3].sub(df.iloc[:, 2]).div(df.iloc[:, 2])).mean())
-# =============================================================================
-
+    # =========================================================================
+    #     print(r2_score(df.iloc[:, 2], df.iloc[:, 3]))
+    #     print(np.absolute(df.iloc[:, 3].sub(df.iloc[:, 2]).div(df.iloc[:, 2])).mean())
+    # =========================================================================
     return df, (k, np.exp(b),)
 
 
-def plot_cobb_douglas(data_frame: pd.DataFrame, params: tuple[float]) -> None:
+FIG_MAP = {
+    'fg_a': 'Chart I Progress in Manufacturing {}$-${} ({}=100)',
+    'fg_b': 'Chart II Theoretical and Actual Curves of Production {}$-${} ({}=100)',
+    'fg_c': 'Chart III Percentage Deviations of $P$ and $P\'$ from Their Trend Lines\nTrend Lines=3 Year Moving Average',
+    'fg_d': 'Chart IV Percentage Deviations of Computed from Actual Product {}$-${}',
+    'fg_e': 'Chart V Relative Final Productivities of Labor and Capital',
+    'year_price': 1899,
+}
+
+
+def plot_cobb_douglas(data_frame: pd.DataFrame, params: tuple[float], mapping: dict) -> None:
     '''
     Cobb--Douglas Algorithm as per C.W. Cobb, P.H. Douglas. A Theory of Production, 1928;
     '''
@@ -3768,13 +3775,6 @@ def plot_cobb_douglas(data_frame: pd.DataFrame, params: tuple[float]) -> None:
     def cap_productivity(array: np.array, k: float = 0.25, b: float = 1.01) -> np.array:
         return np.multiply(np.power(array, 1-k), b)
 
-    FIG_MAP = {
-        'fg_a': 'Chart I Progress in Manufacturing {}$-${} ({}=100)',
-        'fg_b': 'Chart II Theoretical and Actual Curves of Production {}$-${} ({}=100)',
-        'fg_c': 'Chart III Percentage Deviations of $P$ and $P\'$ from Their Trend Lines\nTrend Lines=3 Year Moving Average',
-        'fg_d': 'Chart IV Percentage Deviations of Computed from Actual Product {}$-${}',
-        'fg_e': 'Chart V Relative Final Productivities of Labor and Capital',
-    }
     plt.figure(1)
     plt.semilogy(data_frame.iloc[:, range(3)], label=[
         'Fixed Capital',
@@ -3783,9 +3783,9 @@ def plot_cobb_douglas(data_frame: pd.DataFrame, params: tuple[float]) -> None:
     ])
     plt.xlabel('Period')
     plt.ylabel('Indexes')
-    plt.title(FIG_MAP['fg_a'].format(data_frame.index[0],
+    plt.title(mapping['fg_a'].format(data_frame.index[0],
                                      data_frame.index[-1],
-                                     data_frame.index[0]))
+                                     mapping['year_price']))
     plt.legend()
     plt.grid(True)
     plt.figure(2)
@@ -3799,26 +3799,29 @@ def plot_cobb_douglas(data_frame: pd.DataFrame, params: tuple[float]) -> None:
     ])
     plt.xlabel('Period')
     plt.ylabel('Production')
-    plt.title(FIG_MAP['fg_b'].format(data_frame.index[0],
+    plt.title(mapping['fg_b'].format(data_frame.index[0],
                                      data_frame.index[-1],
-                                     data_frame.index[0]))
+                                     mapping['year_price']))
     plt.legend()
     plt.grid(True)
     plt.figure(3)
     plt.plot(data_frame.iloc[:, [8, 9]], label=[
         'Deviations of $P$',
         'Deviations of $P\'$',
+        # =========================================================================
+        #      TODO: ls=['solid','dashed',]
+        # =========================================================================
     ])
     plt.xlabel('Period')
     plt.ylabel('Percentage Deviation')
-    plt.title(FIG_MAP['fg_c'])
+    plt.title(mapping['fg_c'])
     plt.legend()
     plt.grid(True)
     plt.figure(4)
     plt.plot(data_frame.iloc[:, 5].div(data_frame.iloc[:, 2]).sub(1))
     plt.xlabel('Period')
     plt.ylabel('Percentage Deviation')
-    plt.title(FIG_MAP['fg_d'].format(data_frame.index[0],
+    plt.title(mapping['fg_d'].format(data_frame.index[0],
                                      data_frame.index[-1]))
     plt.grid(True)
     plt.figure(5, figsize=(5, 8))
@@ -3831,7 +3834,7 @@ def plot_cobb_douglas(data_frame: pd.DataFrame, params: tuple[float]) -> None:
              label='$\\frac{1}{4}\\frac{P}{C}$')
     plt.xlabel('$\\frac{L}{C}$')
     plt.ylabel('Indexes')
-    plt.title(FIG_MAP['fg_e'])
+    plt.title(mapping['fg_e'])
     plt.legend()
     plt.grid(True)
     plt.show()
@@ -3909,89 +3912,20 @@ def plot_cobb_douglas_new_features(data_frame):
     plt.show()
 
 
-def plot_cobb_douglas_canada(data_frame: pd.DataFrame, params: tuple[float]) -> None:
-    '''
-    Cobb--Douglas Algorithm as per C.W. Cobb, P.H. Douglas. A Theory of Production, 1928;
-    '''
-    assert data_frame.shape[1] == 12
-
-    def lab_productivity(array: np.array, k: float = 0.25, b: float = 1.01) -> np.array:
-        return np.multiply(np.power(array, -k), b)
-
-    def cap_productivity(array: np.array, k: float = 0.25, b: float = 1.01) -> np.array:
-        return np.multiply(np.power(array, 1-k), b)
-
-    FIG_MAP = {
-        'fg_a': 'Chart I Progress in Manufacturing {}$-${} ({}=100)',
-        'fg_b': 'Chart II Theoretical and Actual Curves of Production {}$-${} ({}=100)',
-        'fg_c': 'Chart III Percentage Deviations of $P$ and $P\'$ from Their Trend Lines\nTrend Lines=3 Year Moving Average',
-        'fg_d': 'Chart IV Percentage Deviations of Computed from Actual Product {}$-${}',
-        'fg_e': 'Chart V Relative Final Productivities of Labor and Capital',
-        'year_price': 2007,
-    }
-    plt.figure(1)
-    plt.semilogy(data_frame.iloc[:, range(3)], label=[
-        'Fixed Capital',
-        'Labor Force',
-        'Physical Product',
-    ])
-    plt.xlabel('Period')
-    plt.ylabel('Indexes')
-    plt.title(FIG_MAP['fg_a'].format(data_frame.index[0],
-                                     data_frame.index[-1],
-                                     FIG_MAP['year_price']))
-    plt.legend()
-    plt.grid(True)
-    plt.figure(2)
-    plt.semilogy(data_frame.iloc[:, [2, 5]], label=[
-        'Actual Product',
-        'Computed Product, $P\' = {:,.4f}L^{{{:,.4f}}}C^{{{:,.4f}}}$'.format(
-            params[1],
-            1-params[0],
-            params[0],
-        ),
-    ])
-    plt.xlabel('Period')
-    plt.ylabel('Production')
-    plt.title(FIG_MAP['fg_b'].format(data_frame.index[0],
-                                     data_frame.index[-1],
-                                     FIG_MAP['year_price']))
-    plt.legend()
-    plt.grid(True)
-    plt.figure(3)
-    plt.plot(data_frame.iloc[:, [8, 9]], label=[
-        'Deviations of $P$',
-        'Deviations of $P\'$',
-    ])
-    plt.xlabel('Period')
-    plt.ylabel('Percentage Deviation')
-    plt.title(FIG_MAP['fg_c'])
-    plt.legend()
-    plt.grid(True)
-    plt.figure(4)
-    plt.plot(data_frame.iloc[:, 5].div(data_frame.iloc[:, 2]).sub(1))
-    plt.xlabel('Period')
-    plt.ylabel('Percentage Deviation')
-    plt.title(FIG_MAP['fg_d'].format(data_frame.index[0],
-                                     data_frame.index[-1]))
-    plt.grid(True)
-    plt.figure(5, figsize=(5, 8))
-    lc = np.arange(0.2, 1.0, 0.005)
-    plt.scatter(data_frame.iloc[:, 10], data_frame.iloc[:, 4])
-    plt.scatter(data_frame.iloc[:, 10], data_frame.iloc[:, 11])
-    plt.plot(lc, lab_productivity(lc, *params),
-             label='$\\frac{3}{4}\\frac{P}{L}$')
-    plt.plot(lc, cap_productivity(lc, *params),
-             label='$\\frac{1}{4}\\frac{P}{C}$')
-    plt.xlabel('$\\frac{L}{C}$')
-    plt.ylabel('Indexes')
-    plt.title(FIG_MAP['fg_e'])
-    plt.legend()
-    plt.grid(True)
-    plt.show()
+# =============================================================================
+# Canada
+# =============================================================================
+FIG_MAP = {
+    'fg_a': 'Chart I Progress in Manufacturing {}$-${} ({}=100)',
+    'fg_b': 'Chart II Theoretical and Actual Curves of Production {}$-${} ({}=100)',
+    'fg_c': 'Chart III Percentage Deviations of $P$ and $P\'$ from Their Trend Lines\nTrend Lines=3 Year Moving Average',
+    'fg_d': 'Chart IV Percentage Deviations of Computed from Actual Product {}$-${}',
+    'fg_e': 'Chart V Relative Final Productivities of Labor and Capital',
+    'year_price': 2007,
+}
 
 
-def plot_cobb_douglas_3d(data_frame):
+def plot_cobb_douglas_3d(data_frame: pd.DataFrame) -> None:
     '''
     Cobb--Douglas 3D-Plotting
     '''
@@ -4087,67 +4021,20 @@ def plot_cobb_douglas_alternative(data_frame):
     plt.show()
 
 
-def plot_cobb_douglas_modified(data_frame):
-    '''
-    Cobb--Douglas Algorithm as per C.W. Cobb, P.H. Douglas. A Theory of Production, 1928 & P.H. Douglas. The Theory of Wages, 1934;
-    '''
-    FIG_MAP = {
-        'fg_a': 'Chart 15 Relative Increase in Capital, Labor, and Physical Product in Manufacturing Industries of Massachussets, %d$-$%d (%d=100)',
-        'fg_b': 'Chart 16 Theoretical and Actual Curves of Production, Massachusetts, %d$-$%d (%d=100)',
-        'fg_c': 'Chart III Percentage Deviations of $P$ and $P\'$ from Their Trend Lines, Massachusetts\nTrend Lines = 3 Year Moving Average',
-        'fg_d': 'Chart 17 The Percentage Deviations of the Computed Product ($P\'$) from the Actual Product ($P$) in Massachusetts Manufacturing, %d$-$%d',
-        'year_price': 1899
-    }
-    plt.figure(1)
-    plt.semilogy(data_frame.iloc[:, range(3)], label=[
-        'Fixed Capital',
-        'Labor Force',
-        'Physical Product',
-    ])
-    plt.xlabel('Period')
-    plt.ylabel('Indexes')
-    plt.title(FIG_MAP['fg_a'].format(data_frame.index[0],
-                                     data_frame.index[-1],
-                                     FIG_MAP['year_price']))
-    plt.legend()
-    plt.grid(True)
-    plt.figure(2)
-    plt.semilogy(data_frame.iloc[:, [2, 5]], label=[
-        'Actual Product',
-        'Computed Product, $P\' = {:,.4f}L^{{{:,.4f}}}C^{{{:,.4f}}}$'.format(
-            params[1],
-            1-params[0],
-            params[0],
-        ),
-    ])
-    plt.xlabel('Period')
-    plt.ylabel('Production')
-    plt.title(FIG_MAP['fg_b'].format(data_frame.index[0],
-                                     data_frame.index[-1],
-                                     FIG_MAP['year_price']))
-    plt.legend()
-    plt.grid(True)
-    plt.figure(3)
-    plt.plot(data_frame.iloc[:, [8, 9]], label=[
-        'Deviations of $P$',
-        'Deviations of $P\'$',
-    ])
-    plt.xlabel('Period')
-    plt.ylabel('Percentage Deviation')
-    plt.title(FIG_MAP['fg_c'])
-    plt.legend()
-    plt.grid(True)
-    plt.figure(4)
-    plt.plot(data_frame.iloc[:, 5].div(data_frame.iloc[:, 2]).sub(1))
-    plt.xlabel('Period')
-    plt.ylabel('Percentage Deviation')
-    plt.title(FIG_MAP['fg_d'].format(data_frame.index[0],
-                                     data_frame.index[-1]))
-    plt.grid(True)
-    plt.show()
+# =============================================================================
+# Cobb--Douglas Algorithm as per C.W. Cobb, P.H. Douglas. A Theory of Production, 1928 & P.H. Douglas. The Theory of Wages, 1934;
+# =============================================================================
+FIG_MAP = {
+    'fg_a': 'Chart 15 Relative Increase in Capital, Labor, and Physical Product in Manufacturing Industries of Massachussets, {}$-${} ({}=100',
+    'fg_b': 'Chart 16 Theoretical and Actual Curves of Production, Massachusetts, {}$-${} ({}=100',
+    'fg_c': 'Chart III Percentage Deviations of $P$ and $P\'$ from Their Trend Lines, Massachusetts\nTrend Lines = 3 Year Moving Average',
+    'fg_d': 'Chart 17 The Percentage Deviations of the Computed Product ($P\'$) from the Actual Product ($P$) in Massachusetts Manufacturing, {}$-${}',
+    'fg_e': 'Chart V Relative Final Productivities of Labor and Capital',
+    'year_price': 1899
+}
 
 
-def plot_cobb_douglas_tight_layout(data_frame: pd.DataFrame, params: tuple[float]) -> None:
+def plot_cobb_douglas_tight_layout(data_frame: pd.DataFrame, params: tuple[float], mapping: dict) -> None:
     '''
     Cobb--Douglas Algorithm as per C.W. Cobb, P.H. Douglas. A Theory of Production, 1928;
     '''
@@ -4159,13 +4046,6 @@ def plot_cobb_douglas_tight_layout(data_frame: pd.DataFrame, params: tuple[float
     def cap_productivity(array: np.array, k: float = 0.25, b: float = 1.01) -> np.array:
         return np.multiply(np.power(array, 1-k), b)
 
-    FIG_MAP = {
-        'fg_a': 'Chart I Progress in Manufacturing {}$-${} ({}=100)',
-        'fg_b': 'Chart II Theoretical and Actual Curves of Production {}$-${} ({}=100)',
-        'fg_c': 'Chart III Percentage Deviations of $P$ and $P\'$ from Their Trend Lines\nTrend Lines=3 Year Moving Average',
-        'fg_d': 'Chart IV Percentage Deviations of Computed from Actual Product {}$-${}',
-        'fg_e': 'Chart V Relative Final Productivities of Labor and Capital',
-    }
     fig, axs = plt.subplots(5, 1)
     axs[0].plot(data_frame.iloc[:, range(3)], label=[
         'Fixed Capital',
@@ -4174,9 +4054,9 @@ def plot_cobb_douglas_tight_layout(data_frame: pd.DataFrame, params: tuple[float
     ])
     axs[0].set_xlabel('Period')
     axs[0].set_ylabel('Indexes')
-    axs[0].set_title(FIG_MAP['fg_a'].format(data_frame.index[0],
+    axs[0].set_title(mapping['fg_a'].format(data_frame.index[0],
                                             data_frame.index[-1],
-                                            data_frame.index[0]))
+                                            mapping['year_price']))
     axs[0].legend()
     axs[0].grid(True)
     axs[1].plot(data_frame.iloc[:, [2, 5]], label=[
@@ -4186,9 +4066,9 @@ def plot_cobb_douglas_tight_layout(data_frame: pd.DataFrame, params: tuple[float
     ])
     axs[1].set_xlabel('Period')
     axs[1].set_ylabel('Production')
-    axs[1].set_title(FIG_MAP['fg_b'].format(data_frame.index[0],
+    axs[1].set_title(mapping['fg_b'].format(data_frame.index[0],
                                             data_frame.index[-1],
-                                            data_frame.index[0]))
+                                            mapping['year_price']))
     axs[1].legend()
     axs[1].grid(True)
     axs[2].plot(data_frame.iloc[:, [8, 9]],
@@ -4196,17 +4076,19 @@ def plot_cobb_douglas_tight_layout(data_frame: pd.DataFrame, params: tuple[float
                     'Deviations of $P$',
                     'Deviations of $P\'$',
     ],
-        # TODO: ls=['solid','dashed',]
+        # =========================================================================
+        #      TODO: ls=['solid','dashed',]
+        # =========================================================================
     )
     axs[2].set_xlabel('Period')
     axs[2].set_ylabel('Percentage Deviation')
-    axs[2].set_title(FIG_MAP['fg_c'])
+    axs[2].set_title(mapping['fg_c'])
     axs[2].legend()
     axs[2].grid(True)
     axs[3].plot(data_frame.iloc[:, 5].div(data_frame.iloc[:, 2]).sub(1))
     axs[3].set_xlabel('Period')
     axs[3].set_ylabel('Percentage Deviation')
-    axs[3].set_title(FIG_MAP['fg_d'].format(data_frame.index[0],
+    axs[3].set_title(mapping['fg_d'].format(data_frame.index[0],
                                             data_frame.index[-1]))
     axs[3].grid(True)
     lc = np.arange(0.2, 1.0, 0.005)
@@ -4218,13 +4100,10 @@ def plot_cobb_douglas_tight_layout(data_frame: pd.DataFrame, params: tuple[float
                 label='$\\frac{1}{4}\\frac{P}{C}$')
     axs[4].set_xlabel('$\\frac{L}{C}$')
     axs[4].set_ylabel('Indexes')
-    axs[4].set_title(FIG_MAP['fg_e'])
+    axs[4].set_title(mapping['fg_e'])
     axs[4].legend()
     axs[4].grid(True)
     plt.tight_layout()
-    # =========================================================================
-    # plt.savefig('view.pdf', format='pdf', dpi=900)
-    # =========================================================================
     plt.show()
 
 
