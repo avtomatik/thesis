@@ -1905,6 +1905,7 @@ def get_data_cobb_douglas() -> pd.DataFrame:
                            axis=1,
                            sort=True)
     data_frame.dropna(inplace=True)
+    data_frame.columns = ['capital', 'labor', 'product']
     return data_frame.div(data_frame.iloc[0, :])
 
 
@@ -3738,14 +3739,29 @@ def data_preprocessing_cobb_douglas(df: pd.DataFrame) -> tuple[pd.DataFrame, tup
     #     1
     # )
     # =========================================================================
-    df['prod_calc'] = df.iloc[:, 0].pow(k).mul(
-        df.iloc[:, 1].pow(1-k)).mul(np.exp(b))
-    df['prod_roll'] = df.iloc[:, 2].rolling(window=3, center=True).mean()
-    df['prod_roll_calc'] = df.iloc[:, -2].rolling(window=3, center=True).mean()
-    df['prod_roll_dev'] = df.iloc[:, 2].sub(df.iloc[:, 6])
-    df['prod_roll_calc_dev'] = df.iloc[:, 5].sub(df.iloc[:, 7])
+    # =========================================================================
+    # Description
+    # =========================================================================
     df['cap_to_lab'] = df.iloc[:, 1].div(df.iloc[:, 0])
+    # =========================================================================
+    # Fixed Assets Turnover
+    # =========================================================================
     df['c_turnover'] = df.iloc[:, 2].div(df.iloc[:, 0])
+    # =========================================================================
+    # Product Trend Line=3 Year Moving Average
+    # =========================================================================
+    df['prod_roll'] = df.iloc[:, 2].rolling(window=3, center=True).mean()
+    df['prod_roll_sub'] = df.iloc[:, 2].sub(df.iloc[:, -1])
+    # =========================================================================
+    # Computed Product
+    # =========================================================================
+    df['prod_comp'] = df.iloc[:, 0].pow(k).mul(
+        df.iloc[:, 1].pow(1-k)).mul(np.exp(b))
+    # =========================================================================
+    # Computed Product Trend Line=3 Year Moving Average
+    # =========================================================================
+    df['prod_comp_roll'] = df.iloc[:, -1].rolling(window=3, center=True).mean()
+    df['prod_comp_roll_sub'] = df.iloc[:, -2].sub(df.iloc[:, -1])
     # =========================================================================
     #     print(r2_score(df.iloc[:, 2], df.iloc[:, 3]))
     #     print(np.absolute(df.iloc[:, 3].sub(df.iloc[:, 2]).div(df.iloc[:, 2])).mean())
@@ -3789,7 +3805,7 @@ def plot_cobb_douglas(data_frame: pd.DataFrame, params: tuple[float], mapping: d
     plt.legend()
     plt.grid(True)
     plt.figure(2)
-    plt.semilogy(data_frame.iloc[:, [2, 5]], label=[
+    plt.semilogy(data_frame.iloc[:, [2, 9]], label=[
         'Actual Product',
         'Computed Product, $P\' = {:,.4f}L^{{{:,.4f}}}C^{{{:,.4f}}}$'.format(
             params[1],
@@ -3805,7 +3821,7 @@ def plot_cobb_douglas(data_frame: pd.DataFrame, params: tuple[float], mapping: d
     plt.legend()
     plt.grid(True)
     plt.figure(3)
-    plt.plot(data_frame.iloc[:, [8, 9]], label=[
+    plt.plot(data_frame.iloc[:, [8, 11]], label=[
         'Deviations of $P$',
         'Deviations of $P\'$',
         # =========================================================================
@@ -3818,7 +3834,7 @@ def plot_cobb_douglas(data_frame: pd.DataFrame, params: tuple[float], mapping: d
     plt.legend()
     plt.grid(True)
     plt.figure(4)
-    plt.plot(data_frame.iloc[:, 5].div(data_frame.iloc[:, 2]).sub(1))
+    plt.plot(data_frame.iloc[:, 9].div(data_frame.iloc[:, 2]).sub(1))
     plt.xlabel('Period')
     plt.ylabel('Percentage Deviation')
     plt.title(mapping['fg_d'].format(data_frame.index[0],
@@ -3826,8 +3842,8 @@ def plot_cobb_douglas(data_frame: pd.DataFrame, params: tuple[float], mapping: d
     plt.grid(True)
     plt.figure(5, figsize=(5, 8))
     lc = np.arange(0.2, 1.0, 0.005)
-    plt.scatter(data_frame.iloc[:, 10], data_frame.iloc[:, 4])
-    plt.scatter(data_frame.iloc[:, 10], data_frame.iloc[:, 11])
+    plt.scatter(data_frame.iloc[:, 5], data_frame.iloc[:, 4])
+    plt.scatter(data_frame.iloc[:, 5], data_frame.iloc[:, 6])
     plt.plot(lc, lab_productivity(lc, *params),
              label='$\\frac{3}{4}\\frac{P}{L}$')
     plt.plot(lc, cap_productivity(lc, *params),
