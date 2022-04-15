@@ -1890,40 +1890,28 @@ def get_data_cobb_douglas_deflator():
     return result_frame
 
 
-def get_data_cobb_douglas() -> pd.DataFrame:
-    '''Original Cobb--Douglas Data Preprocessing'''
-    ARCHIVE_NAMES = ('dataset_usa_cobb-douglas.zip',
-                     'dataset_usa_census1949.zip',)
-    # =========================================================================
-    # Total Fixed Capital in 1880 dollars (4)
-    # Average Number Employed (in thousands)
-    # HSUS 1949 Page 179, J14: Warren M. Persons, Index of Physical Production of Manufacturing
-    # =========================================================================
-    data_frame = pd.concat([fetch_usa_classic(ARCHIVE_NAMES[0], 'CDT2S4'),
-                            fetch_usa_classic(ARCHIVE_NAMES[0], 'CDT3S1'),
-                            fetch_usa_census(ARCHIVE_NAMES[1], 'J0014')],
-                           axis=1,
-                           sort=True)
-    data_frame.dropna(inplace=True)
-    data_frame.columns = ['capital', 'labor', 'product']
-    return data_frame.div(data_frame.iloc[0, :])
-
-
-def get_data_cobb_douglas_extended() -> pd.DataFrame:
+def get_data_cobb_douglas(series_number=3) -> pd.DataFrame:
     '''Original Cobb--Douglas Data Preprocessing Extension'''
-    ARCHIVE_NAMES = ('dataset_usa_cobb-douglas.zip',
-                     'dataset_usa_census1949.zip',
-                     'dataset_douglas.zip',)
+    ARCHIVE_NAMES = (
+        'dataset_usa_cobb-douglas.zip',
+        'dataset_usa_census1949.zip',
+        'dataset_douglas.zip',
+    )
     data_frame = pd.concat([fetch_usa_classic(ARCHIVE_NAMES[0], 'CDT2S4'),
                             fetch_usa_classic(ARCHIVE_NAMES[0], 'CDT3S1'),
                             fetch_usa_census(ARCHIVE_NAMES[1], 'J0014'),
+                            # =================================================
+                            # Description
+                            # =================================================
                             fetch_usa_census(ARCHIVE_NAMES[1], 'J0013'),
                             # =================================================
                             # The Revised Index of Physical Production for All Manufacturing In the United States, 1899--1926
                             # =================================================
                             fetch_usa_classic(ARCHIVE_NAMES[2], 'DT24AS01')], axis=1, sort=True)
     data_frame.dropna(inplace=True)
-    return data_frame.div(data_frame.iloc[0, :])
+    data_frame.columns = ['capital', 'labor',
+                          'product', 'product_nber', 'product_rev']
+    return data_frame.div(data_frame.iloc[0, :]).iloc[:, range(series_number)]
 
 
 def get_data_cobb_douglas_extension_capital():
@@ -3769,6 +3757,88 @@ def data_preprocessing_cobb_douglas(df: pd.DataFrame) -> tuple[pd.DataFrame, tup
     return df, (k, np.exp(b),)
 
 
+def data_preprocessing_cobb_douglas_alt(df: pd.DataFrame) -> tuple[pd.DataFrame, tuple[float]]:
+    '''
+    df.index: Period,
+    df.iloc[:, 0]: Capital,
+    df.iloc[:, 1]: Labor,
+    df.iloc[:, 2]: Product,
+    df.iloc[:, 3]: Product Alternative,
+    '''
+    # =========================================================================
+    # Labor Capital Intensity
+    # =========================================================================
+    df['lab_cap_int'] = df.iloc[:, 0].div(df.iloc[:, 1])
+    # =========================================================================
+    # Labor Productivity
+    # =========================================================================
+    df['lab_product'] = df.iloc[:, 2].div(df.iloc[:, 1])
+    # =========================================================================
+    # Original: k=0.25
+    # =========================================================================
+    k, b = np.polyfit(
+        np.log(df.iloc[:, -2]),
+        np.log(df.iloc[:, -1]),
+        1
+    )
+    # =========================================================================
+    # Description
+    # =========================================================================
+    df['cap_to_lab'] = df.iloc[:, 1].div(df.iloc[:, 0])
+    # =========================================================================
+    # Fixed Assets Turnover
+    # =========================================================================
+    df['c_turnover'] = df.iloc[:, 2].div(df.iloc[:, 0])
+    # =========================================================================
+    # Product Trend Line=3 Year Moving Average
+    # =========================================================================
+    df['prod_roll'] = df.iloc[:, 2].rolling(window=3, center=True).mean()
+    df['prod_roll_sub'] = df.iloc[:, 2].sub(df.iloc[:, -1])
+    # =========================================================================
+    # Computed Product
+    # =========================================================================
+    df['prod_comp'] = df.iloc[:, 0].pow(k).mul(
+        df.iloc[:, 1].pow(1-k)).mul(np.exp(b))
+    # =========================================================================
+    # Computed Product Trend Line=3 Year Moving Average
+    # =========================================================================
+    df['prod_comp_roll'] = df.iloc[:, -1].rolling(window=3, center=True).mean()
+    df['prod_comp_roll_sub'] = df.iloc[:, -2].sub(df.iloc[:, -1])
+    # =========================================================================
+    # Labor Productivity Alternative
+    # =========================================================================
+    df['_lab_product'] = df.iloc[:, 3].div(df.iloc[:, 1])
+    # =========================================================================
+    # Original: _k=0.25
+    # =========================================================================
+    _k, _b = np.polyfit(
+        np.log(df.iloc[:, 4]),
+        np.log(df.iloc[:, -1]),
+        1
+    )
+    # =========================================================================
+    # Fixed Assets Turnover Alternative
+    # =========================================================================
+    df['_c_turnover'] = df.iloc[:, 3].div(df.iloc[:, 0])
+    # =========================================================================
+    # Product Alternative Trend Line=3 Year Moving Average
+    # =========================================================================
+    df['_prod_roll'] = df.iloc[:, 3].rolling(window=3, center=True).mean()
+    df['_prod_roll_sub'] = df.iloc[:, 3].sub(df.iloc[:, -1])
+    # =========================================================================
+    # Computed Product Alternative
+    # =========================================================================
+    df['_prod_comp'] = df.iloc[:, 0].pow(_k).mul(
+        df.iloc[:, 1].pow(1-_k)).mul(np.exp(_b))
+    # =========================================================================
+    # Computed Product Alternative Trend Line=3 Year Moving Average
+    # =========================================================================
+    df['_prod_comp_roll'] = df.iloc[:, -
+                                    1].rolling(window=3, center=True).mean()
+    df['_prod_comp_roll_sub'] = df.iloc[:, -2].sub(df.iloc[:, -1])
+    return df, (k, np.exp(b),), (_k, np.exp(_b),)
+
+
 FIG_MAP = {
     'fg_a': 'Chart I Progress in Manufacturing {}$-${} ({}=100)',
     'fg_b': 'Chart II Theoretical and Actual Curves of Production {}$-${} ({}=100)',
@@ -3856,76 +3926,159 @@ def plot_cobb_douglas(data_frame: pd.DataFrame, params: tuple[float], mapping: d
     plt.show()
 
 
-def plot_cobb_douglas_new_features(data_frame):
-    '''Cobb--Douglas Algorithm as per C.W. Cobb, P.H. Douglas. A Theory of Production, 1928;
-    data_frame.index: Period,
-    data_frame.iloc[:, 0]: Capital,
-    data_frame.iloc[:, 1]: Labor,
-    data_frame.iloc[:, 2]: Product
+def plot_cobb_douglas_alt(data_frame: pd.DataFrame, params: tuple[float], mapping: dict) -> None:
     '''
-    from sklearn.linear_model import Lasso
-    from sklearn.linear_model import LassoCV
-    from sklearn.linear_model import LinearRegression
-    from sklearn.linear_model import Ridge
-    FIGURES = {
-        'fig_a': 'Chart I Progress in Manufacturing {}$-${} ({}=100)',
-        'fig_b': 'Chart II Theoretical and Actual Curves of Production {}$-${} ({}=100)',
-        'fig_c': 'Chart III Percentage Deviations of $P$ and $P\'$ from Their Trend Lines\nTrend Lines=3 Year Moving Average',
-        'fig_d': 'Chart IV Percentage Deviations of Computed from Actual Product {}$-${}',
-    }
-    x = np.log(data_frame.iloc[:, 0].div(data_frame.iloc[:, 1]))
-    y = np.log(data_frame.iloc[:, 2].div(data_frame.iloc[:, 1]))
-    data_frame['lab_cap_int'] = np.vstack((np.zeros((len(x), 1)).T, x)).T
-    las = Lasso(alpha=0.01).fit(data_frame['lab_cap_int'], y)
-    reg = LinearRegression().fit(data_frame['lab_cap_int'], y)
-#    las = LassoCV(cv=4, random_state=0).fit(data_frame['lab_cap_int'], y)
-    tik = Ridge(alpha=0.01).fit(data_frame['lab_cap_int'], y)
-#    print('Lasso: a_0 = {0:.12f} & a_1 = {1:.12f}'.format(las.intercept_, las.coef_[1]))
-#    print('Linear Regression: a_0 = {0:.12f} & a_1 = {1:.12f}'.format(reg.intercept_, reg.coef_[1]))
-#    print('Ridge Regression: a_0 = {0:.12f} & a_1 = {1:.12f}'.format(tik.intercept_, tik.coef_[1]))
-    A = sp.exp(las.intercept_)
-    PP = A*(data_frame.iloc[:, 1]**(1-las.coef_[1])) * \
-        (data_frame.iloc[:, 0]**las.coef_[1])
-    PR = data_frame.iloc[:, 2].rolling(window=3, center=True).mean()
-    PPR = PP.rolling(window=3, center=True).mean()
+    Cobb--Douglas Algorithm as per C.W. Cobb, P.H. Douglas. A Theory of Production, 1928;
+    '''
+    assert data_frame.shape[1] == 20
+
+    def lab_productivity(array: np.array, k: float = 0.25, b: float = 1.01) -> np.array:
+        return np.multiply(np.power(array, -k), b)
+
+    def cap_productivity(array: np.array, k: float = 0.25, b: float = 1.01) -> np.array:
+        return np.multiply(np.power(array, 1-k), b)
+
     plt.figure(1)
-    plt.plot(data_frame.iloc[:, 0], label='Fixed Capital')
-    plt.plot(data_frame.iloc[:, 1], label='Labor Force')
-    plt.plot(data_frame.iloc[:, 2], label='Physical Product')
+    plt.semilogy(data_frame.iloc[:, range(4)], label=[
+        'Fixed Capital',
+        'Labor Force',
+        'Physical Product',
+        'Physical Product, Alternative',
+    ])
     plt.xlabel('Period')
     plt.ylabel('Indexes')
-    plt.title(FIGURES['fig_a'].format(data_frame.index[0],
-                                      data_frame.index[-1],
-                                      data_frame.index[0]))
+    plt.title(mapping['fg_a'].format(data_frame.index[0],
+                                     data_frame.index[-1],
+                                     mapping['year_price']))
     plt.legend()
     plt.grid(True)
     plt.figure(2)
-    plt.plot(data_frame.iloc[:, 2], label='Actual Product')
-    plt.plot(PP, label='Computed Product, $P\' = %fL^{%f}C^{%f}$' % (
-        A, 1-las.coef_[1], las.coef_[1]))
+    plt.plot(data_frame.iloc[:, [3, 17]], label=[
+        'Actual Product',
+        'Computed Product, $P\' = {:,.4f}L^{{{:,.4f}}}C^{{{:,.4f}}}$'.format(
+            params[1],
+            1-params[0],
+            params[0],
+        ),
+    ])
     plt.xlabel('Period')
     plt.ylabel('Production')
-    plt.title(FIGURES['fig_b'].format(data_frame.index[0],
-                                      data_frame.index[-1],
-                                      data_frame.index[0]))
+    plt.title(mapping['fg_b'].format(data_frame.index[0],
+                                     data_frame.index[-1],
+                                     mapping['year_price']))
     plt.legend()
     plt.grid(True)
     plt.figure(3)
-    plt.plot(data_frame.iloc[:, 2].sub(PR), label='Deviations of $P$')
-    plt.plot(PP.sub(PPR), '--', label='Deviations of $P\'$')
+    plt.plot(data_frame.iloc[:, [15, 18]], label=[
+        'Deviations of $P$',
+        'Deviations of $P\'$',
+        # =========================================================================
+        #      TODO: ls=['solid','dashed',]
+        # =========================================================================
+    ])
     plt.xlabel('Period')
     plt.ylabel('Percentage Deviation')
-    plt.title(FIGURES['fig_c'])
+    plt.title(mapping['fg_c'])
     plt.legend()
     plt.grid(True)
     plt.figure(4)
-    plt.plot(PP.div(data_frame.iloc[:, 2]).sub(1))
+    plt.plot(data_frame.iloc[:, 17].div(data_frame.iloc[:, 3]).sub(1))
     plt.xlabel('Period')
     plt.ylabel('Percentage Deviation')
-    plt.title(FIGURES['fig_d'].format(data_frame.index[0],
-                                      data_frame.index[-1]))
+    plt.title(mapping['fg_d'].format(data_frame.index[0],
+                                     data_frame.index[-1]))
+    plt.grid(True)
+    plt.figure(5, figsize=(5, 8))
+    lc = np.arange(0.2, 1.0, 0.005)
+    plt.scatter(data_frame.iloc[:, 6], data_frame.iloc[:, 13])
+    plt.scatter(data_frame.iloc[:, 6], data_frame.iloc[:, 14])
+    plt.plot(lc, lab_productivity(lc, *params),
+             label='$\\frac{3}{4}\\frac{P}{L}$')
+    plt.plot(lc, cap_productivity(lc, *params),
+             label='$\\frac{1}{4}\\frac{P}{C}$')
+    plt.xlabel('$\\frac{L}{C}$')
+    plt.ylabel('Indexes')
+    plt.title(mapping['fg_e'])
+    plt.legend()
     plt.grid(True)
     plt.show()
+
+
+# def data_preprocessing_cobb_douglas(df: pd.DataFrame) -> tuple[pd.DataFrame, tuple[float]]:
+# =============================================================================
+#     TODO: Implement Additional Features
+# =============================================================================
+#     '''
+#     df.index: Period,
+#     df.iloc[:, 0]: Capital,
+#     df.iloc[:, 1]: Labor,
+#     df.iloc[:, 2]: Product
+#     '''
+#     from sklearn.linear_model import Lasso
+#     from sklearn.linear_model import LassoCV
+#     from sklearn.linear_model import LinearRegression
+#     from sklearn.linear_model import Ridge
+#     # =========================================================================
+#     # Labor Capital Intensity
+#     # =========================================================================
+#     df['lab_cap_int'] = df.iloc[:, 0].div(df.iloc[:, 1])
+#     # =========================================================================
+#     # Labor Productivity
+#     # =========================================================================
+#     df['lab_product'] = df.iloc[:, 2].div(df.iloc[:, 1])
+#     # # =========================================================================
+#     # # TODO: Refresh
+#     # # =========================================================================
+#     # df['_lab_cap_int'] = np.vstack(
+#     #     (np.zeros((df.shape[0], 1)).T,
+#     #      np.log(df.iloc[:, [-2]])))
+
+# # # =============================================================================
+# # #     las = Lasso(alpha=0.01).fit(df['_lab_cap_int'], np.log(df.iloc[:, -1]))
+# # #     reg = LinearRegression().fit(df['_lab_cap_int'], np.log(df.iloc[:, -1]))
+# # # =============================================================================
+# #     las = LassoCV(cv=4, random_state=0).fit(
+# #         df['_lab_cap_int'], np.log(df.iloc[:, -1]))
+# #     print(las)
+# # # =============================================================================
+# # #     tik = Ridge(alpha=0.01).fit(df['_lab_cap_int'], np.log(df.iloc[:, -1]))
+# # #     print('Lasso: a_0 = {0:.12f} & a_1 = {1:.12f}'.format(las.intercept_, las.coef_[1]))
+# # #     print('Linear Regression: a_0 = {0:.12f} & a_1 = {1:.12f}'.format(reg.intercept_, reg.coef_[1]))
+# # #     print('Ridge Regression: a_0 = {0:.12f} & a_1 = {1:.12f}'.format(tik.intercept_, tik.coef_[1]))
+# # # =============================================================================
+# #     b = np.exp(las.intercept_)
+# # #     # =========================================================================
+# # #     # Original: k=0.25
+# # #     # =========================================================================
+# # #     k, b = np.polyfit(
+# # #         np.log(df.iloc[:, -2]),
+# # #         np.log(df.iloc[:, -1]),
+# # #         1
+# # #     )
+#     # =========================================================================
+#     # Description
+#     # =========================================================================
+#     df['cap_to_lab'] = df.iloc[:, 1].div(df.iloc[:, 0])
+#     # =========================================================================
+#     # Fixed Assets Turnover
+#     # =========================================================================
+#     df['c_turnover'] = df.iloc[:, 2].div(df.iloc[:, 0])
+#     # =========================================================================
+#     # Product Trend Line=3 Year Moving Average
+#     # =========================================================================
+#     df['prod_roll'] = df.iloc[:, 2].rolling(window=3, center=True).mean()
+#     # df['prod_roll_sub'] = df.iloc[:, 2].sub(df.iloc[:, -1])
+#     # =========================================================================
+#     # Computed Product
+#     # =========================================================================
+# #     df['prod_comp'] = df.iloc[:, 0].pow(las.coef_[1]).mul(
+# #         df.iloc[:, 1].pow(1-las.coef_[1])).mul(b)
+#     # =========================================================================
+#     # Computed Product Trend Line=3 Year Moving Average
+#     # =========================================================================
+#     df['prod_comp_roll'] = df.iloc[:, -1].rolling(window=3, center=True).mean()
+#     df['prod_comp_roll_sub'] = df.iloc[:, -2].sub(df.iloc[:, -1])
+# # #     return df, (k, np.exp(b),)
 
 
 # =============================================================================
@@ -3955,85 +4108,6 @@ def plot_cobb_douglas_3d(data_frame: pd.DataFrame) -> None:
     ax.set_ylabel('Labor')
     ax.set_zlabel('Production')
     ax.view_init(30, 45)
-    plt.show()
-
-
-def plot_cobb_douglas_alternative(data_frame):
-    '''Cobb--Douglas Algorithm as per C.W. Cobb, P.H. Douglas. A Theory of Production, 1928;
-    data_frame.index: Period,
-    data_frame.iloc[:, 0]: Capital,
-    data_frame.iloc[:, 1]: Labor,
-    data_frame.iloc[:, 2]: Product,
-    data_frame.iloc[:, 3]: Alternative Product
-    '''
-    FIGURES = {
-        'fig_a': 'Chart I Progress in Manufacturing {}$-${} ({}=100)',
-        'fig_b': 'Chart II Theoretical and Actual Curves of Production {}$-${} ({}=100)',
-        'fig_c': 'Chart III Percentage Deviations of $P$ and $P\'$ from Their Trend Lines\nTrend Lines=3 Year Moving Average',
-        'fig_d': 'Chart IV Percentage Deviations of Computed from Actual Product {}$-${}',
-    }
-    data_frame['lab_cap_int'] = data_frame.iloc[:, 0].div(
-        data_frame.iloc[:, 1])
-    data_frame['lab_product'] = data_frame.iloc[:, 2].div(
-        data_frame.iloc[:, 1])
-    data_frame['lab_cap_int'] = np.log(data_frame['lab_cap_int'])
-    data_frame['lab_product'] = np.log(data_frame['lab_product'])
-    # =========================================================================
-    # Original: k=0.25
-    # =========================================================================
-    k, b = np.polyfit(data_frame['lab_cap_int'], data_frame['lab_product'], 1)
-    b = np.exp(b)
-    PP = b*(data_frame.iloc[:, 1]**(1-k))*(data_frame.iloc[:, 0]**k)
-    PR = data_frame.iloc[:, 2].rolling(window=3, center=True).mean()
-    PPR = PP.rolling(window=3, center=True).mean()
-    YX = data_frame.iloc[:, 3].div(data_frame.iloc[:, 1])
-    YX = np.log(YX)
-    # =========================================================================
-    # Original: k=0.25
-    # =========================================================================
-    _k, _b = np.polyfit(data_frame['lab_cap_int'], YX, 1)
-    _b = np.exp(_b)
-    p_p_x = _b*(data_frame.iloc[:, 1]**(1-_k))*(data_frame.iloc[:, 0]**_k)
-    p_r_x = data_frame.iloc[:, 3].rolling(window=3, center=True).mean()
-    p_p_r_x = p_p_x.rolling(window=3, center=True).mean()
-    plt.figure(1)
-    plt.plot(data_frame.iloc[:, 0], label='Fixed Capital')
-    plt.plot(data_frame.iloc[:, 1], label='Labor Force')
-    plt.plot(data_frame.iloc[:, 2], label='Physical Product')
-    plt.plot(data_frame.iloc[:, 3], label='Physical Product, Alternative')
-    plt.xlabel('Period')
-    plt.ylabel('Indexes')
-    plt.title(FIGURES['fig_a'].format(data_frame.index[0],
-                                      data_frame.index[-1],
-                                      data_frame.index[0]))
-    plt.legend()
-    plt.grid(True)
-    plt.figure(2)
-    plt.plot(data_frame.iloc[:, 3], label='Actual Product')
-    plt.plot(
-        p_p_x, label='Computed Product, $P\' = %fL^{%f}C^{%f}$' % (_b, 1-_k, _k))
-    plt.xlabel('Period')
-    plt.ylabel('Production')
-    plt.title(FIGURES['fig_b'].format(data_frame.index[0],
-                                      data_frame.index[-1],
-                                      data_frame.index[0]))
-    plt.legend()
-    plt.grid(True)
-    plt.figure(3)
-    plt.plot(data_frame.iloc[:, 3].sub(p_r_x), label='Deviations of $P$')
-    plt.plot(p_p_x.sub(p_p_r_x), '--', label='Deviations of $P\'$')
-    plt.xlabel('Period')
-    plt.ylabel('Percentage Deviation')
-    plt.title(FIGURES['fig_c'])
-    plt.legend()
-    plt.grid(True)
-    plt.figure(4)
-    plt.plot(p_p_x.div(data_frame.iloc[:, 3]).sub(1))
-    plt.xlabel('Period')
-    plt.ylabel('Percentage Deviation')
-    plt.title(FIGURES['fig_d'].format(data_frame.index[0],
-                                      data_frame.index[-1]))
-    plt.grid(True)
     plt.show()
 
 
