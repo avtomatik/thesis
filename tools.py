@@ -715,7 +715,7 @@ def fetch_can_group_a(file_id, skiprows):
     data_frame = data_frame.set_index(data_frame.columns[0]).transpose()
     data_frame.reset_index(inplace=True)
     data_frame[['quarter',
-                'period', ]] = data_frame.iloc[:, 0].str.split(expand=True)
+                'period',]] = data_frame.iloc[:, 0].str.split(expand=True)
     data_frame.set_index(data_frame.columns[0], inplace=True)
     return data_frame.groupby(data_frame.columns[-1]).mean()
 
@@ -727,7 +727,7 @@ def fetch_can_group_b(file_id, skiprows):
     data_frame = pd.read_csv(f'dataset_can_cansim{file_id}.csv',
                              skiprows=skiprows)
     data_frame[['month',
-                'period', ]] = data_frame.iloc[:, 0].str.split('-', expand=True)
+                'period',]] = data_frame.iloc[:, 0].str.split('-', expand=True)
     return data_frame.groupby(data_frame.columns[-1]).mean()
 
 
@@ -746,7 +746,7 @@ def fetch_can_quarterly(file_id, series_id):
     data_frame = data_frame[data_frame.iloc[:, 1] == series_id].iloc[:, [0, 2]]
     data_frame.columns = [data_frame.columns[0], series_id]
     data_frame[['period',
-                'sub_period', ]] = data_frame.iloc[:, 0].str.split('/', expand=True)
+                'sub_period',]] = data_frame.iloc[:, 0].str.split('/', expand=True)
     data_frame.iloc[:, 1] = data_frame.iloc[:, 1].astype(float)
     data_frame.iloc[:, -2] = data_frame.iloc[:, -2].astype(int)
     if (file_id, series_id,) in RESERVED_COMBINATIONS:
@@ -763,7 +763,7 @@ def fetch_can_quarterly(data_frame, series_id):
                             == series_id].iloc[:, [0, 12]]
     data_frame.columns = [data_frame.columns[0], series_id]
     data_frame[['period',
-                'sub_period', ]] = data_frame.iloc[:, 0].str.split('-', expand=True)
+                'sub_period',]] = data_frame.iloc[:, 0].str.split('-', expand=True)
     data_frame.iloc[:, 1] = data_frame.iloc[:, 1].astype(float)
     data_frame.iloc[:, -2] = data_frame.iloc[:, -2].astype(int)
     return data_frame.groupby(data_frame.columns[-2]).sum()
@@ -1032,59 +1032,79 @@ def fetch_world_bank(file_name, series_id):
     return data_frame.reset_index(level=0, inplace=True)
 
 
-def get_data_archived():
-    BASE = 54  # Year 2005
-    semi_frame_a = get_data_usa_bls_cpiu()
-    '''Nominal Investment Series: A006RC1, 1929--1969'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1ALL_Hist.xls', '10105 Ann', 'A006RC1')
-    '''Nominal Investment Series: A006RC1, 1969--2012'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_b = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1all_xls.xls', '10105 Ann', 'A006RC1')
-    semi_frame_b = sub_frame_a.append(sub_frame_b).drop_duplicates()
-
-    '''Real Gross Domestic Product Series, 2005=100: A191RX1, 1929--1969'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1ALL_Hist.xls', '10106 Ann', 'A191RX1')
-    '''Real Gross Domestic Product Series, 2005=100: A191RX1, 1969--2012'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_b = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1all_xls.xls', '10106 Ann', 'A191RX1')
-    semi_frame_c = sub_frame_a.append(sub_frame_b).drop_duplicates()
-
-    '''`K160491` Replaced with `K10070` in `get_data_combined()`'''
-    '''Fixed Assets Series: K160491, 1951--1969'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section5ALL_Hist.xls', '50900 Ann', 'K160491')
-    '''Fixed Assets Series: K160491, 1969--2011'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_b = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section5all_xls.xls', '50900 Ann', 'K160491')
-    semi_frame_d = sub_frame_a.append(sub_frame_b).drop_duplicates()
-
-    source_frame = pd.concat(
-        [semi_frame_a, semi_frame_b, semi_frame_c, semi_frame_d], axis=1, sort=True).dropna()
-
-    '''Deflator, 2005=100'''
-    source_frame['def'] = np.cumprod(source_frame.iloc[:, 0].add(1))
-    source_frame.iloc[:, 4] = source_frame.iloc[:, 4].rdiv(
-        source_frame.iloc[base, 4])
-    '''Investment, 2005=100'''
-    source_frame['inv'] = source_frame.iloc[:, 1].mul(source_frame.iloc[:, 4])
-    '''Capital, 2005=100'''
-    source_frame['cap'] = source_frame.iloc[:, 3].mul(source_frame.iloc[:, 4])
-    '''Capital Retirement Ratio'''
-    source_frame['rto'] = 1 + (1*source_frame.iloc[:, 5] -
-                               source_frame.iloc[:, 6].shift(-1)).div(source_frame.iloc[:, 6])
-    result_frame_a = source_frame.iloc[:, [5, 2, 6, 7]]
-    result_frame_b = source_frame.iloc[:, [7]]
-    result_frame_a.dropna().reset_index(level=0, inplace=True)
-    result_frame_b.dropna().reset_index(level=0, inplace=True)
-    return result_frame_a, result_frame_b, base
+def get_data_archived() -> pd.DataFrame:
+    ARCHIVES = (
+        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
+        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
+    )
+    WBS = (
+        'Section1ALL_Hist.xls',
+        'Section1all_xls.xls',
+        'Section5ALL_Hist.xls',
+        'Section5all_xls.xls',
+    )
+    SHS = (
+        '10105 Ann',
+        '10106 Ann',
+        '50900 Ann',
+    )
+    IDS = (
+        # =====================================================================
+        # Nominal Investment Series: A006RC1, 1929--2012
+        # =====================================================================
+        'A006RC1',
+        # =====================================================================
+        # Real Gross Domestic Product Series, 2005=100: A191RX1, 1929--2012
+        # =====================================================================
+        'A191RX1',
+        # =====================================================================
+        # Fixed Assets Series: K160491, 1951--2011
+        # `K160491` Replaced with `K10070` in `get_data_combined()`
+        # =====================================================================
+        'K160491',
+    )
+    _data_bea = pd.concat(
+        [pd.concat(
+            [fetch_usa_bea(ARCHIVES[0], _wb, _sh, _id)
+             for _wb, _sh, _id in zip(tuple(WBS[2*(_ // 2)] for _ in range(len(IDS))), SHS, IDS)],
+            axis=1,
+            sort=True),
+         pd.concat(
+            [fetch_usa_bea(ARCHIVES[1], _wb, _sh, _id)
+             for _wb, _sh, _id in zip(tuple(WBS[1 + 2*(_ // 2)] for _ in range(len(IDS))), SHS, IDS)],
+            axis=1,
+            sort=True), ],
+        sort=True).drop_duplicates()
+    _df = pd.concat([
+        # =====================================================================
+        # Do Not Use As It Is CPI-U Not PPI
+        # =====================================================================
+        get_data_usa_bls_cpiu(),
+        _data_bea],
+        axis=1, sort=True).dropna()
+    # =========================================================================
+    # Deflator, 2005=100
+    # =========================================================================
+    _df['def'] = np.cumprod(_df.iloc[:, 0].add(1))
+    _df.iloc[:, -1] = _df.iloc[:, -
+                               1].rdiv(_df.iloc[_df.index.get_loc(2005), -1])
+    # =========================================================================
+    # Investment, 2005=100
+    # =========================================================================
+    _df['inv'] = _df.iloc[:, 1].mul(_df.iloc[:, -1])
+    # =========================================================================
+    # Capital, 2005=100
+    # =========================================================================
+    _df['cap'] = _df.iloc[:, 3].mul(_df.iloc[:, -1])
+    # =========================================================================
+    # Capital Retirement Ratio
+    # =========================================================================
+    _df['rto'] = _df.iloc[:, -2].mul(1).sub(_df.iloc[:, -1].shift(-1)).div(
+        _df.iloc[:, -1]).add(1)
+    return (_df.loc[:, ['inv', 'A191RX1', 'cap', 'rto']].dropna().reset_index(level=0),
+            _df.loc[:, ['rto']].dropna().reset_index(level=0),
+            _df.index.get_loc(2005)
+            )
 
 
 def get_data_bea_def():
@@ -2727,7 +2747,7 @@ def get_data_usa_frb_ms():
     FILE_NAME = 'dataset_usa_FRB_H6.csv'
     data_frame = pd.read_csv(FILE_NAME, skiprows=5, usecols=range(2))
     data_frame[['period',
-                'month', ]] = data_frame.iloc[:, 0].str.split('-', expand=True)
+                'month',]] = data_frame.iloc[:, 0].str.split('-', expand=True)
     data_frame.columns = [re.sub(r"[,@\'?\.$%_]",
                                  "",
                                  column) for column in data_frame.columns]
