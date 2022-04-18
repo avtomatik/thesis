@@ -2151,152 +2151,152 @@ def get_data_combined():
 
 def get_data_combined_archived():
     '''Version: 02 December 2013'''
-    '''Nominal Investment Series: A006RC1, 1929--1969'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1ALL_Hist.xls', '10105 Ann', 'A006RC1')
-    '''Nominal Investment Series: A006RC1, 1969--2012'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_b = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1all_xls.xls', '10105 Ann', 'A006RC1')
-    semi_frame_a = sub_frame_a.append(sub_frame_b).drop_duplicates()
-
-    '''Implicit Price Deflator Series: A006RD3, 1929--1969'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1ALL_Hist.xls', '10109 Ann', 'A006RD3')
-    '''Implicit Price Deflator Series: A006RD3, 1969--2012'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_b = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1all_xls.xls', '10109 Ann', 'A006RD3')
-    semi_frame_b = sub_frame_a.append(sub_frame_b).drop_duplicates()
-
-    '''Gross private domestic investment -- Nonresidential: A008RC1, 1929--1969'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1ALL_Hist.xls', '10105 Ann', 'A008RC1')
-    '''Gross private domestic investment -- Nonresidential: A008RC1, 1969--2012'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_b = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1all_xls.xls', '10105 Ann', 'A008RC1')
-    semi_frame_c = sub_frame_a.append(sub_frame_b).drop_duplicates()
-
-    '''Implicit Price Deflator -- Gross private domestic investment -- Nonresidential: A008RD3, 1929--1969'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1ALL_Hist.xls', '10109 Ann', 'A008RD3')
-    '''Implicit Price Deflator -- Gross private domestic investment -- Nonresidential: A008RD3, 1969--2012'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_b = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1all_xls.xls', '10109 Ann', 'A008RD3')
-    semi_frame_d = sub_frame_a.append(sub_frame_b).drop_duplicates()
-
-    '''Nominal National income Series: A032RC1, 1929--1969'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1ALL_Hist.xls', '10705 Ann', 'A032RC1')
-    '''Nominal National income Series: A032RC1, 1969--2011'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_b = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1all_xls.xls', '10705 Ann', 'A032RC1')
-    semi_frame_e = sub_frame_a.append(sub_frame_b).drop_duplicates()
-
-    '''Gross Domestic Product, 2005=100: B191RA3, 1929--1969'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1ALL_Hist.xls', '10103 Ann', 'B191RA3')
-    '''Gross Domestic Product, 2005=100: B191RA3, 1969--2012'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_b = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1all_xls.xls', '10103 Ann', 'B191RA3')
-    semi_frame_f = sub_frame_a.append(sub_frame_b).drop_duplicates()
-
-    '''Nominal Nominal Gross Domestic Product Series: A191RC1, 1929--1969'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1ALL_Hist.xls', '10105 Ann', 'A191RC1')
-    '''Nominal Nominal Gross Domestic Product Series: A191RC1, 1969--2012'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_b = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1all_xls.xls', '10105 Ann', 'A191RC1')
-    semi_frame_g = sub_frame_a.append(sub_frame_b).drop_duplicates()
-
-    '''Real Gross Domestic Product Series, 2005=100: A191RX1, 1929--1969'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1ALL_Hist.xls', '10106 Ann', 'A191RX1')
-    '''Real Gross Domestic Product Series, 2005=100: A191RX1, 1969--2012'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_b = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1all_xls.xls', '10106 Ann', 'A191RX1')
-    semi_frame_h = sub_frame_a.append(sub_frame_b).drop_duplicates()
-
-    '''Labor Series'''
-    semi_frame_i = get_data_usa_bea_labor_mfg()
-    '''Gross Domestic Investment, W170RC1, 1929--1969'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section5ALL_Hist.xls', '50100 Ann', 'W170RC1')
-    '''Gross Domestic Investment, W170RC1, 1969--2012'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_b = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section5all_xls.xls', '50100 Ann', 'W170RC1')
-    semi_frame_j = sub_frame_a.append(sub_frame_b)
-
-    '''Gross Domestic Investment, W170RX1, 1967--1969'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section5ALL_Hist.xls', '50206 Ann', 'W170RX1')
-    '''Gross Domestic Investment, W170RX1, 1969--2011'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_b = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section5all_xls.xls', '50206 Ann', 'W170RX1')
-    semi_frame_k = sub_frame_a.append(sub_frame_b).drop_duplicates()
-
-    '''`K160491` Replaced with `K10070` in `get_data_combined()`'''
-    '''Fixed Assets Series: K160491, 1951--1969'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section5ALL_Hist.xls', '50900 Ann', 'K160491')
-    '''Fixed Assets Series: K160491, 1969--2011'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_b = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section5all_xls.xls', '50900 Ann', 'K160491')
-    semi_frame_l = sub_frame_a.append(sub_frame_b).drop_duplicates()
-
-    '''Investment in Fixed Assets and Consumer Durable Goods, Private, i3ptotl1es000, 1901--2011'''
+    ARCHIVES = (
+        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
+        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
+    )
+    WBS = (
+        'Section1ALL_Hist.xls',
+        'Section1all_xls.xls',
+        'Section5ALL_Hist.xls',
+        'Section5all_xls.xls',
+    )
+    SHS = (
+        '10103 Ann',
+        '10105 Ann',
+        '10105 Ann',
+        '10105 Ann',
+        '10106 Ann',
+        '10109 Ann',
+        '10109 Ann',
+        '10705 Ann',
+        '50100 Ann',
+        '50206 Ann',
+        '50900 Ann',
+    )
+    IDS = (
+        # =====================================================================
+        # Gross Domestic Product, 2005=100: B191RA3, 1929--2012
+        # =====================================================================
+        'B191RA3',
+        # =====================================================================
+        # Nominal Investment Series: A006RC1, 1929--2012
+        # =====================================================================
+        'A006RC1',
+        # =====================================================================
+        # Gross private domestic investment -- Nonresidential: A008RC1, 1929--2012
+        # =====================================================================
+        'A008RC1',
+        # =====================================================================
+        # Nominal Nominal Gross Domestic Product Series: A191RC1, 1929--2012
+        # =====================================================================
+        'A191RC1',
+        # =====================================================================
+        # Real Gross Domestic Product Series, 2005=100: A191RX1, 1929--2012
+        # =====================================================================
+        'A191RX1',
+        # =====================================================================
+        # Implicit Price Deflator Series: A006RD3, 1929--2012
+        # =====================================================================
+        'A006RD3',
+        # =====================================================================
+        # Implicit Price Deflator -- Gross private domestic investment -- Nonresidential: A008RD3, 1929--2012
+        # =====================================================================
+        'A008RD3',
+        # =====================================================================
+        # Nominal National income Series: A032RC1, 1929--2011
+        # =====================================================================
+        'A032RC1',
+        # =====================================================================
+        # Gross Domestic Investment, W170RC1, 1929--2012
+        # =====================================================================
+        'W170RC1',
+        # =====================================================================
+        # Gross Domestic Investment, W170RX1, 1967--2011
+        # =====================================================================
+        'W170RX1',
+        # =====================================================================
+        # `K160491` Replaced with `K10070` in `get_data_combined()`
+        # Fixed Assets Series: K160491, 1951--2011
+        # =====================================================================
+        'K160491',
+    )
+    _data_nipa = pd.concat([
+        pd.concat(
+            [fetch_usa_bea(ARCHIVES[0], _wb, _sh, _id) for _wb, _sh, _id in zip(
+                tuple(WBS[2*(_ // 8)] for _ in range(len(IDS))), SHS, IDS)],
+            axis=1,
+            sort=True),
+        pd.concat(
+            [fetch_usa_bea(ARCHIVES[1], _wb, _sh, _id) for _wb, _sh, _id in zip(
+                tuple(WBS[1 + 2*(_ // 8)] for _ in range(len(IDS))), SHS, IDS)],
+            axis=1,
+            sort=True),
+    ],
+        sort=True).drop_duplicates()
     ARCHIVE_NAME = 'dataset_usa_bea-sfat-release-2012-08-15-SectionAll_xls.zip'
-    semi_frame_m = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1ALL_xls.xls', '105 Ann', 'i3ptotl1es000')
-    '''Chain-Type Quantity Indexes for Investment in Fixed Assets and Consumer Durable Goods, Private, icptotl1es000, 1901--2011'''
-    ARCHIVE_NAME = 'dataset_usa_bea-sfat-release-2012-08-15-SectionAll_xls.zip'
-    semi_frame_n = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1ALL_xls.xls', '106 Ann', 'icptotl1es000')
-    '''Current-Cost Net Stock of Fixed Assets and Consumer Durable Goods, Private, k1ptotl1es000, 1925--2011'''
-    ARCHIVE_NAME = 'dataset_usa_bea-sfat-release-2012-08-15-SectionAll_xls.zip'
-    semi_frame_o = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1ALL_xls.xls', '101 Ann', 'k1ptotl1es000')
-    '''Historical-Cost Net Stock of Private Fixed Assets, Equipment and Software, and Structures by Type, Private fixed assets, k3ptotl1es000, 1925--2011'''
-    ARCHIVE_NAME = 'dataset_usa_bea-sfat-release-2012-08-15-SectionAll_xls.zip'
-    semi_frame_p = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section2ALL_xls.xls', '203 Ann', 'k3ptotl1es000')
-    '''Chain-Type Quantity Indexes for Net Stock of Private Fixed Assets, Equipment and Software, and Structures by Type, Private fixed assets, kcptotl1es000, 1925--2011'''
-    ARCHIVE_NAME = 'dataset_usa_bea-sfat-release-2012-08-15-SectionAll_xls.zip'
-    semi_frame_q = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section2ALL_xls.xls', '202 Ann', 'kcptotl1es000')
-    FILE_NAME = 'dataset_usa_0022_m1.txt'
-    semi_frame_r = pd.read_csv(FILE_NAME, index_col=0)
+    WBS = (
+        'Section1ALL_xls.xls',
+        'Section2ALL_xls.xls',
+    )
+    SHS = (
+        '105 Ann',
+        '106 Ann',
+        '101 Ann',
+        '203 Ann',
+        '202 Ann',
+    )
+    IDS = (
+        # =====================================================================
+        # Investment in Fixed Assets and Consumer Durable Goods, Private, i3ptotl1es000, 1901--2011
+        # =====================================================================
+        'i3ptotl1es000',
+        # =====================================================================
+        # Chain-Type Quantity Indexes for Investment in Fixed Assets and Consumer Durable Goods, Private, icptotl1es000, 1901--2011
+        # =====================================================================
+        'icptotl1es000',
+        # =====================================================================
+        # Current-Cost Net Stock of Fixed Assets and Consumer Durable Goods, Private, k1ptotl1es000, 1925--2011
+        # =====================================================================
+        'k1ptotl1es000',
+        # =====================================================================
+        # Historical-Cost Net Stock of Private Fixed Assets, Equipment and Software, and Structures by Type, Private fixed assets, k3ptotl1es000, 1925--2011
+        # =====================================================================
+        'k3ptotl1es000',
+        # =====================================================================
+        # Chain-Type Quantity Indexes for Net Stock of Private Fixed Assets, Equipment and Software, and Structures by Type, Private fixed assets, kcptotl1es000, 1925--2011
+        # =====================================================================
+        'kcptotl1es000',
+    )
+    _data_sfat = pd.concat(
+        [fetch_usa_bea(ARCHIVE_NAME, _wb, _sh, _id) for _wb, _sh, _id in zip(
+            tuple(WBS[_ // 3] for _ in range(len(IDS))), SHS, IDS)],
+        axis=1,
+        sort=True)
+    FILE_NAMES = (
+        'dataset_usa_0022_m1.txt',
+        'dataset_usa_0025_p_r.txt',
+    )
+    _data = pd.concat(
+        [pd.read_csv(file_name, index_col=0) for file_name in FILE_NAMES],
+        axis=1,
+        sort=True)
     ARCHIVE_NAME = 'dataset_usa_census1975.zip'
-    semi_frame_s = fetch_usa_census(ARCHIVE_NAME, 'X0414')
-    semi_frame_t = get_data_usa_frb_ms()
-    FILE_NAME = 'dataset_usa_0025_p_r.txt'
-    semi_frame_u = pd.read_csv(FILE_NAME, index_col=0)
-    result_frame = pd.concat([semi_frame_a, semi_frame_b, semi_frame_c, semi_frame_d, semi_frame_e,
-                              semi_frame_f, semi_frame_g, semi_frame_h, semi_frame_i, semi_frame_j,
-                              semi_frame_k, semi_frame_l, semi_frame_m, semi_frame_n, semi_frame_o,
-                              semi_frame_p, semi_frame_q, semi_frame_r, semi_frame_s, semi_frame_t,
-                              semi_frame_u], axis=1, sort=True)
-    return result_frame
+    SERIES_ID = 'X0414'
+    data_frame = pd.concat(
+        [_data_nipa,
+         _data_sfat,
+         _data,
+         # ====================================================================
+         # Labor Series
+         # ====================================================================
+         get_data_usa_bea_labor_mfg(),
+         fetch_usa_census(ARCHIVE_NAME, SERIES_ID),
+         get_data_usa_frb_ms()],
+        axis=1,
+        sort=True
+    )
+    return data_frame.iloc[:, [0, 1, 2, 3, 4, 7, 5, 6, 18, 9, 10, 8, 11, 12, 13, 14, 15, 16, 19, 20, 17, ]]
 
 
 def get_data_common_archived():
@@ -2775,15 +2775,16 @@ def get_data_usa_frb_ip():
 
 
 def get_data_usa_frb_ms():
-    '''Indexed Money Stock Measures (H.6) Series:
-    https://www.federalreserve.gov/datadownload/Download.aspx?rel=h6&series=5398d8d1734b19f731aba3105eb36d47&filetype=csv&label=include&layout=seriescolumn&from=01/01/1959&to=12/31/2018'''
+    """Indexed Money Stock Measures (H.6) Series:
+    https://www.federalreserve.gov/datadownload/Download.aspx?rel=h6&series=5398d8d1734b19f731aba3105eb36d47&filetype=csv&label=include&layout=seriescolumn&from=01/01/1959&to=12/31/2018"""
     FILE_NAME = 'dataset_usa_FRB_H6.csv'
     data_frame = pd.read_csv(FILE_NAME, skiprows=5, usecols=range(2))
     data_frame[['period',
-                'month',]] = data_frame.iloc[:, 0].str.split('-', expand=True)
+                'month', ]] = data_frame.iloc[:, 0].str.split('-', expand=True)
     data_frame.columns = [re.sub(r"[,@\'?\.$%_]",
                                  "",
                                  column) for column in data_frame.columns]
+    data_frame.iloc[:, -2] = data_frame.iloc[:, -2].astype(int)
     return data_frame.groupby(data_frame.columns[-2]).mean()
 
 
@@ -3290,18 +3291,26 @@ def preprocessing_d(source_frame):
     return source_frame
 
 
-def preprocessing_e(source_frame):
-    """Works on Result of `get_data_combined_archived`"""
-    """`Real` Investment"""
-    source_frame['inv'] = source_frame.iloc[:, 0].mul(
-        source_frame.iloc[:, 7]).div(source_frame.iloc[:, 6])
-    """`Real` Capital"""
-    source_frame['cap'] = source_frame.iloc[:, 11].mul(
-        source_frame.iloc[:, 7]).div(source_frame.iloc[:, 6])
-    """Nominal DataSet"""
-    nominal_frame = source_frame.iloc[:, [0, 6, 11]].dropna()
-    """`Real` DataSet"""
-    real_frame = source_frame.iloc[:, [21, 7, 22]].dropna()
+def preprocessing_e(data_frame):
+    '''Works on Result of `get_data_combined_archived()`'''
+    # =========================================================================
+    # `Real` Investment
+    # =========================================================================
+    data_frame['inv'] = data_frame.iloc[:, 0].mul(
+        data_frame.iloc[:, 7]).div(data_frame.iloc[:, 6])
+    # =========================================================================
+    # `Real` Capital
+    # =========================================================================
+    data_frame['cap'] = data_frame.iloc[:, 11].mul(
+        data_frame.iloc[:, 7]).div(data_frame.iloc[:, 6])
+    # =========================================================================
+    # Nominal DataSet
+    # =========================================================================
+    nominal_frame = data_frame.iloc[:, [0, 6, 11]].dropna()
+    # =========================================================================
+    # `Real` DataSet
+    # =========================================================================
+    real_frame = data_frame.iloc[:, [21, 7, 22]].dropna()
     return nominal_frame, real_frame
 
 
