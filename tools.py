@@ -2301,138 +2301,105 @@ def get_data_combined_archived():
 
 def get_data_common_archived():
     """Data Fetch"""
-    # =========================================================================
-    # Fixed Assets Series: k1n31gd1es000, 1925--2016
-    # =========================================================================
+    ARCHIVES = (
+        'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1929_1969.zip',
+        'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1969_2015.zip',
+    )
+    WBS = (
+        'Section1ALL_Hist.xls',
+        'Section1all_xls.xls',
+        'Section5ALL_Hist.xls',
+        'Section5all_xls.xls',
+    )
+    SHS = (
+        '10105 Ann',
+        '10106 Ann',
+        '10109 Ann',
+        '11200 Ann',
+        '51000 Ann',
+    )
+    IDS = (
+        # =====================================================================
+        # Nominal Gross Domestic Product Series: A191RC1, 1929--2014
+        # =====================================================================
+        'A191RC1',
+        # =====================================================================
+        # Real Gross Domestic Product Series: A191RX1, 1929--2014, 2009=100
+        # =====================================================================
+        'A191RX1',
+        # =====================================================================
+        # Deflator Gross Domestic Product, A191RD3, 1929--2014, 2009=100
+        # =====================================================================
+        'A191RD3',
+        # =====================================================================
+        # National Income: A032RC1, 1929--2014
+        # =====================================================================
+        'A032RC1',
+        # =====================================================================
+        # Fixed Assets Series: K100021, 1951--2014
+        # =====================================================================
+        'K100021',
+    )
+    _data_nipa = pd.concat(
+        [pd.concat(
+            [fetch_usa_bea(ARCHIVES[0], _wb, _sh, _id) for _wb, _sh, _id in zip(
+                tuple(WBS[2*(_ // 4)] for _ in range(len(IDS))), SHS, IDS)],
+            axis=1,
+            sort=True),
+         pd.concat(
+            [fetch_usa_bea(ARCHIVES[1], _wb, _sh, _id) for _wb, _sh, _id in zip(
+                tuple(WBS[1 + 2*(_ // 4)] for _ in range(len(IDS))), SHS, IDS)],
+            axis=1,
+            sort=True),
+         ],
+        sort=True).drop_duplicates()
+    _data_nipa.loc[:, [IDS[2]]] = _data_nipa.loc[:, [IDS[2]]].rdiv(100)
+
     ARCHIVE_NAME = 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip'
-    semi_frame_a = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section4ALL_xls.xls', '401 Ann', 'k1n31gd1es000')
-    # =========================================================================
-    # Fixed Assets Series: k1ntotl1si000, 1925--2016
-    # =========================================================================
-    ARCHIVE_NAME = 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip'
-    semi_frame_b = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section2ALL_xls.xls', '201 Ann', 'k1ntotl1si000')
-    # =========================================================================
-    # Fixed Assets Series: k3n31gd1es000, 1925--2016
-    # =========================================================================
-    ARCHIVE_NAME = 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip'
-    semi_frame_c = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section4ALL_xls.xls', '403 Ann', 'k3n31gd1es000')
-    # =========================================================================
-    # Fixed Assets Series: k3ntotl1si000, 1925--2016
-    # =========================================================================
-    ARCHIVE_NAME = 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip'
-    semi_frame_d = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section2ALL_xls.xls', '203 Ann', 'k3ntotl1si000')
-    # =========================================================================
-    # Fixed Assets Series: K160491, 1951--1969
-    # =========================================================================
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section5ALL_Hist.xls', '50900 Ann', 'K160491')
-    # =========================================================================
-    # Fixed Assets Series: K160491, 1969--2011
-    # =========================================================================
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_b = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section5all_xls.xls', '50900 Ann', 'K160491')
-    semi_frame_e = sub_frame_a.append(sub_frame_b).drop_duplicates()
+    WBS = (
+        'Section2ALL_xls.xls',
+        'Section4ALL_xls.xls',
+    )
+    SHS = (
+        '201 Ann',
+        '203 Ann',
+        '401 Ann',
+        '403 Ann',
+    )
+    IDS = (
+        # =====================================================================
+        # Fixed Assets Series: k1ntotl1si000, 1925--2016
+        # =====================================================================
+        'k1ntotl1si000',
+        # =====================================================================
+        # Fixed Assets Series: k3ntotl1si000, 1925--2016
+        # =====================================================================
+        'k3ntotl1si000',
+        # =====================================================================
+        # Fixed Assets Series: k1n31gd1es000, 1925--2016
+        # =====================================================================
+        'k1n31gd1es000',
+        # =====================================================================
+        # Fixed Assets Series: k3n31gd1es000, 1925--2016
+        # =====================================================================
+        'k3n31gd1es000',
+    )
+    _data_sfat = pd.concat(
+        [fetch_usa_bea(ARCHIVE_NAME, _wb, _sh, _id) for _wb, _sh, _id in zip(
+            tuple(WBS[_ // 2] for _ in range(len(IDS))), SHS, IDS)],
+        axis=1,
+        sort=True)
 
-    semi_frame_f = get_data_usa_bea_labor_mfg()
-    # =========================================================================
-    # National Income: A032RC1, 1929--1969
-    # =========================================================================
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1ALL_Hist.xls', '11200 Ann', 'A032RC1')
-    # =========================================================================
-    # National Income: A032RC1, 1969--2013
-    # =========================================================================
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1969_2015.zip'
-    sub_frame_b = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1all_xls.xls', '11200 Ann', 'A032RC1')
-    semi_frame_g = sub_frame_a.append(sub_frame_b).drop_duplicates()
-
-    # =========================================================================
-    # Nominal Gross Domestic Product Series: A191RC1, 1929--1969
-    # =========================================================================
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1ALL_Hist.xls', '10105 Ann', 'A191RC1')
-    # =========================================================================
-    # Nominal Gross Domestic Product Series: A191RC1, 1969--2014
-    # =========================================================================
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1969_2015.zip'
-    sub_frame_b = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1all_xls.xls', '10105 Ann', 'A191RC1')
-    semi_frame_h = sub_frame_a.append(sub_frame_b).drop_duplicates()
-
-    # =========================================================================
-    # Real Gross Domestic Product Series: A191RX1, 1929--1969, 2009=100
-    # =========================================================================
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1ALL_Hist.xls', '10106 Ann', 'A191RX1')
-    # =========================================================================
-    # Real Gross Domestic Product Series: A191RX1, 1969--2014, 2009=100
-    # =========================================================================
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1969_2015.zip'
-    sub_frame_b = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1all_xls.xls', '10106 Ann', 'A191RX1')
-    semi_frame_i = sub_frame_a.append(sub_frame_b).drop_duplicates()
-
-    # =========================================================================
-    # Nominal Gross Domestic Product Series: A191RC1, 1929--1969
-    # =========================================================================
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1ALL_Hist.xls', '10105 Ann', 'A191RC1')
-    # =========================================================================
-    # Nominal Gross Domestic Product Series: A191RC1, 1969--2012
-    # =========================================================================
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_b = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1all_xls.xls', '10105 Ann', 'A191RC1')
-    semi_frame_j = sub_frame_a.append(sub_frame_b).drop_duplicates()
-
-    # =========================================================================
-    # Deflator Gross Domestic Product, A191RD3, 1929--1969, 2009=100
-    # =========================================================================
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1ALL_Hist.xls', '10109 Ann', 'A191RD3')
-    # =========================================================================
-    # Deflator Gross Domestic Product, A191RD3, 1969--2014, 2009=100'''
-    # =========================================================================
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1969_2015.zip'
-    sub_frame_b = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1all_xls.xls', '10109 Ann', 'A191RD3')
-    semi_frame_k = sub_frame_a.append(sub_frame_b).drop_duplicates()
-
-    semi_frame_k.iloc[:, 0] = 100/semi_frame_k.iloc[:, 0]
-    # =========================================================================
-    # Real Gross Domestic Product Series: A191RX1, 1929--1969, 2005=100
-    # =========================================================================
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1ALL_Hist.xls', '10106 Ann', 'A191RX1')
-    # =========================================================================
-    # Real Gross Domestic Product Series: A191RX1, 1969--2012, 2005=100
-    # =========================================================================
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_b = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1all_xls.xls', '10106 Ann', 'A191RX1')
-    semi_frame_l = sub_frame_a.append(sub_frame_b).drop_duplicates()
-
-    # =========================================================================
-    # Capacity Utilization Series: CAPUTL.B50001.A, 1967--2012
-    # =========================================================================
-    semi_frame_m = get_data_usa_frb_cu()
-    result_frame = pd.concat([semi_frame_a, semi_frame_b, semi_frame_c, semi_frame_d, semi_frame_e,
-                              semi_frame_f, semi_frame_g, semi_frame_h, semi_frame_i, semi_frame_j,
-                              semi_frame_k, semi_frame_l, semi_frame_m], axis=1, sort=True)
-    return result_frame
+    return pd.concat(
+        [_data_nipa,
+         _data_sfat,
+         get_data_usa_bea_labor_mfg(),
+         # =====================================================================
+         # Capacity Utilization Series: CAPUTL.B50001.A, 1967--2012
+         # =====================================================================
+         get_data_usa_frb_cu(), ],
+        axis=1,
+        sort=True)
 
 
 def get_data_douglas():
