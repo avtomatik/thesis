@@ -2435,52 +2435,67 @@ def get_data_infcf():
 
 
 def get_data_local():
-    '''Nominal Investment Series: A006RC1, 1929--1969'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1ALL_Hist.xls', '10105 Ann', 'A006RC1')
-    '''Nominal Investment Series: A006RC1, 1969--2012'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_b = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1all_xls.xls', '10105 Ann', 'A006RC1')
-    semi_frame_a = sub_frame_a.append(sub_frame_b)
+    ARCHIVES = (
+        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
+        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
+    )
+    WBS = (
+        'Section1ALL_Hist.xls',
+        'Section1all_xls.xls',
+        'Section5ALL_Hist.xls',
+        'Section5all_xls.xls',
+    )
+    SHS = (
+        '10105 Ann',
+        '10105 Ann',
+        '10106 Ann',
+        '50900 Ann',
+    )
+    IDS = (
+        # =====================================================================
+        # Nominal Investment Series: A006RC1, 1929--2012
+        # =====================================================================
+        'A006RC1',
+        # =====================================================================
+        # Nominal Nominal Gross Domestic Product Series: A191RC1, 1929--2012
+        # =====================================================================
+        'A191RC1',
+        # =====================================================================
+        # Real Gross Domestic Product Series, 2005=100: A191RX1, 1929--2012
+        # =====================================================================
+        'A191RX1',
+        # =====================================================================
+        # `K160491` Replaced with `K10070` in `get_data_combined()`
+        # Fixed Assets Series: K160491, 1951--2011
+        # =====================================================================
+        'K160491',
+    )
+    _data_nipa = pd.concat(
+        [
+            pd.concat(
+                [fetch_usa_bea(ARCHIVES[0], _wb, _sh, _id)
+                 for _wb, _sh, _id in zip(tuple(WBS[2*(_ // 3)] for _ in range(len(IDS))), SHS, IDS)],
+                axis=1,
+                sort=True,
+            ),
+            pd.concat(
+                [fetch_usa_bea(ARCHIVES[1], _wb, _sh, _id)
+                 for _wb, _sh, _id in zip(tuple(WBS[1 + 2*(_ // 3)] for _ in range(len(IDS))), SHS, IDS)],
+                axis=1,
+                sort=True,
 
-    '''Nominal Nominal Gross Domestic Product Series: A191RC1, 1929--1969'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1ALL_Hist.xls', '10105 Ann', 'A191RC1')
-    '''Nominal Nominal Gross Domestic Product Series: A191RC1, 1969--2012'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_b = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1all_xls.xls', '10105 Ann', 'A191RC1')
-    semi_frame_b = sub_frame_a.append(sub_frame_b).drop_duplicates()
-
-    '''Real Gross Domestic Product Series, 2005=100: A191RX1, 1929--1969'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1ALL_Hist.xls', '10106 Ann', 'A191RX1')
-    '''Real Gross Domestic Product Series, 2005=100: A191RX1, 1969--2012'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_b = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1all_xls.xls', '10106 Ann', 'A191RX1')
-    semi_frame_c = sub_frame_a.append(sub_frame_b).drop_duplicates()
-
-    semi_frame_d = get_data_usa_frb_cu()
-    '''`K160491` Replaced with `K10070` in `get_data_combined()`'''
-    '''Fixed Assets Series: K160491, 1951--1969'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section5ALL_Hist.xls', '50900 Ann', 'K160491')
-    '''Fixed Assets Series: K160491, 1969--2011'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_b = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section5all_xls.xls', '50900 Ann', 'K160491')
-    semi_frame_e = sub_frame_a.append(sub_frame_b).drop_duplicates()
-
-    semi_frame_f = get_data_usa_bea_labor_mfg()
-    result_frame = pd.concat([semi_frame_a, semi_frame_b, semi_frame_c, semi_frame_d, semi_frame_e,
-                              semi_frame_f], axis=1, sort=True)
-    return result_frame
+            ),
+        ],
+        sort=True).drop_duplicates()
+    return pd.concat(
+        [
+            _data_nipa,
+            get_data_usa_bea_labor_mfg(),
+            get_data_usa_frb_cu(),
+        ],
+        axis=1,
+        sort=True
+    )
 
 
 def get_dataset():
