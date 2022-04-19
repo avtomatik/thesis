@@ -2867,37 +2867,71 @@ def get_data_usa_xlsm():
 
 
 def get_data_version_a():
-    """Returns  result_frame_a: Capital, Labor, Product;
-                result_frame_b: Capital, Labor, Product Adjusted to Capacity Utilisation"""
-    '''Data Fetch Archived'''
-    '''Fixed Assets: kcn31gd1es000, 1925--2016, Table 4.2. Chain-Type Quantity Indexes for Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization'''
-    ARCHIVE_NAME = 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip'
-    semi_frame_a = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section4ALL_xls.xls', '402 Ann', 'kcn31gd1es000')
-    """Labor"""
-    semi_frame_b = get_data_usa_bea_labor_mfg()
-    '''Real Gross Domestic Product Series, 2005=100: A191RX1, 1929--1969'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1ALL_Hist.xls', '10106 Ann', 'A191RX1')
-    """Real Gross Domestic Product Series, 2005=100: A191RX1, 1969--2012"""
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_b = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1all_xls.xls', '10106 Ann', 'A191RX1')
-    semi_frame_c = sub_frame_a.append(sub_frame_b).drop_duplicates()
-    '''Capacity Utilization Series: CAPUTL.B50001.A, 1967--2012'''
-    semi_frame_d = get_data_usa_frb_cu()
-    result_frame_a = pd.concat(
-        [semi_frame_a, semi_frame_b, semi_frame_c], axis=1, sort=True).dropna()
-    result_frame_b = pd.concat(
-        [semi_frame_a, semi_frame_b, semi_frame_c, semi_frame_d], axis=1, sort=True).dropna()
-
-    result_frame_b.iloc[:, 2] = result_frame_b.iloc[:, 2].div(
-        result_frame_b.iloc[:, 3]).mul(100)
-    result_frame_b = result_frame_b.iloc[:, [0, 1, 2]]
-    result_frame_a = result_frame_a.div(result_frame_a.iloc[0, :])
-    result_frame_b = result_frame_b.div(result_frame_b.iloc[0, :])
-    return result_frame_a, result_frame_b
+    '''Data Fetch Archived
+    Returns:
+        _data_a: Capital, Labor, Product;
+        _data_b: Capital, Labor, Product Adjusted to Capacity Utilisation'''
+    ARCHIVES = (
+        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
+        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
+    )
+    WBS = (
+        'Section1ALL_Hist.xls',
+        'Section1all_xls.xls',
+    )
+    SH, ID = ('10106 Ann', 'A191RX1')
+    ARGS = (
+        'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip',
+        'Section4ALL_xls.xls',
+        '402 Ann',
+        'kcn31gd1es000',
+    )
+    _data_a = pd.concat(
+        [
+            # =================================================================
+            # Fixed Assets: kcn31gd1es000, 1925--2016, Table 4.2. Chain-Type Quantity Indexes for Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
+            # =================================================================
+            fetch_usa_bea(*ARGS),
+            # =================================================================
+            # Labor
+            # =================================================================
+            get_data_usa_bea_labor_mfg(),
+            # =================================================================
+            # Real Gross Domestic Product Series, 2005=100: A191RX1, 1929--2012
+            # =================================================================
+            pd.concat(
+                [
+                    fetch_usa_bea(_archive, _wb, SH, ID) for _archive, _wb in zip(ARCHIVES, WBS)
+                ],
+                sort=True).drop_duplicates(),
+        ],
+        axis=1, sort=True).dropna()
+    _data_b = pd.concat(
+        [
+            # =================================================================
+            # Fixed Assets: kcn31gd1es000, 1925--2016, Table 4.2. Chain-Type Quantity Indexes for Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
+            # =================================================================
+            fetch_usa_bea(*ARGS),
+            # =================================================================
+            # Labor
+            # =================================================================
+            get_data_usa_bea_labor_mfg(),
+            # =================================================================
+            # Real Gross Domestic Product Series, 2005=100: A191RX1, 1929--2012
+            # =================================================================
+            pd.concat(
+                [
+                    fetch_usa_bea(_archive, _wb, SH, ID) for _archive, _wb in zip(ARCHIVES, WBS)
+                ],
+                sort=True).drop_duplicates(),
+            # =================================================================
+            # Capacity Utilization Series: CAPUTL.B50001.A, 1967--2012
+            # =================================================================
+            get_data_usa_frb_cu(),
+        ],
+        axis=1, sort=True).dropna()
+    _data_b.iloc[:, 2] = _data_b.iloc[:, 2].div(_data_b.iloc[:, 3]).mul(100)
+    return _data_a.div(_data_a.iloc[0, :]), _data_b.div(_data_b.iloc[0, :]).iloc[:, range(3)]
 
 
 def get_data_version_b():
