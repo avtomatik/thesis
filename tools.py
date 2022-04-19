@@ -1003,10 +1003,11 @@ def fetch_usa_classic(file_id: str, series_id: str) -> pd.DataFrame:
         'dataset_usa_cobb-douglas.zip': (5, 8,),
         'dataset_usa_kendrick.zip': (4, 7,),
     }
-    data_frame = pd.read_csv(file_id,
-                             skiprows=(None, 4)[file_id ==
-                                                'dataset_usa_brown.zip'],
-                             usecols=range(*usecols[file_id]))
+    data_frame = pd.read_csv(
+        file_id,
+        skiprows=(None, 4)[file_id == 'dataset_usa_brown.zip'],
+        usecols=range(*usecols[file_id])
+    )
     data_frame = data_frame[data_frame.iloc[:, 0] == series_id].iloc[:, [1, 2]]
     data_frame.iloc[:, 0] = data_frame.iloc[:, 0].astype(int)
     data_frame.iloc[:, 1] = pd.to_numeric(
@@ -1908,27 +1909,31 @@ def get_data_cobb_douglas_deflator():
     return result_frame
 
 
-def get_data_cobb_douglas(series_number=3) -> pd.DataFrame:
+def get_data_cobb_douglas(series_number: int = 3) -> pd.DataFrame:
     '''Original Cobb--Douglas Data Preprocessing Extension'''
     ARCHIVE_NAMES = (
         'dataset_usa_cobb-douglas.zip',
         'dataset_usa_census1949.zip',
         'dataset_douglas.zip',
     )
-    data_frame = pd.concat([fetch_usa_classic(ARCHIVE_NAMES[0], 'CDT2S4'),
-                            fetch_usa_classic(ARCHIVE_NAMES[0], 'CDT3S1'),
-                            fetch_usa_census(ARCHIVE_NAMES[1], 'J0014'),
-                            # =================================================
-                            # Description
-                            # =================================================
-                            fetch_usa_census(ARCHIVE_NAMES[1], 'J0013'),
-                            # =================================================
-                            # The Revised Index of Physical Production for All Manufacturing In the United States, 1899--1926
-                            # =================================================
-                            fetch_usa_classic(ARCHIVE_NAMES[2], 'DT24AS01')], axis=1, sort=True)
-    data_frame.dropna(inplace=True)
-    data_frame.columns = ['capital', 'labor',
-                          'product', 'product_nber', 'product_rev']
+    data_frame = pd.concat(
+        [
+            fetch_usa_classic(ARCHIVE_NAMES[0], 'CDT2S4'),
+            fetch_usa_classic(ARCHIVE_NAMES[0], 'CDT3S1'),
+            fetch_usa_census(ARCHIVE_NAMES[1], 'J0014'),
+            # =================================================================
+            # Description
+            # =================================================================
+            fetch_usa_census(ARCHIVE_NAMES[1], 'J0013'),
+            # =================================================================
+            # The Revised Index of Physical Production for All Manufacturing In the United States, 1899--1926
+            # =================================================================
+            fetch_usa_classic(ARCHIVE_NAMES[2], 'DT24AS01')
+        ], axis=1, sort=True
+    ).dropna()
+    data_frame.columns = [
+        'capital', 'labor', 'product', 'product_nber', 'product_rev'
+    ]
     return data_frame.div(data_frame.iloc[0, :]).iloc[:, range(series_number)]
 
 
@@ -2483,7 +2488,6 @@ def get_data_local():
                  for _wb, _sh, _id in zip(tuple(WBS[1 + 2*(_ // 3)] for _ in range(len(IDS))), SHS, IDS)],
                 axis=1,
                 sort=True,
-
             ),
         ],
         sort=True).drop_duplicates()
@@ -2803,52 +2807,63 @@ def get_data_usa_mcconnel_c():
 
 
 def get_data_usa_xlsm():
-    '''Indexed'''
-    '''Nominal Investment Series: A006RC1, 1929--1969'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1ALL_Hist.xls', '10105 Ann', 'A006RC1')
-    '''Nominal Investment Series: A006RC1, 1969--2012'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_b = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1all_xls.xls', '10105 Ann', 'A006RC1')
-    semi_frame_a = sub_frame_a.append(sub_frame_b)
-
-    '''Nominal National income Series: A032RC1, 1929--1969'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1ALL_Hist.xls', '10705 Ann', 'A032RC1')
-    '''Nominal National income Series: A032RC1, 1969--2011'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_b = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1all_xls.xls', '10705 Ann', 'A032RC1')
-    semi_frame_b = sub_frame_a.append(sub_frame_b).drop_duplicates()
-
-    '''Nominal Nominal Gross Domestic Product Series: A191RC1, 1929--1969'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1ALL_Hist.xls', '10105 Ann', 'A191RC1')
-    '''Nominal Nominal Gross Domestic Product Series: A191RC1, 1969--2012'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_b = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1all_xls.xls', '10105 Ann', 'A191RC1')
-    semi_frame_c = sub_frame_a.append(sub_frame_b).drop_duplicates()
-
-    '''Real Gross Domestic Product Series, 2005=100: A191RX1, 1929--1969'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1ALL_Hist.xls', '10106 Ann', 'A191RX1')
-    '''Real Gross Domestic Product Series, 2005=100: A191RX1, 1969--2012'''
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_b = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1all_xls.xls', '10106 Ann', 'A191RX1')
-    semi_frame_d = sub_frame_a.append(sub_frame_b).drop_duplicates()
-
+    ARCHIVES = (
+        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
+        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
+    )
+    WBS = (
+        'Section1ALL_Hist.xls',
+        'Section1all_xls.xls',
+    )
+    SHS = (
+        '10105 Ann',
+        '10105 Ann',
+        '10106 Ann',
+        '10705 Ann',
+    )
+    IDS = (
+        # =====================================================================
+        # Nominal Investment Series: A006RC1, 1929--2012
+        # =====================================================================
+        'A006RC1',
+        # =====================================================================
+        # Nominal Nominal Gross Domestic Product Series: A191RC1, 1929--2012
+        # =====================================================================
+        'A191RC1',
+        # =====================================================================
+        # Real Gross Domestic Product Series, 2005=100: A191RX1, 1929--2012
+        # =====================================================================
+        'A191RX1',
+        # =====================================================================
+        # Nominal National income Series: A032RC1, 1929--2011
+        # =====================================================================
+        'A032RC1',
+    )
+    _data = pd.concat(
+        [
+            pd.concat(
+                [fetch_usa_bea(ARCHIVES[0], WBS[0], _sh, _id)
+                 for _sh, _id in zip(SHS, IDS)],
+                axis=1,
+                sort=True
+            ),
+            pd.concat(
+                [fetch_usa_bea(ARCHIVES[1], WBS[1], _sh, _id)
+                 for _sh, _id in zip(SHS, IDS)],
+                axis=1,
+                sort=True
+            ),
+        ],
+        sort=True).drop_duplicates()
     FILE_NAME = 'dataset_usa_0025_p_r.txt'
-    semi_frame_e = pd.read_csv(FILE_NAME, index_col=0)
-    result_frame = pd.concat([semi_frame_a, semi_frame_b, semi_frame_c,
-                             semi_frame_d, semi_frame_e], axis=1, sort=True).dropna(how='all')
-    return result_frame
+    return pd.concat(
+        [
+            _data,
+            pd.read_csv(FILE_NAME, index_col=0)
+        ],
+        axis=1,
+        sort=True
+    )
 
 
 def get_data_version_a():
