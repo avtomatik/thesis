@@ -571,8 +571,9 @@ def fetch_can_annually(file_id, series_id):
         3800566: (3, 5,),
         3800567: (4, 6,),
     }
-    data_frame = pd.read_csv(f'dataset_can_{file_id:08n}-eng.zip',
-                             usecols=[0, *usecols[file_id]])
+    data_frame = pd.read_csv(
+        f'dataset_can_{file_id:08n}-eng.zip', usecols=[0, *usecols[file_id]]
+    )
     data_frame = data_frame[data_frame.iloc[:, 1] == series_id].iloc[:, [0, 2]]
     data_frame.columns = [data_frame.columns[0].upper(), series_id]
     data_frame.set_index(data_frame.columns[0], inplace=True)
@@ -691,15 +692,16 @@ def fetch_can_fixed_assets(series_ids):
     return result_frame.iloc[:, [-1]]
 
 
-def fetch_can_from_url(url, usecols=None):
+def fetch_can_from_url(url: str, usecols: list=None) -> pd.DataFrame:
     '''Downloading zip file from url'''
-    # r = requests.get(url)
-    # with open(name, 'wb') as s:
-    #     s.write(r.content)
     name = url.split('/')[-1]
-    with ZipFile(name, 'r').open(name.replace('-eng.zip', '.csv')) as f:
-        print(f'{url}: Read')
-        return pd.read_csv(f, usecols=usecols)
+    if os.path.exists(name):
+        with ZipFile(name, 'r').open(name.replace('-eng.zip', '.csv')) as f:
+            return pd.read_csv(f, usecols=usecols)
+    else:
+        r = requests.get(url)
+        with ZipFile(io.BytesIO(r.content)).open(name.replace('-eng.zip', '.csv')) as f:
+            return pd.read_csv(f, usecols=usecols)
 
 
 def fetch_can_group_a(file_id, skiprows):
@@ -889,14 +891,10 @@ def fetch_usa_bea_from_loaded(data_frame, series_id):
     return data_frame.set_index(data_frame.columns[0], verify_integrity=True)
 
 
-def fetch_usa_bea_from_url(url):
+def fetch_usa_bea_from_url(url: str) -> pd.DataFrame:
     '''Downloading zip file from url'''
     r = requests.get(url)
-    with open(url.split('/')[-1], 'wb') as s:
-        s.write(r.content)
-    with open(url.split('/')[-1]) as f:
-        print(f'{url}: Complete')
-        return pd.read_csv(f, thousands=',')
+    return pd.read_csv(io.BytesIO(r.content), thousands=',')
 
 
 def fetch_usa_bea_sfat_series():
@@ -1240,24 +1238,24 @@ def get_data_can():
     # fixed non-residential capital, total all industries, by asset, provinces\
     # and territories, annual (dollars x 1,000,000)'''
     # =========================================================================
-    capital = fetch_can_from_url(
-        'https://www150.statcan.gc.ca/n1/en/tbl/csv/36100096-eng.zip')
+    URL = 'https://www150.statcan.gc.ca/n1/en/tbl/csv/36100096-eng.zip'
+    capital = fetch_can_from_url(URL)
     capital = fetch_can_capital(fetch_can_capital_query())
     # =========================================================================
     # '''B. Labor Block: `v2523012`, Preferred Over `v3437501` Which Is Quarterly'''
     # '''`v2523012` - Table: 14-10-0027-01 (formerly CANSIM 282-0012): Employment\
     # by class of worker, annual (x 1,000)'''
     # =========================================================================
-    labor = fetch_can_from_url(
-        'https://www150.statcan.gc.ca/n1/tbl/csv/14100027-eng.zip')
+    URL = 'https://www150.statcan.gc.ca/n1/tbl/csv/14100027-eng.zip'
+    labor = fetch_can_from_url(URL)
     labor = fetch_can(labor, 'v2523012')
     # =========================================================================
     # '''C. Production Block: `v65201809`'''
     # '''`v65201809` - Table: 36-10-0434-01 (formerly CANSIM 379-0031): Gross\
     # domestic product (GDP) at basic prices, by industry, monthly (x 1,000,000)'''
     # =========================================================================
-    product = fetch_can_from_url(
-        'https://www150.statcan.gc.ca/n1/tbl/csv/36100434-eng.zip')
+    URL = 'https://www150.statcan.gc.ca/n1/tbl/csv/36100434-eng.zip'
+    product = fetch_can_from_url(URL)
     product = fetch_can_quarterly(product, 'v65201809')
     result_frame = pd.concat([capital, labor, product], axis=1, sort=True)
     # result_frame = result_frame.dropna()
@@ -1830,8 +1828,8 @@ def get_data_cobb_douglas_deflator():
     '''Cobb--Douglas'''
     semi_frame_a = processing(basis_frame.iloc[:, [19]])
     '''Bureau of Economic Analysis'''
-    loaded_frame = fetch_usa_bea_from_url(
-        'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt')
+    URL = 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt'
+    loaded_frame = fetch_usa_bea_from_url(URL)
     '''Fixed Assets: k1n31gd1es00, 1925--2019, Table 4.1. Current-Cost Net\
         Stock of Private Nonresidential Fixed Assets by Industry Group and\
             Legal Form of Organization'''
@@ -2001,8 +1999,8 @@ def get_data_cobb_douglas_extension_labor():
     semi_frame_e = fetch_usa_census(ARCHIVE_NAME, 'P0005')
     ARCHIVE_NAME = 'dataset_usa_census1975.zip'
     semi_frame_f = fetch_usa_census(ARCHIVE_NAME, 'P0062')
-    loaded_frame = fetch_usa_bea_from_url(
-        'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt')
+    URL = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
+    loaded_frame = fetch_usa_bea_from_url(URL)
     sub_frame_a = fetch_usa_bea_from_loaded(loaded_frame, 'H4313C')
     sub_frame_b = fetch_usa_bea_from_loaded(loaded_frame, 'J4313C')
     sub_frame_c = fetch_usa_bea_from_loaded(loaded_frame, 'A4313C')
@@ -2671,8 +2669,8 @@ def get_data_usa_capital():
     ARCHIVE_NAME = 'dataset_usa_cobb-douglas.zip'
     # Total Fixed Capital in 1880 dollars (4)
     semi_frame_c = fetch_usa_classic(ARCHIVE_NAME, 'CDT2S4')
-    loaded_frame = fetch_usa_bea_from_url(
-        'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt')
+    URL = 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt'
+    loaded_frame = fetch_usa_bea_from_url(URL)
     '''Fixed Assets: k1n31gd1es00, 1925--2019, Table 4.1. Current-Cost Net\
     Stock of Private Nonresidential Fixed Assets by Industry Group and\
     Legal Form of Organization'''
