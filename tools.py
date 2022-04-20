@@ -892,7 +892,7 @@ def fetch_usa_bea_from_loaded(data_frame, series_id):
 
 
 def fetch_usa_bea_from_url(url: str) -> pd.DataFrame:
-    '''Downloading zip file from url'''
+    '''Retrieves U.S. Bureau of Economic Analysis DataFrame from URL'''
     r = requests.get(url)
     return pd.read_csv(io.BytesIO(r.content), thousands=',')
 
@@ -2072,84 +2072,123 @@ def get_data_cobb_douglas_extension_product():
 
 def get_data_combined():
     '''Most Up-To-Date Version'''
-    FILE_NAME = 'dataset_usa_bea_nipadataa.txt'
-    semi_frame_a = fetch_usa_bea_(FILE_NAME, 'A006RC')
-    semi_frame_b = fetch_usa_bea_(FILE_NAME, 'A006RD')
-    semi_frame_c = fetch_usa_bea_(FILE_NAME, 'A008RC')
-    semi_frame_d = fetch_usa_bea_(FILE_NAME, 'A008RD')
-    semi_frame_e = fetch_usa_bea_(FILE_NAME, 'A032RC')
-    semi_frame_f = fetch_usa_bea_(FILE_NAME, 'A191RA')
-    semi_frame_g = fetch_usa_bea_(FILE_NAME, 'A191RC')
-    semi_frame_h = fetch_usa_bea_(FILE_NAME, 'A191RX')
-    sub_frame_a = fetch_usa_bea_(FILE_NAME, 'H4313C')
-    sub_frame_b = fetch_usa_bea_(FILE_NAME, 'J4313C')
-    sub_frame_c = fetch_usa_bea_(FILE_NAME, 'A4313C')
-    sub_frame_d = fetch_usa_bea_(FILE_NAME, 'N4313C')
-    semi_frame_i = pd.concat(
-        [sub_frame_a, sub_frame_b, sub_frame_c, sub_frame_d], axis=1, sort=True)
-
-    semi_frame_i = semi_frame_i.mean(1)
-    semi_frame_i = semi_frame_i.to_frame(name='Labor')
-    semi_frame_j = fetch_usa_bea_(FILE_NAME, 'W170RC')
-    semi_frame_k = fetch_usa_bea_(FILE_NAME, 'W170RX')
     # =========================================================================
-    # Fixed Assets Series: K100701, 1951--1969
+    # TODO: Refactor It
     # =========================================================================
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section5ALL_Hist.xls', '51000 Ann', 'K100701')
+    URL = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
+    _data = fetch_usa_bea_from_url(URL)
+    IDS = (
+        'A006RC',
+        'A006RD',
+        'A008RC',
+        'A008RD',
+        'A032RC',
+        'A191RA',
+        'A191RC',
+        'A191RX',
+        'W170RC',
+        'W170RX',
+    )
+    _data_nipa = pd.concat(
+        [
+            fetch_usa_bea_from_loaded(_data, _id) for _id in IDS
+        ],
+        axis=1,
+        sort=True
+    )
+    IDS = (
+        'H4313C',
+        'J4313C',
+        'A4313C',
+        'N4313C',
+    )
+    _labor_frame = pd.concat(
+        [
+            fetch_usa_bea_from_loaded(_data, _id) for _id in IDS
+        ],
+        axis=1,
+        sort=True
+    )
+    _labor_frame['mfg_labor'] = _labor_frame.mean(1)
+    _labor_frame = _labor_frame.iloc[:, [-1]]
+    ARCHIVES = (
+        'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1929_1969.zip',
+        'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1969_2015.zip',
+    )
+    WBS = (
+        'Section5ALL_Hist.xls',
+        'Section5all_xls.xls',
+    )
+    SH, ID = ('51000 Ann', 'K100701',)
     # =========================================================================
-    # Fixed Assets Series: K100701, 1969--2013
+    # Fixed Assets Series: K100701, 1951--2013
     # =========================================================================
-    ARCHIVE_NAME = 'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1969_2015.zip'
-    sub_frame_b = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section5all_xls.xls', '51000 Ann', 'K100701')
-    semi_frame_l = sub_frame_a.append(sub_frame_b).drop_duplicates()
-
+    _data_sfat = pd.concat(
+        [
+            fetch_usa_bea(_archive, _wb, SH, ID) for _archive, _wb in zip(ARCHIVES, WBS)
+        ],
+        sort=True
+    ).drop_duplicates()
     # =========================================================================
     # US BEA Fixed Assets Series Tests
     # =========================================================================
-    # =========================================================================
-    # Investment in Fixed Assets, Private, i3ptotl1es000, 1901--2016
-    # =========================================================================
     ARCHIVE_NAME = 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip'
-    semi_frame_m = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1ALL_xls.xls', '105 Ann', 'i3ptotl1es000')
-    # =========================================================================
-    # Chain-Type Quantity Index for Investment in Fixed Assets, Private, icptotl1es000, 1901--2016
-    # =========================================================================
-    ARCHIVE_NAME = 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip'
-    semi_frame_n = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1ALL_xls.xls', '106 Ann', 'icptotl1es000')
-    # =========================================================================
-    # Current-Cost Net Stock of Fixed Assets, Private, k1ptotl1es000, 1925--2016
-    # =========================================================================
-    ARCHIVE_NAME = 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip'
-    semi_frame_o = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1ALL_xls.xls', '101 Ann', 'k1ptotl1es000')
-    # =========================================================================
-    # Historical-Cost Net Stock of Private Fixed Assets, Private Fixed Assets, k3ptotl1es000, 1925--2016
-    # =========================================================================
-    ARCHIVE_NAME = 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip'
-    semi_frame_p = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section2ALL_xls.xls', '203 Ann', 'k3ptotl1es000')
-    # =========================================================================
-    # Chain-Type Quantity Indexes for Net Stock of Fixed Assets, Private, kcptotl1es000, 1925--2016
-    # =========================================================================
-    ARCHIVE_NAME = 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip'
-    semi_frame_q = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section1ALL_xls.xls', '102 Ann', 'kcptotl1es000')
-    semi_frame_r = get_data_usa_frb_ms()
-    semi_frame_s = get_data_usa_frb_ms()
-    semi_frame_t = get_data_usa_frb_ms()
+    WBS = (
+        'Section1ALL_xls.xls',
+        'Section2ALL_xls.xls',
+    )
+    SHS = (
+        '105 Ann',
+        '106 Ann',
+        '101 Ann',
+        '203 Ann',
+        '202 Ann',
+    )
+    IDS = (
+        # =====================================================================
+        # Investment in Fixed Assets, Private, i3ptotl1es000, 1901--2016
+        # =====================================================================
+        'i3ptotl1es000',
+        # =====================================================================
+        # Chain-Type Quantity Index for Investment in Fixed Assets, Private, icptotl1es000, 1901--2016
+        # =====================================================================
+        'icptotl1es000',
+        # =====================================================================
+        # Current-Cost Net Stock of Fixed Assets, Private, k1ptotl1es000, 1925--2016
+        # =====================================================================
+        'k1ptotl1es000',
+        # =====================================================================
+        # Historical-Cost Net Stock of Private Fixed Assets, Private Fixed Assets, k3ptotl1es000, 1925--2016
+        # =====================================================================
+        'k3ptotl1es000',
+        # =====================================================================
+        # Chain-Type Quantity Indexes for Net Stock of Fixed Assets, Private, kcptotl1es000, 1925--2016
+        # =====================================================================
+        'kcptotl1es000',
+    )
+    _data_sfat_ = pd.concat(
+        [
+            fetch_usa_bea(ARCHIVE_NAME, _wb, _sh, _id) for _wb, _sh, _id in zip(
+                tuple(WBS[_ // 3] for _ in range(len(IDS))), SHS, IDS)
+        ],
+        axis=1,
+        sort=True
+    )
     FILE_NAME = 'dataset_usa_0025_p_r.txt'
-    semi_frame_u = pd.read_csv(FILE_NAME, index_col=0)
-    result_frame = pd.concat([semi_frame_a, semi_frame_b, semi_frame_c, semi_frame_d, semi_frame_e,
-                              semi_frame_f, semi_frame_g, semi_frame_h, semi_frame_i, semi_frame_j,
-                              semi_frame_k, semi_frame_l, semi_frame_m, semi_frame_n, semi_frame_o,
-                              semi_frame_p, semi_frame_q, semi_frame_r, semi_frame_s, semi_frame_t,
-                              semi_frame_u], axis=1, sort=True)
-    return result_frame
+    return pd.concat(
+        [
+            _data_nipa,
+            _labor_frame,
+            _data_sfat,
+            _data_sfat_,
+            get_data_usa_frb_ms(),
+            get_data_usa_frb_ms(),
+            get_data_usa_frb_ms(),
+            pd.read_csv(FILE_NAME, index_col=0),
+        ],
+        axis=1,
+        sort=True
+    )
 
 
 def get_data_combined_archived():
