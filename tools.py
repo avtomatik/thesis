@@ -4396,10 +4396,9 @@ def test_sub_b(data_frame):
     data_frame.iloc[:, [-1]].plot(grid=True)
 
 
-def plot_can_test(control, test):
+def plot_can_test(data_frame):
     plt.figure()
-    control.plot(logy=True)
-    test.plot(logy=True)
+    data_frame.plot(logy=True)
     plt.title('Discrepancy')
     plt.xlabel('Period')
     plt.ylabel('Index')
@@ -4436,47 +4435,79 @@ def plot_usa_nber(file_name, method):
 
 def test_data_consistency_a():
     '''Project I: Canada Gross Domestic Product Data Comparison'''
-    '''Expenditure-Based Gross Domestic Product Series Used'''
-    '''Income-Based Gross Domestic Product Series Not Used'''
-    '''Series A Equals Series D, However, Series D Is Preferred Over Series A As It Is Yearly: v62307282 - 380-0066 Price indexes, gross domestic product; Canada; Implicit price indexes; Gross domestic product at market prices (quarterly, 1961-03-01 to 2017-09-01)'''
-    semi_frame_a = fetch_can_quarterly(3800066, 'v62307282')
-    '''Series B Equals Both Series C & Series E, However, Series E Is Preferred Over Both Series B & Series C As It Is Yearly: v62306896 - 380-0084 Gross domestic product at 2007 constant prices, expenditure-based; Canada; Seasonally adjusted at annual rates; Gross domestic product at market prices (x 1,000,000) (quarterly, 1961-03-01 to 2017-09-01)'''
-    semi_frame_b = fetch_can_quarterly(3800084, 'v62306896')
-    '''Series C Equals Both Series B & Series E, However, Series E Is Preferred Over Both Series B & Series C As It Is Yearly: v62306938 - 380-0084 Gross domestic product at 2007 constant prices, expenditure-based; Canada; Unadjusted; Gross domestic product at market prices (x 1,000,000) (quarterly, 1961-03-01 to 2017-09-01)'''
-    semi_frame_c = fetch_can_quarterly(3800084, 'v62306938')
-    '''Series D Equals Series A, However, Series D Is Preferred Over Series A As It Is Yearly: v62471023 - 380-0102 Gross domestic product indexes; Canada; Implicit price indexes; Gross domestic product at market prices (annual, 1961 to 2016)'''
-    semi_frame_d = fetch_can_annually(3800102, 'v62471023')
-    '''Series E Equals Both Series B & Series C, However, Series E Is Preferred Over Both Series B & Series C As It Is Yearly: v62471340 - 380-0106 Gross domestic product at 2007 constant prices, expenditure-based; Canada; Gross domestic product at market prices (x 1,000,000) (annual, 1961 to 2016)'''
-    semi_frame_e = fetch_can_annually(3800106, 'v62471340')
-    semi_frame_f = fetch_can_annually(3800518, 'v96411770')
-    semi_frame_g = fetch_can_annually(3800566, 'v96391932')
-    semi_frame_h = fetch_can_annually(3800567, 'v96730304')
-    semi_frame_i = fetch_can_annually(3800567, 'v96730338')
-    result_frame = pd.concat([semi_frame_a, semi_frame_b, semi_frame_c, semi_frame_d, semi_frame_e,
-                              semi_frame_f, semi_frame_g, semi_frame_h, semi_frame_i], axis=1, sort=True)
-    result_frame = result_frame.dropna()
-    ser_a = result_frame.iloc[:, 0].div(result_frame.iloc[0, 0])
-    ser_b = result_frame.iloc[:, 4].div(result_frame.iloc[0, 4])
-    ser_c = result_frame.iloc[:, 5].div(result_frame.iloc[0, 5])
-    ser_d = result_frame.iloc[:, 7].div(
-        result_frame.iloc[:, 6]).div(result_frame.iloc[:, 5]).mul(100)
-    ser_e = result_frame.iloc[:, 8].div(result_frame.iloc[0, 8])
+    # =========================================================================
+    # Expenditure-Based Gross Domestic Product Series Used
+    # Income-Based Gross Domestic Product Series Not Used
+    # =========================================================================
+    ARGS = (
+        # =====================================================================
+        # Series A: Equals Series D, However, Series D Is Preferred Over Series A As It Is Yearly:
+        # v62307282 - 380-0066 Price indexes, gross domestic product; Canada; Implicit price indexes; Gross domestic product at market prices (quarterly, 1961-03-01 to 2017-09-01)
+        # =====================================================================
+        (3800066, 'v62307282'),
+        # =====================================================================
+        # Series B: Equals Both Series C & Series E, However, Series E Is Preferred Over Both Series B & Series C As It Is Yearly: v62306896 - 380-0084 Gross domestic product at 2007 constant prices, expenditure-based; Canada; Seasonally adjusted at annual rates; Gross domestic product at market prices (x 1,000,000) (quarterly, 1961-03-01 to 2017-09-01)
+        # =====================================================================
+        (3800084, 'v62306896'),
+        # =====================================================================
+        # Series C: Equals Both Series B & Series E, However, Series E Is Preferred Over Both Series B & Series C As It Is Yearly: v62306938 - 380-0084 Gross domestic product at 2007 constant prices, expenditure-based; Canada; Unadjusted; Gross domestic product at market prices (x 1,000,000) (quarterly, 1961-03-01 to 2017-09-01)
+        # =====================================================================
+        (3800084, 'v62306938'),
+        # =====================================================================
+        # Series D: Equals Series A, However, Series D Is Preferred Over Series A As It Is Yearly: v62471023 - 380-0102 Gross domestic product indexes; Canada; Implicit price indexes; Gross domestic product at market prices (annual, 1961 to 2016)
+        # =====================================================================
+        (3800102, 'v62471023'),
+        # =====================================================================
+        # Series E: Equals Both Series B & Series C, However, Series E Is Preferred Over Both Series B & Series C As It Is Yearly: v62471340 - 380-0106 Gross domestic product at 2007 constant prices, expenditure-based; Canada; Gross domestic product at market prices (x 1,000,000) (annual, 1961 to 2016)
+        # =====================================================================
+        (3800106, 'v62471340'),
+        (3800518, 'v96411770'),
+        (3800566, 'v96391932'),
+        (3800567, 'v96730304'),
+        (3800567, 'v96730338'),
+    )
+    data_frame = pd.concat(
+        [
+            pd.concat(
+                [
+                    fetch_can_quarterly(*_args) for _args in ARGS[:3]
+                ],
+                axis=1,
+                sort=True
+            ),
+            pd.concat(
+                [
+                    fetch_can_annually(*_args) for _args in ARGS[3:]
+                ],
+                axis=1,
+                sort=True
+            ),
+        ],
+        axis=1,
+        sort=True
+    ).dropna()
+    data_frame['series_0x0'] = data_frame.iloc[:, 0].div(data_frame.iloc[0, 0])
+    data_frame['series_0x1'] = data_frame.iloc[:, 4].div(data_frame.iloc[0, 4])
+    data_frame['series_0x2'] = data_frame.iloc[:, 5].div(data_frame.iloc[0, 5])
+    data_frame['series_0x3'] = data_frame.iloc[:, 7].div(
+        data_frame.iloc[:, 6]).div(data_frame.iloc[:, 5]).mul(100)
+    data_frame['series_0x4'] = data_frame.iloc[:, 8].div(data_frame.iloc[0, 8])
     # =========================================================================
     # Option 1
     # =========================================================================
-    plot_can_test(ser_a, ser_c)
+    plot_can_test(data_frame.iloc[:, [-5, -3]])
     # =========================================================================
     # Option 2
     # =========================================================================
-    plot_can_test(ser_d, ser_e)
+    plot_can_test(data_frame.iloc[:, [-2, -1]])
     # =========================================================================
     # Option 3
     # =========================================================================
-    plot_can_test(ser_b, ser_e)
+    plot_can_test(data_frame.iloc[:, [-4, -1]])
     # =========================================================================
-    # Option 4
+    # Option 4: What?
     # =========================================================================
-    plot_can_test(ser_e.div(ser_e), ser_c)
+    # plot_can_test(data_frame.iloc[:, -1].div(data_frame.iloc[:, -1]), data_frame.iloc[:, -3])
 
 
 def test_data_consistency_b():
