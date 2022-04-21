@@ -2561,37 +2561,72 @@ def get_dataset():
 
 
 def get_data_updated():
-    FILE_NAME = 'dataset_usa_bea_nipadataa.txt'
-    semi_frame_a = fetch_usa_bea_(FILE_NAME, 'A006RC')
-    semi_frame_b = fetch_usa_bea_(FILE_NAME, 'A006RD')
-    semi_frame_c = fetch_usa_bea_(FILE_NAME, 'A191RC')
-    semi_frame_d = fetch_usa_bea_(FILE_NAME, 'A191RX')
-    '''Fixed Assets: kcn31gd1es000, 1925--2016, Table 4.2. Chain-Type Quantity Indexes for Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization'''
+    URL = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
+    _data = fetch_usa_bea_from_url(URL)
+    IDS = (
+        'A006RC',
+        'A006RD',
+        'A191RC',
+        'A191RX',
+    )
+    _data_nipa = pd.concat(
+        [
+            fetch_usa_bea_from_loaded(_data, _id) for _id in IDS
+        ],
+        axis=1,
+        sort=True
+    )
     ARCHIVE_NAME = 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip'
-    semi_frame_e = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section4ALL_xls.xls', '402 Ann', 'kcn31gd1es000')
-    '''Not Used: Fixed Assets: k3n31gd1es000, 1925--2016, Table 4.3. Historical-Cost Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization'''
-    ARCHIVE_NAME = 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip'
-    semi_frame_f = fetch_usa_bea(
-        ARCHIVE_NAME, 'Section4ALL_xls.xls', '403 Ann', 'k3n31gd1es000')
-    source_frame = pd.concat([semi_frame_a, semi_frame_b, semi_frame_c,
-                             semi_frame_d, semi_frame_e, semi_frame_f], axis=1, sort=True).dropna()
-
-    BASE = 58  # Year 2009
-    '''Investment, 2009=100'''
-    source_frame['inv'] = source_frame.iloc[BASE, 0] * \
-        source_frame.iloc[:, 1].div(100)
-    '''Capital, 2009=100'''
-    source_frame['cap'] = 1000*source_frame.iloc[BASE, 5] * \
-        source_frame.iloc[:, 4].div(100)
-    '''Capital Retirement Ratio'''
-    source_frame['rto'] = 1 + (1*source_frame.iloc[:, 6] -
-                               source_frame.iloc[:, 7].shift(-1)).div(source_frame.iloc[:, 7])
-    result_frame_a = source_frame.iloc[:, [6, 3, 7, 8]]
-    result_frame_b = source_frame.iloc[:, [8]]
-    result_frame_a.dropna().reset_index(level=0, inplace=True)
-    result_frame_b.dropna().reset_index(level=0, inplace=True)
-    return result_frame_a, result_frame_b, BASE
+    WB = 'Section4ALL_xls.xls'
+    SHS = (
+        '403 Ann',
+        '402 Ann',
+    )
+    IDS = (
+        # =====================================================================
+        # Not Used: Fixed Assets: k3n31gd1es000, 1925--2016, Table 4.3. Historical-Cost Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
+        # =====================================================================
+        'k3n31gd1es000',
+        # =====================================================================
+        # Fixed Assets: kcn31gd1es000, 1925--2016, Table 4.2. Chain-Type Quantity Indexes for Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
+        # =====================================================================
+        'kcn31gd1es000',
+    )
+    _data_sfat = pd.concat(
+        [
+            fetch_usa_bea(ARCHIVE_NAME, WB, _sh, _id) for _sh, _id in zip(SHS, IDS)
+        ],
+        axis=1,
+        sort=True
+    )
+    _data = pd.concat(
+        [
+            _data_nipa,
+            _data_sfat,
+        ],
+        axis=1,
+        sort=True
+    )
+    # =========================================================================
+    # Investment, 2012=100
+    # =========================================================================
+    _data['_inv'] = _data.loc[:, 'A006RD'].mul(
+        _data.loc[2012, 'A006RC']).div(100)
+    # =========================================================================
+    # Capital, 2012=100
+    # =========================================================================
+    _data['_cap'] = _data.loc[:, 'kcn31gd1es000'].mul(
+        _data.loc[2009, 'k3n31gd1es000']).mul(1000).div(100)
+    # =========================================================================
+    # Capital Retirement Ratio
+    # =========================================================================
+    _data['_rto'] = _data.iloc[:, -
+                               2].mul(1).sub(_data.iloc[:, -1].shift(-1)).div(_data.iloc[:, -1]).add(1)
+    return (
+        _data.loc[:, ['_inv', 'A191RX', '_cap', '_rto']].dropna(),
+        _data.loc[:, ['_rto']].dropna(),
+        _data.index.get_loc(2012)
+    )
 
 
 def get_data_usa_bea_labor():
