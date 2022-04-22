@@ -901,7 +901,7 @@ def fetch_usa_census_description(file_name, series_id):
     return description
 
 
-def fetch_usa_census(file_name: str, series_id: str) -> pd.DataFrame:
+def fetch_usa_census(archive_name: str, series_id: str) -> pd.DataFrame:
     # =========================================================================
     # Selected Series by U.S. Bureau of the Census
     # U.S. Bureau of the Census, Historical Statistics of the United States,
@@ -909,7 +909,7 @@ def fetch_usa_census(file_name: str, series_id: str) -> pd.DataFrame:
     # U.S. Bureau of the Census. Historical Statistics of the United States,
     # Colonial Times to 1970, Bicentennial Edition. Washington, D.C., 1975.
     # =========================================================================
-    data_frame = pd.read_csv(file_name,
+    data_frame = pd.read_csv(archive_name,
                              usecols=range(8, 11),
                              dtype=str)
     data_frame = data_frame[data_frame.iloc[:, 0] == series_id].iloc[:, [1, 2]]
@@ -920,7 +920,7 @@ def fetch_usa_census(file_name: str, series_id: str) -> pd.DataFrame:
     return data_frame.groupby(data_frame.columns[0]).mean()
 
 
-def fetch_usa_classic(file_id: str, series_id: str) -> pd.DataFrame:
+def fetch_usa_classic(archive_name: str, series_id: str) -> pd.DataFrame:
     # =========================================================================
     # Data Fetch Procedure for Enumerated Classical Datasets
     # =========================================================================
@@ -931,9 +931,9 @@ def fetch_usa_classic(file_id: str, series_id: str) -> pd.DataFrame:
         'dataset_usa_kendrick.zip': (4, 7,),
     }
     data_frame = pd.read_csv(
-        file_id,
-        skiprows=(None, 4)[file_id == 'dataset_usa_brown.zip'],
-        usecols=range(*usecols[file_id])
+        archive_name,
+        skiprows=(None, 4)[archive_name == 'dataset_usa_brown.zip'],
+        usecols=range(*usecols[archive_name])
     )
     data_frame = data_frame[data_frame.iloc[:, 0] == series_id].iloc[:, [1, 2]]
     data_frame.iloc[:, 0] = data_frame.iloc[:, 0].astype(int)
@@ -1982,46 +1982,73 @@ def get_data_cobb_douglas_extension_labor():
 
 
 def get_data_cobb_douglas_extension_product():
-    base = (109, 149)  # 1899, 1939
-    '''Bureau of the Census, 1949, Page 179, J13: National Bureau of Economic\
-        Research Index of Physical Output, All Manufacturing Industries.'''
-    ARCHIVE_NAME = 'dataset_usa_census1949.zip'
-    semi_frame_a = fetch_usa_census(ARCHIVE_NAME, 'J0013')
-    '''Bureau of the Census, 1949, Page 179, J14: Warren M. Persons, Index of\
-        Physical Production of Manufacturing'''
-    ARCHIVE_NAME = 'dataset_usa_census1949.zip'
-    semi_frame_b = fetch_usa_census(ARCHIVE_NAME, 'J0014')
-    '''Bureau of the Census, 1975, Page 667, P17: Edwin Frickey Index of\
-        Manufacturing Production'''
-    ARCHIVE_NAME = 'dataset_usa_census1975.zip'
-    semi_frame_c = fetch_usa_census(ARCHIVE_NAME, 'P0017')
-    '''The Revised Index of Physical Production for All Manufacturing In the\
-        United States, 1899--1926'''
-    ARCHIVE_NAME = 'dataset_douglas.zip'
-    semi_frame_d = fetch_usa_classic(ARCHIVE_NAME, 'DT24AS01')
-    '''Federal Reserve, AIPMASAIX'''
-    semi_frame_e = get_data_usa_frb_ip()
-    '''Joseph H. Davis Production Index'''
-    ARCHIVE_NAME = 'dataset_usa_davis-j-h-ip-total.xls'
-    semi_frame_f = pd.read_excel(ARCHIVE_NAME, index_col=0, skiprows=4)
-    semi_frame_f.index.rename('period', inplace=True)
-    semi_frame_f.columns = ['davis_index']
-    result_frame = pd.concat([semi_frame_a, semi_frame_b, semi_frame_c,
-                              semi_frame_d, semi_frame_e, semi_frame_f],
-                             axis=1, sort=True)
-    result_frame.iloc[:, 1] = result_frame.iloc[:, 1].div(
-        result_frame.iloc[base[0], 1]).mul(100)
-    result_frame.iloc[:, 5] = result_frame.iloc[:, 5].div(
-        result_frame.iloc[base[0], 5]).mul(100)
-    result_frame['fused_classic'] = result_frame.iloc[:,
-                                                      [0, 1, 2, 3, 5]].mean(1)
-    result_frame.iloc[:, 4] = result_frame.iloc[:, 4].div(
-        result_frame.iloc[base[1], 4]).mul(100)
-    result_frame.iloc[:, 6] = result_frame.iloc[:, 6].div(
-        result_frame.iloc[base[1], 6]).mul(100)
-    result_frame['fused'] = result_frame.iloc[:, [4, 6]].mean(1)
-    result_frame = result_frame.iloc[:, [7]]
-    return result_frame
+    ARCHIVE_NAMES = (
+        'dataset_usa_census1949.zip',
+        'dataset_usa_census1949.zip',
+        'dataset_usa_census1975.zip',
+        'dataset_douglas.zip',
+    )
+    SERIES_IDS = (
+        # =====================================================================
+        # Bureau of the Census, 1949, Page 179, J13: National Bureau of Economic Research Index of Physical Output, All Manufacturing Industries.
+        # =====================================================================
+        'J0013',
+        # =====================================================================
+        # Bureau of the Census, 1949, Page 179, J14: Warren M. Persons, Index of Physical Production of Manufacturing
+        # =====================================================================
+        'J0014',
+        # =====================================================================
+        # Bureau of the Census, 1975, Page 667, P17: Edwin Frickey Index of Manufacturing Production
+        # =====================================================================
+        'P0017',
+        # =====================================================================
+        # The Revised Index of Physical Production for All Manufacturing In the United States, 1899--1926
+        # =====================================================================
+        'DT24AS01',
+    )
+    FUNCTIONS = (
+        fetch_usa_census,
+        fetch_usa_census,
+        fetch_usa_census,
+        fetch_usa_classic,
+    )
+    data_frame = pd.concat(
+        [
+            partial(func, **{'archive_name': archive_name,
+                             'series_id': series_id})()
+            for archive_name, series_id, func in zip(ARCHIVE_NAMES, SERIES_IDS, FUNCTIONS)
+        ],
+        axis=1,
+        sort=True
+    )
+    FILE_NAME = 'dataset_usa_davis-j-h-ip-total.xls'
+    data_frame = pd.concat(
+        [
+            data_frame,
+            # =================================================================
+            # Joseph H. Davis Production Index
+            # =================================================================
+            pd.read_excel(FILE_NAME, header=None, names=[
+                'period', 'davis_index'], index_col=0, skiprows=5),
+            # =================================================================
+            # Federal Reserve, AIPMASAIX
+            # =================================================================
+            get_data_usa_frb_ip(),
+        ],
+        axis=1,
+        sort=True
+    )
+    data_frame.iloc[:, 1] = data_frame.iloc[:, 1].div(
+        data_frame.iloc[data_frame.index.get_loc(1899), 1]).mul(100)
+    data_frame.iloc[:, 4] = data_frame.iloc[:, 4].div(
+        data_frame.iloc[data_frame.index.get_loc(1899), 4]).mul(100)
+    data_frame.iloc[:, 5] = data_frame.iloc[:, 5].div(
+        data_frame.iloc[data_frame.index.get_loc(1939), 5]).mul(100)
+    data_frame['fused_classic'] = data_frame.iloc[:, range(5)].mean(1)
+    data_frame.iloc[:, -1] = data_frame.iloc[:, -1].div(
+        data_frame.iloc[data_frame.index.get_loc(1939), -1]).mul(100)
+    data_frame['fused'] = data_frame.iloc[:, -2:].mean(1)
+    return data_frame.iloc[:, [-1]]
 
 
 def get_data_combined():
