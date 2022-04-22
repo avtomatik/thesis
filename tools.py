@@ -2739,45 +2739,104 @@ def get_data_usa_bls_cpiu():
 
 
 def get_data_usa_capital():
-    '''Series Not Used - `k3ntotl1si00`'''
-    ARCHIVE_NAME = 'dataset_usa_cobb-douglas.zip'
-    # Annual Increase in Terms of Cost Price (1)
-    semi_frame_a = fetch_usa_classic(ARCHIVE_NAME, 'CDT2S1')
-    ARCHIVE_NAME = 'dataset_usa_cobb-douglas.zip'
-    # Annual Increase in Terms of 1880 dollars (3)
-    semi_frame_b = fetch_usa_classic(ARCHIVE_NAME, 'CDT2S3')
-    ARCHIVE_NAME = 'dataset_usa_cobb-douglas.zip'
-    # Total Fixed Capital in 1880 dollars (4)
-    semi_frame_c = fetch_usa_classic(ARCHIVE_NAME, 'CDT2S4')
+    # =========================================================================
+    # Series Not Used - `k3ntotl1si00`
+    # =========================================================================
     URL = 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt'
-    loaded_frame = fetch_usa_bea_from_url(URL)
-    '''Fixed Assets: k1n31gd1es00, 1925--2019, Table 4.1. Current-Cost Net\
-    Stock of Private Nonresidential Fixed Assets by Industry Group and\
-    Legal Form of Organization'''
-    semi_frame_d = fetch_usa_bea_from_loaded(loaded_frame, 'k1n31gd1es00')
-    '''Not Used: Fixed Assets: k3n31gd1es00, 1925--2019, Table 4.3.\
-    Historical-Cost Net Stock of Private Nonresidential Fixed Assets by\
-    Industry Group and Legal Form of Organization'''
-    semi_frame_e = fetch_usa_bea_from_loaded(loaded_frame, 'k3n31gd1es00')
-    ARCHIVE_NAME = 'dataset_usa_census1975.zip'
-    semi_frame_f = fetch_usa_census(ARCHIVE_NAME, 'P0107')
-    ARCHIVE_NAME = 'dataset_usa_census1975.zip'
-    semi_frame_g = fetch_usa_census(ARCHIVE_NAME, 'P0110')
-    ARCHIVE_NAME = 'dataset_usa_census1975.zip'
-    semi_frame_h = fetch_usa_census(ARCHIVE_NAME, 'P0119')
-    '''Kendrick J.W., Productivity Trends in the United States, Page 320'''
-    ARCHIVE_NAME = 'dataset_usa_kendrick.zip'
-    semi_frame_i = fetch_usa_classic(ARCHIVE_NAME, 'KTA15S08')
-    '''Douglas P.H., Theory of Wages, Page 332'''
-    ARCHIVE_NAME = 'dataset_douglas.zip'
-    semi_frame_j = fetch_usa_classic(ARCHIVE_NAME, 'DT63AS01')
-    '''FRB Data'''
-    semi_frame_k = get_data_usa_frb_fa()
-    result_frame = pd.concat([semi_frame_a, semi_frame_b, semi_frame_c,
-                              semi_frame_d, semi_frame_e, semi_frame_f,
-                              semi_frame_g, semi_frame_h, semi_frame_i,
-                              semi_frame_j, semi_frame_k], axis=1, sort=True)
-    return result_frame
+    ARCHIVE_NAME = 'dataset_usa_cobb-douglas.zip'
+    SERIES_IDS = (
+        # =====================================================================
+        # Annual Increase in Terms of Cost Price (1)
+        # =====================================================================
+        'CDT2S1',
+        # =====================================================================
+        # Annual Increase in Terms of 1880 dollars (3)
+        # =====================================================================
+        'CDT2S3',
+        # =====================================================================
+        # Total Fixed Capital in 1880 dollars (4)
+        # =====================================================================
+        'CDT2S4',
+    )
+    data_frame = pd.concat(
+        [
+            fetch_usa_classic(ARCHIVE_NAME, series_id) for series_id in SERIES_IDS
+        ],
+        axis=1,
+        sort=True
+    )
+    _data_frame = fetch_usa_bea_from_url(URL)
+    SERIES_IDS = (
+        # =====================================================================
+        # Fixed Assets: k1n31gd1es00, 1925--2019, Table 4.1. Current-Cost Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
+        # =====================================================================
+        'k1n31gd1es00',
+        # =====================================================================
+        # Not Used: Fixed Assets: k3n31gd1es00, 1925--2019, Table 4.3. Historical-Cost Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
+        # =====================================================================
+        'k3n31gd1es00',
+    )
+    data_frame = pd.concat(
+        [
+            data_frame,
+            pd.concat(
+                [
+                    fetch_usa_bea_from_loaded(_data_frame, series_id) for series_id in SERIES_IDS
+                ],
+                axis=1,
+                sort=True
+            )
+        ],
+        axis=1,
+        sort=True
+    )
+    ARCHIVE_NAMES = (
+        'dataset_usa_census1975.zip',
+        'dataset_usa_census1975.zip',
+        'dataset_usa_census1975.zip',
+        'dataset_usa_kendrick.zip',
+        'dataset_douglas.zip',
+    )
+    SERIES_IDS = (
+        'P0107',
+        'P0110',
+        'P0119',
+        # =====================================================================
+        # Kendrick J.W., Productivity Trends in the United States, Page 320
+        # =====================================================================
+        'KTA15S08',
+        # =====================================================================
+        # Douglas P.H., Theory of Wages, Page 332
+        # =====================================================================
+        'DT63AS01',
+    )
+    FUNCTIONS = (
+        fetch_usa_census,
+        fetch_usa_census,
+        fetch_usa_census,
+        fetch_usa_classic,
+        fetch_usa_classic,
+    )
+    return pd.concat(
+        [
+            data_frame,
+            pd.concat(
+                [
+                    partial(func, **{'archive_name': archive_name,
+                                     'series_id': series_id})()
+                    for archive_name, series_id, func in zip(ARCHIVE_NAMES, SERIES_IDS, FUNCTIONS)
+                ],
+                axis=1,
+                sort=True
+            ),
+            # =================================================================
+            # FRB Data
+            # =================================================================
+            get_data_usa_frb_fa(),
+        ],
+        axis=1,
+        sort=True
+    )
 
 
 def get_data_usa_frb_cu():
