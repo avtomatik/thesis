@@ -1926,59 +1926,105 @@ def get_data_cobb_douglas_extension_capital():
 
 
 def get_data_cobb_douglas_extension_labor():
-    BASE = 14  # 1899
-    '''Manufacturing Laborers` Series Comparison
-    semi_frame_a: Cobb C.W., Douglas P.H. Labor Series
-    semi_frame_b: Census Bureau 1949, D69
-    semi_frame_c: Census Bureau 1949, J4
-    semi_frame_d: Census Bureau 1975, D130
-    semi_frame_e: Census Bureau 1975, P5
-    semi_frame_f: Census Bureau 1975, P62
-    semi_frame_g: Bureau of Economic Analysis, H4313C & J4313C & A4313C & N4313C
-    semi_frame_h: J.W. Kendrick, Productivity Trends in the United States,\
-        Table D-II, `Persons Engaged` Column, pp. 465--466
-    semi_frame_i: Yu.V. Kurenkov
-    Bureau of Labor Statistics
-    Federal Reserve Board'''
-    ARCHIVE_NAME = 'dataset_usa_cobb-douglas.zip'
-    # Average Number Employed (in thousands)
-    semi_frame_a = fetch_usa_classic(ARCHIVE_NAME, 'CDT3S1')
-    ARCHIVE_NAME = 'dataset_usa_census1949.zip'
-    semi_frame_b = fetch_usa_census(ARCHIVE_NAME, 'D0069')
-    ARCHIVE_NAME = 'dataset_usa_census1949.zip'
-    semi_frame_c = fetch_usa_census(ARCHIVE_NAME, 'J0004')
-    ARCHIVE_NAME = 'dataset_usa_census1975.zip'
-    semi_frame_d = fetch_usa_census(ARCHIVE_NAME, 'D0130')
-    ARCHIVE_NAME = 'dataset_usa_census1975.zip'
-    semi_frame_e = fetch_usa_census(ARCHIVE_NAME, 'P0005')
-    ARCHIVE_NAME = 'dataset_usa_census1975.zip'
-    semi_frame_f = fetch_usa_census(ARCHIVE_NAME, 'P0062')
+    '''Manufacturing Laborers` Series Comparison'''
+    # =========================================================================
+    # TODO: Bureau of Labor Statistics
+    # TODO: Federal Reserve Board
+    # =========================================================================
     URL = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
-    loaded_frame = fetch_usa_bea_from_url(URL)
-    sub_frame_a = fetch_usa_bea_from_loaded(loaded_frame, 'H4313C')
-    sub_frame_b = fetch_usa_bea_from_loaded(loaded_frame, 'J4313C')
-    sub_frame_c = fetch_usa_bea_from_loaded(loaded_frame, 'A4313C')
-    sub_frame_d = fetch_usa_bea_from_loaded(loaded_frame, 'N4313C')
-    semi_frame_g = pd.concat([sub_frame_a, sub_frame_b, sub_frame_c, sub_frame_d],
-                             axis=1, sort=True)
-
-    semi_frame_g = semi_frame_g.mean(1)
-    semi_frame_g = semi_frame_g.to_frame(name='BEA')
-    ARCHIVE_NAME = 'dataset_usa_kendrick.zip'
-    semi_frame_h = fetch_usa_classic(ARCHIVE_NAME, 'KTD02S02')
-    ARCHIVE_NAME = 'dataset_usa_reference_ru_kurenkov-yu-v.csv'
-    semi_frame_i = pd.read_csv(ARCHIVE_NAME, index_col=0, usecols=[0, 2])
-    result_frame = pd.concat([semi_frame_a, semi_frame_b, semi_frame_c,
-                              semi_frame_d, semi_frame_e, semi_frame_f,
-                              semi_frame_g, semi_frame_h, semi_frame_i],
-                             axis=1, sort=True)
-    result_frame['kendrick'] = result_frame.iloc[BASE, 0] * \
-        result_frame.iloc[:, 7].div(result_frame.iloc[BASE, 7])
-    result_frame['labor'] = result_frame.iloc[:, [0, 1, 3, 6, 8, 9]].mean(1)
-    result_frame = result_frame.iloc[:, [10]]
-    result_frame.dropna(inplace=True)
-    result_frame = result_frame[2:]
-    return result_frame
+    FILE_NAME = 'dataset_usa_reference_ru_kurenkov-yu-v.csv'
+    ARCHIVE_NAMES = (
+        'dataset_usa_cobb-douglas.zip',
+        'dataset_usa_census1949.zip',
+        'dataset_usa_census1949.zip',
+        'dataset_usa_census1975.zip',
+        'dataset_usa_census1975.zip',
+        'dataset_usa_census1975.zip',
+        'dataset_usa_kendrick.zip',
+    )
+    SERIES_IDS = (
+        # =====================================================================
+        # Cobb C.W., Douglas P.H. Labor Series: Average Number Employed (in thousands)
+        # =====================================================================
+        'CDT3S1',
+        # =====================================================================
+        # Census Bureau 1949, D69
+        # =====================================================================
+        'D0069',
+        # =====================================================================
+        # Census Bureau 1949, J4
+        # =====================================================================
+        'J0004',
+        # =====================================================================
+        # Census Bureau 1975, D130
+        # =====================================================================
+        'D0130',
+        # =====================================================================
+        # Census Bureau 1975, P5
+        # =====================================================================
+        'P0005',
+        # =====================================================================
+        # Census Bureau 1975, P62
+        # =====================================================================
+        'P0062',
+        # =====================================================================
+        # J.W. Kendrick, Productivity Trends in the United States, Table D-II, `Persons Engaged` Column, pp. 465--466
+        # =====================================================================
+        'KTD02S02',
+    )
+    FUNCTIONS = (
+        fetch_usa_classic,
+        fetch_usa_census,
+        fetch_usa_census,
+        fetch_usa_census,
+        fetch_usa_census,
+        fetch_usa_census,
+        fetch_usa_classic,
+    )
+    data_frame = pd.concat(
+        [
+            partial(func, **{'archive_name': archive_name,
+                             'series_id': series_id})()
+            for archive_name, series_id, func in zip(ARCHIVE_NAMES, SERIES_IDS, FUNCTIONS)
+        ],
+        axis=1,
+        sort=True
+    )
+    # =========================================================================
+    # Bureau of Economic Analysis, H4313C & J4313C & A4313C & N4313C
+    # =========================================================================
+    _data_frame = fetch_usa_bea_from_url(URL)
+    SERIES_IDS = (
+        'H4313C',
+        'J4313C',
+        'A4313C',
+        'N4313C',
+    )
+    data_nipa = pd.concat(
+        [
+            fetch_usa_bea_from_loaded(_data_frame, series_id) for series_id in SERIES_IDS
+        ],
+        axis=1,
+        sort=True
+    )
+    data_nipa['bea_mfg_labor'] = data_nipa.mean(1)
+    data_nipa = data_nipa.iloc[:, [-1]]
+    data_frame = pd.concat(
+        [
+            data_frame,
+            data_nipa,
+            # =================================================================
+            # Yu.V. Kurenkov
+            # =================================================================
+            pd.read_csv(FILE_NAME, index_col=0, usecols=[0, 2]),
+        ],
+        axis=1, sort=True
+    )
+    data_frame.drop(data_frame[data_frame.index < 1889].index, inplace=True)
+    data_frame.iloc[:, 6] = data_frame.iloc[:, 6].mul(data_frame.iloc[data_frame.index.get_loc(
+        1899), 0]).div(data_frame.iloc[data_frame.index.get_loc(1899), 6])
+    data_frame['labor'] = data_frame.iloc[:, [0, 1, 3, 6, 7, 8]].mean(1)
+    return data_frame.iloc[:, [-1]]
 
 
 def get_data_cobb_douglas_extension_product():
