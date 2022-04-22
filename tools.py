@@ -255,7 +255,7 @@ def capital_aquisition(source_frame):
     '''Calculate Dynamic Values'''
     N = int(input('Define Number of Line Segments for Pi: '))  # Number of Periods
     if N >= 1:
-        print('Number of Periods Provided: {}'.format(N))
+        print(f'Number of Periods Provided: {N}')
         pi, knt = [], []  # Pi Switch Points & Pi
         knt.append(0)
         i = 0
@@ -404,7 +404,7 @@ def capital_retirement(source_frame):
     # =========================================================================
     N = int(input('Define Number of Line Segments for Pi: '))
     if N >= 1:
-        print('Number of Periods Provided: {}'.format(N))
+        print(f'Number of Periods Provided: {N}')
         pi, knt = [], []  # Pi Switch Points & Pi
         knt.append(0)
         i = 0
@@ -631,8 +631,7 @@ def fetch_can_capital_query(source_frame):
     source_frame = source_frame[query]
     source_frame = source_frame.iloc[:, [11]]
     source_frame.drop_duplicates(inplace=True)
-    series_ids = source_frame.iloc[:, 0].values.tolist()
-    return series_ids
+    return source_frame.iloc[:, 0].values.tolist()
 
 
 def fetch_can_capital(series_ids):
@@ -2708,8 +2707,8 @@ def get_data_usa_bea_labor():
     )
     ID = 'A4601C0'
     data_frame = pd.concat(
-        [fetch_usa_bea(archive, wb, sh, ID)
-         for archive, wb, sh in zip(ARCHIVES, WBS, SHS)],
+        [fetch_usa_bea(archive_name, wb, sh, ID)
+         for archive_name, wb, sh in zip(ARCHIVES, WBS, SHS)],
         axis=1,
         sort=True)
     data_frame[ID] = data_frame.mean(1)
@@ -2753,8 +2752,8 @@ def get_data_usa_bea_labor_mfg():
         'N4313C0',
     )
     data_frame = pd.concat(
-        [fetch_usa_bea(archive, wb, sh, _id)
-         for archive, wb, sh, _id in zip(ARCHIVES, WBS, SHS, IDS)],
+        [fetch_usa_bea(archive_name, wb, sh, _id)
+         for archive_name, wb, sh, _id in zip(ARCHIVES, WBS, SHS, IDS)],
         axis=1,
         sort=True)
     data_frame['mfg_labor'] = data_frame.mean(1)
@@ -3063,18 +3062,18 @@ def get_data_version_a():
         'Section1all_xls.xls',
     )
     SH, ID = ('10106 Ann', 'A191RX1')
-    ARGS = (
-        'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip',
-        'Section4ALL_xls.xls',
-        '402 Ann',
-        'kcn31gd1es000',
-    )
+    KWARGS = {
+        'archive_name': 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip',
+        'wb_name': 'Section4ALL_xls.xls',
+        'sh_name': '402 Ann',
+        'series_id': 'kcn31gd1es000',
+    }
     _data_a = pd.concat(
         [
             # =================================================================
             # Fixed Assets: kcn31gd1es000, 1925--2016, Table 4.2. Chain-Type Quantity Indexes for Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
             # =================================================================
-            fetch_usa_bea(*ARGS),
+            fetch_usa_bea(**KWARGS),
             # =================================================================
             # Labor
             # =================================================================
@@ -3084,7 +3083,7 @@ def get_data_version_a():
             # =================================================================
             pd.concat(
                 [
-                    fetch_usa_bea(_archive, _wb, SH, ID) for _archive, _wb in zip(ARCHIVES, WBS)
+                    fetch_usa_bea(_archive_name, _wb, SH, ID) for _archive_name, _wb in zip(ARCHIVES, WBS)
                 ],
                 sort=True).drop_duplicates(),
         ],
@@ -3094,7 +3093,7 @@ def get_data_version_a():
             # =================================================================
             # Fixed Assets: kcn31gd1es000, 1925--2016, Table 4.2. Chain-Type Quantity Indexes for Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
             # =================================================================
-            fetch_usa_bea(*ARGS),
+            fetch_usa_bea(**KWARGS),
             # =================================================================
             # Labor
             # =================================================================
@@ -3104,7 +3103,7 @@ def get_data_version_a():
             # =================================================================
             pd.concat(
                 [
-                    fetch_usa_bea(_archive, _wb, SH, ID) for _archive, _wb in zip(ARCHIVES, WBS)
+                    fetch_usa_bea(_archive_name, _wb, SH, ID) for _archive_name, _wb in zip(ARCHIVES, WBS)
                 ],
                 sort=True).drop_duplicates(),
             # =================================================================
@@ -3296,7 +3295,7 @@ def RMF(source_frame, k=1):
 def lookup(data_frame):
     for i, series_id in enumerate(data_frame.columns):
         series = data_frame.iloc[:, i].sort_values().unique()
-        print('{:*^50}'.format(series_id))
+        print(f'{series_id:*^50}')
         print(series)
 
 
@@ -5314,11 +5313,11 @@ def plot_grigoriev():
         chunk.plot(grid=True)
 
 
-def zip_pack(archive, members):
-    with zipfile.ZipFile('{}.zip'.format(archive), 'w') as z:
-        for file in members:
-            z.write('{}'.format(file), compress_type=zipfile.ZIP_DEFLATED)
-            os.unlink(file)
+def zip_pack(archive_name, file_names):
+    with zipfile.ZipFile(f'{archive_name}.zip', 'w') as z:
+        for file_name in file_names:
+            z.write(f'{file_name}', compress_type=zipfile.ZIP_DEFLATED)
+            os.unlink(file_name)
 
 
 def string_to_numeric(string):
@@ -5736,7 +5735,7 @@ def SES(source_frame, window=5, alpha=0.5):
     ses.append(alpha*source_frame.iloc[0, 1] + (1-alpha)*S)
     for i in range(1, source_frame.shape[0]):
         ses.append(alpha*source_frame.iloc[i, 1] + (1-alpha)*ses[i-1])
-    cap = 'ses{:02d}_{:, .6f}'.format(window, alpha)
+    cap = f'ses{window:02d}_{alpha:,.6f}'
     ses = pd.DataFrame(ses, columns=[cap])
     result_frame = pd.concat([source_frame, ses], axis=1, sort=True)
     result_frame = result_frame.set_index('Period')
@@ -5955,7 +5954,7 @@ def plot_kzf(source_frame):
     result_frame_b = pd.concat([result_frame_b, (source_frame.iloc[:, 1]-source_frame.iloc[:,
                                1].shift(1)).div(source_frame.iloc[:, 1].shift(1))], axis=1, sort=False)
     for k in range(1, 1 + source_frame.shape[0]//2):
-        cap = 'col{:02d}'.format(k)
+        cap = f'col_{hex(k)}'
         result_frame_a[cap] = sp.nan
         for j in range(1, 1 + source_frame.shape[0]-k):
             vkz = 0
@@ -6115,7 +6114,7 @@ def plot_ses(source_frame, window, step):
         for i in range(1, source_frame.shape[0]):
             ses.append(alpha*source_frame.iloc[i, 1] + (1-alpha)*ses[i-1])
             dse.append((ses[i]-ses[i-1])/ses[i-1])
-            cap = 'col{:02d}'.format(k)
+            cap = f'col_{hex(k)}'
         ses = pd.DataFrame(ses, columns=[cap])
         dse = pd.DataFrame(dse, columns=[cap])
         smooth_frame = pd.concat([smooth_frame, ses], axis=1, sort=False)
@@ -6219,7 +6218,7 @@ def processing_spline(source_frame, kernelModule, deliveryModule):
     # Number of Periods
     N = int(input('Define Number of Interpolation Intervals: '))
     if N >= 2:
-        print('Number of Periods Provided: {}'.format(N))
+        print(f'Number of Periods Provided: {N}')
         knt = []  # Switch Points
         knt.append(0)
         i = 0
@@ -6272,7 +6271,7 @@ def processing_spline(source_frame, kernelModule, deliveryModule):
             plt.show()
             pass
     else:
-        print('N >= 2 is Required, N = {} Was Provided'.format(N))
+        print(f'N >= 2 is Required, N = {N} Was Provided')
 
 
 def plot_kzf_b(source_frame):
