@@ -3583,36 +3583,50 @@ def preprocessing_e(data_frame):
     return nominal_frame, real_frame
 
 
-def preprocessing_f(testing_frame):
-    '''testing_frame: test _frame'''
-    '''control _frame'''
+def preprocessing_f(data_testing: pd.DataFrame) -> tuple[pd.DataFrame]:
+    '''Returns Four DataFrames with Comparison of data_testing: pd.DataFrame and Yu.V. Kurenkov Data'''
     FILE_NAME = 'dataset_usa_reference_ru_kurenkov-yu-v.csv'
-    control_frame = pd.read_csv(FILE_NAME, index_col=0)
-    '''Data Fetch'''
-    '''Production'''
-    semi_frame_a_a = control_frame.iloc[:, [0]]
-    semi_frame_a_b = testing_frame.iloc[:, [7]].dropna()
-    semi_frame_a_c = get_data_usa_frb_ip()
-    result_frame_a = pd.concat(
-        [semi_frame_a_a, semi_frame_a_b, semi_frame_a_c], axis=1, sort=True)
-    result_frame_a = result_frame_a.div(result_frame_a.iloc[31, :]).mul(100)
-    '''Labor'''
-    semi_frame_b_a = control_frame.iloc[:, [1]]
-    semi_frame_b_b = testing_frame.iloc[:, [8]].dropna()
-    result_frame_b = pd.concat(
-        [semi_frame_b_a, semi_frame_b_b], axis=1, sort=True)
-    '''Capital'''
-    semi_frame_c_a = control_frame.iloc[:, [2]]
-    semi_frame_c_b = testing_frame.iloc[:, [11]].dropna()
-    result_frame_c = pd.concat(
-        [semi_frame_c_a, semi_frame_c_b], axis=1, sort=True)
-    result_frame_c = result_frame_c.div(result_frame_c.iloc[1, :]).mul(100)
-    '''Capacity Utilization'''
-    semi_frame_d_a = control_frame.iloc[:, [3]]
-    semi_frame_d_b = get_data_usa_frb_cu()
-    result_frame_d = pd.concat(
-        [semi_frame_d_a, semi_frame_d_b], axis=1, sort=True)
-    return result_frame_a, result_frame_b, result_frame_c, result_frame_d
+    data_control = pd.read_csv(FILE_NAME, index_col=0)
+    # =============================================================================
+    # Production
+    # =============================================================================
+    data_a = pd.concat(
+        [
+            data_control.iloc[:, [0]],
+            data_testing.loc[:, ['A191RX1']],
+            get_data_usa_frb_ip(),
+        ],
+        axis=1, sort=True).dropna(how='all')
+    data_a = data_a.div(data_a.loc[1950, :]).mul(100)
+    # =============================================================================
+    # Labor
+    # =============================================================================
+    data_b = pd.concat(
+        [
+            data_control.iloc[:, [1]],
+            data_testing.loc[:, ['mfg_labor']],
+        ],
+        axis=1, sort=True).dropna(how='all')
+    # =============================================================================
+    # Capital
+    # =============================================================================
+    data_c = pd.concat(
+        [
+            data_control.iloc[:, [2]],
+            data_testing.loc[:, ['K160491']],
+        ],
+        axis=1, sort=True).dropna(how='all')
+    data_c = data_c.div(data_c.loc[1951, :]).mul(100)
+    # =============================================================================
+    # Capacity Utilization
+    # =============================================================================
+    data_d = pd.concat(
+        [
+            data_control.iloc[:, [3]],
+            get_data_usa_frb_cu(),
+        ],
+        axis=1, sort=True)
+    return data_a, data_b, data_c, data_d
 
 
 def plot_approx_linear(source_frame):
