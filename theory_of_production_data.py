@@ -112,7 +112,7 @@ per = (
 
 df = pd.DataFrame.from_dict(
     {
-        'period': tuple(1880 + _ for _ in range(10)),
+        'period': range(1880, 1890),
         'val': val,
         'per': per,
     }
@@ -207,7 +207,7 @@ col_c = (
 
 df = pd.DataFrame.from_dict(
     {
-        'period': tuple(1899 + _ for _ in range(24)),
+        'period': range(1899, 1923),
         'col_a': col_a,
         'col_b': col_b,
         'col_c': col_c,
@@ -251,7 +251,7 @@ us = (
 
 df = pd.DataFrame.from_dict(
     {
-        'period': tuple(1911 + _ for _ in range(10)),
+        'period': range(1911, 1921),
         'ma': ma,
         'us': us,
     }
@@ -293,7 +293,7 @@ lab = (
 
 df = pd.DataFrame.from_dict(
     {
-        'period': tuple(1899 + _ for _ in range(24)),
+        'period': range(1899, 1923),
         'lab': lab,
     }
 )
@@ -335,7 +335,7 @@ pro = (
 
 df = pd.DataFrame.from_dict(
     {
-        'period': tuple(1899 + _ for _ in range(24)),
+        'period': range(1899, 1923),
         'pro': pro,
     }
 )
@@ -454,7 +454,7 @@ ba = (
 
 df = pd.DataFrame.from_dict(
     {
-        'period': tuple(1899 + _ for _ in range(24)),
+        'period': range(1899, 1923),
         'pro_com': pro_com,
         'pro': pro,
         'dev': dev,
@@ -526,7 +526,7 @@ pro_com = (
 
 df = pd.DataFrame.from_dict(
     {
-        'period': tuple(1899 + _ for _ in range(24)),
+        'period': range(1899, 1923),
         'pro': pro,
         'pro_com': pro_com,
     }
@@ -570,7 +570,7 @@ idx = (
 
 df = pd.DataFrame.from_dict(
     {
-        'period': tuple(1899 + _ for _ in range(24)),
+        'period': range(1899, 1923),
         'idx': idx,
     }
 )
@@ -637,7 +637,7 @@ def_all = (
 
 df = pd.DataFrame.from_dict(
     {
-        'period': tuple(1899 + _ for _ in range(24)),
+        'period': range(1899, 1923),
         'def_mfg': def_mfg,
         'def_all': def_all,
     }
@@ -684,7 +684,7 @@ idx = (
 
 df = pd.DataFrame.from_dict(
     {
-        'period': tuple(1899 + _ for _ in range(24)),
+        'period': range(1899, 1923),
         'idx': idx,
     }
 )
@@ -817,7 +817,7 @@ ba = (
 
 df = pd.DataFrame.from_dict(
     {
-        'period': tuple(1899 + _ for _ in range(24)),
+        'period': range(1899, 1923),
         'pro_val': pro_val,
         'wages': wages,
         'ba': ba,
@@ -841,11 +841,9 @@ df.to_csv(FILE_NAME, sep='\t')
 # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page ?: Table ?
 # =============================================================================
 FILE_NAME = 'theory_of_production_table2.dat'
-df_a = pd.read_csv(FILE_NAME, sep='\t')
+df_a = pd.read_csv(FILE_NAME, sep='\t', index_col=0)
 FILE_NAME = 'theory_of_production_table3.dat'
-df_b = pd.read_csv(FILE_NAME, sep='\t')
-df_a.set_index(df_a.columns[0], inplace=True)
-df_b.set_index(df_b.columns[0], inplace=True)
+df_b = pd.read_csv(FILE_NAME, sep='\t', index_col=0)
 df = pd.concat(
     [
         df_a.iloc[:, [4]],
