@@ -6,197 +6,16 @@ Created on Thu Oct 29 23:21:52 2020
 """
 
 
+import pandas as pd
 pd.options.display.max_columns = 8
 
 
-period = (
-    1899,
-    1900,
-    1901,
-    1902,
-    1903,
-    1904,
-    1905,
-    1906,
-    1907,
-    1908,
-    1909,
-    1910,
-    1911,
-    1912,
-    1913,
-    1914,
-    1915,
-    1916,
-    1917,
-    1918,
-    1919,
-    1920,
-    1921,
-    1922,
-)
-value = (
-    -1,
-    -6,
-    0,
-    0.8,
-    -1.6,
-    -0.8,
-    7,
-    7,
-    2,
-    -9,
-    0,
-    -0.6,
-    -6.5,
-    4,
-    5.5,
-    -1.2,
-    5,
-    7.2,
-    0,
-    -6,
-    -7,
-    -2.2,
-    -8.4,
-    13,
-)
-
-
-data = {'period': period, 'value': value}
-df = pd.DataFrame.from_dict(data)
-df.set_index(df.columns[0], inplace=True, verify_integrity=True)
-df['abs'] = df.iloc[:, 0].abs()
-print(df.iloc[:, 1].mean())
-
-
-period = (
-    1899,
-    1900,
-    1901,
-    1902,
-    1903,
-    1904,
-    1905,
-    1906,
-    1907,
-    1908,
-    1909,
-    1910,
-    1911,
-    1912,
-    1913,
-    1914,
-    1915,
-    1916,
-    1917,
-    1918,
-    1919,
-    1920,
-    1921,
-    1922,
-)
-product = (
-    101,
-    95,
-    99,
-    95,
-    93,
-    96,
-    106,
-    111,
-    105,
-    96,
-    97,
-    95,
-    96,
-    103,
-    106,
-    98,
-    110,
-    115,
-    104,
-    98,
-    102,
-    114,
-    117,
-    136,
-)
-wages = (
-    99,
-    98,
-    101,
-    102,
-    100,
-    99,
-    103,
-    101,
-    99,
-    94,
-    102,
-    104,
-    97,
-    99,
-    100,
-    99,
-    99,
-    104,
-    103,
-    107,
-    111,
-    114,
-    115,
-    119,
-)
-
-
-data = {'period': period, 'product': product, 'wages': wages}
-df = pd.DataFrame.from_dict(data)
-df.set_index(df.columns[0], inplace=True, verify_integrity=True)
-df['dev'] = df.iloc[:, 1].sub(df.iloc[:, 0]).div(
-    df.iloc[:, 0]).mul(100).round()
-df['product_7'] = df.iloc[:, 0].rolling(7).mean()
-df['wages_7'] = df.iloc[:, 1].rolling(7).mean()
-df['dev_abs'] = df.iloc[:, 2].abs()
-print(df.iloc[:, 3].mean())
-print(df.corr())
-df.plot(grid=True)
-
-
-period = (
-    1909,
-    1911,
-    1913,
-    1915,
-    1917,
-    1910,
-    1912,
-    1914,
-    1916,
-    1918,
-)
-value = (
-    72.2,
-    76.4,
-    74.5,
-    75.4,
-    71.0,
-    71.6,
-    74.5,
-    77.8,
-    68.7,
-    78.1,
-)
-
-
-data = {'period': period, 'value': value}
-df = pd.DataFrame.from_dict(data)
-df.set_index(df.columns[0], inplace=True, verify_integrity=True)
-df.sort_index(inplace=True)
-print(df.iloc[:, 0].mean())
-df.plot(grid=True)
-
-
+# =============================================================================
+# TODO: Organise Into Modules
+# =============================================================================
+# =============================================================================
+# Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 142: Table I
+# =============================================================================
 period = (
     1879,
     1889,
@@ -248,32 +67,24 @@ mach_val = (
     15783,
 )
 
-
-data = {
-    'period': period,
-    'bldg_per': bldg_per,
-    'mach_per': mach_per,
-    'bldg_val': bldg_val,
-    'mach_val': mach_val,
-}
-df = pd.DataFrame.from_dict(data)
+df = pd.DataFrame.from_dict(
+    {
+        'period': period,
+        'bldg_per': bldg_per,
+        'mach_per': mach_per,
+        'bldg_val': bldg_val,
+        'mach_val': mach_val,
+    }
+)
 df.set_index(df.columns[0], inplace=True, verify_integrity=True)
 df['val'] = df.iloc[:, 2].add(df.iloc[:, 3])
-df.to_csv('theory_of_production_table1.dat', sep='\t')
+FILE_NAME = 'theory_of_production_table1.dat'
+df.to_csv(FILE_NAME, sep='\t')
 
 
-period = (
-    1880,
-    1881,
-    1882,
-    1883,
-    1884,
-    1885,
-    1886,
-    1887,
-    1888,
-    1889,
-)
+# =============================================================================
+# Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 144
+# =============================================================================
 val = (
     200,
     210,
@@ -299,44 +110,22 @@ per = (
     12.5,
 )
 
-
-data = {
-    'period': period,
-    'val': val,
-    'per': per,
-}
-df = pd.DataFrame.from_dict(data)
+df = pd.DataFrame.from_dict(
+    {
+        'period': tuple(1880 + _ for _ in range(10)),
+        'val': val,
+        'per': per,
+    }
+)
 df.set_index(df.columns[0], inplace=True, verify_integrity=True)
 df.loc['Total'] = df.sum()
-df.to_csv('theory_of_production_table1_.dat', sep='\t')
+FILE_NAME = 'theory_of_production_table1_.dat'
+df.to_csv(FILE_NAME, sep='\t')
 
 
-period = (
-    1899,
-    1900,
-    1901,
-    1902,
-    1903,
-    1904,
-    1905,
-    1906,
-    1907,
-    1908,
-    1909,
-    1910,
-    1911,
-    1912,
-    1913,
-    1914,
-    1915,
-    1916,
-    1917,
-    1918,
-    1919,
-    1920,
-    1921,
-    1922,
-)
+# =============================================================================
+# Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 145: Table II
+# =============================================================================
 col_a = (
     339,
     264,
@@ -416,33 +205,25 @@ col_c = (
     650,
 )
 
-
-data = {
-    'period': period,
-    'col_a': col_a,
-    'col_b': col_b,
-    'col_c': col_c,
-}
-df = pd.DataFrame.from_dict(data)
-df.set_index(df.columns[0], inplace=True, verify_integrity=True)
-df['col_c'] = (100*df.iloc[:, 0].div(df.iloc[:, 1])).round().astype(int)
-df['col_d'] = df.iloc[:, 2].cumsum().add(4062)
-df['col_e'] = (100*df.iloc[:, 3].div(df.iloc[0, 3])).round().astype(int)
-df.to_csv('theory_of_production_table2.dat', sep='\t')
-
-
-period = (
-    1911,
-    1912,
-    1913,
-    1914,
-    1915,
-    1916,
-    1917,
-    1918,
-    1919,
-    1920,
+df = pd.DataFrame.from_dict(
+    {
+        'period': tuple(1899 + _ for _ in range(24)),
+        'col_a': col_a,
+        'col_b': col_b,
+        'col_c': col_c,
+    }
 )
+df.set_index(df.columns[0], inplace=True, verify_integrity=True)
+df['col_c'] = df.iloc[:, 0].div(df.iloc[:, 1]).mul(100).round().astype(int)
+df['col_d'] = df.iloc[:, 2].cumsum().add(4062)
+df['col_e'] = df.iloc[:, 3].div(df.iloc[0, 3]).mul(100).round().astype(int)
+FILE_NAME = 'theory_of_production_table2.dat'
+df.to_csv(FILE_NAME, sep='\t')
+
+
+# =============================================================================
+# Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 146
+# =============================================================================
 ma = (
     105,
     110,
@@ -467,42 +248,22 @@ us = (
     239,
     263,
 )
-data = {
-    'period': period,
-    'ma': ma,
-    'us': us,
-}
-df = pd.DataFrame.from_dict(data)
-df.set_index(df.columns[0], inplace=True, verify_integrity=True)
-df.to_csv('theory_of_production_table2_.dat', sep='\t')
 
-
-period = (
-    1899,
-    1900,
-    1901,
-    1902,
-    1903,
-    1904,
-    1905,
-    1906,
-    1907,
-    1908,
-    1909,
-    1910,
-    1911,
-    1912,
-    1913,
-    1914,
-    1915,
-    1916,
-    1917,
-    1918,
-    1919,
-    1920,
-    1921,
-    1922,
+df = pd.DataFrame.from_dict(
+    {
+        'period': tuple(1911 + _ for _ in range(10)),
+        'ma': ma,
+        'us': us,
+    }
 )
+df.set_index(df.columns[0], inplace=True, verify_integrity=True)
+FILE_NAME = 'theory_of_production_table2_.dat'
+df.to_csv(FILE_NAME, sep='\t')
+
+
+# =============================================================================
+# Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 148: Table III
+# =============================================================================
 lab = (
     4713,
     4968,
@@ -529,41 +290,22 @@ lab = (
     6947,
     7602,
 )
-data = {
-    'period': period,
-    'lab': lab,
-}
-df = pd.DataFrame.from_dict(data)
-df.set_index(df.columns[0], inplace=True, verify_integrity=True)
-df['idx'] = (100*df.iloc[:, 0].div(df.iloc[0, 0])).round().astype(int)
-df.to_csv('theory_of_production_table3.dat', sep='\t')
 
-period = (
-    1899,
-    1900,
-    1901,
-    1902,
-    1903,
-    1904,
-    1905,
-    1906,
-    1907,
-    1908,
-    1909,
-    1910,
-    1911,
-    1912,
-    1913,
-    1914,
-    1915,
-    1916,
-    1917,
-    1918,
-    1919,
-    1920,
-    1921,
-    1922,
+df = pd.DataFrame.from_dict(
+    {
+        'period': tuple(1899 + _ for _ in range(24)),
+        'lab': lab,
+    }
 )
+df.set_index(df.columns[0], inplace=True, verify_integrity=True)
+df['idx'] = df.iloc[:, 0].div(df.iloc[0, 0]).mul(100).round().astype(int)
+FILE_NAME = 'theory_of_production_table3.dat'
+df.to_csv(FILE_NAME, sep='\t')
+
+
+# =============================================================================
+# Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 149: Table IV
+# =============================================================================
 pro = (
     100,
     101,
@@ -590,54 +332,21 @@ pro = (
     179,
     240,
 )
-data = {
-    'period': period,
-    'pro': pro,
-}
-df = pd.DataFrame.from_dict(data)
-df.set_index(df.columns[0], inplace=True, verify_integrity=True)
-df.to_csv('theory_of_production_table4.dat', sep='\t')
 
-
-file_name = 'theory_of_production_table2.dat'
-df_a = pd.read_csv(file_name, sep='\t')
-file_name = 'theory_of_production_table3.dat'
-df_b = pd.read_csv(file_name, sep='\t')
-df_a.set_index(df_a.columns[0], inplace=True)
-df_b.set_index(df_b.columns[0], inplace=True)
-df_a = df_a.iloc[:, 4]
-df_b = df_b.iloc[:, 1]
-df = pd.concat([df_a, df_b], axis=1)
-df['lab_to_cap'] = (100*df.iloc[:, 1].div(df.iloc[:, 0])).round().astype(int)
-df = df.iloc[:, 2]
-df.to_csv('theory_of_production_table5.dat', sep='\t')
-
-period = (
-    1899,
-    1900,
-    1901,
-    1902,
-    1903,
-    1904,
-    1905,
-    1906,
-    1907,
-    1908,
-    1909,
-    1910,
-    1911,
-    1912,
-    1913,
-    1914,
-    1915,
-    1916,
-    1917,
-    1918,
-    1919,
-    1920,
-    1921,
-    1922,
+df = pd.DataFrame.from_dict(
+    {
+        'period': tuple(1899 + _ for _ in range(24)),
+        'pro': pro,
+    }
 )
+df.set_index(df.columns[0], inplace=True, verify_integrity=True)
+FILE_NAME = 'theory_of_production_table4.dat'
+df.to_csv(FILE_NAME, sep='\t')
+
+
+# =============================================================================
+# Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 152: Table VI
+# =============================================================================
 pro_com = (
     101,
     107,
@@ -742,55 +451,26 @@ ba = (
     'Спад',
     'Оживление; подъём',
 )
-data = {
-    'period': period,
-    'pro_com': pro_com,
-    'pro': pro,
-    'dev': dev,
-    'ba': ba,
-}
-df = pd.DataFrame.from_dict(data)
-df.set_index(df.columns[0], inplace=True, verify_integrity=True)
-df.to_csv('theory_of_production_table6.dat', sep='\t')
 
-
-file_name = 'theory_of_production_table6.dat'
-df = pd.read_csv(file_name, sep='\t', usecols=range(3))
-df.set_index(df.columns[0], inplace=True, verify_integrity=True)
-df['sub_pro'] = df.iloc[:, 1].sub(
-    df.iloc[:, 1].rolling(window=3, center=True).mean())
-df['sub_pro_com'] = df.iloc[:, 0].sub(
-    df.iloc[:, 0].rolling(window=3, center=True).mean())
-df.dropna(inplace=True)
-df = df.astype(int)
-df.to_csv('theory_of_production_table7.dat', sep='\t')
-
-period = (
-    1899,
-    1900,
-    1901,
-    1902,
-    1903,
-    1904,
-    1905,
-    1906,
-    1907,
-    1908,
-    1909,
-    1910,
-    1911,
-    1912,
-    1913,
-    1914,
-    1915,
-    1916,
-    1917,
-    1918,
-    1919,
-    1920,
-    1921,
-    1922,
+df = pd.DataFrame.from_dict(
+    {
+        'period': tuple(1899 + _ for _ in range(24)),
+        'pro_com': pro_com,
+        'pro': pro,
+        'dev': dev,
+        'ba': ba,
+    }
 )
+df.set_index(df.columns[0], inplace=True, verify_integrity=True)
+df['abs'] = df.iloc[:, 2].abs()
+print(f'{df.iloc[:, 4].mean():,.6f}')
+FILE_NAME = 'theory_of_production_table6.dat'
+# df.iloc[:, range(4)].to_csv(FILE_NAME, sep='\t')
+
+
+# =============================================================================
+# Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 159: Table VIII
+# =============================================================================
 pro = (
     100,
     101,
@@ -843,44 +523,24 @@ pro_com = (
     208,
     223,
 )
-data = {
-    'period': period,
-    'pro': pro,
-    'pro_com': pro_com,
-}
-df = pd.DataFrame.from_dict(data)
+
+df = pd.DataFrame.from_dict(
+    {
+        'period': tuple(1899 + _ for _ in range(24)),
+        'pro': pro,
+        'pro_com': pro_com,
+    }
+)
 df.set_index(df.columns[0], inplace=True, verify_integrity=True)
 df['dev'] = df.iloc[:, 0].sub(df.iloc[:, 1]).div(
     df.iloc[:, 0]).mul(100).round().astype(int)
-df.to_csv('theory_of_production_table8.dat', sep='\t')
+FILE_NAME = 'theory_of_production_table8.dat'
+df.to_csv(FILE_NAME, sep='\t')
 
 
-period = (
-    1899,
-    1900,
-    1901,
-    1902,
-    1903,
-    1904,
-    1905,
-    1906,
-    1907,
-    1908,
-    1909,
-    1910,
-    1911,
-    1912,
-    1913,
-    1914,
-    1915,
-    1916,
-    1917,
-    1918,
-    1919,
-    1920,
-    1921,
-    1922,
-)
+# =============================================================================
+# Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 161
+# =============================================================================
 idx = (
     100,
     96,
@@ -907,41 +567,21 @@ idx = (
     121,
     149,
 )
-data = {
-    'period': period,
-    'idx': idx,
-}
-df = pd.DataFrame.from_dict(data)
-df.set_index(df.columns[0], inplace=True, verify_integrity=True)
-df.to_csv('theory_of_production_table8_.dat', sep='\t')
 
-
-period = (
-    1899,
-    1900,
-    1901,
-    1902,
-    1903,
-    1904,
-    1905,
-    1906,
-    1907,
-    1908,
-    1909,
-    1910,
-    1911,
-    1912,
-    1913,
-    1914,
-    1915,
-    1916,
-    1917,
-    1918,
-    1919,
-    1920,
-    1921,
-    1922,
+df = pd.DataFrame.from_dict(
+    {
+        'period': tuple(1899 + _ for _ in range(24)),
+        'idx': idx,
+    }
 )
+df.set_index(df.columns[0], inplace=True, verify_integrity=True)
+FILE_NAME = 'theory_of_production_table8_.dat'
+df.to_csv(FILE_NAME, sep='\t')
+
+
+# =============================================================================
+# Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 162: Table IX
+# =============================================================================
 def_mfg = (
     100,
     105,
@@ -994,47 +634,27 @@ def_all = (
     196,
     199,
 )
-data = {
-    'period': period,
-    'def_mfg': def_mfg,
-    'def_all': def_all,
-}
-df = pd.DataFrame.from_dict(data)
+
+df = pd.DataFrame.from_dict(
+    {
+        'period': tuple(1899 + _ for _ in range(24)),
+        'def_mfg': def_mfg,
+        'def_all': def_all,
+    }
+)
 df.set_index(df.columns[0], inplace=True, verify_integrity=True)
 df['ratio'] = df.iloc[:, 0].mul(100).div(df.iloc[:, 1]).round().astype(int)
-file_name = 'theory_of_production_table4.dat'
-df_pro = pd.read_csv(file_name, sep='\t')
+FILE_NAME = 'theory_of_production_table4.dat'
+df_pro = pd.read_csv(FILE_NAME, sep='\t')
 df_pro.set_index('period', inplace=True)
 df['pro'] = df_pro.iloc[:, 0].mul(df.iloc[:, 2]).div(100).round().astype(int)
-df.to_csv('theory_of_production_table9.dat', sep='\t')
+FILE_NAME = 'theory_of_production_table9.dat'
+df.to_csv(FILE_NAME, sep='\t')
 
 
-period = (
-    1899,
-    1900,
-    1901,
-    1902,
-    1903,
-    1904,
-    1905,
-    1906,
-    1907,
-    1908,
-    1909,
-    1910,
-    1911,
-    1912,
-    1913,
-    1914,
-    1915,
-    1916,
-    1917,
-    1918,
-    1919,
-    1920,
-    1921,
-    1922,
-)
+# =============================================================================
+# Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 163: Table X
+# =============================================================================
 idx = (
     101,
     95,
@@ -1061,41 +681,61 @@ idx = (
     117,
     136,
 )
-data = {
-    'period': period,
-    'idx': idx,
-}
-df = pd.DataFrame.from_dict(data)
-df.set_index(df.columns[0], inplace=True, verify_integrity=True)
-df.to_csv('theory_of_production_table10.dat', sep='\t')
 
-
-period = (
-    1899,
-    1900,
-    1901,
-    1902,
-    1903,
-    1904,
-    1905,
-    1906,
-    1907,
-    1908,
-    1909,
-    1910,
-    1911,
-    1912,
-    1913,
-    1914,
-    1915,
-    1916,
-    1917,
-    1918,
-    1919,
-    1920,
-    1921,
-    1922,
+df = pd.DataFrame.from_dict(
+    {
+        'period': tuple(1899 + _ for _ in range(24)),
+        'idx': idx,
+    }
 )
+df.set_index(df.columns[0], inplace=True, verify_integrity=True)
+FILE_NAME = 'theory_of_production_table10.dat'
+df.to_csv(FILE_NAME, sep='\t')
+
+
+# =============================================================================
+# Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 163: Footnote 37
+# =============================================================================
+period = (
+    1909,
+    1911,
+    1913,
+    1915,
+    1917,
+    1910,
+    1912,
+    1914,
+    1916,
+    1918,
+)
+value = (
+    72.2,
+    76.4,
+    74.5,
+    75.4,
+    71.0,
+    71.6,
+    74.5,
+    77.8,
+    68.7,
+    78.1,
+)
+
+df = pd.DataFrame.from_dict(
+    {
+        'period': period,
+        'value': value,
+    }
+)
+df.set_index(df.columns[0], inplace=True, verify_integrity=True)
+df.sort_index(inplace=True)
+print(f'{df.iloc[:, 0].mean():,.6f}')
+df.plot(grid=True)
+
+
+# =============================================================================
+# Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 164: Table XI
+# =============================================================================
 pro_val = (
     101,
     95,
@@ -1148,15 +788,6 @@ wages = (
     115,
     119,
 )
-data = {
-    'period': period,
-    'pro_val': pro_val,
-    'wages': wages,
-}
-df = pd.DataFrame.from_dict(data)
-df.set_index(df.columns[0], inplace=True, verify_integrity=True)
-df['dev'] = df.iloc[:, 1].sub(df.iloc[:, 0]).div(
-    df.iloc[:, 0]).mul(100).round().astype(int)
 ba = (
     '',
     'Brief Recession',
@@ -1183,6 +814,61 @@ ba = (
     'Depression',
     '',
 )
-ba = pd.Series(data=ba, index=period, dtype=str)
-df.insert(loc=3, column='ba', value=ba)
-df.to_csv('theory_of_production_table11.dat', sep='\t')
+
+df = pd.DataFrame.from_dict(
+    {
+        'period': tuple(1899 + _ for _ in range(24)),
+        'pro_val': pro_val,
+        'wages': wages,
+        'ba': ba,
+    }
+)
+df.set_index(df.columns[0], inplace=True, verify_integrity=True)
+df['dev'] = df.iloc[:, 1].sub(df.iloc[:, 0]).div(
+    df.iloc[:, 0]).mul(100).round().astype(int)
+df['pro_val_rm_7'] = df.iloc[:, 0].rolling(7).mean()
+df['wages_rm_7'] = df.iloc[:, 1].rolling(7).mean()
+df['dev_abs'] = df.iloc[:, -3].abs()
+df.plot(grid=True)
+print(f'{df.iloc[:, -1].mean():,.6f}')
+print(df.corr())
+print(df)
+FILE_NAME = 'theory_of_production_table11.dat'
+df.to_csv(FILE_NAME, sep='\t')
+
+
+# =============================================================================
+# Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page ?: Table ?
+# =============================================================================
+FILE_NAME = 'theory_of_production_table2.dat'
+df_a = pd.read_csv(FILE_NAME, sep='\t')
+FILE_NAME = 'theory_of_production_table3.dat'
+df_b = pd.read_csv(FILE_NAME, sep='\t')
+df_a.set_index(df_a.columns[0], inplace=True)
+df_b.set_index(df_b.columns[0], inplace=True)
+df = pd.concat(
+    [
+        df_a.iloc[:, [4]],
+        df_b.iloc[:, [1]],
+    ],
+    axis=1)
+df['lab_to_cap'] = df.iloc[:, 1].div(
+    df.iloc[:, 0]).mul(100).round().astype(int)
+FILE_NAME = 'theory_of_production_table5.dat'
+df.iloc[:, [2]].to_csv(FILE_NAME, sep='\t')
+
+
+# =============================================================================
+# Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page ?: Table ?
+# =============================================================================
+FILE_NAME = 'theory_of_production_table6.dat'
+df = pd.read_csv(FILE_NAME, sep='\t', usecols=range(3))
+df.set_index(df.columns[0], inplace=True, verify_integrity=True)
+df['sub_pro'] = df.iloc[:, 1].sub(
+    df.iloc[:, 1].rolling(window=3, center=True).mean())
+df['sub_pro_com'] = df.iloc[:, 0].sub(
+    df.iloc[:, 0].rolling(window=3, center=True).mean())
+df.dropna(inplace=True)
+df = df.astype(int)
+FILE_NAME = 'theory_of_production_table7.dat',
+df.to_csv(FILE_NAME, sep='\t')
