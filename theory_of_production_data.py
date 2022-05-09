@@ -345,6 +345,25 @@ df.to_csv(FILE_NAME, sep='\t')
 
 
 # =============================================================================
+# Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 150: Table V
+# =============================================================================
+FILE_NAME = 'theory_of_production_table2.dat'
+df_a = pd.read_csv(FILE_NAME, sep='\t', index_col=0)
+FILE_NAME = 'theory_of_production_table3.dat'
+df_b = pd.read_csv(FILE_NAME, sep='\t', index_col=0)
+df = pd.concat(
+    [
+        df_a.iloc[:, [4]],
+        df_b.iloc[:, [1]],
+    ],
+    axis=1)
+df['lab_to_cap'] = df.iloc[:, 1].div(
+    df.iloc[:, 0]).mul(100).round().astype(int)
+FILE_NAME = 'theory_of_production_table5.dat'
+df.iloc[:, [2]].to_csv(FILE_NAME, sep='\t')
+
+
+# =============================================================================
 # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 152: Table VI
 # =============================================================================
 pro_com = (
@@ -465,7 +484,22 @@ df.set_index(df.columns[0], inplace=True, verify_integrity=True)
 df['abs'] = df.iloc[:, 2].abs()
 print(f'{df.iloc[:, 4].mean():,.6f}')
 FILE_NAME = 'theory_of_production_table6.dat'
-# df.iloc[:, range(4)].to_csv(FILE_NAME, sep='\t')
+df.iloc[:, range(4)].to_csv(FILE_NAME, sep='\t')
+
+
+# =============================================================================
+# Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 153: Table VII
+# =============================================================================
+FILE_NAME = 'theory_of_production_table6.dat'
+df = pd.read_csv(FILE_NAME, sep='\t', usecols=range(3), index_col=0)
+df['sub_pro'] = df.iloc[:, 1].sub(
+    df.iloc[:, 1].rolling(window=3, center=True).mean())
+df['sub_pro_com'] = df.iloc[:, 0].sub(
+    df.iloc[:, 0].rolling(window=3, center=True).mean())
+df.dropna(inplace=True)
+df = df.astype(int)
+FILE_NAME = 'theory_of_production_table7.dat',
+df.to_csv(FILE_NAME, sep='\t')
 
 
 # =============================================================================
@@ -645,8 +679,7 @@ df = pd.DataFrame.from_dict(
 df.set_index(df.columns[0], inplace=True, verify_integrity=True)
 df['ratio'] = df.iloc[:, 0].mul(100).div(df.iloc[:, 1]).round().astype(int)
 FILE_NAME = 'theory_of_production_table4.dat'
-df_pro = pd.read_csv(FILE_NAME, sep='\t')
-df_pro.set_index('period', inplace=True)
+df_pro = pd.read_csv(FILE_NAME, sep='\t', index_col=0)
 df['pro'] = df_pro.iloc[:, 0].mul(df.iloc[:, 2]).div(100).round().astype(int)
 FILE_NAME = 'theory_of_production_table9.dat'
 df.to_csv(FILE_NAME, sep='\t')
@@ -834,39 +867,4 @@ print(f'{df.iloc[:, -1].mean():,.6f}')
 print(df.corr())
 print(df)
 FILE_NAME = 'theory_of_production_table11.dat'
-df.to_csv(FILE_NAME, sep='\t')
-
-
-# =============================================================================
-# Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page ?: Table ?
-# =============================================================================
-FILE_NAME = 'theory_of_production_table2.dat'
-df_a = pd.read_csv(FILE_NAME, sep='\t', index_col=0)
-FILE_NAME = 'theory_of_production_table3.dat'
-df_b = pd.read_csv(FILE_NAME, sep='\t', index_col=0)
-df = pd.concat(
-    [
-        df_a.iloc[:, [4]],
-        df_b.iloc[:, [1]],
-    ],
-    axis=1)
-df['lab_to_cap'] = df.iloc[:, 1].div(
-    df.iloc[:, 0]).mul(100).round().astype(int)
-FILE_NAME = 'theory_of_production_table5.dat'
-df.iloc[:, [2]].to_csv(FILE_NAME, sep='\t')
-
-
-# =============================================================================
-# Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page ?: Table ?
-# =============================================================================
-FILE_NAME = 'theory_of_production_table6.dat'
-df = pd.read_csv(FILE_NAME, sep='\t', usecols=range(3))
-df.set_index(df.columns[0], inplace=True, verify_integrity=True)
-df['sub_pro'] = df.iloc[:, 1].sub(
-    df.iloc[:, 1].rolling(window=3, center=True).mean())
-df['sub_pro_com'] = df.iloc[:, 0].sub(
-    df.iloc[:, 0].rolling(window=3, center=True).mean())
-df.dropna(inplace=True)
-df = df.astype(int)
-FILE_NAME = 'theory_of_production_table7.dat',
 df.to_csv(FILE_NAME, sep='\t')
