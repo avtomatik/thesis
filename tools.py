@@ -3272,29 +3272,64 @@ def get_series_ids(archive_name):
     return dict(zip(data_frame.iloc[:, 1], data_frame.iloc[:, 0]))
 
 
-def KZF(source_frame, k=1):
+def kol_zur_filter(data_frame: pd.DataFrame, k: int=1) -> tuple[pd.DataFrame]:
     '''Kolmogorov--Zurbenko Filter
-    source_frame.iloc[:, 0]: Period,
-    source_frame.iloc[:, 1]: Series
+        data_frame.index: Period,
+        data_frame.iloc[:, 0]: Series
     '''
-    series = source_frame.iloc[:, 1]
-    result_frame = source_frame
-    for i in range(1, 1 + k):
-        series = series.rolling(window=2).mean()
-        skz = series.shift(-(i//2))
-        result_frame = pd.concat([result_frame, skz], axis=1, sort=True)
-    odd_frame = result_frame.iloc[:, 0]
-    even_frame = result_frame.iloc[:, 0].rolling(window=2).mean()
-    for i in range(1, 2 + k, 2):
-        odd_frame = pd.concat(
-            [odd_frame, result_frame.iloc[:, i]], axis=1, sort=True)
-    for i in range(2, 2 + k, 2):
-        even_frame = pd.concat(
-            [even_frame, result_frame.iloc[:, i]], axis=1, sort=True)
-    even_frame = even_frame.dropna(how='all').reset_index(drop=True)
-    odd_frame = odd_frame.set_index('Period')
-    even_frame = even_frame.set_index('Period')
-    return odd_frame, even_frame
+    # =========================================================================
+    # TODO: Implement data_frame.shape[0] Limitation
+    # =========================================================================
+    data_frame.reset_index(level=0, inplace=True)
+    # =========================================================================
+    # Odd DataFrames
+    # =========================================================================
+    data_frame_o = pd.concat(
+        [
+            data_frame,
+        ],
+        axis=1,
+        sort=True
+    )
+    # =========================================================================
+    # Even DataFrames
+    # =========================================================================
+    data_frame_e = pd.concat(
+        [
+            data_frame.iloc[:, [0]].rolling(2).mean(),
+        ],
+        axis=1,
+        sort=True
+    )
+    chunk = data_frame.iloc[:, [1]]
+    for _ in range(k):
+        chunk = chunk.rolling(2).mean()
+        if _ % 2 == 1:
+            # =================================================================
+            # Odd DataFrames
+            # =================================================================
+            data_frame_o = pd.concat(
+                [
+                    data_frame_o,
+                    chunk.shift(-((1 + _) // 2)),
+                ],
+                axis=1,
+                sort=True
+            )
+        else:
+            # =================================================================
+            # Even DataFrames
+            # =================================================================
+            data_frame_e = pd.concat(
+                [
+                    data_frame_e,
+                    chunk.shift(-((1 + _) // 2)),
+                ],
+                axis=1,
+                sort=True
+            )
+    data_frame_e.set_index(data_frame_e.columns[0], inplace=True)
+    return data_frame_o.set_index(data_frame_o.columns[0]), data_frame_e.dropna(how='all')
 
 
 def rolling_mean_filter(data_frame, k=1):
@@ -3302,6 +3337,9 @@ def rolling_mean_filter(data_frame, k=1):
         data_frame.index: Period,
         data_frame.iloc[:, 0]: Series
     '''
+    # =========================================================================
+    # TODO: Implement data_frame.shape[0] Limitation
+    # =========================================================================
     data_frame.reset_index(level=0, inplace=True)
     # =========================================================================
     # Odd DataFrames
@@ -3324,7 +3362,7 @@ def rolling_mean_filter(data_frame, k=1):
         sort=True
     )
     for _ in range(k):
-        if _ % 2:
+        if _ % 2 == 1:
             # =================================================================
             # Odd DataFrames
             # =================================================================
@@ -3974,8 +4012,8 @@ def plot_block_one(source_frame):
     source_frame['lab_cap_int'] = source_frame.iloc[:, 1].div(
         source_frame.iloc[:, 2])  # Labor Capital Intensity
     labcap_frame = source_frame.iloc[:, [0, 4]]
-    semi_frame_a, semi_frame_b = RMF(labcap_frame)
-    semi_frame_c, semi_frame_d = KZF(labcap_frame)
+    semi_frame_a, semi_frame_b = rolling_mean_filter(labcap_frame)
+    semi_frame_c, semi_frame_d = kol_zur_filter(labcap_frame)
     semi_frame_e = SES(labcap_frame, 5, 0.25)
     semi_frame_e = semi_frame_e.iloc[:, 1]
     odd_frame = pd.concat([semi_frame_a, semi_frame_e], axis=1, sort=True)
@@ -4006,8 +4044,8 @@ def plot_block_two(source_frame):
     source_frame['lab_product'] = source_frame.iloc[:, 3].div(
         source_frame.iloc[:, 2])  # Labor Productivity
     labpro_frame = source_frame.iloc[:, [0, 4]]
-    semi_frame_a, semi_frame_b = RMF(labpro_frame, 3)
-    semi_frame_c, semi_frame_d = KZF(labpro_frame, 3)
+    semi_frame_a, semi_frame_b = rolling_mean_filter(labpro_frame, 3)
+    semi_frame_c, semi_frame_d = kol_zur_filter(labpro_frame, 3)
     semi_frame_c = semi_frame_c.iloc[:, 1]
     semi_frame_e = SES(labpro_frame, 5, 0.25)
     semi_frame_e = semi_frame_e.iloc[:, 1]
