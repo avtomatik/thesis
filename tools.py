@@ -8,9 +8,6 @@ Created on Wed Apr  6 20:54:06 2022
 
 
 # =============================================================================
-# TODO: Replace `.set_index('period')`
-# =============================================================================
-# =============================================================================
 # TODO: result.div(result.iloc[result.index.get_loc(2001), :]).mul(100)
 # =============================================================================
 def append_series_ids(source_frame, data_frame, series_ids):
@@ -4014,7 +4011,7 @@ def plot_block_one(source_frame):
     labcap_frame = source_frame.iloc[:, [0, 4]]
     semi_frame_a, semi_frame_b = rolling_mean_filter(labcap_frame)
     semi_frame_c, semi_frame_d = kol_zur_filter(labcap_frame)
-    semi_frame_e = SES(labcap_frame, 5, 0.25)
+    semi_frame_e = sing_expo_smoothing(labcap_frame, 5, 0.25)
     semi_frame_e = semi_frame_e.iloc[:, 1]
     odd_frame = pd.concat([semi_frame_a, semi_frame_e], axis=1, sort=True)
     even_frame = pd.concat([semi_frame_b, semi_frame_d], axis=1, sort=True)
@@ -4047,11 +4044,11 @@ def plot_block_two(source_frame):
     semi_frame_a, semi_frame_b = rolling_mean_filter(labpro_frame, 3)
     semi_frame_c, semi_frame_d = kol_zur_filter(labpro_frame, 3)
     semi_frame_c = semi_frame_c.iloc[:, 1]
-    semi_frame_e = SES(labpro_frame, 5, 0.25)
+    semi_frame_e = sing_expo_smoothing(labpro_frame, 5, 0.25)
     semi_frame_e = semi_frame_e.iloc[:, 1]
-    semi_frame_f = SES(labpro_frame, 5, 0.35)
+    semi_frame_f = sing_expo_smoothing(labpro_frame, 5, 0.35)
     semi_frame_f = semi_frame_f.iloc[:, 1]
-    semi_frame_g = SES(labpro_frame, 5, 0.45)
+    semi_frame_g = sing_expo_smoothing(labpro_frame, 5, 0.45)
     semi_frame_g = semi_frame_g.iloc[:, 1]
     odd_frame = pd.concat([semi_frame_a, semi_frame_c, semi_frame_e,
                           semi_frame_f, semi_frame_g], axis=1, sort=True)
@@ -5785,29 +5782,40 @@ def plot_census_k():
         plt.show()
 
 
-def plot_growth_elasticity(source_frame):
+def plot_growth_elasticity(df: pd.DataFrame):
     '''Growth Elasticity Plotting
-    source_frame.iloc[:, 0]: Period,
-    source_frame.iloc[:, 1]: Series
+        df.index: Period,
+        df.iloc[:, 0]: Series
     '''
-    result_list = []  # Create List Results
-    for i in range(source_frame.shape[0]-3):
-        '''
-        `period`: Period, Centered
-        `value_a`: Value, Centered
-        `value_b`: Value, Growth Rate
-        `value_c`: Value, Elasticity
-        '''
-        result_list.append({'period': (source_frame.iloc[1 + i, 0] + source_frame.iloc[2 + i, 0])/2,
-                            'value_a': (source_frame.iloc[1 + i, 1] + source_frame.iloc[2 + i, 1])/2,
-                            'value_b': (source_frame.iloc[2 + i, 1]-source_frame.iloc[i, 1])/(source_frame.iloc[i, 1] + source_frame.iloc[1 + i, 1]),
-                            'value_c': (source_frame.iloc[2 + i, 1] + source_frame.iloc[3 + i, 1]-source_frame.iloc[i, 1]-source_frame.iloc[1 + i, 1])/(source_frame.iloc[i, 1] + source_frame.iloc[1 + i, 1] + source_frame.iloc[2 + i, 1] + source_frame.iloc[3 + i, 1])})
-    result_frame = pd.DataFrame(result_list)  # Convert List to Dataframe
-
-    result_frame = result_frame.set_index('Period')
+    # =========================================================================
+    # TODO: Increase Cohesion of This Code: Send Plotting to Separate Function
+    # =========================================================================
+    df.reset_index(level=0, inplace=True)
+    data_frame = pd.DataFrame()
+    # =========================================================================
+    # `period`: Period, Centered
+    # =========================================================================
+    data_frame[f'{df.columns[0]}'] = df.iloc[:, [0]].rolling(2).mean()
+    # =========================================================================
+    # `value_a`: Value, Centered
+    # =========================================================================
+    data_frame[f'{df.columns[1]}_centered'] = df.iloc[:, [1]].rolling(2).mean()
+    # =========================================================================
+    # `value_b`: Value, Growth Rate
+    # =========================================================================
+    data_frame[f'{df.columns[1]}_growth_rate'] = df.iloc[:, [1]].sub(
+        df.iloc[:, [1]].shift(2)).div(df.iloc[:, [1]].rolling(2).sum().shift(1))
+    # =========================================================================
+    # `value_c`: Value, Elasticity
+    # =========================================================================
+    data_frame[f'{df.columns[1]}_elasticity'] = df.iloc[:, [1]].rolling(2).sum(
+    ).shift(-1).mul(2).div(df.iloc[:, [1]].rolling(4).sum().shift(-1)).sub(1)
+    data_frame.set_index(data_frame.columns[0], inplace=True)
+    data_frame.dropna(inplace=True)
+    return data_frame
     plt.figure()
-    result_frame.iloc[:, 1].plot(label='Growth Rate')
-    result_frame.iloc[:, 2].plot(label='Elasticity Rate')
+    data_frame.iloc[:, 1].plot(label='Growth Rate')
+    data_frame.iloc[:, 2].plot(label='Elasticity Rate')
     plt.title('Growth & Elasticity Rates')
     plt.xlabel('Period')
     plt.ylabel('Index')
@@ -5841,23 +5849,22 @@ def plot_douglas(source, dictionary, num, start, stop, step, title, measure, lab
         plt.legend(label)
 
 
-def SES(source_frame, window=5, alpha=0.5):
+def sing_expo_smoothing(data_frame: pd.DataFrame, window: int = 5, alpha: float = 0.5) -> pd.DataFrame:
     '''Single Exponential Smoothing
     Robert Goodell Brown, 1956
-    source_frame.iloc[:, 0]: Period,
-    source_frame.iloc[:, 1]: Series
+        data_frame.index: Period,
+        data_frame.iloc[:, 0]: Series
     '''
-    S = source_frame.iloc[:window, 1]
-    S = S.mean()  # Average of Window-First Entries
-    ses = []
-    ses.append(alpha*source_frame.iloc[0, 1] + (1-alpha)*S)
-    for i in range(1, source_frame.shape[0]):
-        ses.append(alpha*source_frame.iloc[i, 1] + (1-alpha)*ses[i-1])
-    cap = f'ses{window:02d}_{alpha:,.6f}'
-    ses = pd.DataFrame(ses, columns=[cap])
-    result_frame = pd.concat([source_frame, ses], axis=1, sort=True)
-    result_frame = result_frame.set_index('Period')
-    return result_frame
+    # =========================================================================
+    # Average of Window-First Entries
+    # =========================================================================
+    S = data_frame.iloc[:window, -1].mean()
+    data_frame[f'ses{window:02d}_{alpha:,.6f}'] = alpha * \
+        data_frame.iloc[0, -1] + (1-alpha)*S
+    for _ in range(data_frame.shape[0])[1:]:
+        data_frame.iloc[_, -1] = alpha * \
+            data_frame.iloc[_, -2] + (1-alpha)*data_frame.iloc[_ - 1, -1]
+    return data_frame
 
 
 def results_delivery_a(intervals, coefficients):
