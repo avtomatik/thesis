@@ -3269,7 +3269,7 @@ def get_series_ids(archive_name):
     return dict(zip(data_frame.iloc[:, 1], data_frame.iloc[:, 0]))
 
 
-def kol_zur_filter(data_frame: pd.DataFrame, k: int=1) -> tuple[pd.DataFrame]:
+def kol_zur_filter(data_frame: pd.DataFrame, k: int = 1) -> tuple[pd.DataFrame]:
     '''Kolmogorov--Zurbenko Filter
         data_frame.index: Period,
         data_frame.iloc[:, 0]: Series
@@ -3983,10 +3983,16 @@ def plot_block_zer(source_frame):
     source_frame.iloc[:, 2]: Product
     '''
     pd.options.mode.chained_assignment = None
+    # =========================================================================
+    # Labor Capital Intensity
+    # =========================================================================
     source_frame['lab_cap_int'] = source_frame.iloc[:, 0].div(
-        source_frame.iloc[:, 1])  # Labor Capital Intensity
+        source_frame.iloc[:, 1])
+    # =========================================================================
+    # Labor Productivity
+    # =========================================================================
     source_frame['lab_product'] = source_frame.iloc[:, 2].div(
-        source_frame.iloc[:, 1])  # Labor Productivity
+        source_frame.iloc[:, 1])
     source_frame['log_lab_c'] = np.log(
         source_frame.iloc[:, 0].div(source_frame.iloc[:, 1]))
     source_frame['log_lab_p'] = np.log(
@@ -4006,21 +4012,40 @@ def plot_block_one(source_frame):
     source_frame.iloc[:, 2]: Labor,
     source_frame.iloc[:, 3]: Product
     '''
+    # =========================================================================
+    # Labor Capital Intensity
+    # =========================================================================
     source_frame['lab_cap_int'] = source_frame.iloc[:, 1].div(
-        source_frame.iloc[:, 2])  # Labor Capital Intensity
+        source_frame.iloc[:, 2])
     labcap_frame = source_frame.iloc[:, [0, 4]]
     semi_frame_a, semi_frame_b = rolling_mean_filter(labcap_frame)
     semi_frame_c, semi_frame_d = kol_zur_filter(labcap_frame)
     semi_frame_e = sing_expo_smoothing(labcap_frame, 5, 0.25)
     semi_frame_e = semi_frame_e.iloc[:, 1]
-    odd_frame = pd.concat([semi_frame_a, semi_frame_e], axis=1, sort=True)
-    even_frame = pd.concat([semi_frame_b, semi_frame_d], axis=1, sort=True)
+    # =========================================================================
+    # Odd Frame
+    # =========================================================================
+    data_frame_o = pd.concat(
+        [
+            semi_frame_a,
+            semi_frame_e,
+        ],
+        axis=1, sort=True)
+    # =========================================================================
+    # Even Frame
+    # =========================================================================
+    data_frame_e = pd.concat(
+        [
+            semi_frame_b,
+            semi_frame_d,
+        ],
+        axis=1, sort=True)
     plt.figure()
-    odd_frame.iloc[:, 0].plot(linewidth=3, label='Labor Capital Intensity')
-    odd_frame.iloc[:, 1].plot(
+    data_frame_o.iloc[:, 0].plot(linewidth=3, label='Labor Capital Intensity')
+    data_frame_o.iloc[:, 1].plot(
         label='Single Exponential Smoothing, Window = {}, Alpha = {:, .2f}'.format(5, 0.25))
-    even_frame.iloc[:, 0].plot(label='Rolling Mean, {}'.format(2))
-    even_frame.iloc[:, 1].plot(
+    data_frame_e.iloc[:, 0].plot(label='Rolling Mean, {}'.format(2))
+    data_frame_e.iloc[:, 1].plot(
         label='Kolmogorov--Zurbenko Filter, {}'.format(2))
     plt.title('Labor Capital Intensity: Rolling Mean Filter, Kolmogorov--Zurbenko Filter &\n\
               Single Exponential Smoothing')
@@ -4038,8 +4063,11 @@ def plot_block_two(source_frame):
     source_frame.iloc[:, 2]: Labor,
     source_frame.iloc[:, 3]: Product
     '''
+    # =========================================================================
+    # Labor Productivity
+    # =========================================================================
     source_frame['lab_product'] = source_frame.iloc[:, 3].div(
-        source_frame.iloc[:, 2])  # Labor Productivity
+        source_frame.iloc[:, 2])
     labpro_frame = source_frame.iloc[:, [0, 4]]
     semi_frame_a, semi_frame_b = rolling_mean_filter(labpro_frame, 3)
     semi_frame_c, semi_frame_d = kol_zur_filter(labpro_frame, 3)
@@ -4050,25 +4078,43 @@ def plot_block_two(source_frame):
     semi_frame_f = semi_frame_f.iloc[:, 1]
     semi_frame_g = sing_expo_smoothing(labpro_frame, 5, 0.45)
     semi_frame_g = semi_frame_g.iloc[:, 1]
-    odd_frame = pd.concat([semi_frame_a, semi_frame_c, semi_frame_e,
-                          semi_frame_f, semi_frame_g], axis=1, sort=True)
-    even_frame = pd.concat([semi_frame_b, semi_frame_d], axis=1, sort=True)
+    # =========================================================================
+    # Odd Frame
+    # =========================================================================
+    data_frame_o = pd.concat(
+        [
+            semi_frame_a,
+            semi_frame_c,
+            semi_frame_e,
+            semi_frame_f,
+            semi_frame_g,
+        ],
+        axis=1, sort=True)
+    # =========================================================================
+    # Even Frame
+    # =========================================================================
+    data_frame_e = pd.concat(
+        [
+            semi_frame_b,
+            semi_frame_d,
+        ],
+        axis=1, sort=True)
     plt.figure()
-    odd_frame.iloc[:, 0].plot(linewidth=3, label='Labor Productivity')
-    odd_frame.iloc[:, 1].plot(label='Rolling Mean, {}'.format(3))
-    odd_frame.iloc[:, 2].plot(
+    data_frame_o.iloc[:, 0].plot(linewidth=3, label='Labor Productivity')
+    data_frame_o.iloc[:, 1].plot(label='Rolling Mean, {}'.format(3))
+    data_frame_o.iloc[:, 2].plot(
         label='Kolmogorov--Zurbenko Filter, {}'.format(3))
-    odd_frame.iloc[:, 3].plot(
+    data_frame_o.iloc[:, 3].plot(
         label='Single Exponential Smoothing, Window = {}, Alpha = {:, .2f}'.format(5, 0.25))
-    odd_frame.iloc[:, 4].plot(
+    data_frame_o.iloc[:, 4].plot(
         label='Single Exponential Smoothing, Window = {}, Alpha = {:, .2f}'.format(5, 0.35))
-    odd_frame.iloc[:, 5].plot(
+    data_frame_o.iloc[:, 5].plot(
         label='Single Exponential Smoothing, Window = {}, Alpha = {:, .2f}'.format(5, 0.45))
-    even_frame.iloc[:, 0].plot(label='Rolling Mean, {}'.format(2))
-    even_frame.iloc[:, 1].plot(label='Rolling Mean, {}'.format(4))
-    even_frame.iloc[:, 2].plot(
+    data_frame_e.iloc[:, 0].plot(label='Rolling Mean, {}'.format(2))
+    data_frame_e.iloc[:, 1].plot(label='Rolling Mean, {}'.format(4))
+    data_frame_e.iloc[:, 2].plot(
         label='Kolmogorov--Zurbenko Filter, {}'.format(2))
-    even_frame.iloc[:, 3].plot(
+    data_frame_e.iloc[:, 3].plot(
         label='Kolmogorov--Zurbenko Filter, {}'.format(4))
     plt.title('Labor Capital Intensity: Rolling Mean Filter, Kolmogorov--Zurbenko Filter &\n\
               Single Exponential Smoothing')
@@ -5112,33 +5158,33 @@ def plot_capital_purchases(source_frame):
     plt.show()
 
 
-def procedure_numbers(data_frame):
+def calculate_curve_fit_params(data_frame: pd.DataFrame) -> None:
     '''
     data_frame.index: Period,
     data_frame.iloc[:, 0]: Capital,
     data_frame.iloc[:, 1]: Labor,
     data_frame.iloc[:, 2]: Product
     '''
-    data_frame.reset_index(level=0, inplace=True)
-    T = data_frame.iloc[:, 0]
+    def _curve(regressor: pd.Series, b: float, k: float) -> pd.Series:
+        return regressor.pow(k).mul(b)
+
     # =========================================================================
     # Labor Capital Intensity
     # =========================================================================
-    data_frame['lab_cap_int'] = data_frame.iloc[:, 1].div(
-        data_frame.iloc[:, 2])
+    data_frame['lab_cap_int'] = data_frame.iloc[:, 0].div(
+        data_frame.iloc[:, 1])
     # =========================================================================
     # Labor Productivity
     # =========================================================================
-    data_frame['lab_product'] = data_frame.iloc[:, 3].div(
-        data_frame.iloc[:, 2])
-    YP_1P_0 = np.array([1.0, 1.0])
-
-    def func(T, A_1, A_0):
-        return A_1*T**A_0
-
-    numbers, matrix = optimization.curve_fit(
-        func, data_frame['lab_cap_int'], data_frame['lab_product'], YP_1P_0)
-    print('Factor: {:,.4f}; Index: {:,.4f}'.format(numbers[0], numbers[1]))
+    data_frame['lab_product'] = data_frame.iloc[:, 2].div(
+        data_frame.iloc[:, 1])
+    params, matrix = optimization.curve_fit(
+        _curve,
+        data_frame.iloc[:, -2],
+        data_frame.iloc[:, -1],
+        np.array([1.0, 0.5])
+    )
+    print('Factor, b: {:,.4f}; Index, k: {:,.4f}'.format(*params))
 
 
 def plot_lab_prod_polynomial(source_frame):
