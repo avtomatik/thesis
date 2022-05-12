@@ -1502,11 +1502,11 @@ def get_data_census_a():
                      'dataset_usa_census1975.zip',)
     SERIES_IDS = (
         # =====================================================================
-        # HSUS 1949 Page 179, J13
+        # Bureau of the Census, 1949, Page 179, J13: National Bureau of Economic Research Index of Physical Output, All Manufacturing Industries.
         # =====================================================================
         'J0013',
         # =====================================================================
-        # HSUS 1949 Page 179, J14: Warren M. Persons, Index of Physical Production of Manufacturing
+        # Bureau of the Census, 1949, Page 179, J14: Warren M. Persons, Index of Physical Production of Manufacturing
         # =====================================================================
         'J0014',
         # =====================================================================
@@ -1887,27 +1887,50 @@ def get_data_cobb_douglas(series_number: int = 3) -> pd.DataFrame:
     '''Original Cobb--Douglas Data Preprocessing Extension'''
     ARCHIVE_NAMES = (
         'dataset_usa_cobb-douglas.zip',
+        'dataset_usa_cobb-douglas.zip',
+        'dataset_usa_census1949.zip',
         'dataset_usa_census1949.zip',
         'dataset_douglas.zip',
     )
+    SERIES_IDS = {
+        # =====================================================================
+        # Cobb C.W., Douglas P.H. Capital Series: Total Fixed Capital in 1880 dollars (4)
+        # =====================================================================
+        'CDT2S4': 'capital',
+        # =====================================================================
+        # Cobb C.W., Douglas P.H. Labor Series: Average Number Employed (in thousands)
+        # =====================================================================
+        'CDT3S1': 'labor',
+        # =====================================================================
+        # Bureau of the Census, 1949, Page 179, J14: Warren M. Persons, Index of Physical Production of Manufacturing
+        # =====================================================================
+        'J0014': 'product',
+        # =====================================================================
+        # Bureau of the Census, 1949, Page 179, J13: National Bureau of Economic Research Index of Physical Output, All Manufacturing Industries.
+        # =====================================================================
+        'J0013': 'product_nber',
+        # =====================================================================
+        # The Revised Index of Physical Production for All Manufacturing In the United States, 1899--1926
+        # =====================================================================
+        'DT24AS01': 'product_rev',
+    }
+    FUNCTIONS = (
+        fetch_usa_classic,
+        fetch_usa_classic,
+        fetch_usa_census,
+        fetch_usa_census,
+        fetch_usa_classic,
+    )
     data_frame = pd.concat(
         [
-            fetch_usa_classic(ARCHIVE_NAMES[0], 'CDT2S4'),
-            fetch_usa_classic(ARCHIVE_NAMES[0], 'CDT3S1'),
-            fetch_usa_census(ARCHIVE_NAMES[1], 'J0014'),
-            # =================================================================
-            # Description
-            # =================================================================
-            fetch_usa_census(ARCHIVE_NAMES[1], 'J0013'),
-            # =================================================================
-            # The Revised Index of Physical Production for All Manufacturing In the United States, 1899--1926
-            # =================================================================
-            fetch_usa_classic(ARCHIVE_NAMES[2], 'DT24AS01')
-        ], axis=1, sort=True
+            partial(func, **{'archive_name': archive_name,
+                             'series_id': series_id})()
+            for archive_name, series_id, func in zip(ARCHIVE_NAMES, SERIES_IDS.keys(), FUNCTIONS)
+        ],
+        axis=1,
+        sort=True
     ).dropna(axis=0)
-    data_frame.columns = [
-        'capital', 'labor', 'product', 'product_nber', 'product_rev'
-    ]
+    data_frame.columns = [mask for mask in SERIES_IDS.values()]
     return data_frame.div(data_frame.iloc[0, :]).iloc[:, range(series_number)]
 
 
@@ -3269,17 +3292,16 @@ def get_series_ids(archive_name):
     return dict(zip(data_frame.iloc[:, 1], data_frame.iloc[:, 0]))
 
 
-def kol_zur_filter(data_frame: pd.DataFrame, k: int = 1) -> tuple[pd.DataFrame]:
+def kol_zur_filter(data_frame: pd.DataFrame, k: int = None) -> tuple[pd.DataFrame]:
     '''Kolmogorov--Zurbenko Filter
         data_frame.index: Period,
         data_frame.iloc[:, 0]: Series
     '''
-    # =========================================================================
-    # TODO: Implement data_frame.shape[0] Limitation
-    # =========================================================================
+    if k is None:
+        k = data_frame.shape[0] // 2
     data_frame.reset_index(level=0, inplace=True)
     # =========================================================================
-    # Odd DataFrames
+    # DataFrame for Kolmogorov--Zurbenko Filter Results: Odd
     # =========================================================================
     data_frame_o = pd.concat(
         [
@@ -3289,11 +3311,37 @@ def kol_zur_filter(data_frame: pd.DataFrame, k: int = 1) -> tuple[pd.DataFrame]:
         sort=True
     )
     # =========================================================================
-    # Even DataFrames
+    # DataFrame for Kolmogorov--Zurbenko Filter Results: Even
     # =========================================================================
     data_frame_e = pd.concat(
         [
             data_frame.iloc[:, [0]].rolling(2).mean(),
+        ],
+        axis=1,
+        sort=True
+    )
+    # =========================================================================
+    # DataFrame for Kolmogorov--Zurbenko Filter Residuals: Odd
+    # =========================================================================
+    residuals_o = pd.concat(
+        [
+            # =================================================================
+            # Period Shift
+            # =================================================================
+            data_frame.iloc[:, [0]].rolling(2).mean(),
+        ],
+        axis=1,
+        sort=True
+    )
+    # =========================================================================
+    # DataFrame for Kolmogorov--Zurbenko Filter Residuals: Even
+    # =========================================================================
+    residuals_e = pd.concat(
+        [
+            # =================================================================
+            # No Period Shift
+            # =================================================================
+            data_frame.iloc[:, [0]],
         ],
         axis=1,
         sort=True
@@ -3303,7 +3351,7 @@ def kol_zur_filter(data_frame: pd.DataFrame, k: int = 1) -> tuple[pd.DataFrame]:
         chunk = chunk.rolling(2).mean()
         if _ % 2 == 1:
             # =================================================================
-            # Odd DataFrames
+            # DataFrame for Kolmogorov--Zurbenko Filter Results: Odd
             # =================================================================
             data_frame_o = pd.concat(
                 [
@@ -3313,9 +3361,23 @@ def kol_zur_filter(data_frame: pd.DataFrame, k: int = 1) -> tuple[pd.DataFrame]:
                 axis=1,
                 sort=True
             )
+            data_frame_o.columns = [*data_frame_o.columns[:-1],
+                                    f'{data_frame.columns[1]}_{hex(2 + _)}', ]
+            # =================================================================
+            # DataFrame for Kolmogorov--Zurbenko Filter Residuals: Odd
+            # =================================================================
+            residuals_o = pd.concat(
+                [
+                    residuals_o,
+                    data_frame_o.iloc[:, [-2]
+                                      ].div(data_frame_o.iloc[:, [-2]].shift(1)).sub(1),
+                ],
+                axis=1,
+                sort=True
+            )
         else:
             # =================================================================
-            # Even DataFrames
+            # DataFrame for Kolmogorov--Zurbenko Filter Results: Even
             # =================================================================
             data_frame_e = pd.concat(
                 [
@@ -3325,8 +3387,29 @@ def kol_zur_filter(data_frame: pd.DataFrame, k: int = 1) -> tuple[pd.DataFrame]:
                 axis=1,
                 sort=True
             )
+            data_frame_e.columns = [*data_frame_e.columns[:-1],
+                                    f'{data_frame.columns[1]}_{hex(2 + _)}', ]
+            # =================================================================
+            # DataFrame for Kolmogorov--Zurbenko Filter Residuals: Even
+            # =================================================================
+            residuals_e = pd.concat(
+                [
+                    residuals_e,
+                    data_frame_e.iloc[:, [-1]
+                                      ].shift(-1).div(data_frame_e.iloc[:, [-1]]).sub(1),
+                ],
+                axis=1,
+                sort=True
+            )
+    data_frame_o.set_index(data_frame_o.columns[0], inplace=True)
     data_frame_e.set_index(data_frame_e.columns[0], inplace=True)
-    return data_frame_o.set_index(data_frame_o.columns[0]), data_frame_e.dropna(how='all')
+    residuals_o.set_index(residuals_o.columns[0], inplace=True)
+    residuals_e.set_index(residuals_e.columns[0], inplace=True)
+    data_frame_o.dropna(how='all', inplace=True)
+    data_frame_e.dropna(how='all', inplace=True)
+    residuals_o.dropna(how='all', inplace=True)
+    residuals_e.dropna(how='all', inplace=True)
+    return data_frame_o, data_frame_e, residuals_o, residuals_e
 
 
 def rolling_mean_filter(data_frame, k=1):
@@ -6112,61 +6195,53 @@ def plot_elasticity(source):
     plt.show()
 
 
-def plot_kzf(source_frame):
+def plot_kol_zur_filter(data_frame: pd.DataFrame):
     '''Kolmogorov--Zurbenko Filter
-    source_frame.iloc[:, 0]: Period,
-    source_frame.iloc[:, 1]: Series'''
+        data_frame.index: Period,
+        data_frame.iloc[:, 0]: Series
+    '''
+    data_frame_o, data_frame_e, residuals_o, residuals_e = kol_zur_filter(data_frame)
 
-    '''DataFrame for Kolmogorov--Zurbenko Filter Results'''
-    result_frame_a = source_frame
-    '''DataFrame for Kolmogorov--Zurbenko Filter Residuals'''
-    result_frame_b = pd.concat([source_frame.iloc[:, 0], source_frame.iloc[:, 0].rolling(
-        window=2).mean()], axis=1, sort=False)
-    result_frame_b = pd.concat([result_frame_b, (source_frame.iloc[:, 1]-source_frame.iloc[:,
-                               1].shift(1)).div(source_frame.iloc[:, 1].shift(1))], axis=1, sort=False)
-    for k in range(1, 1 + source_frame.shape[0]//2):
-        cap = f'col_{hex(k)}'
-        result_frame_a[cap] = np.nan
-        for j in range(1, 1 + source_frame.shape[0]-k):
-            vkz = 0
-            for i in range(1 + k):
-                vkz += result_frame_a.iloc[i + j-1,
-                                           1]*scipy.special.binom(k, i)/(2**k)
-            result_frame_a.iloc[i + j-(k//2)-1, 1 + k] = vkz
-        if k % 2 == 0:
-            result_frame_b = pd.concat([result_frame_b, (source_frame.iloc[:, 1 + k]-source_frame.iloc[:, 1 + k].shift(
-                1)).div(source_frame.iloc[:, 1 + k].shift(1))], axis=1, sort=False)
-        else:
-            result_frame_b = pd.concat([result_frame_b, (source_frame.iloc[:, 1 + k].shift(-1) -
-                                       source_frame.iloc[:, 1 + k]).div(source_frame.iloc[:, 1 + k])], axis=1, sort=False)
     plt.figure(1)
     plt.title('Kolmogorov$-$Zurbenko Filter')
     plt.xlabel('Period')
     plt.ylabel('Measure')
     plt.scatter(
-        result_frame_a.iloc[:, 0], result_frame_a.iloc[:, 1], label='Original Series')
-    for i in range(2, 1 + source_frame.shape[0]//2):
-        if i % 2 == 0:
-            plt.plot(result_frame_a.iloc[:, 0].rolling(window=2).mean(
-            ), result_frame_a.iloc[:, i], label='$KZF(\\lambda = {})$'.format(i-1))
-        else:
-            plt.plot(result_frame_a.iloc[:, 0], result_frame_a.iloc[:,
-                     i], label='$KZF(\\lambda = {})$'.format(i-1))
+        data_frame_o.iloc[:, [0]].index,
+        data_frame_o.iloc[:, [0]],
+        label='Original Series'
+    )
+    plt.plot(
+        data_frame_o.iloc[:, 1:],
+        label=['$KZF(\\lambda = {})$'.format(int(_.split('_')[-1], 16))
+               for _ in data_frame_o.columns[1:]]
+    )
+    plt.plot(
+        data_frame_e,
+        label=['$KZF(\\lambda = {})$'.format(int(_.split('_')[-1], 16))
+               for _ in data_frame_e.columns]
+    )
     plt.grid(True)
     plt.legend()
     plt.figure(2)
     plt.title('Kolmogorov$-$Zurbenko Filter Residuals')
     plt.xlabel('Period')
     plt.ylabel('Index')
-    plt.scatter(result_frame_b.iloc[:, 1],
-                result_frame_b.iloc[:, 2], label='Residuals')
-    for i in range(3, 2 + source_frame.shape[0]//2):
-        if i % 2 == 0:
-            plt.plot(result_frame_b.iloc[:, 1], result_frame_b.iloc[:, i],
-                     label='$\\delta KZF(\\lambda = {})$'.format(i-1))
-        else:
-            plt.plot(result_frame_b.iloc[:, 0], result_frame_b.iloc[:, i],
-                     label='$\\delta KZF(\\lambda = {})$'.format(i-1))
+    plt.scatter(
+        residuals_o.iloc[:, [0]].index,
+        residuals_o.iloc[:, [0]],
+        label='Residuals'
+    )
+    plt.plot(
+        residuals_o.iloc[:, 1:],
+        label=['$\\delta KZF(\\lambda = {})$'.format(int(_.split('_')[-1], 16))
+               for _ in residuals_o.columns[1:]]
+    )
+    plt.plot(
+        residuals_e,
+        label=['$\\delta KZF(\\lambda = {})$'.format(int(_.split('_')[-1], 16))
+               for _ in residuals_e.columns]
+    )
     plt.grid(True)
     plt.legend()
     plt.show()
@@ -6445,67 +6520,13 @@ def processing_spline(source_frame, kernelModule, deliveryModule):
         print(f'N >= 2 is Required, N = {N} Was Provided')
 
 
-def plot_kzf_b(source_frame):
-    """Kolmogorov--Zurbenko Filter
-    source_frame.iloc[:, 0]: Period,
-    source_frame.iloc[:, 1]: Series"""
-
-    """DataFrame for Kolmogorov--Zurbenko Filter Results"""
-    result_frame_a = source_frame
-    """DataFrame for Kolmogorov--Zurbenko Filter Residuals"""
-    result_frame_b = pd.concat([source_frame.iloc[:, 0], source_frame.iloc[:, 0].rolling(
-        window=2).mean()], axis=1, sort=False)
-    result_frame_b = pd.concat([result_frame_b, (source_frame.iloc[:, 1]-source_frame.iloc[:,
-                               1].shift(1)).div(source_frame.iloc[:, 1].shift(1))], axis=1, sort=False)
-    series = source_frame.iloc[:, 1]
-    for i in range(1, 1 + source_frame.shape[0]//2):
-        series = series.rolling(window=2).mean()
-        skz = series.shift(-(i//2))
-        result_frame_a = pd.concat([result_frame_a, skz], axis=1, sort=False)
-        if i % 2 == 0:
-            result_frame_b = pd.concat(
-                [result_frame_b, (skz-skz.shift(1)).div(skz.shift(1))], axis=1, sort=False)
-        else:
-            result_frame_b = pd.concat(
-                [result_frame_b, (skz.shift(-1)-skz).div(skz)], axis=1, sort=False)
-    plt.figure(1)
-    plt.title('Kolmogorov$-$Zurbenko Filter')
-    plt.xlabel('Period')
-    plt.ylabel('Measure')
-    plt.scatter(
-        result_frame_a.iloc[:, 0], result_frame_a.iloc[:, 1], label='Original Series')
-    for i in range(2, 1 + source_frame.shape[0]//2):
-        if i % 2 == 0:
-            plt.plot(result_frame_a.iloc[:, 0].rolling(window=2).mean(
-            ), result_frame_a.iloc[:, i], label='$KZF(\\lambda = {})$'.format(i-1))
-        else:
-            plt.plot(result_frame_a.iloc[:, 0], result_frame_a.iloc[:,
-                     i], label='$KZF(\\lambda = {})$'.format(i-1))
-    plt.grid(True)
-    plt.legend()
-    plt.figure(2)
-    plt.title('Kolmogorov$-$Zurbenko Filter Residuals')
-    plt.xlabel('Period')
-    plt.ylabel('Index')
-    plt.scatter(result_frame_b.iloc[:, 1],
-                result_frame_b.iloc[:, 2], label='Residuals')
-    for i in range(3, 2 + source_frame.shape[0]//2):
-        if i % 2 == 0:
-            plt.plot(result_frame_b.iloc[:, 1], result_frame_b.iloc[:, i],
-                     label='$\\delta KZF(\\lambda = {})$'.format(i-1))
-        else:
-            plt.plot(result_frame_b.iloc[:, 0], result_frame_b.iloc[:, i],
-                     label='$\\delta KZF(\\lambda = {})$'.format(i-1))
-    plt.grid(True)
-    plt.legend()
-    plt.show()
-
-
 def test_douglas(control, series_ids):
     '''control from Original Dataset;
     series_ids from Douglas Theory of Wages'''
     if control == 'CDT2S4':
-        # Total Fixed Capital in 1880 dollars (4)
+        # =====================================================================
+        # Cobb C.W., Douglas P.H. Capital Series: Total Fixed Capital in 1880 dollars (4)
+        # =====================================================================
         control_frame = fetch_usa_classic(
             'dataset_usa_cobb-douglas.zip', 'CDT2S4')
     elif control == 'J0014':
