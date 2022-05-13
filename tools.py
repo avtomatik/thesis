@@ -1608,19 +1608,16 @@ def get_data_census_c():
     # <base_year>=100
     # =========================================================================
     BASE_YEARS = (1875, 1875, 1875, 1875, 1875, 1909, 1880, 1875, 1875,)
-    SERIES_ID_YEAR_MAP = {
-        _: base_year for _, base_year in enumerate(BASE_YEARS)
-    }
     data_frame = pd.concat(
         [fetch_usa_census(ARCHIVE_NAME, series_id)
          for series_id in SERIES_IDS],
         axis=1,
         sort=True)
     for i in range(data_frame.shape[1]):
-        base_year = data_frame.index.get_loc(SERIES_ID_YEAR_MAP[i])
+        base_year = data_frame.index.get_loc(BASE_YEARS[i])
         data_frame.iloc[:, i] = data_frame.iloc[:, i].div(
             data_frame.iloc[base_year, i]).mul(100)
-    return data_frame, SERIES_ID_YEAR_MAP
+    return data_frame, BASE_YEARS
 
 
 def get_data_census_e():
@@ -1868,7 +1865,7 @@ def get_data_cobb_douglas_deflator():
     data_frame['ppi_bea'] = data_frame.loc[:, BE_SERIES_IDS[0]].div(
         data_frame.loc[:, BE_SERIES_IDS[1]]).div(data_frame.loc[2012, BE_SERIES_IDS[0]]).mul(100)
     data_frame.drop(
-        list(CS_SERIES_IDS[-2:] + BE_SERIES_IDS[:2]),
+        [*CS_SERIES_IDS[-2:], *BE_SERIES_IDS[:2]],
         axis=1,
         inplace=True
     )
@@ -1930,7 +1927,7 @@ def get_data_cobb_douglas(series_number: int = 3) -> pd.DataFrame:
         axis=1,
         sort=True
     ).dropna(axis=0)
-    data_frame.columns = [mask for mask in SERIES_IDS.values()]
+    data_frame.columns = SERIES_IDS.values()
     return data_frame.div(data_frame.iloc[0, :]).iloc[:, range(series_number)]
 
 
@@ -3020,7 +3017,7 @@ def get_data_usa_mcconnel_b():
                            for series_id in SERIES_IDS.keys()],
                            axis=1,
                            sort=True)
-    data_frame.columns = list(SERIES_IDS.values())
+    data_frame.columns = SERIES_IDS.values()
     return data_frame[data_frame.index.get_loc(1980):].reset_index(level=0)
 
 
@@ -3033,7 +3030,7 @@ def get_data_usa_mcconnel_c():
                            for series_id in SERIES_IDS.keys()],
                            axis=1,
                            sort=True)
-    data_frame.columns = list(SERIES_IDS.values())
+    data_frame.columns = SERIES_IDS.values()
     return data_frame[data_frame.index.get_loc(1980):].reset_index(level=0)
 
 
@@ -3412,14 +3409,13 @@ def kol_zur_filter(data_frame: pd.DataFrame, k: int = None) -> tuple[pd.DataFram
     return data_frame_o, data_frame_e, residuals_o, residuals_e
 
 
-def rolling_mean_filter(data_frame, k=1):
+def rolling_mean_filter(data_frame: pd.DataFrame, k: int = None) -> tuple[pd.DataFrame]:
     '''Rolling Mean Filter
         data_frame.index: Period,
         data_frame.iloc[:, 0]: Series
     '''
-    # =========================================================================
-    # TODO: Implement data_frame.shape[0] Limitation
-    # =========================================================================
+    if k is None:
+        k = data_frame.shape[0] // 2
     data_frame.reset_index(level=0, inplace=True)
     # =========================================================================
     # Odd DataFrames
@@ -3471,8 +3467,8 @@ def rolling_mean_filter(data_frame, k=1):
 
 
 def lookup(data_frame):
-    for i, series_id in enumerate(data_frame.columns):
-        series = data_frame.iloc[:, i].sort_values().unique()
+    for _, series_id in enumerate(data_frame.columns):
+        series = data_frame.iloc[:, _].sort_values().unique()
         print(f'{series_id:*^50}')
         print(series)
 
@@ -4088,50 +4084,79 @@ def plot_block_zer(source_frame):
     plot_simple_log(result_frame_b, b_0, b_1, eb)
 
 
-def plot_block_one(source_frame):
+def plot_block_one(df: pd.DataFrame) -> None:
     '''
-    source_frame.iloc[:, 0]: Period,
-    source_frame.iloc[:, 1]: Capital,
-    source_frame.iloc[:, 2]: Labor,
-    source_frame.iloc[:, 3]: Product
+    df.index: Period,
+    df.iloc[:, 0]: Capital,
+    df.iloc[:, 1]: Labor,
+    df.iloc[:, 2]: Product
     '''
     # =========================================================================
     # Labor Capital Intensity
     # =========================================================================
-    source_frame['lab_cap_int'] = source_frame.iloc[:, 1].div(
-        source_frame.iloc[:, 2])
-    labcap_frame = source_frame.iloc[:, [0, 4]]
-    semi_frame_a, semi_frame_b = rolling_mean_filter(labcap_frame)
-    semi_frame_c, semi_frame_d = kol_zur_filter(labcap_frame)
-    semi_frame_e = sing_expo_smoothing(labcap_frame, 5, 0.25)
-    semi_frame_e = semi_frame_e.iloc[:, 1]
+    df['lab_cap_int'] = df.iloc[:, 0].div(df.iloc[:, 1])
+    # =========================================================================
+    # Valid Only for _k = 2
+    # =========================================================================
+    _k = 2
+    _ses_kwargs = {
+        'window': 5,
+        'alpha': 0.25,
+
+    }
     # =========================================================================
     # Odd Frame
     # =========================================================================
     data_frame_o = pd.concat(
         [
-            semi_frame_a,
-            semi_frame_e,
+            df.iloc[:, [-1]],
+            rolling_mean_filter(df.iloc[:, [-1]], _k)[0].iloc[:, [-1]],
+            kol_zur_filter(df.iloc[:, [-1]], _k)[0].iloc[:, [-1]],
+            sing_expo_smoothing(df.iloc[:, [-1]], **_ses_kwargs),
         ],
-        axis=1, sort=True)
+        axis=1,
+    )
     # =========================================================================
     # Even Frame
     # =========================================================================
     data_frame_e = pd.concat(
         [
-            semi_frame_b,
-            semi_frame_d,
+            rolling_mean_filter(df.iloc[:, [-1]], _k)[1].iloc[:, [-1]],
+            kol_zur_filter(df.iloc[:, [-1]], _k)[1].iloc[:, [-1]],
         ],
-        axis=1, sort=True)
+        axis=1,
+    )
     plt.figure()
-    data_frame_o.iloc[:, 0].plot(linewidth=3, label='Labor Capital Intensity')
-    data_frame_o.iloc[:, 1].plot(
-        label='Single Exponential Smoothing, Window = {}, Alpha = {:, .2f}'.format(5, 0.25))
-    data_frame_e.iloc[:, 0].plot(label='Rolling Mean, {}'.format(2))
-    data_frame_e.iloc[:, 1].plot(
-        label='Kolmogorov--Zurbenko Filter, {}'.format(2))
-    plt.title('Labor Capital Intensity: Rolling Mean Filter, Kolmogorov--Zurbenko Filter &\n\
-              Single Exponential Smoothing')
+    plt.plot(
+        data_frame_o.iloc[:, 0],
+        linewidth=3,
+        label='Labor Capital Intensity'
+    )
+    plt.plot(
+        data_frame_o.iloc[:, 1],
+        label=f'Rolling Mean, {1+_k}'
+    )
+    plt.plot(
+        data_frame_o.iloc[:, 2],
+        label=f'Kolmogorov--Zurbenko Filter, {1+_k}'
+    )
+    plt.plot(
+        data_frame_o.iloc[:, 3],
+        label='Single Exponential Smoothing, Window={}, Alpha={:,.2f}'.format(
+            *_ses_kwargs.values())
+    )
+    plt.plot(
+        data_frame_e.iloc[:, 0],
+        label=f'Rolling Mean, {_k}'
+    )
+    plt.plot(
+        data_frame_e.iloc[:, 1],
+        label=f'Kolmogorov--Zurbenko Filter, {_k}'
+    )
+    plt.title(
+        'Labor Capital Intensity: Rolling Mean Filter, Kolmogorov--Zurbenko Filter &\n\
+        Single Exponential Smoothing'
+    )
     plt.xlabel('Period')
     plt.ylabel('Index')
     plt.legend()
@@ -4188,11 +4213,11 @@ def plot_block_two(source_frame):
     data_frame_o.iloc[:, 2].plot(
         label='Kolmogorov--Zurbenko Filter, {}'.format(3))
     data_frame_o.iloc[:, 3].plot(
-        label='Single Exponential Smoothing, Window = {}, Alpha = {:, .2f}'.format(5, 0.25))
+        label='Single Exponential Smoothing, Window = {}, Alpha = {:,.2f}'.format(5, 0.25))
     data_frame_o.iloc[:, 4].plot(
-        label='Single Exponential Smoothing, Window = {}, Alpha = {:, .2f}'.format(5, 0.35))
+        label='Single Exponential Smoothing, Window = {}, Alpha = {:,.2f}'.format(5, 0.35))
     data_frame_o.iloc[:, 5].plot(
-        label='Single Exponential Smoothing, Window = {}, Alpha = {:, .2f}'.format(5, 0.45))
+        label='Single Exponential Smoothing, Window = {}, Alpha = {:,.2f}'.format(5, 0.45))
     data_frame_e.iloc[:, 0].plot(label='Rolling Mean, {}'.format(2))
     data_frame_e.iloc[:, 1].plot(label='Rolling Mean, {}'.format(4))
     data_frame_e.iloc[:, 2].plot(
@@ -6365,7 +6390,7 @@ def plot_ses(source_frame, window, step):
         dse = pd.DataFrame(dse, columns=[cap])
         smooth_frame = pd.concat([smooth_frame, ses], axis=1, sort=False)
         deltas_frame = pd.concat([deltas_frame, dse], axis=1, sort=False)
-        plt.plot(source_frame.iloc[:, 0], ses, label='Smoothing: $w = {}, \\alpha={:, .2f}$'.format(
+        plt.plot(source_frame.iloc[:, 0], ses, label='Smoothing: $w = {}, \\alpha={:,.2f}$'.format(
             window, alpha))
 
         if k >= 0.5 + 0.75/step:  # 0.25 + step*(k-0.5) >= 1
