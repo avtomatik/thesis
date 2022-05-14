@@ -2988,18 +2988,19 @@ def get_data_usa_frb_ip():
     return data_frame.groupby(data_frame.columns[-1]).mean()
 
 
-def get_data_usa_frb_ms():
-    """Indexed Money Stock Measures (H.6) Series:
-    https://www.federalreserve.gov/datadownload/Download.aspx?rel=h6&series=5398d8d1734b19f731aba3105eb36d47&filetype=csv&label=include&layout=seriescolumn&from=01/01/1959&to=12/31/2018"""
-    FILE_NAME = 'dataset_usa_FRB_H6.csv'
-    data_frame = pd.read_csv(FILE_NAME, skiprows=5, usecols=range(2))
-    data_frame[['period',
-                'month', ]] = data_frame.iloc[:, 0].str.split('-', expand=True)
-    data_frame.columns = [re.sub(r"[,@\'?\.$%_]",
-                                 "",
-                                 column) for column in data_frame.columns]
-    data_frame.iloc[:, -2] = data_frame.iloc[:, -2].astype(int)
-    return data_frame.groupby(data_frame.columns[-2]).mean()
+def get_data_usa_frb_ms() -> pd.DataFrame:
+    ''''Indexed Money Stock Measures (H.6) Series'''
+    URL = 'https://www.federalreserve.gov/datadownload/Output.aspx?rel=H6&series=5398d8d1734b19f731aba3105eb36d47&lastobs=&from=01/01/1959&to=12/31/2018&filetype=csv&label=include&layout=seriescolumn'
+    data_frame = pd.read_csv(
+        io.BytesIO(requests.get(URL).content),
+        names=['period', 'm1_m'],
+        index_col=0,
+        usecols=range(2),
+        skiprows=6,
+        parse_dates=True,
+        thousands=','
+    )
+    return data_frame.groupby(data_frame.index.year).mean()
 
 
 def get_data_usa_mcconnel_a():
