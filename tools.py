@@ -957,22 +957,22 @@ def fetch_world_bank(file_name, series_id):
 
 
 def get_data_archived() -> pd.DataFrame:
-    ARCHIVES = (
+    ARCHIVE_NAMES = (
         'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
         'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
     )
-    WBS = (
+    WB_NAMES = (
         'Section1ALL_Hist.xls',
         'Section1all_xls.xls',
         'Section5ALL_Hist.xls',
         'Section5all_xls.xls',
     )
-    SHS = (
+    SH_NAMES = (
         '10105 Ann',
         '10106 Ann',
         '50900 Ann',
     )
-    IDS = (
+    SERIES_IDS = (
         # =====================================================================
         # Nominal Investment Series: A006RC1, 1929--2012
         # =====================================================================
@@ -991,16 +991,16 @@ def get_data_archived() -> pd.DataFrame:
         [
             pd.concat(
                 [
-                    fetch_usa_bea(ARCHIVES[0], _wb, _sh, _id)
-                    for _wb, _sh, _id in zip(tuple(WBS[2*(_ // 2)] for _ in range(len(IDS))), SHS, IDS)
+                    fetch_usa_bea(ARCHIVE_NAMES[0], _wb, _sh, _id)
+                    for _wb, _sh, _id in zip(tuple(WB_NAMES[2*(_ // 2)] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
                 ],
                 axis=1,
                 sort=True
             ),
             pd.concat(
                 [
-                    fetch_usa_bea(ARCHIVES[1], _wb, _sh, _id)
-                    for _wb, _sh, _id in zip(tuple(WBS[1 + 2*(_ // 2)] for _ in range(len(IDS))), SHS, IDS)
+                    fetch_usa_bea(ARCHIVE_NAMES[1], _wb, _sh, _id)
+                    for _wb, _sh, _id in zip(tuple(WB_NAMES[1 + 2*(_ // 2)] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
                 ],
                 axis=1,
                 sort=True
@@ -1051,19 +1051,19 @@ def get_data_bea_def():
 
 
 def get_data_bea_gdp():
-    ARCHIVES = (
+    ARCHIVE_NAMES = (
         'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
         'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
     )
-    WBS = (
+    WB_NAMES = (
         'Section1ALL_Hist.xls',
         'Section1all_xls.xls',
     )
-    SHS = (
+    SH_NAMES = (
         '10105 Ann',
         '10106 Ann',
     )
-    IDS = (
+    SERIES_IDS = (
         # =====================================================================
         # Nominal Gross Domestic Product Series: A191RC1, 1929--2012
         # =====================================================================
@@ -1077,16 +1077,16 @@ def get_data_bea_gdp():
         [
             pd.concat(
                 [
-                    fetch_usa_bea(ARCHIVES[0], WBS[0], sh, _id)
-                    for sh, _id in zip(SHS, IDS)
+                    fetch_usa_bea(ARCHIVE_NAMES[0], WB_NAMES[0], sh, _id)
+                    for sh, _id in zip(SH_NAMES, SERIES_IDS)
                 ],
                 axis=1,
                 sort=True
             ),
             pd.concat(
                 [
-                    fetch_usa_bea(ARCHIVES[1], WBS[1], sh, _id)
-                    for sh, _id in zip(SHS, IDS)
+                    fetch_usa_bea(ARCHIVE_NAMES[1], WB_NAMES[1], sh, _id)
+                    for sh, _id in zip(SH_NAMES, SERIES_IDS)
                 ],
                 axis=1,
                 sort=True
@@ -1355,22 +1355,22 @@ def get_data_can():
 
 
 def get_data_capital_combined_archived():
-    ARCHIVES = (
+    ARCHIVE_NAMES = (
         'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
         'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
     )
-    WBS = (
+    WB_NAMES = (
         'Section1ALL_Hist.xls',
         'Section1all_xls.xls',
         'Section5ALL_Hist.xls',
         'Section5all_xls.xls',
     )
-    SHS = (
+    SH_NAMES = (
         '10105 Ann',
         '10106 Ann',
         '50900 Ann',
     )
-    IDS = (
+    SERIES_IDS = (
         # =====================================================================
         # Nominal Investment Series: A006RC1, 1929--2012
         # =====================================================================
@@ -1402,12 +1402,12 @@ def get_data_capital_combined_archived():
         [
             pd.concat(
                 [
-                    fetch_usa_bea(ARCHIVES[0], _wb, _sh, _id)
+                    fetch_usa_bea(ARCHIVE_NAMES[0], _wb, _sh, _id)
                     for _wb, _sh, _id in zip(
-                        tuple(WBS[2*(_ // len(SHS))] for _ in range(len(IDS))),
-                        tuple(SHS[2*(_ // len(SHS)) + ((_ - 1) % len(SHS)) *
-                                  (2 - ((_ - 1) % len(SHS)))] for _ in range(len(IDS))),
-                        IDS,
+                        tuple(WB_NAMES[2*(_ // len(SH_NAMES))] for _ in range(len(SERIES_IDS))),
+                        tuple(SH_NAMES[2*(_ // len(SH_NAMES)) + ((_ - 1) % len(SH_NAMES)) *
+                                  (2 - ((_ - 1) % len(SH_NAMES)))] for _ in range(len(SERIES_IDS))),
+                        SERIES_IDS,
                     )
                 ],
                 axis=1,
@@ -1415,13 +1415,13 @@ def get_data_capital_combined_archived():
             ),
             pd.concat(
                 [
-                    fetch_usa_bea(ARCHIVES[1], _wb, _sh, _id)
+                    fetch_usa_bea(ARCHIVE_NAMES[1], _wb, _sh, _id)
                     for _wb, _sh, _id in zip(
-                        tuple(WBS[1 + 2*(_ // len(SHS))]
-                              for _ in range(len(IDS))),
-                        tuple(SHS[2*(_ // len(SHS)) + ((_ - 1) % len(SHS)) *
-                                  (2 - ((_ - 1) % len(SHS)))] for _ in range(len(IDS))),
-                        IDS,
+                        tuple(WB_NAMES[1 + 2*(_ // len(SH_NAMES))]
+                              for _ in range(len(SERIES_IDS))),
+                        tuple(SH_NAMES[2*(_ // len(SH_NAMES)) + ((_ - 1) % len(SH_NAMES)) *
+                                  (2 - ((_ - 1) % len(SH_NAMES)))] for _ in range(len(SERIES_IDS))),
+                        SERIES_IDS,
                     )
                 ],
                 axis=1,
@@ -2149,7 +2149,7 @@ def get_data_combined():
     # =========================================================================
     URL = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
     _data = fetch_usa_bea_from_url(URL)
-    IDS = (
+    SERIES_IDS = (
         'A006RC',
         'A006RD',
         'A008RC',
@@ -2163,12 +2163,12 @@ def get_data_combined():
     )
     _data_nipa = pd.concat(
         [
-            fetch_usa_bea_from_loaded(_data, _id) for _id in IDS
+            fetch_usa_bea_from_loaded(_data, _id) for _id in SERIES_IDS
         ],
         axis=1,
         sort=True
     )
-    IDS = (
+    SERIES_IDS = (
         'H4313C',
         'J4313C',
         'A4313C',
@@ -2176,18 +2176,18 @@ def get_data_combined():
     )
     _labor_frame = pd.concat(
         [
-            fetch_usa_bea_from_loaded(_data, _id) for _id in IDS
+            fetch_usa_bea_from_loaded(_data, _id) for _id in SERIES_IDS
         ],
         axis=1,
         sort=True
     )
     _labor_frame['mfg_labor'] = _labor_frame.mean(axis=1)
     _labor_frame = _labor_frame.iloc[:, [-1]]
-    ARCHIVES = (
+    ARCHIVE_NAMES = (
         'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1929_1969.zip',
         'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1969_2015.zip',
     )
-    WBS = (
+    WB_NAMES = (
         'Section5ALL_Hist.xls',
         'Section5all_xls.xls',
     )
@@ -2197,7 +2197,7 @@ def get_data_combined():
     # =========================================================================
     _data_sfat = pd.concat(
         [
-            fetch_usa_bea(_archive, _wb, SH, ID) for _archive, _wb in zip(ARCHIVES, WBS)
+            fetch_usa_bea(_archive, _wb, SH, ID) for _archive, _wb in zip(ARCHIVE_NAMES, WB_NAMES)
         ],
         sort=True
     ).drop_duplicates()
@@ -2205,18 +2205,18 @@ def get_data_combined():
     # US BEA Fixed Assets Series Tests
     # =========================================================================
     ARCHIVE_NAME = 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip'
-    WBS = (
+    WB_NAMES = (
         'Section1ALL_xls.xls',
         'Section2ALL_xls.xls',
     )
-    SHS = (
+    SH_NAMES = (
         '105 Ann',
         '106 Ann',
         '101 Ann',
         '203 Ann',
         '202 Ann',
     )
-    IDS = (
+    SERIES_IDS = (
         # =====================================================================
         # Investment in Fixed Assets, Private, i3ptotl1es000, 1901--2016
         # =====================================================================
@@ -2241,7 +2241,7 @@ def get_data_combined():
     _data_sfat_ = pd.concat(
         [
             fetch_usa_bea(ARCHIVE_NAME, _wb, _sh, _id) for _wb, _sh, _id in zip(
-                tuple(WBS[_ // 3] for _ in range(len(IDS))), SHS, IDS)
+                tuple(WB_NAMES[_ // 3] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
         ],
         axis=1,
         sort=True
@@ -2265,17 +2265,17 @@ def get_data_combined():
 
 def get_data_combined_archived():
     '''Version: 02 December 2013'''
-    ARCHIVES = (
+    ARCHIVE_NAMES = (
         'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
         'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
     )
-    WBS = (
+    WB_NAMES = (
         'Section1ALL_Hist.xls',
         'Section1all_xls.xls',
         'Section5ALL_Hist.xls',
         'Section5all_xls.xls',
     )
-    SHS = (
+    SH_NAMES = (
         '10103 Ann',
         '10105 Ann',
         '10105 Ann',
@@ -2288,7 +2288,7 @@ def get_data_combined_archived():
         '50206 Ann',
         '50900 Ann',
     )
-    IDS = (
+    SERIES_IDS = (
         # =====================================================================
         # Gross Domestic Product, 2005=100: B191RA3, 1929--2012
         # =====================================================================
@@ -2339,16 +2339,16 @@ def get_data_combined_archived():
         [
             pd.concat(
                 [
-                    fetch_usa_bea(ARCHIVES[0], _wb, _sh, _id) for _wb, _sh, _id in zip(
-                        tuple(WBS[2*(_ // 8)] for _ in range(len(IDS))), SHS, IDS)
+                    fetch_usa_bea(ARCHIVE_NAMES[0], _wb, _sh, _id) for _wb, _sh, _id in zip(
+                        tuple(WB_NAMES[2*(_ // 8)] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
                 ],
                 axis=1,
                 sort=True
             ),
             pd.concat(
                 [
-                    fetch_usa_bea(ARCHIVES[1], _wb, _sh, _id) for _wb, _sh, _id in zip(
-                        tuple(WBS[1 + 2*(_ // 8)] for _ in range(len(IDS))), SHS, IDS)
+                    fetch_usa_bea(ARCHIVE_NAMES[1], _wb, _sh, _id) for _wb, _sh, _id in zip(
+                        tuple(WB_NAMES[1 + 2*(_ // 8)] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
                 ],
                 axis=1,
                 sort=True
@@ -2357,18 +2357,18 @@ def get_data_combined_archived():
         sort=True
     ).drop_duplicates()
     ARCHIVE_NAME = 'dataset_usa_bea-sfat-release-2012-08-15-SectionAll_xls.zip'
-    WBS = (
+    WB_NAMES = (
         'Section1ALL_xls.xls',
         'Section2ALL_xls.xls',
     )
-    SHS = (
+    SH_NAMES = (
         '105 Ann',
         '106 Ann',
         '101 Ann',
         '203 Ann',
         '202 Ann',
     )
-    IDS = (
+    SERIES_IDS = (
         # =====================================================================
         # Investment in Fixed Assets and Consumer Durable Goods, Private, i3ptotl1es000, 1901--2011
         # =====================================================================
@@ -2393,7 +2393,7 @@ def get_data_combined_archived():
     _data_sfat = pd.concat(
         [
             fetch_usa_bea(ARCHIVE_NAME, _wb, _sh, _id) for _wb, _sh, _id in zip(
-                tuple(WBS[_ // 3] for _ in range(len(IDS))), SHS, IDS)
+                tuple(WB_NAMES[_ // 3] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
         ],
         axis=1,
         sort=True
@@ -2429,24 +2429,24 @@ def get_data_combined_archived():
 
 def get_data_common_archived():
     """Data Fetch"""
-    ARCHIVES = (
+    ARCHIVE_NAMES = (
         'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1929_1969.zip',
         'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1969_2015.zip',
     )
-    WBS = (
+    WB_NAMES = (
         'Section1ALL_Hist.xls',
         'Section1all_xls.xls',
         'Section5ALL_Hist.xls',
         'Section5all_xls.xls',
     )
-    SHS = (
+    SH_NAMES = (
         '10105 Ann',
         '10106 Ann',
         '10109 Ann',
         '11200 Ann',
         '51000 Ann',
     )
-    IDS = (
+    SERIES_IDS = (
         # =====================================================================
         # Nominal Gross Domestic Product Series: A191RC1, 1929--2014
         # =====================================================================
@@ -2472,16 +2472,16 @@ def get_data_common_archived():
         [
             pd.concat(
                 [
-                    fetch_usa_bea(ARCHIVES[0], _wb, _sh, _id) for _wb, _sh, _id in zip(
-                        tuple(WBS[2*(_ // 4)] for _ in range(len(IDS))), SHS, IDS)
+                    fetch_usa_bea(ARCHIVE_NAMES[0], _wb, _sh, _id) for _wb, _sh, _id in zip(
+                        tuple(WB_NAMES[2*(_ // 4)] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
                 ],
                 axis=1,
                 sort=True
             ),
             pd.concat(
                 [
-                    fetch_usa_bea(ARCHIVES[1], _wb, _sh, _id) for _wb, _sh, _id in zip(
-                        tuple(WBS[1 + 2*(_ // 4)] for _ in range(len(IDS))), SHS, IDS)
+                    fetch_usa_bea(ARCHIVE_NAMES[1], _wb, _sh, _id) for _wb, _sh, _id in zip(
+                        tuple(WB_NAMES[1 + 2*(_ // 4)] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
                 ],
                 axis=1,
                 sort=True
@@ -2489,20 +2489,20 @@ def get_data_common_archived():
         ],
         sort=True
     ).drop_duplicates()
-    _data_nipa.loc[:, [IDS[2]]] = _data_nipa.loc[:, [IDS[2]]].rdiv(100)
+    _data_nipa.loc[:, [SERIES_IDS[2]]] = _data_nipa.loc[:, [SERIES_IDS[2]]].rdiv(100)
 
     ARCHIVE_NAME = 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip'
-    WBS = (
+    WB_NAMES = (
         'Section2ALL_xls.xls',
         'Section4ALL_xls.xls',
     )
-    SHS = (
+    SH_NAMES = (
         '201 Ann',
         '203 Ann',
         '401 Ann',
         '403 Ann',
     )
-    IDS = (
+    SERIES_IDS = (
         # =====================================================================
         # Fixed Assets Series: k1ntotl1si000, 1925--2016
         # =====================================================================
@@ -2523,7 +2523,7 @@ def get_data_common_archived():
     _data_sfat = pd.concat(
         [
             fetch_usa_bea(ARCHIVE_NAME, _wb, _sh, _id) for _wb, _sh, _id in zip(
-                tuple(WBS[_ // 2] for _ in range(len(IDS))), SHS, IDS)
+                tuple(WB_NAMES[_ // 2] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
         ],
         axis=1,
         sort=True
@@ -2574,23 +2574,23 @@ def get_data_usa_sahr_infcf():
 
 
 def get_data_local():
-    ARCHIVES = (
+    ARCHIVE_NAMES = (
         'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
         'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
     )
-    WBS = (
+    WB_NAMES = (
         'Section1ALL_Hist.xls',
         'Section1all_xls.xls',
         'Section5ALL_Hist.xls',
         'Section5all_xls.xls',
     )
-    SHS = (
+    SH_NAMES = (
         '10105 Ann',
         '10105 Ann',
         '10106 Ann',
         '50900 Ann',
     )
-    IDS = (
+    SERIES_IDS = (
         # =====================================================================
         # Nominal Investment Series: A006RC1, 1929--2012
         # =====================================================================
@@ -2612,14 +2612,14 @@ def get_data_local():
     _data_nipa = pd.concat(
         [
             pd.concat(
-                [fetch_usa_bea(ARCHIVES[0], _wb, _sh, _id)
-                 for _wb, _sh, _id in zip(tuple(WBS[2*(_ // 3)] for _ in range(len(IDS))), SHS, IDS)],
+                [fetch_usa_bea(ARCHIVE_NAMES[0], _wb, _sh, _id)
+                 for _wb, _sh, _id in zip(tuple(WB_NAMES[2*(_ // 3)] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)],
                 axis=1,
                 sort=True,
             ),
             pd.concat(
-                [fetch_usa_bea(ARCHIVES[1], _wb, _sh, _id)
-                 for _wb, _sh, _id in zip(tuple(WBS[1 + 2*(_ // 3)] for _ in range(len(IDS))), SHS, IDS)],
+                [fetch_usa_bea(ARCHIVE_NAMES[1], _wb, _sh, _id)
+                 for _wb, _sh, _id in zip(tuple(WB_NAMES[1 + 2*(_ // 3)] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)],
                 axis=1,
                 sort=True,
             ),
@@ -2660,7 +2660,7 @@ def get_dataset():
 def get_data_updated():
     URL = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
     _data = fetch_usa_bea_from_url(URL)
-    IDS = (
+    SERIES_IDS = (
         'A006RC',
         'A006RD',
         'A191RC',
@@ -2668,18 +2668,18 @@ def get_data_updated():
     )
     _data_nipa = pd.concat(
         [
-            fetch_usa_bea_from_loaded(_data, _id) for _id in IDS
+            fetch_usa_bea_from_loaded(_data, _id) for _id in SERIES_IDS
         ],
         axis=1,
         sort=True
     )
     ARCHIVE_NAME = 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip'
-    WB = 'Section4ALL_xls.xls'
-    SHS = (
+    WB_NAME = 'Section4ALL_xls.xls'
+    SH_NAMES = (
         '403 Ann',
         '402 Ann',
     )
-    IDS = (
+    SERIES_IDS = (
         # =====================================================================
         # Not Used: Fixed Assets: k3n31gd1es000, 1925--2016, Table 4.3. Historical-Cost Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
         # =====================================================================
@@ -2691,7 +2691,7 @@ def get_data_updated():
     )
     _data_sfat = pd.concat(
         [
-            fetch_usa_bea(ARCHIVE_NAME, WB, _sh, _id) for _sh, _id in zip(SHS, IDS)
+            fetch_usa_bea(ARCHIVE_NAME, WB_NAME, _sh, _id) for _sh, _id in zip(SH_NAMES, SERIES_IDS)
         ],
         axis=1,
         sort=True
@@ -2730,21 +2730,21 @@ def get_data_usa_bea_labor():
     # =========================================================================
     # Labor Series: A4601C0, 1929--2011
     # =========================================================================
-    ARCHIVES = (
+    ARCHIVE_NAMES = (
         'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
         'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
         'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
         'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
         'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
     )
-    WBS = (
+    WB_NAMES = (
         'Section6ALL_Hist.xls',
         'Section6ALL_Hist.xls',
         'Section6all_xls.xls',
         'Section6all_xls.xls',
         'Section6all_xls.xls',
     )
-    SHS = (
+    SH_NAMES = (
         '60800A Ann',
         '60800B Ann',
         '60800B Ann',
@@ -2754,7 +2754,7 @@ def get_data_usa_bea_labor():
     ID = 'A4601C0'
     data_frame = pd.concat(
         [fetch_usa_bea(archive_name, wb, sh, ID)
-         for archive_name, wb, sh in zip(ARCHIVES, WBS, SHS)],
+         for archive_name, wb, sh in zip(ARCHIVE_NAMES, WB_NAMES, SH_NAMES)],
         axis=1,
         sort=True)
     data_frame[ID] = data_frame.mean(axis=1)
@@ -2769,28 +2769,28 @@ def get_data_usa_bea_labor_mfg():
     # Manufacturing Labor Series: A4313C0, 1987--2000
     # Manufacturing Labor Series: N4313C0, 1998--2011
     # =========================================================================
-    ARCHIVES = (
+    ARCHIVE_NAMES = (
         'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
         'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
         'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
         'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
         'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
     )
-    WBS = (
+    WB_NAMES = (
         'Section6ALL_Hist.xls',
         'Section6ALL_Hist.xls',
         'Section6all_xls.xls',
         'Section6all_xls.xls',
         'Section6all_xls.xls',
     )
-    SHS = (
+    SH_NAMES = (
         '60500A Ann',
         '60500B Ann',
         '60500B Ann',
         '60500C Ann',
         '60500D Ann',
     )
-    IDS = (
+    SERIES_IDS = (
         'H4313C0',
         'J4313C0',
         'J4313C0',
@@ -2799,7 +2799,7 @@ def get_data_usa_bea_labor_mfg():
     )
     data_frame = pd.concat(
         [fetch_usa_bea(archive_name, wb, sh, _id)
-         for archive_name, wb, sh, _id in zip(ARCHIVES, WBS, SHS, IDS)],
+         for archive_name, wb, sh, _id in zip(ARCHIVE_NAMES, WB_NAMES, SH_NAMES, SERIES_IDS)],
         axis=1,
         sort=True)
     data_frame['mfg_labor'] = data_frame.mean(axis=1)
@@ -3035,21 +3035,21 @@ def get_data_usa_mcconnel_c():
 
 
 def get_data_usa_xlsm():
-    ARCHIVES = (
+    ARCHIVE_NAMES = (
         'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
         'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
     )
-    WBS = (
+    WB_NAMES = (
         'Section1ALL_Hist.xls',
         'Section1all_xls.xls',
     )
-    SHS = (
+    SH_NAMES = (
         '10105 Ann',
         '10105 Ann',
         '10106 Ann',
         '10705 Ann',
     )
-    IDS = (
+    SERIES_IDS = (
         # =====================================================================
         # Nominal Investment Series: A006RC1, 1929--2012
         # =====================================================================
@@ -3070,14 +3070,14 @@ def get_data_usa_xlsm():
     _data = pd.concat(
         [
             pd.concat(
-                [fetch_usa_bea(ARCHIVES[0], WBS[0], _sh, _id)
-                 for _sh, _id in zip(SHS, IDS)],
+                [fetch_usa_bea(ARCHIVE_NAMES[0], WB_NAMES[0], _sh, _id)
+                 for _sh, _id in zip(SH_NAMES, SERIES_IDS)],
                 axis=1,
                 sort=True
             ),
             pd.concat(
-                [fetch_usa_bea(ARCHIVES[1], WBS[1], _sh, _id)
-                 for _sh, _id in zip(SHS, IDS)],
+                [fetch_usa_bea(ARCHIVE_NAMES[1], WB_NAMES[1], _sh, _id)
+                 for _sh, _id in zip(SH_NAMES, SERIES_IDS)],
                 axis=1,
                 sort=True
             ),
@@ -3099,11 +3099,11 @@ def get_data_version_a():
     Returns:
         _data_a: Capital, Labor, Product;
         _data_b: Capital, Labor, Product Adjusted to Capacity Utilisation'''
-    ARCHIVES = (
+    ARCHIVE_NAMES = (
         'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
         'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
     )
-    WBS = (
+    WB_NAMES = (
         'Section1ALL_Hist.xls',
         'Section1all_xls.xls',
     )
@@ -3129,7 +3129,7 @@ def get_data_version_a():
             # =================================================================
             pd.concat(
                 [
-                    fetch_usa_bea(_archive_name, _wb, SH, ID) for _archive_name, _wb in zip(ARCHIVES, WBS)
+                    fetch_usa_bea(_archive_name, _wb, SH, ID) for _archive_name, _wb in zip(ARCHIVE_NAMES, WB_NAMES)
                 ],
                 sort=True).drop_duplicates(),
         ],
@@ -3149,7 +3149,7 @@ def get_data_version_a():
             # =================================================================
             pd.concat(
                 [
-                    fetch_usa_bea(_archive_name, _wb, SH, ID) for _archive_name, _wb in zip(ARCHIVES, WBS)
+                    fetch_usa_bea(_archive_name, _wb, SH, ID) for _archive_name, _wb in zip(ARCHIVE_NAMES, WB_NAMES)
                 ],
                 sort=True).drop_duplicates(),
             # =================================================================
@@ -3305,7 +3305,6 @@ def kol_zur_filter(data_frame: pd.DataFrame, k: int = None) -> tuple[pd.DataFram
             data_frame,
         ],
         axis=1,
-        sort=True
     )
     # =========================================================================
     # DataFrame for Kolmogorov--Zurbenko Filter Results: Even
@@ -3315,7 +3314,6 @@ def kol_zur_filter(data_frame: pd.DataFrame, k: int = None) -> tuple[pd.DataFram
             data_frame.iloc[:, [0]].rolling(2).mean(),
         ],
         axis=1,
-        sort=True
     )
     # =========================================================================
     # DataFrame for Kolmogorov--Zurbenko Filter Residuals: Odd
@@ -3328,7 +3326,6 @@ def kol_zur_filter(data_frame: pd.DataFrame, k: int = None) -> tuple[pd.DataFram
             data_frame.iloc[:, [0]].rolling(2).mean(),
         ],
         axis=1,
-        sort=True
     )
     # =========================================================================
     # DataFrame for Kolmogorov--Zurbenko Filter Residuals: Even
@@ -3341,7 +3338,6 @@ def kol_zur_filter(data_frame: pd.DataFrame, k: int = None) -> tuple[pd.DataFram
             data_frame.iloc[:, [0]],
         ],
         axis=1,
-        sort=True
     )
     chunk = data_frame.iloc[:, [1]]
     for _ in range(k):
@@ -3356,7 +3352,6 @@ def kol_zur_filter(data_frame: pd.DataFrame, k: int = None) -> tuple[pd.DataFram
                     chunk.shift(-((1 + _) // 2)),
                 ],
                 axis=1,
-                sort=True
             )
             data_frame_o.columns = [*data_frame_o.columns[:-1],
                                     f'{data_frame.columns[1]}_{hex(2 + _)}', ]
@@ -3370,7 +3365,6 @@ def kol_zur_filter(data_frame: pd.DataFrame, k: int = None) -> tuple[pd.DataFram
                                       ].div(data_frame_o.iloc[:, [-2]].shift(1)).sub(1),
                 ],
                 axis=1,
-                sort=True
             )
         else:
             # =================================================================
@@ -3382,7 +3376,6 @@ def kol_zur_filter(data_frame: pd.DataFrame, k: int = None) -> tuple[pd.DataFram
                     chunk.shift(-((1 + _) // 2)),
                 ],
                 axis=1,
-                sort=True
             )
             data_frame_e.columns = [*data_frame_e.columns[:-1],
                                     f'{data_frame.columns[1]}_{hex(2 + _)}', ]
@@ -3396,7 +3389,6 @@ def kol_zur_filter(data_frame: pd.DataFrame, k: int = None) -> tuple[pd.DataFram
                                       ].shift(-1).div(data_frame_e.iloc[:, [-1]]).sub(1),
                 ],
                 axis=1,
-                sort=True
             )
     data_frame_o.set_index(data_frame_o.columns[0], inplace=True)
     data_frame_e.set_index(data_frame_e.columns[0], inplace=True)
@@ -4852,8 +4844,8 @@ def plot_usa_nber(file_name, method):
     else:
         return
     plt.figure()
-    for i, series_id in enumerate(data_frame.columns):
-        plt.plot(data_frame.iloc[:, i], label=series_id)
+    for _, series_id in enumerate(data_frame.columns):
+        plt.plot(data_frame.iloc[:, _], label=series_id)
         plt.title(title)
         plt.xlabel('Period')
         plt.ylabel('Dimension')
@@ -4948,12 +4940,12 @@ def test_data_consistency_b():
     # =========================================================================
     ARCHIVE_NAME = 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip'
     WB_NAME = 'Section2ALL_xls.xls'
-    SHS = (
+    SH_NAMES = (
         '201 Ann',
         '202 Ann',
         '203 Ann',
     )
-    IDS = (
+    SERIES_IDS = (
         'k1ntotl1si000',
         'kcntotl1si000',
         'k3ntotl1si000',
@@ -4961,7 +4953,7 @@ def test_data_consistency_b():
     data_frame = pd.concat(
         [
             fetch_usa_bea(ARCHIVE_NAME, WB_NAME, sh, _id)
-            for sh, _id in zip(SHS, IDS)
+            for sh, _id in zip(SH_NAMES, SERIES_IDS)
         ],
         axis=1,
         sort=True
@@ -5015,40 +5007,40 @@ def test_data_consistency_d():
     # =========================================================================
     ARCHIVE_NAME = 'dataset_usa_bea-release-2019-12-19-Survey.zip'
     WB_NAME = 'Section1all_xls.xlsx'
-    SHS = ('T10705-A', 'T11200-A', 'T10705-A',)
+    SH_NAMES = ('T10705-A', 'T11200-A', 'T10705-A',)
     SERIES_IDS = ('A051RC', 'A052RC', 'A262RC',)
     test_procedure(generate_kwargs_list(
-        ARCHIVE_NAME, WB_NAME, SHS, SERIES_IDS))
+        ARCHIVE_NAME, WB_NAME, SH_NAMES, SERIES_IDS))
     # =========================================================================
     # Tested: `Government` = `Federal` + `State and local`
     # =========================================================================
     ARCHIVE_NAME = 'dataset_usa_bea-release-2019-12-19-Survey.zip'
     WB_NAME = 'Section1all_xls.xlsx'
-    SHS = ('T10105-A', 'T10105-A', 'T10105-A',)
+    SH_NAMES = ('T10105-A', 'T10105-A', 'T10105-A',)
     SERIES_IDS = ('A822RC', 'A823RC', 'A829RC',)
     test_procedure(generate_kwargs_list(
-        ARCHIVE_NAME, WB_NAME, SHS, SERIES_IDS))
+        ARCHIVE_NAME, WB_NAME, SH_NAMES, SERIES_IDS))
     ARCHIVE_NAME = 'dataset_usa_bea-release-2019-12-19-Survey.zip'
     WB_NAME = 'Section3all_xls.xlsx'
-    SHS = ('T30100-A', 'T30200-A', 'T30300-A',)
+    SH_NAMES = ('T30100-A', 'T30200-A', 'T30300-A',)
     SERIES_IDS = ('A955RC', 'A957RC', 'A991RC',)
     test_procedure(generate_kwargs_list(
-        ARCHIVE_NAME, WB_NAME, SHS, SERIES_IDS))
+        ARCHIVE_NAME, WB_NAME, SH_NAMES, SERIES_IDS))
     # # =========================================================================
     # # Tested: `Federal` = `National defense` + `Nondefense`
     # # =========================================================================
     ARCHIVE_NAME = 'dataset_usa_bea-release-2019-12-19-Survey.zip'
     WB_NAME = 'Section1all_xls.xlsx'
-    SHS = ('T10105-A', 'T10105-A', 'T10105-A',)
+    SH_NAMES = ('T10105-A', 'T10105-A', 'T10105-A',)
     SERIES_IDS = ('A823RC', 'A824RC', 'A825RC',)
     test_procedure(generate_kwargs_list(
-        ARCHIVE_NAME, WB_NAME, SHS, SERIES_IDS))
+        ARCHIVE_NAME, WB_NAME, SH_NAMES, SERIES_IDS))
     ARCHIVE_NAME = 'dataset_usa_bea-release-2019-12-19-Survey.zip'
     WB_NAME = 'Section3all_xls.xlsx'
-    SHS = ('T30200-A', 'T30905-A', 'T30905-A',)
+    SH_NAMES = ('T30200-A', 'T30905-A', 'T30905-A',)
     SERIES_IDS = ('A957RC', 'A997RC', 'A542RC',)
     test_procedure(generate_kwargs_list(
-        ARCHIVE_NAME, WB_NAME, SHS, SERIES_IDS))
+        ARCHIVE_NAME, WB_NAME, SH_NAMES, SERIES_IDS))
     # =========================================================================
     # Fixed Assets Data Tests
     # =========================================================================
@@ -6053,7 +6045,7 @@ def sing_expo_smoothing(data_frame: pd.DataFrame, window: int = 5, alpha: float 
     for _ in range(data_frame.shape[0])[1:]:
         data_frame.iloc[_, -1] = alpha * \
             data_frame.iloc[_, -2] + (1-alpha)*data_frame.iloc[_ - 1, -1]
-    return data_frame
+    return data_frame.iloc[:, [-1]]
 
 
 def results_delivery_a(intervals, coefficients):
