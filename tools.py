@@ -4092,6 +4092,9 @@ def plot_block_one(df: pd.DataFrame) -> None:
     df.iloc[:, 2]: Product
     '''
     # =========================================================================
+    # TODO: Increase Cohesion
+    # =========================================================================
+    # =========================================================================
     # Labor Capital Intensity
     # =========================================================================
     df['lab_cap_int'] = df.iloc[:, 0].div(df.iloc[:, 1])
@@ -4146,12 +4149,11 @@ def plot_block_one(df: pd.DataFrame) -> None:
             *_ses_kwargs.values())
     )
     plt.plot(
-        data_frame_e.iloc[:, 0],
-        label=f'Rolling Mean, {_k}'
-    )
-    plt.plot(
-        data_frame_e.iloc[:, 1],
-        label=f'Kolmogorov--Zurbenko Filter, {_k}'
+        data_frame_e,
+        label=[
+            f'Rolling Mean, {_k}',
+            f'Kolmogorov--Zurbenko Filter, {_k}',
+        ]
     )
     plt.title(
         'Labor Capital Intensity: Rolling Mean Filter, Kolmogorov--Zurbenko Filter &\n\
@@ -4164,68 +4166,101 @@ def plot_block_one(df: pd.DataFrame) -> None:
     plt.show()
 
 
-def plot_block_two(source_frame):
+def plot_block_two(df: pd.DataFrame) -> None:
     '''
-    source_frame.iloc[:, 0]: Period,
-    source_frame.iloc[:, 1]: Capital,
-    source_frame.iloc[:, 2]: Labor,
-    source_frame.iloc[:, 3]: Product
+    df.index: Period,
+    df.iloc[:, 0]: Capital,
+    df.iloc[:, 1]: Labor,
+    df.iloc[:, 2]: Product
     '''
+    # =========================================================================
+    # TODO: Increase Cohesion
+    # =========================================================================
     # =========================================================================
     # Labor Productivity
     # =========================================================================
-    source_frame['lab_product'] = source_frame.iloc[:, 3].div(
-        source_frame.iloc[:, 2])
-    labpro_frame = source_frame.iloc[:, [0, 4]]
-    semi_frame_a, semi_frame_b = rolling_mean_filter(labpro_frame, 3)
-    semi_frame_c, semi_frame_d = kol_zur_filter(labpro_frame, 3)
-    semi_frame_c = semi_frame_c.iloc[:, 1]
-    semi_frame_e = sing_expo_smoothing(labpro_frame, 5, 0.25)
-    semi_frame_e = semi_frame_e.iloc[:, 1]
-    semi_frame_f = sing_expo_smoothing(labpro_frame, 5, 0.35)
-    semi_frame_f = semi_frame_f.iloc[:, 1]
-    semi_frame_g = sing_expo_smoothing(labpro_frame, 5, 0.45)
-    semi_frame_g = semi_frame_g.iloc[:, 1]
+    df['lab_product'] = df.iloc[:, 2].div(df.iloc[:, 1])
+    _k = 3
+    _SES_KWARGS = (
+        {
+            'window': 5,
+            'alpha': 0.25,
+        },
+        {
+            'window': 5,
+            'alpha': 0.35,
+        },
+        {
+            'window': 5,
+            'alpha': 0.45,
+        },
+    )
     # =========================================================================
     # Odd Frame
     # =========================================================================
     data_frame_o = pd.concat(
         [
-            semi_frame_a,
-            semi_frame_c,
-            semi_frame_e,
-            semi_frame_f,
-            semi_frame_g,
+            df.iloc[:, [-1]],
+            rolling_mean_filter(df.iloc[:, [-1]], _k)[0].iloc[:, [-1]],
+            kol_zur_filter(df.iloc[:, [-1]], _k)[0].iloc[:, [1]],
+            sing_expo_smoothing(df.iloc[:, [-1]], **_SES_KWARGS[0]),
+            sing_expo_smoothing(df.iloc[:, [-1]], **_SES_KWARGS[1]),
+            sing_expo_smoothing(df.iloc[:, [-1]], **_SES_KWARGS[2]),
         ],
-        axis=1, sort=True)
+        axis=1,
+    )
     # =========================================================================
     # Even Frame
     # =========================================================================
     data_frame_e = pd.concat(
         [
-            semi_frame_b,
-            semi_frame_d,
+            rolling_mean_filter(df.iloc[:, [-1]], _k)[1],
+            kol_zur_filter(df.iloc[:, [-1]], _k)[1],
         ],
-        axis=1, sort=True)
+        axis=1,
+    )
     plt.figure()
-    data_frame_o.iloc[:, 0].plot(linewidth=3, label='Labor Productivity')
-    data_frame_o.iloc[:, 1].plot(label='Rolling Mean, {}'.format(3))
-    data_frame_o.iloc[:, 2].plot(
-        label='Kolmogorov--Zurbenko Filter, {}'.format(3))
-    data_frame_o.iloc[:, 3].plot(
-        label='Single Exponential Smoothing, Window = {}, Alpha = {:,.2f}'.format(5, 0.25))
-    data_frame_o.iloc[:, 4].plot(
-        label='Single Exponential Smoothing, Window = {}, Alpha = {:,.2f}'.format(5, 0.35))
-    data_frame_o.iloc[:, 5].plot(
-        label='Single Exponential Smoothing, Window = {}, Alpha = {:,.2f}'.format(5, 0.45))
-    data_frame_e.iloc[:, 0].plot(label='Rolling Mean, {}'.format(2))
-    data_frame_e.iloc[:, 1].plot(label='Rolling Mean, {}'.format(4))
-    data_frame_e.iloc[:, 2].plot(
-        label='Kolmogorov--Zurbenko Filter, {}'.format(2))
-    data_frame_e.iloc[:, 3].plot(
-        label='Kolmogorov--Zurbenko Filter, {}'.format(4))
-    plt.title('Labor Capital Intensity: Rolling Mean Filter, Kolmogorov--Zurbenko Filter &\n\
-              Single Exponential Smoothing')
+    plt.plot(
+        data_frame_o.iloc[:, 0],
+        linewidth=3,
+        label='Labor Productivity'
+    )
+    plt.plot(
+        data_frame_o.iloc[:, 1],
+        label=f'Rolling Mean, {_k}'
+    )
+    plt.plot(
+        data_frame_o.iloc[:, 2],
+        label=f'Kolmogorov--Zurbenko Filter, {_k}'
+    )
+    plt.plot(
+        data_frame_o.iloc[:, 3],
+        label='Single Exponential Smoothing, Window={}, Alpha={:,.2f}'.format(
+            *_SES_KWARGS[0].values())
+    )
+    plt.plot(
+        data_frame_o.iloc[:, 4],
+        label='Single Exponential Smoothing, Window={}, Alpha={:,.2f}'.format(
+            *_SES_KWARGS[1].values())
+    )
+    plt.plot(
+        data_frame_o.iloc[:, 5],
+        label='Single Exponential Smoothing, Window={}, Alpha={:,.2f}'.format(
+            *_SES_KWARGS[2].values())
+    )
+    plt.plot(
+        data_frame_e,
+        label=[
+            f'Rolling Mean, {_k-1}',
+            f'Rolling Mean, {_k+1}',
+            f'Kolmogorov--Zurbenko Filter, {_k-1}',
+            f'Kolmogorov--Zurbenko Filter, {_k+1}',
+        ]
+    )
+    plt.title(
+        'Labor Capital Intensity: Rolling Mean Filter, Kolmogorov--Zurbenko Filter &\n\
+        Single Exponential Smoothing'
+    )
     plt.xlabel('Period')
     plt.ylabel('Index')
     plt.legend()
