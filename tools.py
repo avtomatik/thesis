@@ -767,7 +767,7 @@ def fetch_can_quarterly(data_frame, series_id):
     return data_frame.groupby(data_frame.columns[-2]).sum()
 
 
-def fetch_usa_bea(archive_name, wb_name, sh_name, series_id):
+def fetch_usa_bea(archive_name: str, wb_name: str, sh_name: str, series_id: str) -> pd.DataFrame:
     # =========================================================================
     # Data Frame Fetching from Bureau of Economic Analysis Zip Archives
     # =========================================================================
@@ -776,9 +776,9 @@ def fetch_usa_bea(archive_name, wb_name, sh_name, series_id):
         # Load
         # =====================================================================
         data_frame = pd.read_excel(xl_file, sh_name, skiprows=7)
-        # =========================================================================
+        # =====================================================================
         # Re-Load
-        # =========================================================================
+        # =====================================================================
         data_frame = pd.read_excel(xl_file,
                                    sh_name,
                                    usecols=range(2, data_frame.shape[1]),
@@ -1384,7 +1384,8 @@ def get_data_capital_combined_archived():
         # =====================================================================
         'A191RX1',
         # =====================================================================
-        # U.S. Bureau of Economic Analysis, Produced assets, closing balance: Fixed assets (DISCONTINUED) [K160491A027NBEA], retrieved from FRED, Federal Reserve Bank of St. Louis; https://fred.stlouisfed.org/series/K160491A027NBEA, August 23, 2018.
+        # U.S. Bureau of Economic Analysis, Produced assets, closing balance: Fixed assets (DISCONTINUED) [K160491A027NBEA], retrieved from FRED, Federal Reserve Bank of St. Louis;
+        # https://fred.stlouisfed.org/series/K160491A027NBEA, August 23, 2018.
         # http://www.bea.gov/data/economic-accounts/national
         # https://fred.stlouisfed.org/series/K160491A027NBEA
         # https://search.bea.gov/search?affiliate=u.s.bureauofeconomicanalysis&query=k160491
@@ -1977,7 +1978,7 @@ def get_data_cobb_douglas_extension_labor():
     # TODO: Federal Reserve Board
     # =========================================================================
     URL = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
-    FILE_NAME = 'dataset_usa_reference_ru_kurenkov-yu-v.csv'
+    FILE_NAME = 'dataset_usa_reference_ru_kurenkov_yu_v.csv'
     ARCHIVE_NAMES = (
         'dataset_usa_cobb-douglas.zip',
         'dataset_usa_census1949.zip',
@@ -2933,7 +2934,7 @@ def get_data_usa_capital():
 def get_data_usa_frb_cu():
     '''Indexed Capacity Utilization Series: CAPUTL.B50001.A, 1967--2012
     CAPUTL.B50001.A Fetching'''
-    FILE_NAME = 'dataset_usa_FRB_G17_All_Annual 2013-06-23.csv'
+    FILE_NAME = 'dataset_usa_frb_g17_all_annual_2013_06_23.csv'
     series_id = 'CAPUTLB50001A'
     data_frame = pd.read_csv(FILE_NAME, skiprows=1, usecols=range(5, 100))
     data_frame.columns = ['period', *data_frame.columns[1:]]
@@ -2979,7 +2980,10 @@ def get_data_usa_frb_fa_def():
 
 def get_data_usa_frb_ip():
     '''Indexed Manufacturing Series: FRB G17 IP, AIPMA_SA_IX, 1919--2018'''
-    FILE_NAME = 'dataset_usa_frb-US3_IP 2018-09-02.csv'
+    # =========================================================================
+    # TODO: https://www.federalreserve.gov/datadownload/Output.aspx?rel=g17&filetype=zip
+    # =========================================================================
+    FILE_NAME = 'dataset_usa_frb_us3_ip_2018_09_02.csv'
     series_id = 'AIPMA_SA_IX'
     data_frame = pd.read_csv(FILE_NAME, skiprows=7, parse_dates=[0])
     data_frame.columns = [column.strip() for column in data_frame.columns]
@@ -3721,9 +3725,9 @@ def preprocessing_e(data_frame):
     return nominal_frame, real_frame
 
 
-def preprocessing_f(data_testing: pd.DataFrame) -> tuple[pd.DataFrame]:
+def preprocessing_kurenkov(data_testing: pd.DataFrame) -> tuple[pd.DataFrame]:
     '''Returns Four DataFrames with Comparison of data_testing: pd.DataFrame and Yu.V. Kurenkov Data'''
-    FILE_NAME = 'dataset_usa_reference_ru_kurenkov-yu-v.csv'
+    FILE_NAME = 'dataset_usa_reference_ru_kurenkov_yu_v.csv'
     data_control = pd.read_csv(FILE_NAME, index_col=0)
     # =============================================================================
     # Production
@@ -6458,45 +6462,63 @@ def plot_e(source_frame):
     plt.show()
 
 
-def plot_f(source_frame_a, source_frame_b, source_frame_c, source_frame_d):
+def plot_kurenkov(data_frames: tuple[pd.DataFrame]) -> None:
     '''
-    source_frame_a: Production _frame,
-    source_frame_b: Labor _frame,
-    source_frame_c: Capital _frame,
-    source_frame_d: Capacity Utilization _frame'''
-    BASE = (31, 1)
-    '''Plotting'''
+    data_frames[0]: Production DataFrame,
+    data_frames[1]: Labor DataFrame,
+    data_frames[2]: Capital DataFrame,
+    data_frames[3]: Capacity Utilization DataFrame'''
+    # =========================================================================
+    # Plotting
+    # =========================================================================
     fig, axs = plt.subplots(4, 1)
-    axs[0].plot(source_frame_a.iloc[:, 0], label='Kurenkov Data, {}=100'.format(
-        source_frame_a.index[BASE[0]]))
-    axs[0].plot(source_frame_a.iloc[:, 1], label='BEA Data, {}=100'.format(
-        source_frame_a.index[BASE[0]]))
-    axs[0].plot(source_frame_a.iloc[:, 2], label='FRB Data, {}=100'.format(
-        source_frame_a.index[BASE[0]]))
+    axs[0].plot(
+        data_frames[0],
+        label=[
+            'Kurenkov Data, 1950=100',
+            'BEA Data, 1950=100',
+            'FRB Data, 1950=100',
+        ]
+    )
     axs[0].set_title('Production')
     axs[0].set_xlabel('Period')
     axs[0].set_ylabel('Percentage')
     axs[0].legend()
     axs[0].grid(True)
-    axs[1].plot(source_frame_b.iloc[:, 0], label='Kurenkov Data')
-    axs[1].plot(source_frame_b.iloc[:, 1], label='BEA Data')
+    axs[1].plot(
+        data_frames[1],
+        label=[
+            'Kurenkov Data',
+            'BEA Data',
+        ]
+    )
     axs[1].set_title('Labor')
     axs[1].set_xlabel('Period')
     axs[1].set_ylabel('Thousands of Persons')
     axs[1].legend()
     axs[1].grid(True)
-    '''Revised Capital'''
-    axs[2].plot(source_frame_c.iloc[:, 0], label='Kurenkov Data, {}=100'.format(
-        source_frame_c.index[BASE[1]]))
-    axs[2].plot(source_frame_c.iloc[:, 1], label='BEA Data, {}=100'.format(
-        source_frame_c.index[BASE[1]]))
+    # =========================================================================
+    # Revised Capital
+    # =========================================================================
+    axs[2].plot(
+        data_frames[2],
+        label=[
+            'Kurenkov Data, 1951=100',
+            'BEA Data, 1951=100',
+        ]
+    )
     axs[2].set_title('Capital')
     axs[2].set_xlabel('Period')
     axs[2].set_ylabel('Percentage')
     axs[2].legend()
     axs[2].grid(True)
-    axs[3].plot(source_frame_d.iloc[:, 0], label='Kurenkov Data')
-    axs[3].plot(source_frame_d.iloc[:, 1], label='FRB Data')
+    axs[3].plot(
+        data_frames[3],
+        label=[
+            'Kurenkov Data',
+            'FRB Data',
+        ]
+    )
     axs[3].set_title('Capacity Utilization')
     axs[3].set_xlabel('Period')
     axs[3].set_ylabel('Percentage')
