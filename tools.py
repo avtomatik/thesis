@@ -28,7 +28,7 @@ def append_series_ids_sum(source_frame, data_frame, series_ids):
     return data_frame
 
 
-def approx_power_function_a(df: pd.DataFrame, params: tuple[float]):
+def calculate_power_function_fit_params_a(df: pd.DataFrame, params: tuple[float]):
     '''
     df.index: Regressor: = Period,
     df.iloc[:, 0]: Regressand,
@@ -39,47 +39,8 @@ def approx_power_function_a(df: pd.DataFrame, params: tuple[float]):
     # =========================================================================
     # {RESULT}(Yhat) = params[0] + params[1]*(T-T_0)**params[2]
     # =========================================================================
-    df['0x0'] = df.iloc[:, 0].sub(_t_0).pow(
+    df[f'estimate_{df.columns[-1]}'] = df.iloc[:, 0].sub(_t_0).pow(
         params[2]).mul(params[1]).add(params[0])
-    # =========================================================================
-    # ({*-Hat}{Y})**2
-    # =========================================================================
-    df['0x1'] = df.iloc[:, -1].sub(df.iloc[:, -2]).pow(2)
-    # =========================================================================
-    # (T-T_0)**(params[2]-1)
-    # =========================================================================
-    df['0x2'] = df.iloc[:, 0].sub(_t_0).pow(params[2]-1)
-    # =========================================================================
-    # (T-T_0)**params[2]
-    # =========================================================================
-    df['0x3'] = df.iloc[:, 0].sub(_t_0).pow(params[2])
-    # =========================================================================
-    # ((T-T_0)**params[2])*LN(T-T_0)
-    # =========================================================================
-    df['0x4'] = df.iloc[:, 0].sub(_t_0).pow(
-        params[2]).mul(np.log(df.iloc[:, 0].sub(_t_0)))
-    # =========================================================================
-    # Y*(T-T_0)**params[2]
-    # =========================================================================
-    df['0x5'] = df.iloc[:, 0].sub(_t_0).pow(params[2]).mul(df.iloc[:, 1])
-    # =========================================================================
-    # Y*((T-T_0)**params[2])*LN(T-T_0)
-    # =========================================================================
-    df['0x6'] = df.iloc[:, 0].sub(_t_0).pow(params[2]).mul(
-        np.log(df.iloc[:, 0].sub(_t_0))).mul(df.iloc[:, 1])
-    # =========================================================================
-    # (T-T_0)**(2*params[2])
-    # =========================================================================
-    df['0x7'] = df.iloc[:, 0].sub(_t_0).pow(2*params[2])
-    # =========================================================================
-    # (T-T_0)**(2*params[2])*LN(T-T_0)
-    # =========================================================================
-    df['0x8'] = df.iloc[:, 0].sub(_t_0).pow(
-        2*params[2]).mul(np.log(df.iloc[:, 0].sub(_t_0)))
-    # =========================================================================
-    # (T-T_0)**(2*params[2]-1)
-    # =========================================================================
-    df['0x9'] = df.iloc[:, 0].sub(_t_0).pow(2*params[2]-1)
     print(f'Model Parameter: T_0 = {_t_0};')
     print(f'Model Parameter: Y_0 = {params[0]};')
     print(f'Model Parameter: A = {params[1]:.4f};')
@@ -91,7 +52,7 @@ def approx_power_function_a(df: pd.DataFrame, params: tuple[float]):
         np.sqrt(mean_squared_error(df.iloc[:, 1], df.iloc[:, 2]))))
 
 
-def approx_power_function_b(df: pd.DataFrame, params: tuple[float]):
+def calculate_power_function_fit_params_b(df: pd.DataFrame, params: tuple[float]):
     '''
     df.index: Period,
     df.iloc[:, 0]: Regressor,
@@ -102,30 +63,22 @@ def approx_power_function_b(df: pd.DataFrame, params: tuple[float]):
     # =========================================================================
     # '{RESULT}(Yhat) = U_1 + ((U_2-U_1)/(TAU_2-TAU_1)**Alpha)*({X}-TAU_1)**Alpha'
     # =========================================================================
-    df['0x0'] = df.iloc[:, 0].sub(params[0]).pow(
+    df[f'estimate_{df.columns[-1]}'] = df.iloc[:, 0].sub(params[0]).pow(
         params[4]).mul(_param).add(params[2])
-    # =========================================================================
-    # '({*-Hat}{Y})**2'
-    # =========================================================================
-    df['0x1'] = df.iloc[:, 1].sub(df.iloc[:, -1]).pow(2)
-    # =========================================================================
-    # 'ABS({*-Hat}{Y})'
-    # =========================================================================
-    df['0x2'] = df.iloc[:, 1].sub(df.iloc[:, -2]).abs()
     print(f'Model Parameter: TAU_1 = {params[0]};')
     print(f'Model Parameter: TAU_2 = {params[1]};')
     print(f'Model Parameter: U_1 = {params[2]};')
     print(f'Model Parameter: U_2 = {params[3]};')
     print(f'Model Parameter: Alpha = {params[4]:.4f};')
     print(f'Model Parameter: A: = (U_2-U_1)/(TAU_2-TAU_1)**Alpha = {_param:,.4f};')
-    print(f'Estimator Result: Mean Value: {df.iloc[:, 2].mean():,.4f};')
+    print(f'Estimator Result: Mean Value: {df.iloc[:, 1].mean():,.4f};')
     print('Estimator Result: Mean Squared Deviation, MSD: {:,.4f};'.format(
         mean_squared_error(df.iloc[:, 1], df.iloc[:, 2])))
     print('Estimator Result: Root-Mean-Square Deviation, RMSD: {:,.4f}.'.format(
         np.sqrt(mean_squared_error(df.iloc[:, 1], df.iloc[:, 2]))))
 
 
-def approx_power_function_c(df: pd.DataFrame, params: tuple[float]):
+def calculate_power_function_fit_params_c(df: pd.DataFrame, params: tuple[float]):
     '''
     df.index: Period,
     df.iloc[:, 0]: Regressor,
@@ -137,21 +90,13 @@ def approx_power_function_c(df: pd.DataFrame, params: tuple[float]):
     # =========================================================================
     # '{RESULT}{Hat}{Y} = Y_1*(X_1/{X})**Alpha'
     # =========================================================================
-    df['0x0'] = df.iloc[:, 0].rdiv(params[0]).pow(_alpha).mul(params[2])
-    # =========================================================================
-    # '({*-Hat}{Y})**2'
-    # =========================================================================
-    df['0x1'] = df.iloc[:, 1].sub(df.iloc[:, -1]).pow(2)
-    # =========================================================================
-    # 'ABS({*-Hat}{Y})'
-    # =========================================================================
-    df['0x2'] = df.iloc[:, 1].sub(df.iloc[:, -2]).abs()
+    df[f'estimate_{df.columns[-1]}'] = df.iloc[:, 0].rdiv(params[0]).pow(_alpha).mul(params[2])
     print(f'Model Parameter: X_1 = {params[0]:.4f};')
     print(f'Model Parameter: X_2 = {params[1]};')
     print(f'Model Parameter: Y_1 = {params[2]:.4f};')
     print(f'Model Parameter: Y_2 = {params[3]};')
     print(f'Model Parameter: Alpha: = LN(Y_2/Y_1)/LN(X_1/X_2) = {_alpha:.4f};')
-    print(f'Estimator Result: Mean Value: {df.iloc[:, 2].mean():,.4f};')
+    print(f'Estimator Result: Mean Value: {df.iloc[:, 1].mean():,.4f};')
     print('Estimator Result: Mean Squared Deviation, MSD: {:,.4f};'.format(
         mean_squared_error(df.iloc[:, 1], df.iloc[:, 2])))
     print('Estimator Result: Root-Mean-Square Deviation, RMSD: {:,.4f}.'.format(
@@ -783,8 +728,7 @@ def fetch_usa_bea_from_loaded(data_frame, series_id):
 
 def fetch_usa_bea_from_url(url: str) -> pd.DataFrame:
     '''Retrieves U.S. Bureau of Economic Analysis DataFrame from URL'''
-    r = requests.get(url)
-    return pd.read_csv(io.BytesIO(r.content), thousands=',')
+    return pd.read_csv(io.BytesIO(requests.get(url).content), thousands=',')
 
 
 def fetch_usa_bea_sfat_series():
@@ -919,7 +863,7 @@ def fetch_world_bank(file_name, series_id):
     data_frame = data_frame[data_frame.iloc[:, 1] == series_id].iloc[:, [0, 2]]
     data_frame.columns = ['period', series_id]
     data_frame.set_index(data_frame.columns[0], inplace=True)
-    return data_frame.reset_index(level=0, inplace=True)
+    return data_frame.reset_index(level=0)
 
 
 def get_data_archived() -> pd.DataFrame:
@@ -1008,12 +952,17 @@ def get_data_archived() -> pd.DataFrame:
             )
 
 
-def get_data_bea_def():
+def get_data_bea_def() -> pd.DataFrame:
     '''Intent: Returns Cumulative Price Index for Some Base Year from Certain Type BEA Deflator File'''
     FILE_NAME = 'dataset_usa_bea-GDPDEF.xls'
-    data_frame = pd.read_excel(FILE_NAME, skiprows=15, parse_dates=[0])
-    data_frame['period'] = data_frame.iloc[:, 0].dt.year
-    return data_frame.groupby(data_frame.columns[-1]).prod().pow(1/4)
+    data_frame = pd.read_excel(
+        FILE_NAME,
+        names=['period', 'value'],
+        index_col=0,
+        skiprows=15,
+        parse_dates=True
+    )
+    return data_frame.groupby(data_frame.index.year).prod().pow(1/4)
 
 
 def get_data_bea_gdp():
@@ -1085,7 +1034,7 @@ def get_data_brown():
         axis=1,
         sort=True)
     _b_frame.columns = [
-        f'series_{hex(i)}' for i, column in enumerate(_b_frame.columns)
+        f'series_{hex(_)}' for _, column in enumerate(_b_frame.columns)
     ]
     # =========================================================================
     # Валовой продукт (в млн. долл., 1929 г.)
@@ -3631,15 +3580,12 @@ def preprocessing_a(source_frame):
     source_frame = source_frame.iloc[:, [0, 4, 6, 7]]
     source_frame = source_frame.dropna()
     source_frame = source_frame.div(source_frame.iloc[0, :])
-    source_frame.reset_index(level=0, inplace=True)
-    return source_frame
+    return source_frame.reset_index(level=0)
 
 
 def preprocessing_b(source_frame):
     source_frame = source_frame.iloc[:, [0, 6, 7, 20]]
-    source_frame = source_frame.dropna()
-    source_frame.reset_index(level=0, inplace=True)
-    return source_frame
+    return source_frame.dropna().reset_index(level=0)
 
 
 def preprocessing_c(source_frame):
@@ -3657,15 +3603,13 @@ def preprocessing_c(source_frame):
         [source_frame_production, source_frame_money], axis=1)
     result_frame = result_frame.dropna()
     result_frame = result_frame.div(result_frame.iloc[0, :])
-    result_frame.reset_index(level=0, inplace=True)
-    return result_frame
+    return result_frame.reset_index(level=0)
 
 
 def preprocessing_d(source_frame):
     source_frame = source_frame.iloc[:, [0, 1, 2, 3, 7]]
     source_frame = source_frame.dropna()
-    source_frame.reset_index(level=0, inplace=True)
-    return source_frame
+    return source_frame.reset_index(level=0)
 
 
 def preprocessing_e(data_frame):
