@@ -31,65 +31,67 @@ def append_series_ids_sum(source_frame, data_frame, series_ids):
     return data_frame
 
 
-def approx_power_function_a(source_frame, q_1, q_2, alpha):
+def approx_power_function_a(df: pd.DataFrame, params: tuple[float]):
     '''
-    source_frame.iloc[:, 0]: Regressor: = Period,
-    source_frame.iloc[:, 1]: Regressand,
-    q_1, q_2, alpha: Parameters
+    df.index: Regressor: = Period,
+    df.iloc[:, 0]: Regressand,
+    params: Parameters
     '''
+    df.reset_index(level=0, inplace=True)
+    _t_0 = df.iloc[:, 0].min() - 1
     # =========================================================================
-    # DataFrame for Based Log-Linear Approximation Results
+    # {RESULT}(Yhat) = params[0] + params[1]*(T-T_0)**params[2]
     # =========================================================================
-    result_frame = source_frame.iloc[:, 0]
+    df['0x0'] = df.iloc[:, 0].sub(_t_0).pow(
+        params[2]).mul(params[1]).add(params[0])
     # =========================================================================
-    # Blank List for Calculation Results
+    # (Yhat-Y)**2
     # =========================================================================
-    calcul_frame = []
-
-    for i in range(source_frame.shape[0]):
-        # {RESULT}(Yhat) = Y_0 + A*(T-T_0)**alpha
-        XAA = q_1 + q_2 * \
-            (1 + source_frame.iloc[i, 0]-source_frame.iloc[0, 0])**alpha
-        XBB = (q_1 + q_2*(1 + source_frame.iloc[i, 0]-source_frame.iloc[0, 0])
-               ** alpha-source_frame.iloc[i, 1])**2  # (Yhat-Y)**2
-        # (T-T_0)**(alpha-1)
-        XCC = (1 + source_frame.iloc[i, 0]-source_frame.iloc[0, 0])**(alpha-1)
-        # (T-T_0)**alpha
-        XDD = (1 + source_frame.iloc[i, 0]-source_frame.iloc[0, 0])**alpha
-        XEE = ((1 + source_frame.iloc[i, 0]-source_frame.iloc[0, 0])**alpha)*math.log(
-            1 + source_frame.iloc[i, 0]-source_frame.iloc[0, 0])  # ((T-T_0)**alpha)*LN(T-T_0)
-        # Y*(T-T_0)**alpha
-        XFF = source_frame.iloc[i, 1] * \
-            (1 + source_frame.iloc[i, 0]-source_frame.iloc[0, 0])**alpha
-        XGG = source_frame.iloc[i, 1]*((1 + source_frame.iloc[i, 0]-source_frame.iloc[0, 0])**alpha)*math.log(
-            1 + source_frame.iloc[i, 0]-source_frame.iloc[0, 0])  # Y*((T-T_0)**alpha)*LN(T-T_0)
-        # (T-T_0)**(2*alpha)
-        XHH = (1 + source_frame.iloc[i, 0]-source_frame.iloc[0, 0])**(2*alpha)
-        XII = (1 + source_frame.iloc[i, 0]-source_frame.iloc[0, 0])**(2*alpha)*math.log(
-            1 + source_frame.iloc[i, 0]-source_frame.iloc[0, 0])  # (T-T_0)**(2*alpha)*LN(T-T_0)
-        # (T-T_0)**(2*alpha-1)
-        XJJ = (1 + source_frame.iloc[i, 0] -
-               source_frame.iloc[0, 0])**(2*alpha-1)
-        calcul_frame.append({'XAA': XAA, 'XBB': XBB, 'XCC': XCC, 'XDD': XDD,
-                            'XEE': XEE, 'XFF': XFF, 'XGG': XGG, 'XHH': XHH, 'XII': XII, 'XJJ': XJJ})
+    df['0x1'] = df.iloc[:, -1].sub(df.iloc[:, -2]).pow(2)
     # =========================================================================
-    # Convert List to Dataframe
+    # (T-T_0)**(params[2]-1)
     # =========================================================================
-    calcul_frame = pd.DataFrame(calcul_frame)
-    result_frame = pd.concat([result_frame, calcul_frame], axis=1, sort=True)
-
-    Z = q_1 + q_2 * \
-        (source_frame.iloc[:, 0].add(1).sub(source_frame.iloc[0, 0]))**alpha
-
-    print('Model Parameter: T_0 = {}'.format((source_frame.iloc[0, 0]-1)))
-    print('Model Parameter: Y_0 = {}'.format(q_1))
-    print('Model Parameter: A = {:.4f}'.format(q_2))
-    print('Model Parameter: Alpha = {:.4f}'.format(alpha))
-    print('Estimator Result: Mean Value: {:,.4f}'.format(np.mean(Z)))
+    df['0x2'] = df.iloc[:, 0].sub(_t_0).pow(params[2]-1)
+    # =========================================================================
+    # (T-T_0)**params[2]
+    # =========================================================================
+    df['0x3'] = df.iloc[:, 0].sub(_t_0).pow(params[2])
+    # =========================================================================
+    # ((T-T_0)**params[2])*LN(T-T_0)
+    # =========================================================================
+    df['0x4'] = df.iloc[:, 0].sub(_t_0).pow(
+        params[2]).mul(np.log(df.iloc[:, 0].sub(_t_0)))
+    # =========================================================================
+    # Y*(T-T_0)**params[2]
+    # =========================================================================
+    df['0x5'] = df.iloc[:, 0].sub(_t_0).pow(params[2]).mul(df.iloc[:, 1])
+    # =========================================================================
+    # Y*((T-T_0)**params[2])*LN(T-T_0)
+    # =========================================================================
+    df['0x6'] = df.iloc[:, 0].sub(_t_0).pow(params[2]).mul(
+        np.log(df.iloc[:, 0].sub(_t_0))).mul(df.iloc[:, 1])
+    # =========================================================================
+    # (T-T_0)**(2*params[2])
+    # =========================================================================
+    df['0x7'] = df.iloc[:, 0].sub(_t_0).pow(2*params[2])
+    # =========================================================================
+    # (T-T_0)**(2*params[2])*LN(T-T_0)
+    # =========================================================================
+    df['0x8'] = df.iloc[:, 0].sub(_t_0).pow(
+        2*params[2]).mul(np.log(df.iloc[:, 0].sub(_t_0)))
+    # =========================================================================
+    # (T-T_0)**(2*params[2]-1)
+    # =========================================================================
+    df['0x9'] = df.iloc[:, 0].sub(_t_0).pow(2*params[2]-1)
+    print(f'Model Parameter: T_0 = {_t_0}')
+    print(f'Model Parameter: Y_0 = {params[0]}')
+    print(f'Model Parameter: A = {params[1]:.4f}')
+    print(f'Model Parameter: Alpha = {params[2]:.4f}')
+    print(f'Estimator Result: Mean Value: {df.iloc[:, 2].mean():,.4f}')
     print('Estimator Result: Mean Squared Deviation, MSD: {:,.4f}'.format(
-        mean_squared_error(source_frame.iloc[:, 1], Z)))
+        mean_squared_error(df.iloc[:, 1], df.iloc[:, 2])))
     print('Estimator Result: Root-Mean-Square Deviation, RMSD: {:,.4f}'.format(
-        math.sqrt(mean_squared_error(source_frame.iloc[:, 1], Z))))
+        np.sqrt(mean_squared_error(df.iloc[:, 1], df.iloc[:, 2]))))
 
 
 def approx_power_function_b(source_frame, q_1, q_2, q_3, q_4, alpha):
@@ -939,13 +941,12 @@ def fetch_usa_classic(archive_name: str, series_id: str) -> pd.DataFrame:
     return data_frame.set_index(data_frame.columns[0])
 
 
-def fetch_usa_mcconnel(series_id):
+def fetch_usa_mcconnel(series_id: str) -> pd.DataFrame:
     '''Data Frame Fetching from McConnell C.R. & Brue S.L.'''
-    ARCHIVE_NAME = 'dataset_usa_mc-connell-brue.zip'
-    data_frame = pd.read_csv(ARCHIVE_NAME, usecols=range(1, 4))
-    data_frame = data_frame[data_frame.iloc[:, 0] == series_id].iloc[:, [1, 2]]
-    data_frame.sort_values(data_frame.columns[0], inplace=False)
-    return data_frame.set_index(data_frame.columns[0], verify_integrity=True)
+    ARCHIVE_NAME = 'dataset_usa_mc_connell_brue.zip'
+    data_frame = pd.read_csv(ARCHIVE_NAME, index_col=1, usecols=range(1, 4))
+    data_frame = data_frame[data_frame.iloc[:, 0] == series_id].iloc[:, [1]]
+    return data_frame.sort_index()
 
 
 def fetch_world_bank(file_name, series_id):
