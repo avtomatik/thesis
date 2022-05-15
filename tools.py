@@ -4099,11 +4099,6 @@ def plot_block_one(df: pd.DataFrame) -> None:
     # Valid Only for _k = 2
     # =========================================================================
     _k = 2
-    _ses_kwargs = {
-        'window': 5,
-        'alpha': 0.25,
-
-    }
     # =========================================================================
     # Odd Frame
     # =========================================================================
@@ -4112,7 +4107,7 @@ def plot_block_one(df: pd.DataFrame) -> None:
             df.iloc[:, [-1]],
             rolling_mean_filter(df.iloc[:, [-1]], _k)[0].iloc[:, [-1]],
             kol_zur_filter(df.iloc[:, [-1]], _k)[0].iloc[:, [-1]],
-            sing_expo_smoothing(df.iloc[:, [-1]], **_ses_kwargs),
+            df.iloc[:, [-1]].ewm(alpha=0.25, adjust=False).mean(),
         ],
         axis=1,
     )
@@ -4142,8 +4137,7 @@ def plot_block_one(df: pd.DataFrame) -> None:
     )
     plt.plot(
         data_frame_o.iloc[:, 3],
-        label='Single Exponential Smoothing, Window={}, Alpha={:,.2f}'.format(
-            *_ses_kwargs.values())
+        label='Single Exponential Smoothing, Alpha={:,.2f}'.format(0.25)
     )
     plt.plot(
         data_frame_e,
@@ -4178,20 +4172,6 @@ def plot_block_two(df: pd.DataFrame) -> None:
     # =========================================================================
     df['lab_product'] = df.iloc[:, 2].div(df.iloc[:, 1])
     _k = 3
-    _SES_KWARGS = (
-        {
-            'window': 5,
-            'alpha': 0.25,
-        },
-        {
-            'window': 5,
-            'alpha': 0.35,
-        },
-        {
-            'window': 5,
-            'alpha': 0.45,
-        },
-    )
     # =========================================================================
     # Odd Frame
     # =========================================================================
@@ -4200,9 +4180,9 @@ def plot_block_two(df: pd.DataFrame) -> None:
             df.iloc[:, [-1]],
             rolling_mean_filter(df.iloc[:, [-1]], _k)[0].iloc[:, [-1]],
             kol_zur_filter(df.iloc[:, [-1]], _k)[0].iloc[:, [1]],
-            sing_expo_smoothing(df.iloc[:, [-1]], **_SES_KWARGS[0]),
-            sing_expo_smoothing(df.iloc[:, [-1]], **_SES_KWARGS[1]),
-            sing_expo_smoothing(df.iloc[:, [-1]], **_SES_KWARGS[2]),
+            df.iloc[:, [-1]].ewm(alpha=0.25, adjust=False).mean(),
+            df.iloc[:, [-1]].ewm(alpha=0.35, adjust=False).mean(),
+            df.iloc[:, [-1]].ewm(alpha=0.45, adjust=False).mean(),
         ],
         axis=1,
     )
@@ -4232,18 +4212,15 @@ def plot_block_two(df: pd.DataFrame) -> None:
     )
     plt.plot(
         data_frame_o.iloc[:, 3],
-        label='Single Exponential Smoothing, Window={}, Alpha={:,.2f}'.format(
-            *_SES_KWARGS[0].values())
+        label='Single Exponential Smoothing, Alpha={:,.2f}'.format(0.25)
     )
     plt.plot(
         data_frame_o.iloc[:, 4],
-        label='Single Exponential Smoothing, Window={}, Alpha={:,.2f}'.format(
-            *_SES_KWARGS[1].values())
+        label='Single Exponential Smoothing, Alpha={:,.2f}'.format(0.35)
     )
     plt.plot(
         data_frame_o.iloc[:, 5],
-        label='Single Exponential Smoothing, Window={}, Alpha={:,.2f}'.format(
-            *_SES_KWARGS[2].values())
+        label='Single Exponential Smoothing, Alpha={:,.2f}'.format(0.45)
     )
     plt.plot(
         data_frame_e,
@@ -6033,24 +6010,6 @@ def plot_douglas(source, dictionary, num, start, stop, step, title, measure, lab
         plt.legend()
     else:
         plt.legend(label)
-
-
-def sing_expo_smoothing(data_frame: pd.DataFrame, window: int = 5, alpha: float = 0.5) -> pd.DataFrame:
-    '''Single Exponential Smoothing
-    Robert Goodell Brown, 1956
-        data_frame.index: Period,
-        data_frame.iloc[:, 0]: Series
-    '''
-    # =========================================================================
-    # Average of Window-First Entries
-    # =========================================================================
-    S = data_frame.iloc[:window, -1].mean()
-    data_frame[f'ses{window:02d}_{alpha:,.6f}'] = alpha * \
-        data_frame.iloc[0, -1] + (1-alpha)*S
-    for _ in range(data_frame.shape[0])[1:]:
-        data_frame.iloc[_, -1] = alpha * \
-            data_frame.iloc[_, -2] + (1-alpha)*data_frame.iloc[_ - 1, -1]
-    return data_frame.iloc[:, [-1]]
 
 
 def results_delivery_a(intervals, coefficients):
