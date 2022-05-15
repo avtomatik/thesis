@@ -21,198 +21,65 @@ Created on Fri Nov  8 23:41:12 2019
 # sub_frame_a = fetch_usa_bea(file_name, 'Section5ALL_Hist.xls', '50900 Ann', 'K160021')
 
 
-def plot_cobb_douglas(data_frame):
-    '''Cobb--Douglas Algorithm as per C.W. Cobb, P.H. Douglas. A Theory of Production, 1928;
-    data_frame.index: Period,
-    data_frame.iloc[:, 0]: Capital,
-    data_frame.iloc[:, 1]: Labor,
-    data_frame.iloc[:, 2]: Product
-    '''
-    FIGURES = {
-        'fig_a': 'Chart I Progress in Manufacturing {}$-${} ({}=100)',
-        'fig_b': 'Chart II Theoretical and Actual Curves of Production {}$-${} ({}=100)',
-        'fig_c': 'Chart III Percentage Deviations of $P$ and $P\'$ from Their Trend Lines\nTrend Lines=3 Year Moving Average',
-        'fig_d': 'Chart IV Percentage Deviations of Computed from Actual Product {}$-${}',
-    }
-    X = data_frame.iloc[:, 0].div(data_frame.iloc[:, 1])
-    Y = data_frame.iloc[:, 2].div(data_frame.iloc[:, 1])
+def get_data_usa_xlsm():
+    ARCHIVE_NAMES = (
+        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
+        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
+    )
+    WB_NAMES = (
+        'Section1ALL_Hist.xls',
+        'Section1all_xls.xls',
+    )
+    SH_NAMES = (
+        '10105 Ann',
+        '10105 Ann',
+        '10106 Ann',
+        '10705 Ann',
+    )
+    SERIES_IDS = (
+        # =====================================================================
+        # Nominal Investment Series: A006RC1, 1929--2012
+        # =====================================================================
+        'A006RC1',
+        # =====================================================================
+        # Nominal Nominal Gross Domestic Product Series: A191RC1, 1929--2012
+        # =====================================================================
+        'A191RC1',
+        # =====================================================================
+        # Real Gross Domestic Product Series, 2005=100: A191RX1, 1929--2012
+        # =====================================================================
+        'A191RX1',
+        # =====================================================================
+        # Nominal National income Series: A032RC1, 1929--2011
+        # =====================================================================
+        'A032RC1',
+    )
+    _data = pd.concat(
+        [
+            pd.concat(
+                [fetch_usa_bea(ARCHIVE_NAMES[0], WB_NAMES[0], _sh, _id)
+                 for _sh, _id in zip(SH_NAMES, SERIES_IDS)],
+                axis=1,
+                sort=True
+            ),
+            pd.concat(
+                [fetch_usa_bea(ARCHIVE_NAMES[1], WB_NAMES[1], _sh, _id)
+                 for _sh, _id in zip(SH_NAMES, SERIES_IDS)],
+                axis=1,
+                sort=True
+            ),
+        ],
+        sort=True).drop_duplicates()
+    FILE_NAME = 'dataset_usa_0025_p_r.txt'
+    return pd.concat(
+        [
+            _data,
+            pd.read_csv(FILE_NAME, index_col=0)
+        ],
+        axis=1,
+        sort=True
+    )
 
-    X = sp.log(X)
-    Y = sp.log(Y)
-# =============================================================================
-# Original: k=0.25
-# =============================================================================
-    k, b = np.polyfit(X, Y, 1)
-    b = sp.exp(b)
-    PP = b*(data_frame.iloc[:, 1]**(1-k))*(data_frame.iloc[:, 0]**k)
-    PR = data_frame.iloc[:, 2].rolling(window=3, center=True).mean()
-    PPR = PP.rolling(window=3, center=True).mean()
-
-    fig, axs = plt.subplots(4, 1)
-    axs[0].plot(data_frame.iloc[:, 0], label='Fixed Capital')
-    axs[0].plot(data_frame.iloc[:, 1], label='Labor Force')
-    axs[0].plot(data_frame.iloc[:, 2], label='Physical Product')
-    axs[0].set_xlabel('Period')
-    axs[0].set_ylabel('Indexes')
-    axs[0].set_title(FIGURES['fig_a'].format(data_frame.index[0],
-                                             data_frame.index[-1],
-                                             data_frame.index[0]))
-    axs[0].legend()
-    axs[0].grid(True)
-    axs[1].plot(data_frame.iloc[:, 2], label='Actual Product')
-    axs[1].plot(
-        PP, label='Computed Product, $P\' = %fL^{%f}C^{%f}$' % (b, 1-k, k))
-    axs[1].set_xlabel('Period')
-    axs[1].set_ylabel('Production')
-    axs[1].set_title(FIGURES['fig_b'].format(data_frame.index[0],
-                                             data_frame.index[-1],
-                                             data_frame.index[0]))
-    axs[1].legend()
-    axs[1].grid(True)
-    axs[2].plot(data_frame.iloc[:, 2].sub(PR), label='Deviations of $P$')
-    axs[2].plot(PP.sub(PPR), '--', label='Deviations of $P\'$')
-    axs[2].set_xlabel('Period')
-    axs[2].set_ylabel('Percentage Deviation')
-    axs[2].set_title(FIGURES['fig_c'])
-    axs[2].legend()
-    axs[2].grid(True)
-    axs[3].plot(PP.div(data_frame.iloc[:, 2]).sub(1))
-    axs[3].set_xlabel('Period')
-    axs[3].set_ylabel('Percentage Deviation')
-    axs[3].set_title(FIGURES['fig_d'].format(data_frame.index[0],
-                                             data_frame.index[-1]))
-    axs[3].grid(True)
-    plt.tight_layout()
-    plt.savefig('view.pdf', format='pdf', dpi=900)
-    plt.show()
-
-
-def plot_kzf_b(source_frame):
-    """Kolmogorov--Zurbenko Filter
-    source_frame.iloc[:, 0]: Period,
-    source_frame.iloc[:, 1]: Series"""
-
-    """DataFrame for Kolmogorov--Zurbenko Filter Results"""
-    result_frame_a = source_frame
-    """DataFrame for Kolmogorov--Zurbenko Filter Residuals"""
-    result_frame_b = pd.concat([source_frame.iloc[:, 0], source_frame.iloc[:, 0].rolling(
-        window=2).mean()], axis=1, sort=False)
-    result_frame_b = pd.concat([result_frame_b, (source_frame.iloc[:, 1]-source_frame.iloc[:,
-                               1].shift(1)).div(source_frame.iloc[:, 1].shift(1))], axis=1, sort=False)
-    series = source_frame.iloc[:, 1]
-    for i in range(1, 1 + source_frame.shape[0]//2):
-        series = series.rolling(window=2).mean()
-        skz = series.shift(-(i//2))
-        result_frame_a = pd.concat([result_frame_a, skz], axis=1, sort=False)
-        if i % 2 == 0:
-            result_frame_b = pd.concat(
-                [result_frame_b, (skz-skz.shift(1)).div(skz.shift(1))], axis=1, sort=False)
-        else:
-            result_frame_b = pd.concat(
-                [result_frame_b, (skz.shift(-1)-skz).div(skz)], axis=1, sort=False)
-    plt.figure(1)
-    plt.title('Kolmogorov$-$Zurbenko Filter')
-    plt.xlabel('Period')
-    plt.ylabel('Measure')
-    plt.scatter(
-        result_frame_a.iloc[:, 0], result_frame_a.iloc[:, 1], label='Original Series')
-    for i in range(2, 1 + source_frame.shape[0]//2):
-        if i % 2 == 0:
-            plt.plot(result_frame_a.iloc[:, 0].rolling(window=2).mean(
-            ), result_frame_a.iloc[:, i], label='$KZF(\\lambda = {})$'.format(i-1))
-        else:
-            plt.plot(result_frame_a.iloc[:, 0], result_frame_a.iloc[:,
-                     i], label='$KZF(\\lambda = {})$'.format(i-1))
-    plt.grid(True)
-    plt.legend()
-    plt.figure(2)
-    plt.title('Kolmogorov$-$Zurbenko Filter Residuals')
-    plt.xlabel('Period')
-    plt.ylabel('Index')
-    plt.scatter(result_frame_b.iloc[:, 1],
-                result_frame_b.iloc[:, 2], label='Residuals')
-    for i in range(3, 2 + source_frame.shape[0]//2):
-        if i % 2 == 0:
-            plt.plot(result_frame_b.iloc[:, 1], result_frame_b.iloc[:, i],
-                     label='$\\delta KZF(\\lambda = {})$'.format(i-1))
-        else:
-            plt.plot(result_frame_b.iloc[:, 0], result_frame_b.iloc[:, i],
-                     label='$\\delta KZF(\\lambda = {})$'.format(i-1))
-    plt.grid(True)
-    plt.legend()
-    plt.show()
-
-
-def get_dataset_usa_xlsm():
-    '''Indexed'''
-    '''Nominal Investment Series: A006RC1, 1929--1969'''
-    file_name = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        file_name, 'Section1ALL_Hist.xls', '10105 Ann', 'A006RC1')
-    '''Nominal Investment Series: A006RC1, 1969--2012'''
-    file_name = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_b = fetch_usa_bea(
-        file_name, 'Section1all_xls.xls', '10105 Ann', 'A006RC1')
-    semi_frame_a = sub_frame_a.append(sub_frame_b)
-
-    '''Nominal National income Series: A032RC1, 1929--1969'''
-    file_name = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        file_name, 'Section1ALL_Hist.xls', '10705 Ann', 'A032RC1')
-    '''Nominal National income Series: A032RC1, 1969--2011'''
-    file_name = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_b = fetch_usa_bea(
-        file_name, 'Section1all_xls.xls', '10705 Ann', 'A032RC1')
-    semi_frame_b = sub_frame_a.append(sub_frame_b).drop_duplicates()
-
-    '''Nominal Nominal Gross Domestic Product Series: A191RC1, 1929--1969'''
-    file_name = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        file_name, 'Section1ALL_Hist.xls', '10105 Ann', 'A191RC1')
-    '''Nominal Nominal Gross Domestic Product Series: A191RC1, 1969--2012'''
-    file_name = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_b = fetch_usa_bea(
-        file_name, 'Section1all_xls.xls', '10105 Ann', 'A191RC1')
-    semi_frame_c = sub_frame_a.append(sub_frame_b).drop_duplicates()
-
-    '''Real Gross Domestic Product Series, 2005=100: A191RX1, 1929--1969'''
-    file_name = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        file_name, 'Section1ALL_Hist.xls', '10106 Ann', 'A191RX1')
-    '''Real Gross Domestic Product Series, 2005=100: A191RX1, 1969--2012'''
-    file_name = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_b = fetch_usa_bea(
-        file_name, 'Section1all_xls.xls', '10106 Ann', 'A191RX1')
-    semi_frame_d = sub_frame_a.append(sub_frame_b).drop_duplicates()
-
-    file_name = 'dataset_usa_0025_p_r.txt'
-    semi_frame_e = pd.read_csv(file_name, index_col=0)
-    result_frame = pd.concat([semi_frame_a, semi_frame_b, semi_frame_c,
-                             semi_frame_d, semi_frame_e], axis=1, sort=True).dropna(how='all')
-    return result_frame
-
-
-# # =============================================================================
-# # https://stackoverflow.com/questions/32788526/python-scipy-kolmogorov-zurbenko-filter
-# # =============================================================================
-# def kz(series, window, iterations):
-#     """KZ filter implementation
-#     series is a pandas series
-#     window is the filter window m in the units of the data (m = 1 + 2q)
-#     iterations is the number of times the moving average is evaluated
-#     """
-#     z = series.copy()
-#     for i in range(iterations):
-#         z = pd.rolling_mean(z, window=window, min_periods = 1, center=True)
-#     return z
-#     plt.savefig('NBER-CESmean.pdf', format='pdf', dpi=900)
-#     plt.savefig('NBER-CESsum.pdf', format='pdf', dpi=900)
-
-# os.chdir('/media/alexander/321B-6A94')
-# plt.figure(1).savefig('fig_1.pdf')
-# plt.figure(2).savefig('fig_2.pdf')
-# plt.figure(3).savefig('fig_3.pdf')
-# plt.figure(4).savefig('fig_4.pdf')
 
 # =============================================================================
 # Gross fixed capital formation Data Block
@@ -358,11 +225,14 @@ def test_douglas(control, series_ids):
     '''control from Original Dataset;
     series_ids from Douglas Theory of Wages'''
     if control == 'CDT2S4':
-        # Total Fixed Capital in 1880 dollars (4)
-        control_frame = fetch_classic('dataset_usa_cobb-douglas.zip', 'CDT2S4')
+        # =====================================================================
+        # Cobb C.W., Douglas P.H. Capital Series: Total Fixed Capital in 1880 dollars (4)
+        # =====================================================================
+        control_frame = fetch_usa_classic(
+            'dataset_usa_cobb-douglas.zip', 'CDT2S4')
     elif control == 'J0014':
-        control_frame = fetch_census('dataset_usa_census1949.zip', 'J0014')
-    test_frame = fetch_classic('dataset_douglas.zip', series_ids)
+        control_frame = fetch_usa_census('dataset_usa_census1949.zip', 'J0014')
+    test_frame = fetch_usa_classic('dataset_douglas.zip', series_ids)
     if control == 'J0014':
         control_frame.iloc[:, 0] = 100*control_frame.iloc[:,
                                                           0].div(control_frame.iloc[36, 0])  # 1899=100
@@ -378,32 +248,33 @@ def test_douglas(control, series_ids):
             control_frame.iloc[:, 1])
     else:
         pass
-    control_frame = control_frame.dropna()
+    control_frame = control_frame.dropna(axis=0)
 #    control_frame.plot(title='Cobb--Douglas Data Comparison', legend=True, grid=True)
     print(control_frame)
 
 
 def options():
-    file_name = 'dataset_douglas.zip'
+    ARCHIVE_NAME = 'dataset_douglas.zip'
     SERIES_IDS = (
-        # =========================================================================
+        # =====================================================================
         # The Revised Index of Physical Production for All Manufacturing In the United States, 1899--1926
-        # =========================================================================
+        # =====================================================================
         'DT24AS01',
-        # =========================================================================
+        # =====================================================================
         # Not Suitable: Total Capital (in millions of 1880 dollars)
-        # =========================================================================
+        # =====================================================================
         'DT63AS01',
-        # =========================================================================
+        # =====================================================================
         # Not Suitable: Annual Increase (in millions of 1880 dollars)
-        # =========================================================================
+        # =====================================================================
         'DT63AS02',
-        # =========================================================================
+        # =====================================================================
         # Not Suitable: Percentage Rate of Growth
-        # =========================================================================
+        # =====================================================================
         'DT63AS03',
     )
-    [print(fetch_classic(FILE_NAME, series_id)) for series_id in SERIES_IDS]
+    [print(fetch_usa_classic(ARCHIVE_NAME, series_id))
+     for series_id in SERIES_IDS]
 
 
 def get_dataset_common_archived():
@@ -542,90 +413,96 @@ def get_dataset_common_archived():
     return result_frame
 
 
-def get_dataset_capital_combined_archived():
-    '''Nominal Investment Series: A006RC1, 1929--1969'''
-    file_name = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        file_name, 'Section1ALL_Hist.xls', '10105 Ann', 'A006RC1')
-    '''Nominal Investment Series: A006RC1, 1969--2012'''
-    file_name = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_b = fetch_usa_bea(
-        file_name, 'Section1all_xls.xls', '10105 Ann', 'A006RC1')
-    semi_frame_a = sub_frame_a.append(sub_frame_b).drop_duplicates()
-
-    '''Nominal Gross Domestic Product Series: A191RC1, 1929--1969'''
-    file_name = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        file_name, 'Section1ALL_Hist.xls', '10105 Ann', 'A191RC1')
-    '''Nominal Gross Domestic Product Series: A191RC1, 1969--2012'''
-    file_name = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_b = fetch_usa_bea(
-        file_name, 'Section1all_xls.xls', '10105 Ann', 'A191RC1')
-    semi_frame_b = sub_frame_a.append(sub_frame_b).drop_duplicates()
-
-    '''Real Gross Domestic Product Series: A191RX1, 1929--1969'''
-    file_name = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        file_name, 'Section1ALL_Hist.xls', '10106 Ann', 'A191RX1')
-    '''Real Gross Domestic Product Series: A191RX1, 1969--2012'''
-    file_name = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_b = fetch_usa_bea(
-        file_name, 'Section1all_xls.xls', '10106 Ann', 'A191RX1')
-    semi_frame_c = sub_frame_a.append(sub_frame_b).drop_duplicates()
-
-    '''Capacity Utilization Series: CAPUTL.B50001.A, 1967--2012'''
-    semi_frame_d = get_dataset_usa_frb_cu()
-    '''U.S. Bureau of Economic Analysis, Produced assets, closing balance: Fixed assets (DISCONTINUED) [K160491A027NBEA], retrieved from FRED, Federal Reserve Bank of St. Louis; https://fred.stlouisfed.org/series/K160491A027NBEA, August 23, 2018.
-    http://www.bea.gov/data/economic-accounts/national
-    https://fred.stlouisfed.org/series/K160491A027NBEA
-    https://search.bea.gov/search?affiliate=u.s.bureauofeconomicanalysis&query=k160491'''
-    '''Fixed Assets Series: K160021, 1951--1969'''
-    file_name = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        file_name, 'Section5ALL_Hist.xls', '50900 Ann', 'K160021')
-    '''Fixed Assets Series: K160021, 1969--2011'''
-    file_name = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_b = fetch_usa_bea(
-        file_name, 'Section5all_xls.xls', '50900 Ann', 'K160021')
-    semi_frame_e = sub_frame_a.append(sub_frame_b).drop_duplicates()
-
-    '''Fixed Assets Series: K160491, 1951--1969'''
-    file_name = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        file_name, 'Section5ALL_Hist.xls', '50900 Ann', 'K160491')
-    '''Fixed Assets Series: K160491, 1969--2011'''
-    file_name = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_b = fetch_usa_bea(
-        file_name, 'Section5all_xls.xls', '50900 Ann', 'K160491')
-    semi_frame_f = sub_frame_a.append(sub_frame_b).drop_duplicates()
-
-    semi_frame_g = get_dataset_usa_bea_labor()
-    '''Labor Series: A4601C0, 1929--1948'''
-    file_name = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_a = fetch_usa_bea(
-        file_name, 'Section6ALL_Hist.xls', '60800A Ann', 'A4601C0')
-    '''Labor Series: A4601C0, 1948--1969'''
-    file_name = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    sub_frame_b = fetch_usa_bea(
-        file_name, 'Section6ALL_Hist.xls', '60800B Ann', 'A4601C0')
-    '''Labor Series: A4601C0, 1969--1987'''
-    file_name = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_c = fetch_usa_bea(
-        file_name, 'Section6all_xls.xls', '60800B Ann', 'A4601C0')
-    '''Labor Series: A4601C0, 1987--2000'''
-    file_name = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_d = fetch_usa_bea(
-        file_name, 'Section6all_xls.xls', '60800C Ann', 'A4601C0')
-    '''Labor Series: A4601C0, 1998--2011'''
-    file_name = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    sub_frame_e = fetch_usa_bea(
-        file_name, 'Section6all_xls.xls', '60800D Ann', 'A4601C0')
-    semi_frame_h = sub_frame_a.append(sub_frame_b).append(
-        sub_frame_c).append(sub_frame_d).append(sub_frame_e).drop_duplicates()
-
-    result_frame = pd.concat([semi_frame_a, semi_frame_b, semi_frame_c, semi_frame_d, semi_frame_e,
-                              semi_frame_f, semi_frame_g, semi_frame_h], axis=1, sort=True).dropna(how='all')
-    return result_frame
+def get_data_capital_combined_archived():
+    ARCHIVE_NAMES = (
+        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
+        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
+    )
+    WB_NAMES = (
+        'Section1ALL_Hist.xls',
+        'Section1all_xls.xls',
+        'Section5ALL_Hist.xls',
+        'Section5all_xls.xls',
+    )
+    SH_NAMES = (
+        '10105 Ann',
+        '10106 Ann',
+        '50900 Ann',
+    )
+    SERIES_IDS = (
+        # =====================================================================
+        # Nominal Investment Series: A006RC1, 1929--2012
+        # =====================================================================
+        'A006RC1',
+        # =====================================================================
+        # Nominal Gross Domestic Product Series: A191RC1, 1929--2012
+        # =====================================================================
+        'A191RC1',
+        # =====================================================================
+        # Real Gross Domestic Product Series: A191RX1, 1929--2012
+        # =====================================================================
+        'A191RX1',
+        # =====================================================================
+        # U.S. Bureau of Economic Analysis, Produced assets, closing balance: Fixed assets (DISCONTINUED) [K160491A027NBEA], retrieved from FRED, Federal Reserve Bank of St. Louis;
+        # https://fred.stlouisfed.org/series/K160491A027NBEA, August 23, 2018.
+        # http://www.bea.gov/data/economic-accounts/national
+        # https://fred.stlouisfed.org/series/K160491A027NBEA
+        # https://search.bea.gov/search?affiliate=u.s.bureauofeconomicanalysis&query=k160491
+        # =====================================================================
+        # =====================================================================
+        # Fixed Assets Series: K160021, 1951--2011
+        # =====================================================================
+        'K160021',
+        # =====================================================================
+        # Fixed Assets Series: K160491, 1951--2011
+        # =====================================================================
+        'K160491',
+    )
+    _data = pd.concat(
+        [
+            pd.concat(
+                [
+                    fetch_usa_bea(ARCHIVE_NAMES[0], _wb, _sh, _id)
+                    for _wb, _sh, _id in zip(
+                        tuple(WB_NAMES[2*(_ // len(SH_NAMES))] for _ in range(len(SERIES_IDS))),
+                        tuple(SH_NAMES[2*(_ // len(SH_NAMES)) + ((_ - 1) % len(SH_NAMES)) *
+                                  (2 - ((_ - 1) % len(SH_NAMES)))] for _ in range(len(SERIES_IDS))),
+                        SERIES_IDS,
+                    )
+                ],
+                axis=1,
+                sort=True
+            ),
+            pd.concat(
+                [
+                    fetch_usa_bea(ARCHIVE_NAMES[1], _wb, _sh, _id)
+                    for _wb, _sh, _id in zip(
+                        tuple(WB_NAMES[1 + 2*(_ // len(SH_NAMES))]
+                              for _ in range(len(SERIES_IDS))),
+                        tuple(SH_NAMES[2*(_ // len(SH_NAMES)) + ((_ - 1) % len(SH_NAMES)) *
+                                  (2 - ((_ - 1) % len(SH_NAMES)))] for _ in range(len(SERIES_IDS))),
+                        SERIES_IDS,
+                    )
+                ],
+                axis=1,
+                sort=True
+            ),
+        ],
+        sort=True).drop_duplicates()
+    return pd.concat(
+        [_data,
+         # ====================================================================
+         # Capacity Utilization Series: CAPUTL.B50001.A, 1967--2012
+         # ====================================================================
+         get_data_usa_frb_cu(),
+         # ====================================================================
+         # Manufacturing Labor Series: _4313C0, 1929--2011
+         # ====================================================================
+         get_data_usa_bea_labor_mfg(),
+         # ====================================================================
+         # Labor Series: A4601C0, 1929--2011
+         # ====================================================================
+         get_data_usa_bea_labor()], axis=1, sort=True)
 
 
 os.chdir('/media/alexander/321B-6A94')
