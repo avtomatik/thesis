@@ -1847,43 +1847,49 @@ def get_data_cobb_douglas(series_number: int = 3) -> pd.DataFrame:
     return data_frame.div(data_frame.iloc[0, :]).iloc[:, range(series_number)]
 
 
-def get_data_cobb_douglas_extension_capital():
-    '''Existing Capital Dataset'''
-    source_frame = get_data_usa_capital()
-    '''Convert Capital Series into Current (Historical) Prices'''
-    source_frame['nominal_cbb_dg'] = source_frame.iloc[:, 0] * \
-        source_frame.iloc[:, 2].div(1000*source_frame.iloc[:, 1])
-    source_frame['nominal_census'] = source_frame.iloc[:, 5] * \
-        source_frame.iloc[:, 7].div(source_frame.iloc[:, 6])
-    source_frame['nominal_dougls'] = source_frame.iloc[:, 0] * \
-        source_frame.iloc[:, 9].div(1000*source_frame.iloc[:, 1])
-    source_frame['nominal_kndrck'] = source_frame.iloc[:, 5] * \
-        source_frame.iloc[:, 8].div(1000*source_frame.iloc[:, 6])
-    source_frame.iloc[:, 15] = source_frame.iloc[66, 6] * \
-        source_frame.iloc[:, 15].div(source_frame.iloc[66, 5])
-    '''Douglas P.H. -- Kendrick J.W. (Blended) Series'''
-    source_frame['nominal_doug_kndrck'] = source_frame.iloc[:,
-                                                            14:16].mean(axis=1)
-    '''Cobb C.W., Douglas P.H. -- FRB (Blended) Series'''
-    source_frame['nominal_cbb_dg_frb'] = source_frame.iloc[:,
-                                                           [12, 10]].mean(axis=1)
-    '''Capital Structure Series: `Cobb C.W., Douglas P.H. -- FRB (Blended)\
-    Series` to `Douglas P.H. -- Kendrick J.W. (Blended) Series`'''
-    source_frame['struct_ratio'] = source_frame.iloc[:, 17].div(
-        source_frame.iloc[:, 16])
-    '''Filling the Gaps within Capital Structure Series'''
-    source_frame.iloc[6:36, 18].fillna(source_frame.iloc[36, 18], inplace=True)
-    source_frame.iloc[36:, 18].fillna(0.275, inplace=True)
-    '''Patch Series `Douglas P.H. -- Kendrick J.W. (Blended) Series`\
-    Multiplied by `Capital Structure Series`'''
-    source_frame['nominal_patch'] = source_frame.iloc[:, 16].mul(
-        source_frame.iloc[:, 18])
-    '''`Cobb C.W., Douglas P.H. -- FRB (Blended) Series` Patched with `Patch Series`'''
-    source_frame['nominal_extended'] = source_frame.iloc[:,
-                                                         [17, 19]].mean(axis=1)
-    source_frame = source_frame.iloc[:, [20]]
-    source_frame.dropna(axis=0, inplace=True)
-    return source_frame
+def get_data_cobb_douglas_extension_capital() -> pd.DataFrame:
+    # =========================================================================
+    # Existing Capital Dataset
+    # =========================================================================
+    df = get_data_usa_capital()
+    # =========================================================================
+    # Convert Capital Series into Current (Historical) Prices
+    # =========================================================================
+    df['nominal_cbb_dg'] = df.iloc[:, 0].mul(
+        df.iloc[:, 2]).div(df.iloc[:, 1]).div(1000)
+    df['nominal_census'] = df.iloc[:, 5].mul(df.iloc[:, 7]).div(df.iloc[:, 6])
+    df['nominal_dougls'] = df.iloc[:, 0].mul(
+        df.iloc[:, 9]).div(df.iloc[:, 1]).div(1000)
+    df['nominal_kndrck'] = df.iloc[:, 5].mul(
+        df.iloc[:, 8]).div(df.iloc[:, 6]).div(1000)
+    df.iloc[:, -1] = df.iloc[:, -1].mul(
+        df.loc[1929, df.columns[6]]).div(df.loc[1929, df.columns[5]])
+    # =========================================================================
+    # Douglas P.H. -- Kendrick J.W. (Blended) Series
+    # =========================================================================
+    df['nominal_doug_kndrck'] = df.iloc[:, -2:].mean(axis=1)
+    # =========================================================================
+    # Cobb C.W., Douglas P.H. -- FRB (Blended) Series
+    # =========================================================================
+    df['nominal_cbb_dg_frb'] = df.iloc[:, [10, 12]].mean(axis=1)
+    # =========================================================================
+    # Capital Structure Series: `Cobb C.W., Douglas P.H. -- FRB (Blended) Series` to `Douglas P.H. -- Kendrick J.W. (Blended) Series`
+    # =========================================================================
+    df['struct_ratio'] = df.iloc[:, -1].div(df.iloc[:, -2])
+    # =========================================================================
+    # Filling the Gaps within Capital Structure Series
+    # =========================================================================
+    df.loc[1899:, df.columns[-1]].fillna(0.275, inplace=True)
+    df.loc[:, df.columns[-1]].fillna(df.loc[1899, df.columns[-1]], inplace=True)
+    # =========================================================================
+    # Patch Series `Douglas P.H. -- Kendrick J.W. (Blended) Series` Multiplied by `Capital Structure Series`
+    # =========================================================================
+    df['nominal_patch'] = df.iloc[:, -3].mul(df.iloc[:, -1])
+    # =========================================================================
+    # `Cobb C.W., Douglas P.H. -- FRB (Blended) Series` Patched with `Patch Series`
+    # =========================================================================
+    df['nominal_extended'] = df.iloc[:, -3::2].mean(axis=1)
+    return df.iloc[:, [-1]].dropna(axis=0)
 
 
 def get_data_cobb_douglas_extension_labor():
@@ -2835,7 +2841,7 @@ def get_data_usa_capital():
                 ],
                 axis=1,
                 sort=True
-            ),
+            ).truncate(before=1869),
             # =================================================================
             # FRB Data
             # =================================================================
@@ -2866,7 +2872,7 @@ def get_data_usa_frb_fa():
     data_frame.iloc[:,0]: Nominal;
     data_frame.iloc[:,1]: Real
     '''
-    FILE_NAME = 'dataset_usa_frb-invest_capital.csv'
+    FILE_NAME = 'dataset_usa_frb_invest_capital.csv'
     data_frame = pd.read_csv(FILE_NAME,
                              skiprows=4, skipfooter=688, engine='python')
     data_frame.columns = ['period', *data_frame.columns[1:]]
@@ -2882,7 +2888,7 @@ def get_data_usa_frb_fa_def():
     '''Returns Frame of Deflator for Manufacturing Fixed Assets Series, Index:
     result_frame.iloc[:,0]: Deflator
     '''
-    FILE_NAME = 'dataset_usa_frb-invest_capital.csv'
+    FILE_NAME = 'dataset_usa_frb_invest_capital.csv'
     data_frame = pd.read_csv(FILE_NAME,
                              skiprows=4, skipfooter=688, engine='python')
     data_frame.columns = ['period', *data_frame.columns[1:]]
