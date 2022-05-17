@@ -104,13 +104,16 @@ def get_data_cobb_douglas(series_number: int = 3) -> pd.DataFrame:
     return data_frame.div(data_frame.iloc[0, :]).iloc[:, range(series_number)]
 
 
-def spline_calculate_plot(df: pd.DataFrame):
+def calculate_plot_uspline(df: pd.DataFrame):
     '''
     df.index: Period,
     df.iloc[:, 0]: Capital,
     df.iloc[:, 1]: Labor,
     df.iloc[:, 2]: Product
     '''
+    # =========================================================================
+    # TODO: Increase Cohesion
+    # =========================================================================
     # =========================================================================
     # Labor Capital Intensity
     # =========================================================================
@@ -165,7 +168,7 @@ def spline_calculate_plot(df: pd.DataFrame):
 
 def main():
     os.chdir('/media/alexander/321B-6A94')
-    spline_calculate_plot(get_data_cobb_douglas())
+    calculate_plot_uspline(get_data_cobb_douglas())
 
 
 if __name__ == '__main__':
