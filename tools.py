@@ -2558,25 +2558,42 @@ def get_data_local():
     )
 
 
-def get_dataset():
+def get_dataset() -> pd.DataFrame:
     '''Data Fetch'''
-    '''Data Fetch for Capital'''
-    capital_frame_a = get_data_cobb_douglas_extension_capital()
-    '''Data Fetch for Capital Deflator'''
-    capital_frame_b = get_data_cobb_douglas_deflator()
-    capital_frame = pd.concat(
-        [capital_frame_a, capital_frame_b], axis=1, sort=True)
-    capital_frame.dropna(axis=0, inplace=True)
-    capital_frame['capital_real'] = capital_frame.iloc[:, 0].div(
-        capital_frame.iloc[:, 1])
-    '''Data Fetch for Labor'''
-    labor_frame = get_data_cobb_douglas_extension_labor()
-    '''Data Fetch for Product'''
-    product_frame = get_data_cobb_douglas_extension_product()
-    result_frame = pd.concat([capital_frame.iloc[:, 2], labor_frame, product_frame],
-                             axis=1, sort=True).dropna(axis=0)
-    result_frame = result_frame.div(result_frame.iloc[0, :])
-    return result_frame
+    # =========================================================================
+    # TODO: Update Accodring to Change in get_data_cobb_douglas_deflator()
+    # =========================================================================
+    capital = pd.concat(
+        [
+            # =================================================================
+            # Data Fetch for Capital
+            # =================================================================
+            get_data_cobb_douglas_extension_capital(),
+            # =================================================================
+            # Data Fetch for Capital Deflator
+            # =================================================================
+            get_data_cobb_douglas_deflator(),
+        ],
+        axis=1,
+        sort=True
+    ).dropna(axis=0)
+    capital['capital_real'] = capital.iloc[:, 0].div(capital.iloc[:, 1])
+    data_frame = pd.concat(
+        [
+            capital.iloc[:, [-1]],
+            # =================================================================
+            # Data Fetch for Labor
+            # =================================================================
+            get_data_cobb_douglas_extension_labor(),
+            # =================================================================
+            # Data Fetch for Product
+            # =================================================================
+            get_data_cobb_douglas_extension_product(),
+        ],
+        axis=1,
+        sort=True
+    ).dropna(axis=0)
+    return data_frame.div(data_frame.iloc[0, :])
 
 
 def get_data_updated():
@@ -5010,46 +5027,65 @@ def plot_increment(frame):
     plt.show()
 
 
-def spline_procedure(source_frame):
+def calculate_plot_uspline(df: pd.DataFrame):
     '''
-    source_frame.index: Period,
-    source_frame.iloc[:, 0]: Capital,
-    source_frame.iloc[:, 1]: Labor,
-    source_frame.iloc[:, 2]: Product
+    df.index: Period,
+    df.iloc[:, 0]: Capital,
+    df.iloc[:, 1]: Labor,
+    df.iloc[:, 2]: Product
     '''
+    # =========================================================================
+    # TODO: Increase Cohesion
+    # =========================================================================
     # =========================================================================
     # Labor Capital Intensity
     # =========================================================================
-    data_frame['lab_cap_int'] = source_frame.iloc[:, 0].div(
-        source_frame.iloc[:, 1])
+    df['lab_cap_int'] = df.iloc[:, 0].div(df.iloc[:, 1])
     # =========================================================================
     # Labor Productivity
     # =========================================================================
-    Y = source_frame.iloc[:, 2].div(source_frame.iloc[:, 1])
-    data_frame['lab_cap_int'] = data_frame['lab_cap_int'].sort_values()
-    spl = UnivariateSpline(data_frame['lab_cap_int'], Y)
-
-    Z = np.linspace(data_frame['lab_cap_int'].min(
-    ), data_frame['lab_cap_int'].max(), source_frame.shape[0]-1)
-
+    df['lab_product'] = df.iloc[:, 2].div(df.iloc[:, 1])
+    chunk = df.iloc[:, -2:]
+    chunk.sort_values(chunk.columns[0], inplace=True)
+    spl = UnivariateSpline(chunk.iloc[:, [0]], chunk.iloc[:, [1]])
+    # =========================================================================
+    # _new_axis = np.linspace(chunk.iloc[:, [0]].min(), chunk.iloc[:, [0]].max(), chunk.shape[0] - 1)
+    # =========================================================================
     plt.figure()
-    plt.scatter(data_frame['lab_cap_int'], Y, label='Original')
-    plt.plot(Z, spl(Z))
-    plt.title('Labor Capital Intensity & Labor Productivity, {}$-${}'.format(source_frame.index[0],
-                                                                             source_frame.index[-1]))
+    plt.scatter(chunk.iloc[:, [0]], chunk.iloc[:, [1]], label='Original')
+    plt.plot(
+        chunk.iloc[:, 0],
+        spl(chunk.iloc[:, 0]),
+        'g',
+        lw=3,
+        label='Spline'
+    )
+    plt.title(
+        'Labor Capital Intensity & Labor Productivity, {}$-${}'.format(
+            df.index[0],
+            df.index[-1]
+        )
+    )
     plt.xlabel('Labor Capital Intensity')
     plt.ylabel('Labor Productivity')
     plt.grid(True)
-    # # print(spl.antiderivative())
-    # # print(spl.derivative())
-    # # print(spl.derivatives())
-    # # print(spl.ext)
-    # # print(spl.get_coeffs)
-    # # print(spl.get_knots)
-    # # print(spl.get_residual)
-    # # print(spl.integral)
-    # # print(spl.roots)
-    # # print(spl.set_smoothing_factor)
+    plt.legend()
+    # =========================================================================
+    # TODO: Figure Out How It Works
+    # =========================================================================
+    print(spl.antiderivative())
+    # =========================================================================
+    # TODO: Figure Out How It Works
+    # =========================================================================
+    print(spl.derivative())
+    print(spl.derivatives(1))
+    print(spl.ext)
+    print(spl.get_coeffs())
+    print(spl.get_knots())
+    print(spl.get_residual())
+    print(spl.integral(1., 1.75))
+    print(spl.roots())
+    print(spl.set_smoothing_factor(0.25))
     plt.show()
 
 
