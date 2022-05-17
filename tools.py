@@ -719,7 +719,7 @@ def fetch_usa_bea_filter(series_id):
     return pd.concat([result_frame, chunk], axis=1, sort=True)
 
 
-def fetch_usa_bea_from_loaded(data_frame, series_id):
+def fetch_usa_bea_from_loaded(data_frame: pd.DataFrame, series_id: str) -> pd.DataFrame:
     '''`NipaDataA.txt`: U.S. Bureau of Economic Analysis'''
     data_frame = data_frame[data_frame.iloc[:, 0] == series_id].iloc[:, [1, 2]]
     data_frame.columns = [data_frame.columns[0].lower(), series_id]
@@ -3559,27 +3559,40 @@ def m_spline_lls(source_frame, intervals, k):
     return A, result_frame
 
 
-def period_centering(source_frame):
+def get_data_centered_by_period(data_frame: pd.DataFrame) -> pd.DataFrame:
     '''
-    source_frame.iloc[:, 0]: Period,
-    source_frame.iloc[:, 1]: Series
+    data_frame.index: Period,
+    data_frame.iloc[:, 0]: Series
     '''
-    '''Variables Initialised'''
-    result_frame = source_frame  # DataFrame for Results
-    period = result_frame.iloc[:, 0]
-    series = result_frame.iloc[:, 1]
-    '''Loop'''
-    for i in range(1, 1 + result_frame.shape[0]//2):
-        period = period.rolling(window=2).mean()
-        series = series.rolling(window=2).mean()
-        period_roll = period.shift(-(i//2))
-        series_roll = series.shift(-(i//2))
-        series_frac = series_roll.div(result_frame.iloc[:, 1])
-        series_diff = (series_roll.shift(-2) -
-                       series_roll).div(2*series_roll.shift(-1))
-        result_frame = pd.concat(
-            [result_frame, period_roll, series_roll, series_frac, series_diff], axis=1, sort=True)
-    return result_frame
+    # =========================================================================
+    # TODO: Any Use?
+    # =========================================================================
+    # =========================================================================
+    # DataFrame for Results
+    # =========================================================================
+    _data = data_frame.reset_index(level=0).copy()
+    period = _data.iloc[:, 0]
+    series = _data.iloc[:, 1]
+    # =========================================================================
+    # Loop
+    # =========================================================================
+    for _ in range(_data.shape[0] // 2):
+        period = period.rolling(2).mean()
+        series = series.rolling(2).mean()
+        period_roll = period.shift(-((1 + _) // 2))
+        series_roll = series.shift(-((1 + _) // 2))
+        _data = pd.concat(
+            [
+                _data,
+                period_roll,
+                series_roll,
+                series_roll.div(_data.iloc[:, 1]),
+                series_roll.shift(-2).sub(series_roll).div(series_roll.shift(-1)).div(2),
+            ],
+            axis=1,
+            sort=True
+        )
+    return _data
 
 
 def preprocessing_a(source_frame):
