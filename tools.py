@@ -3245,6 +3245,9 @@ def kol_zur_filter(data_frame: pd.DataFrame, k: int = None) -> tuple[pd.DataFram
     # =========================================================================
     data_frame_o = pd.concat(
         [
+            # =================================================================
+            # No Period Shift
+            # =================================================================
             data_frame,
         ],
         axis=1,
@@ -3254,6 +3257,9 @@ def kol_zur_filter(data_frame: pd.DataFrame, k: int = None) -> tuple[pd.DataFram
     # =========================================================================
     data_frame_e = pd.concat(
         [
+            # =================================================================
+            # Period Shift
+            # =================================================================
             data_frame.iloc[:, [0]].rolling(2).mean(),
         ],
         axis=1,
@@ -3353,29 +3359,57 @@ def rolling_mean_filter(data_frame: pd.DataFrame, k: int = None) -> tuple[pd.Dat
         k = data_frame.shape[0] // 2
     data_frame.reset_index(level=0, inplace=True)
     # =========================================================================
-    # Odd DataFrames
+    # DataFrame for Rolling Mean Filter Results: Odd
     # =========================================================================
     data_frame_o = pd.concat(
         [
+            # =================================================================
+            # No Period Shift
+            # =================================================================
             data_frame,
         ],
         axis=1,
-        sort=True
     )
     # =========================================================================
-    # Even DataFrames
+    # DataFrame for Rolling Mean Filter Results: Even
     # =========================================================================
     data_frame_e = pd.concat(
         [
+            # =================================================================
+            # Period Shift
+            # =================================================================
             data_frame.iloc[:, [0]].rolling(2, center=True).mean(),
         ],
         axis=1,
-        sort=True
+    )
+    # =========================================================================
+    # DataFrame for Rolling Mean Filter Residuals: Odd
+    # =========================================================================
+    residuals_o = pd.concat(
+        [
+            # =================================================================
+            # Period Shift
+            # =================================================================
+            data_frame.iloc[:, [0]].rolling(2).mean(),
+        ],
+        axis=1,
+    )
+    # =========================================================================
+    # DataFrame for Rolling Mean Filter Residuals: Even
+    # =========================================================================
+    residuals_e = pd.concat(
+        [
+            # =================================================================
+            # No Period Shift
+            # =================================================================
+            data_frame.iloc[:, [0]],
+        ],
+        axis=1,
     )
     for _ in range(k):
         if _ % 2 == 1:
             # =================================================================
-            # Odd DataFrames
+            # DataFrame for Rolling Mean Filter Results: Odd
             # =================================================================
             data_frame_o = pd.concat(
                 [
@@ -3383,11 +3417,23 @@ def rolling_mean_filter(data_frame: pd.DataFrame, k: int = None) -> tuple[pd.Dat
                     data_frame.iloc[:, [1]].rolling(2 + _, center=True).mean(),
                 ],
                 axis=1,
-                sort=True
+            )
+            data_frame_o.columns = [*data_frame_o.columns[:-1],
+                                    f'{data_frame.columns[1]}_{hex(2 + _)}', ]
+            # =================================================================
+            # DataFrame for Rolling Mean Filter Residuals: Odd
+            # =================================================================
+            residuals_o = pd.concat(
+                [
+                    residuals_o,
+                    data_frame_o.iloc[:, [-2]
+                                      ].div(data_frame_o.iloc[:, [-2]].shift(1)).sub(1),
+                ],
+                axis=1,
             )
         else:
             # =================================================================
-            # Even DataFrames
+            # DataFrame for Rolling Mean Filter Results: Even
             # =================================================================
             data_frame_e = pd.concat(
                 [
@@ -3395,10 +3441,29 @@ def rolling_mean_filter(data_frame: pd.DataFrame, k: int = None) -> tuple[pd.Dat
                     data_frame.iloc[:, [1]].rolling(2 + _, center=True).mean(),
                 ],
                 axis=1,
-                sort=True
             )
+            data_frame_e.columns = [*data_frame_e.columns[:-1],
+                                    f'{data_frame.columns[1]}_{hex(2 + _)}', ]
+            # =================================================================
+            # DataFrame for Rolling Mean Filter Residuals: Even
+            # =================================================================
+            residuals_e = pd.concat(
+                [
+                    residuals_e,
+                    data_frame_e.iloc[:, [-1]
+                                      ].shift(-1).div(data_frame_e.iloc[:, [-1]]).sub(1),
+                ],
+                axis=1,
+            )
+    data_frame_o.set_index(data_frame_o.columns[0], inplace=True)
     data_frame_e.set_index(data_frame_e.columns[0], inplace=True)
-    return data_frame_o.set_index(data_frame_o.columns[0]), data_frame_e.dropna(how='all')
+    residuals_o.set_index(residuals_o.columns[0], inplace=True)
+    residuals_e.set_index(residuals_e.columns[0], inplace=True)
+    data_frame_o.dropna(how='all', inplace=True)
+    data_frame_e.dropna(how='all', inplace=True)
+    residuals_o.dropna(how='all', inplace=True)
+    residuals_e.dropna(how='all', inplace=True)
+    return data_frame_o, data_frame_e, residuals_o, residuals_e
 
 
 def lookup(data_frame):
