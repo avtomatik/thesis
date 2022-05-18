@@ -6326,50 +6326,57 @@ def plot_pearson_r_test(source_frame):
     plt.show()
 
 
-def plot_rmf(source_frame):
+def plot_rolling_mean_filter(data_frame: pd.DataFrame):
+    '''Rolling Mean Filter
+        data_frame.index: Period;
+        data_frame.iloc[:, 0]: Series
     '''
-    source_frame.iloc[:, 0]: Period;
-    source_frame.iloc[:, 1]: Series
-    Rolling Mean Filter'''
+    data_frame_o, data_frame_e, residuals_o, residuals_e = rolling_mean_filter(data_frame)
     plt.figure(1)
-    plt.title('Moving Average {}$-${}'.format(
-        source_frame.iloc[0, 0], source_frame.iloc[source_frame.shape[0]-1, 0]))
+    plt.title(
+        f'Rolling Mean {data_frame_o.index[0]}$-${data_frame_o.index[-1]}'
+    )
     plt.xlabel('Period')
     plt.ylabel('Percentage')
-    source_frame['sma'] = source_frame.iloc[:, 1].rolling(
-        window=1, center=True).mean()
-    plt.scatter(source_frame.iloc[:, 0], source_frame.iloc[:, 2], label='$Y$')
-    '''Smoothed Series Calculation'''
-    for i in range(1, source_frame.shape[0]//2):
-        source_frame.iloc[:, 2] = source_frame.iloc[:, 1].rolling(
-            window=1 + i, center=True).mean()
-        if i % 2 == 0:
-            plt.plot(0.5 + source_frame.iloc[:, 0], source_frame.iloc[:,
-                     2], label='$\\bar Y_{{m = {}}}$'.format(i))
-        else:
-            plt.plot(source_frame.iloc[:, 0], source_frame.iloc[:,
-                     2], label='$\\bar Y_{{m = {}}}$'.format(i))
+    plt.scatter(
+        data_frame_o.iloc[:, [0]].index,
+        data_frame_o.iloc[:, [0]],
+        label='Original Series'
+    )
+    plt.plot(
+        data_frame_o.iloc[:, 1:],
+        label=['$\\hat Y_{{m = {}}}$'.format(int(_.split('_')[-1], 16))
+               for _ in data_frame_o.columns[1:]]
+    )
+    plt.plot(
+        data_frame_e,
+        label=['$\\hat Y_{{m = {}}}$'.format(int(_.split('_')[-1], 16))
+               for _ in data_frame_e.columns]
+    )
     plt.grid(True)
     plt.legend()
     plt.figure(2)
-    plt.title('Moving Average Deviations {}$-${}'.format(
-        source_frame.iloc[0, 0], source_frame.iloc[source_frame.shape[0]-1, 0]))
+    plt.title(
+        f'Rolling Mean Residuals {data_frame_o.index[0]}$-${data_frame_o.index[-1]}'
+    )
     plt.xlabel('Period')
-    plt.ylabel('Deviations ($\\delta$), Percent')
-    source_frame['del'] = (source_frame.iloc[:, 1].rolling(window=1, center=True).mean().shift(-1)-source_frame.iloc[:,
-                           1].rolling(window=1, center=True).mean()).div(source_frame.iloc[:, 1].rolling(window=1, center=True).mean())
-    plt.scatter(source_frame.iloc[:, 0],
-                source_frame.iloc[:, 3], label='$\\delta(Y)$')
-    '''Deviations Calculation'''
-    for i in range(1, source_frame.shape[0]//2):
-        source_frame.iloc[:, 3] = (source_frame.iloc[:, 1].rolling(window=1 + i, center=True).mean().shift(-1)-source_frame.iloc[:, 1].rolling(
-            window=1 + i, center=True).mean()).div(source_frame.iloc[:, 1].rolling(window=1 + i, center=True).mean())
-        if i % 2 == 0:
-            plt.plot(0.5 + source_frame.iloc[:, 0], source_frame.iloc[:,
-                     3], label='$\\delta(\\bar Y_{{m = {}}})$'.format(i))
-        else:
-            plt.plot(source_frame.iloc[:, 0], source_frame.iloc[:, 3],
-                     label='$\\delta(\\bar Y_{{m = {}}})$'.format(i))
+    plt.ylabel('Residuals ($\\delta$), Percent')
+    plt.scatter(
+        residuals_o.iloc[:, [0]].index,
+        residuals_o.iloc[:, [0]],
+        label='Residuals'
+    )
+
+    plt.plot(
+        residuals_o.iloc[:, 1:],
+        label=['$\\delta(\\hat Y_{{m = {}}})$'.format(int(_.split('_')[-1], 16))
+               for _ in residuals_o.columns[1:]]
+    )
+    plt.plot(
+        residuals_e,
+        label=['$\\delta(\\hat Y_{{m = {}}})$'.format(int(_.split('_')[-1], 16))
+               for _ in residuals_e.columns]
+    )
     plt.grid(True)
     plt.legend()
     plt.show()
