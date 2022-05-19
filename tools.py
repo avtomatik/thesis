@@ -858,12 +858,10 @@ def fetch_usa_mcconnel(series_id: str) -> pd.DataFrame:
     return data_frame.sort_index()
 
 
-def fetch_world_bank(file_name, series_id):
-    data_frame = pd.read_csv(file_name)
-    data_frame = data_frame[data_frame.iloc[:, 1] == series_id].iloc[:, [0, 2]]
-    data_frame.columns = ['period', series_id]
-    data_frame.set_index(data_frame.columns[0], inplace=True)
-    return data_frame.reset_index(level=0)
+def fetch_world_bank(data_frame: pd.DataFrame, series_id: str) -> pd.DataFrame:
+    df = data_frame[data_frame.iloc[:, 1] == series_id].iloc[:, [0, 2]]
+    df.columns = [df.columns[0], series_id]
+    return df.set_index(df.columns[0])
 
 
 def get_data_archived() -> pd.DataFrame:
@@ -4253,27 +4251,24 @@ def plot_block_two(df: pd.DataFrame) -> None:
     plt.show()
 
 
-def plot_built_in(module):
-    FILE_NAME = 'datasetAutocorrelation.txt'
-    source_frame = pd.read_csv(FILE_NAME)
-    source_frame = source_frame.iloc[:, [1, 0, 2]]
-    SERIES_IDS = source_frame.iloc[:, 0].sort_values().unique()
-
-    for i, series_id in enumerate(SERIES_IDS):
-        current = fetch_world_bank('datasetAutocorrelation.txt', series_id)
-        plt.figure(1 + i)
-        module(current.iloc[:, 1])
+def plot_built_in(module: callable):
+    # =========================================================================
+    # TODO: Rework
+    # =========================================================================
+    FILE_NAMES = (
+        'datasetAutocorrelation.txt',
+        'CHN_TUR_GDP.zip',
+    )
+    data = pd.read_csv(FILE_NAMES[0])
+    for _, series_id in enumerate(sorted(set(data.iloc[:, 1])), start=1):
+        plt.figure(_)
+        module(fetch_world_bank(data, series_id))
         plt.grid(True)
 
-    ARCHIVE_NAME = 'chn_tur_gdp.zip'
-    source_frame = pd.read_csv(ARCHIVE_NAME)
-    source_frame = source_frame.iloc[:, [1, 0, 2]]
-    SERIES_IDS = source_frame.iloc[:, 0].sort_values().unique()
-
-    for i, series_id in enumerate(SERIES_IDS):
-        current = fetch_world_bank('chn_tur_gdp.zip', series_id)
-        plt.figure(5 + i)
-        module(current.iloc[:, 1])
+    data = pd.read_csv(FILE_NAMES[1])
+    for _, series_id in enumerate(sorted(set(data.iloc[:, 1])), start=1):
+        plt.figure(_)
+        module(fetch_world_bank(data, series_id))
         plt.grid(True)
 
     plt.show()
