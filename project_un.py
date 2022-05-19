@@ -6,13 +6,28 @@ Created on Sat May  2 22:26:24 2020
 """
 
 
-os.chdir('/media/alexander/321B-6A94')
-"""https://unstats.un.org/unsd/snaama/Index"""
-file_name = 'dataset_world_united-nations-Download-GDPcurrent-USD-countries.xls'
-source_frame = pd.read_excel(file_name, skiprows=2)
-source_frame = source_frame[source_frame.iloc[:, 1]
-                            == 'Gross Domestic Product (GDP)']
-source_frame.drop(['IndicatorName'], axis=1, inplace=True)
-source_frame = source_frame.set_index('Country').transpose()
-result_frame = source_frame.iloc[:, 206].div(source_frame.mean(1))
-result_frame.plot(grid=True)
+import io
+import pandas as pd
+import requests
+
+
+def main():
+    # =========================================================================
+    # Purpose: Visualize the U.S. Contribution to World`s Gross Domestic Product (GDP)
+    # =========================================================================
+    URL = 'https://unstats.un.org/unsd/amaapi/api/file/2'
+    df = pd.read_excel(io.BytesIO(requests.get(URL).content), skiprows=2)
+    df = df[df.iloc[:, 2] == 'Gross Domestic Product (GDP)']
+    df.drop(
+        [df.columns[0], df.columns[2]],
+        axis=1,
+        inplace=True
+    )
+    df = df.set_index(df.columns[0]).transpose()
+    data = pd.DataFrame()
+    data['us_to_world'] = df.loc[:, 'United States'].div(df.sum(1))
+    data.plot(grid=True)
+
+
+if __name__ == '__main__':
+    main()
