@@ -490,7 +490,7 @@ def fetch_can_annually(file_id, series_id):
     return data_frame
 
 
-def fetch_can_capital_query():
+def fetch_can_capital_query() -> list[str]:
     # =========================================================================
     # Fetch <SERIES_IDS> from Statistics Canada. Table: 36-10-0238-01 (formerly
     # CANSIM 031-0004): Flows and stocks of fixed non-residential capital, total
@@ -503,12 +503,12 @@ def fetch_can_capital_query():
             (df.iloc[:, 1].str.contains('manufacturing', flags=re.IGNORECASE)) & \
             (df.iloc[:, 2] == 'Linear end-year net stock')
     df = df[query]
-    return df.iloc[:, -1].unique().tolist()
+    return sorted(set(df.iloc[:, -1]))
 
 
-def fetch_can_capital_query_archived():
+def fetch_can_capital_query_archived() -> list[str]:
     # =========================================================================
-    # TODO: Consider Using sqlalchemy
+    # TODO: Consider Using sqlite3
     # =========================================================================
     # =========================================================================
     # https://blog.panoply.io/how-to-read-a-sql-query-into-a-pandas-dataframe
@@ -524,7 +524,7 @@ def fetch_can_capital_query_archived():
             (df.iloc[:, 1] == 'Geometric (infinite) end-year net stock') & \
             (df.iloc[:, 2].str.contains('industrial', flags=re.IGNORECASE))
     df = df[query]
-    return df.iloc[:, -1].unique().tolist()
+    return sorted(set(df.iloc[:, -1]))
 
 
 def fetch_can_capital_query(source_frame):
@@ -711,7 +711,7 @@ def fetch_usa_bea_filter(series_id):
             (data_frame.iloc[:, 3] == 0)
     data_frame = data_frame[query]
     result_frame = pd.DataFrame()
-    for source_id in data_frame.iloc[:, 0].unique():
+    for source_id in sorted(set(data_frame.iloc[:, 0])):
         chunk = data_frame[data_frame.iloc[:, 0] == source_id].iloc[:, [2, 4]]
         chunk.columns = [chunk.columns[0],
                          '{}{}'.format(source_id.split()[1].replace('.', '_'), series_id)]
@@ -733,14 +733,14 @@ def fetch_usa_bea_from_url(url: str) -> pd.DataFrame:
 
 def fetch_usa_bea_sfat_series():
     ARCHIVE_NAME = 'dataset_usa_bea-nipa-selected.zip'
-    series_id = 'k3n31gd1es000'
+    SERIES_ID = 'k3n31gd1es000'
     data_frame = pd.read_csv(ARCHIVE_NAME, usecols=[0, *range(8, 11)])
-    data_frame = data_frame[data_frame.iloc[:, 1] == series_id]
+    data_frame = data_frame[data_frame.iloc[:, 1] == SERIES_ID]
     control_frame = pd.DataFrame()
-    for source_id in data_frame.iloc[:, 0].unique():
+    for source_id in sorted(set(data_frame.iloc[:, 0])):
         chunk = data_frame[data_frame.iloc[:, 0] == source_id].iloc[:, [2, 3]]
         chunk.columns = [chunk.columns[0],
-                         '{}{}'.format(source_id.split()[1].replace('.', '_'), series_id)]
+                         '{}{}'.format(source_id.split()[1].replace('.', '_'), SERIES_ID)]
         chunk.set_index(chunk.columns[0], inplace=True, verify_integrity=True)
         control_frame = pd.concat([control_frame, chunk], axis=1, sort=True)
 
@@ -1027,7 +1027,7 @@ def get_data_brown():
     _b_frame = pd.concat(
         [
             fetch_usa_classic(ARCHIVE_NAMES[0], series_id)
-            for series_id in data_frame.iloc[:, 0].unique()
+            for series_id in sorted(set(data_frame.iloc[:, 0]))
         ],
         axis=1,
         sort=True)
@@ -2111,13 +2111,13 @@ def get_data_combined():
         'Section5ALL_Hist.xls',
         'Section5all_xls.xls',
     )
-    SH, ID = ('51000 Ann', 'K100701',)
+    SH_NAME, SERIES_ID = ('51000 Ann', 'K100701',)
     # =========================================================================
     # Fixed Assets Series: K100701, 1951--2013
     # =========================================================================
     _data_sfat = pd.concat(
         [
-            fetch_usa_bea(_archive, _wb, SH, ID) for _archive, _wb in zip(ARCHIVE_NAMES, WB_NAMES)
+            fetch_usa_bea(_archive, _wb, SH_NAME, SERIES_ID) for _archive, _wb in zip(ARCHIVE_NAMES, WB_NAMES)
         ],
         sort=True
     ).drop_duplicates()
@@ -2688,13 +2688,13 @@ def get_data_usa_bea_labor():
         '60800C Ann',
         '60800D Ann',
     )
-    ID = 'A4601C0'
+    SERIES_ID = 'A4601C0'
     data_frame = pd.concat(
-        [fetch_usa_bea(archive_name, wb, sh, ID)
+        [fetch_usa_bea(archive_name, wb, sh, SERIES_ID)
          for archive_name, wb, sh in zip(ARCHIVE_NAMES, WB_NAMES, SH_NAMES)],
         axis=1,
         sort=True)
-    data_frame[ID] = data_frame.mean(axis=1)
+    data_frame[SERIES_ID] = data_frame.mean(axis=1)
     return data_frame.iloc[:, [-1]].dropna(axis=0)
 
 
@@ -2871,7 +2871,7 @@ def get_data_usa_frb_cu():
     '''Indexed Capacity Utilization Series: CAPUTL.B50001.A, 1967--2012
     CAPUTL.B50001.A Fetching'''
     FILE_NAME = 'dataset_usa_frb_g17_all_annual_2013_06_23.csv'
-    series_id = 'CAPUTLB50001A'
+    SERIES_ID = 'CAPUTLB50001A'
     data_frame = pd.read_csv(FILE_NAME, skiprows=1, usecols=range(5, 100))
     data_frame.columns = ['period', *data_frame.columns[1:]]
     data_frame.iloc[:, 0] = data_frame.iloc[:, 0].str.replace(r"[,@\'?\.$%_]",
@@ -2879,7 +2879,7 @@ def get_data_usa_frb_cu():
                                                               regex=True)
     data_frame = data_frame.set_index(data_frame.columns[0]).transpose()
     data_frame.index = pd.to_numeric(data_frame.index, downcast='integer')
-    return data_frame.loc[:, [series_id]].dropna(axis=0)
+    return data_frame.loc[:, [SERIES_ID]].dropna(axis=0)
 
 
 def get_data_usa_frb_fa():
@@ -2920,10 +2920,10 @@ def get_data_usa_frb_ip():
     # TODO: https://www.federalreserve.gov/datadownload/Output.aspx?rel=g17&filetype=zip
     # =========================================================================
     FILE_NAME = 'dataset_usa_frb_us3_ip_2018_09_02.csv'
-    series_id = 'AIPMA_SA_IX'
+    SERIES_ID = 'AIPMA_SA_IX'
     data_frame = pd.read_csv(FILE_NAME, skiprows=7, parse_dates=[0])
     data_frame.columns = [column.strip() for column in data_frame.columns]
-    data_frame = data_frame.loc[:, [data_frame.columns[0], series_id]]
+    data_frame = data_frame.loc[:, [data_frame.columns[0], SERIES_ID]]
     data_frame['period'] = data_frame.iloc[:, 0].dt.year
     return data_frame.groupby(data_frame.columns[-1]).mean()
 
@@ -3048,7 +3048,7 @@ def get_data_version_a():
         'Section1ALL_Hist.xls',
         'Section1all_xls.xls',
     )
-    SH, ID = ('10106 Ann', 'A191RX1')
+    SH_NAME, SERIES_ID = ('10106 Ann', 'A191RX1')
     KWARGS = {
         'archive_name': 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip',
         'wb_name': 'Section4ALL_xls.xls',
@@ -3070,7 +3070,7 @@ def get_data_version_a():
             # =================================================================
             pd.concat(
                 [
-                    fetch_usa_bea(_archive_name, _wb, SH, ID) for _archive_name, _wb in zip(ARCHIVE_NAMES, WB_NAMES)
+                    fetch_usa_bea(_archive_name, _wb, SH_NAME, SERIES_ID) for _archive_name, _wb in zip(ARCHIVE_NAMES, WB_NAMES)
                 ],
                 sort=True).drop_duplicates(),
         ],
@@ -3090,7 +3090,7 @@ def get_data_version_a():
             # =================================================================
             pd.concat(
                 [
-                    fetch_usa_bea(_archive_name, _wb, SH, ID) for _archive_name, _wb in zip(ARCHIVE_NAMES, WB_NAMES)
+                    fetch_usa_bea(_archive_name, _wb, SH_NAME, SERIES_ID) for _archive_name, _wb in zip(ARCHIVE_NAMES, WB_NAMES)
                 ],
                 sort=True).drop_duplicates(),
             # =================================================================
@@ -3466,7 +3466,7 @@ def rolling_mean_filter(data_frame: pd.DataFrame, k: int = None) -> tuple[pd.Dat
 
 def lookup(data_frame):
     for _, series_id in enumerate(data_frame.columns):
-        series = data_frame.iloc[:, _].sort_values().unique()
+        series = sorted(set(data_frame.iloc[:, _]))
         print(f'{series_id:*^50}')
         print(series)
 
@@ -5955,11 +5955,11 @@ def plot_census_k():
         'X0930', 'X0931', 'X0932', 'X0947', 'X0948', 'X0949', 'X0950',
         'X0951', 'X0952', 'X0953', 'X0954', 'X0955', 'X0956',
     )
-    for i, series_id in enumerate(SERIES_IDS):
+    for _, series_id in enumerate(SERIES_IDS, start=1):
         title = fetch_usa_census_description(ARCHIVE_NAME, series_id)
         data_frame = fetch_usa_census(ARCHIVE_NAME, series_id)
         data_frame = data_frame.div(data_frame.iloc[0, :]).mul(100)
-        plt.figure(1+i)
+        plt.figure(_)
         plt.plot(data_frame, label=f'{series_id}')
         plt.title('{}, {}$-${}'.format(title,
                   data_frame.index[0], data_frame.index[-1]))
