@@ -527,20 +527,24 @@ def fetch_can_capital_query_archived() -> list[str]:
     return sorted(set(df.iloc[:, -1]))
 
 
-def fetch_can_capital_query(source_frame):
+def fetch_can_capital_query(df) -> list[str]:
     # =========================================================================
     # '''Fetch `Series series_ids` from Statistics Canada. Table: 36-10-0238-01\
     # (formerly CANSIM 031-0004): Flows and stocks of fixed non-residential\
     # capital, total all industries, by asset, provinces and territories, annual\
     # (dollars x 1,000,000)'''
     # =========================================================================
-    query = (source_frame.iloc[:, 3].str.contains('2007 constant prices')) &\
-            (source_frame.iloc[:, 5] == 'Straight-line end-year net stock') &\
-            (source_frame.iloc[:, 6].str.contains('Industrial'))
-    source_frame = source_frame[query]
-    source_frame = source_frame.iloc[:, [11]]
-    source_frame.drop_duplicates(inplace=True)
-    return source_frame.iloc[:, 0].values.tolist()
+    # =========================================================================
+    # ?: 36100096-eng.zip'
+    # =========================================================================
+    # =========================================================================
+    # usecols = [3, 5, 6, 11]
+    # =========================================================================
+    query = (df.iloc[:, 0].str.contains('2007 constant prices')) &\
+            (df.iloc[:, 1] == 'Straight-line end-year net stock') &\
+            (df.iloc[:, 2].str.contains('Industrial'))
+    df = df[query]
+    return sorted(set(df.iloc[:, -1]))
 
 
 def fetch_can_capital(series_ids):
@@ -710,13 +714,15 @@ def fetch_usa_bea_filter(series_id):
     query = (data_frame.iloc[:, 1] == series_id) & \
             (data_frame.iloc[:, 3] == 0)
     data_frame = data_frame[query]
-    result_frame = pd.DataFrame()
+    combined = pd.DataFrame()
     for source_id in sorted(set(data_frame.iloc[:, 0])):
         chunk = data_frame[data_frame.iloc[:, 0] == source_id].iloc[:, [2, 4]]
         chunk.columns = [chunk.columns[0],
                          '{}{}'.format(source_id.split()[1].replace('.', '_'), series_id)]
+        chunk.drop_duplicates(inplace=True)
         chunk.set_index(chunk.columns[0], inplace=True, verify_integrity=True)
-    return pd.concat([result_frame, chunk], axis=1, sort=True)
+        combined = pd.concat([combined, chunk], axis=1, sort=True)
+    return combined
 
 
 def fetch_usa_bea_from_loaded(data_frame: pd.DataFrame, series_id: str) -> pd.DataFrame:
@@ -4019,11 +4025,9 @@ def plot_d(source_frame):
         i -= 1
         base = i  # Basic Year
     '''Real Investment, Billions'''
-    source_frame['inv'] = source_frame.iloc[base, 1] * \
-        source_frame.iloc[:, 2].div(100*1000)
+    source_frame['inv'] = source_frame.iloc[:, 2].mul(source_frame.iloc[base, 1]).div(100).div(1000)
     '''Real Fixed Investment, Billions'''
-    source_frame['fnv'] = source_frame.iloc[base, 3] * \
-        source_frame.iloc[:, 4].div(100*1000)
+    source_frame['fnv'] = source_frame.iloc[:, 4].mul(source_frame.iloc[base, 3]).div(100).div(1000)
     source_frame.iloc[:, 5] = source_frame.iloc[:, 5].div(1000)
     plt.figure(1)
     plt.semilogy(source_frame.iloc[:, 0], source_frame.iloc[:, 6],
@@ -4082,12 +4086,10 @@ def plot_block_zer(source_frame):
         source_frame.iloc[:, 0].div(source_frame.iloc[:, 1]))
     source_frame['log_lab_p'] = np.log(
         source_frame.iloc[:, 2].div(source_frame.iloc[:, 1]))
-    result_frame_a = source_frame.iloc[:, [3, 4]]
-    result_frame_b = source_frame.iloc[:, [5, 6]]
-    a_0, a_1, ea = simple_linear_regression(result_frame_a)
-    plot_simple_linear(result_frame_a, a_0, a_1, ea)
-    b_0, b_1, eb = simple_linear_regression(result_frame_b)
-    plot_simple_log(result_frame_b, b_0, b_1, eb)
+    a_0, a_1, ea = simple_linear_regression(source_frame.iloc[:, [3, 4]])
+    plot_simple_linear(source_frame.iloc[:, [3, 4]], a_0, a_1, ea)
+    b_0, b_1, eb = simple_linear_regression(source_frame.iloc[:, [5, 6]])
+    plot_simple_log(source_frame.iloc[:, [5, 6]], b_0, b_1, eb)
 
 
 def plot_block_one(df: pd.DataFrame) -> None:
@@ -5329,94 +5331,156 @@ def calculate_curve_fit_params(data_frame: pd.DataFrame) -> None:
     print('Factor, b: {:,.4f}; Index, k: {:,.4f}'.format(*params))
 
 
-def plot_lab_prod_polynomial(source_frame):
+def plot_lab_prod_polynomial(df: pd.DataFrame) -> None:
     '''Static Labor Productivity Approximation
-    source_frame.index: Period,
-    source_frame.iloc[:, 0]: Capital,
-    source_frame.iloc[:, 1]: Labor,
-    source_frame.iloc[:, 2]: Product
+    df.index: Period,
+    df.iloc[:, 0]: Capital,
+    df.iloc[:, 1]: Labor,
+    df.iloc[:, 2]: Product
     '''
+    # =========================================================================
+    # TODO: Increase Cohesion
+    # =========================================================================
+
+    def _r2_scores():
+        for _ in range(5):
+            yield r2_score(df.iloc[:, -1], _df.iloc[:, _])
+
     # =========================================================================
     # Labor Capital Intensity
     # =========================================================================
-    data_frame['lab_cap_int'] = source_frame.iloc[:, 0].div(
-        source_frame.iloc[:, 1])
+    df['lab_cap_int'] = df.iloc[:, 0].div(df.iloc[:, 1])
     # =========================================================================
     # Labor Productivity
     # =========================================================================
-    data_frame['lab_product'] = source_frame.iloc[:, 2].div(
-        source_frame.iloc[:, 1])
+    df['lab_product'] = df.iloc[:, 2].div(df.iloc[:, 1])
     # =========================================================================
     # Power Function: Labor Productivity
     # =========================================================================
-    yp_1p = np.polyfit(np.log(data_frame['lab_cap_int']), np.log(
-        data_frame['lab_product']), 1)
+    k, b = np.polyfit(np.log(df.iloc[:, -2]), np.log(df.iloc[:, -1]), 1)
     # =========================================================================
     # Polynomials 1, 2, 3 & 4: Labor Productivity
     # =========================================================================
-    yl_1p = np.polyfit(data_frame['lab_cap_int'], data_frame['lab_product'], 1)
-    yl_2p = np.polyfit(data_frame['lab_cap_int'], data_frame['lab_product'], 2)
-    yl_3p = np.polyfit(data_frame['lab_cap_int'], data_frame['lab_product'], 3)
-    yl_4p = np.polyfit(data_frame['lab_cap_int'], data_frame['lab_product'], 4)
-    PP = np.exp(yp_1p[1])*data_frame['lab_cap_int']**yp_1p[0]
-    y_a_a = yl_1p[1] + yl_1p[0]*data_frame['lab_cap_int']
-    y_b_b = yl_2p[2] + yl_2p[1]*data_frame['lab_cap_int'] + \
-        yl_2p[0]*data_frame['lab_cap_int']**2
-    y_c_c = yl_3p[3] + yl_3p[2]*data_frame['lab_cap_int'] + yl_3p[1] * \
-        data_frame['lab_cap_int']**2 + yl_3p[0]*data_frame['lab_cap_int']**3
-    y_d_d = yl_4p[4] + yl_4p[3]*data_frame['lab_cap_int'] + yl_4p[2] * \
-        data_frame['lab_cap_int']**2 + yl_4p[1] * \
-        data_frame['lab_cap_int']**3 + yl_4p[0]*data_frame['lab_cap_int']**4
+    _p1 = np.polyfit(df.iloc[:, -2], df.iloc[:, -1], 1)
+    _p2 = np.polyfit(df.iloc[:, -2], df.iloc[:, -1], 2)
+    _p3 = np.polyfit(df.iloc[:, -2], df.iloc[:, -1], 3)
+    _p4 = np.polyfit(df.iloc[:, -2], df.iloc[:, -1], 4)
+    # =========================================================================
+    # DataFrame for Approximation Results
+    # =========================================================================
+    _df = pd.DataFrame()
+    _df['pow'] = df.iloc[:, -2].pow(k).mul(np.exp(b))
+    _df['p_1'] = _p1[1] + df.iloc[:, -2].mul(_p1[0])
+    _df['p_2'] = _p2[2] + df.iloc[:, -
+                                  2].mul(_p2[1]) + df.iloc[:, -2].pow(2).mul(_p2[0])
+    _df['p_3'] = _p3[3] + df.iloc[:, -2].mul(_p3[2]) + df.iloc[:, -2].pow(
+        2).mul(_p3[1]) + df.iloc[:, -2].pow(3).mul(_p3[0])
+    _df['p_4'] = _p4[4] + df.iloc[:, -2].mul(_p4[3]) + df.iloc[:, -2].pow(2).mul(
+        _p4[2]) + df.iloc[:, -2].pow(3).mul(_p4[1]) + df.iloc[:, -2].pow(4).mul(_p4[0])
     # =========================================================================
     # Deltas
     # =========================================================================
-    d_p_p = np.absolute((np.exp(yp_1p[1])*data_frame['lab_cap_int'] **
-                        yp_1p[0]-data_frame['lab_product']).div(data_frame['lab_product']))
-    d_y_a_a = np.absolute(
-        (YAA-data_frame['lab_product']).div(data_frame['lab_product']))
-    d_y_b_b = np.absolute(
-        (YBB-data_frame['lab_product']).div(data_frame['lab_product']))
-    d_y_c_c = np.absolute(
-        (YCC-data_frame['lab_product']).div(data_frame['lab_product']))
-    d_y_d_d = np.absolute(
-        (YDD-data_frame['lab_product']).div(data_frame['lab_product']))
-
-    r_20 = r2_score(y, pp)
-    r_21 = r2_score(y, yaa)
-    r_22 = r2_score(y, ybb)
-    r_23 = r2_score(y, ycc)
-    r_24 = r2_score(y, ydd)
+    _df['d_pow'] = np.absolute(_df.iloc[:, 0].div(df.iloc[:, -1]).sub(1))
+    _df['d_p_1'] = np.absolute(_df.iloc[:, 1].div(df.iloc[:, -1]).sub(1))
+    _df['d_p_2'] = np.absolute(_df.iloc[:, 2].div(df.iloc[:, -1]).sub(1))
+    _df['d_p_3'] = np.absolute(_df.iloc[:, 3].div(df.iloc[:, -1]).sub(1))
+    _df['d_p_4'] = np.absolute(_df.iloc[:, 4].div(df.iloc[:, -1]).sub(1))
+    r = _r2_scores()
     plt.figure(1)
-    plt.scatter(data_frame['lab_product'], label='Labor Productivity')
-    plt.plot(PP, label='$\\hat Y = {:.2f}X^{{{:.2f}}}, R^2 = {:.4f}$'.format(
-        np.exp(yp_1p[1]), yp_1p[0], r_20))
+    plt.scatter(
+        df.iloc[:, [-1]].index,
+        df.iloc[:, [-1]],
+        label='Labor Productivity'
+    )
     plt.plot(
-        YAA, label='$\\hat P_{{{}}}(X) = {:.2f}+{:.2f}X, R^2 = {:.4f}$'.format(1, yl_1p[1], yl_1p[0], r_21))
-    plt.plot(YBB, label='$\\hat P_{{{}}}(X) = {:.2f}+{:.2f}X {:.2f}X^2, R^2 = {:.4f}$'.format(
-        2, yl_2p[2], yl_2p[1], yl_2p[0], r_22))
-    plt.plot(YCC, label='$\\hat P_{{{}}}(X) = {:.2f}+{:.2f}X {:.2f}X^2+{:.2f}X^3, R^2 = {:.4f}$'.format(
-        3, yl_3p[3], yl_3p[2], yl_3p[1], yl_3p[0], r_23))
-    plt.plot(YDD, label='$\\hat P_{{{}}}(X) = {:.2f}+{:.2f}X {:.2f}X^2+{:.2f}X^3 {:.2f}X^4, R^2 = {:.4f}$'.format(
-        4, yl_4p[4], yl_4p[3], yl_4p[2], yl_4p[1], yl_4p[0], r_24))
+        _df.iloc[:, 0],
+        label='$\\hat Y = {:.2f}X^{{{:.2f}}}, R^2 = {:.4f}$'.format(
+            np.exp(b),
+            k,
+            next(r),
+        )
+    )
+    plt.plot(
+        _df.iloc[:, 1],
+        label='$\\hat P_{{{}}}(X) = {:.2f}+{:.2f}X, R^2 = {:.4f}$'.format(
+            1,
+            *_p1[::-1],
+            next(r),
+        )
+    )
+    plt.plot(
+        _df.iloc[:, 2], label='$\\hat P_{{{}}}(X) = {:.2f}+{:.2f}X {:.2f}X^2, R^2 = {:.4f}$'.format(
+            2,
+            *_p2[::-1],
+            next(r),
+        )
+    )
+    plt.plot(
+        _df.iloc[:, 3], label='$\\hat P_{{{}}}(X) = {:.2f}+{:.2f}X {:.2f}X^2+{:.2f}X^3, R^2 = {:.4f}$'.format(
+            3,
+            *_p3[::-1],
+            next(r),
+        )
+    )
+    plt.plot(
+        _df.iloc[:, 4], label='$\\hat P_{{{}}}(X) = {:.2f}+{:.2f}X {:.2f}X^2+{:.2f}X^3 {:.2f}X^4, R^2 = {:.4f}$'.format(
+            4,
+            *_p4[::-1],
+            next(r),
+        )
+    )
     plt.title('Labor Capital Intensity & Labor Productivity, {}$-${}'.format(
-        source_frame.index[0], source_frame.index[-1]))
+        df.index[0], df.index[-1]))
     plt.xlabel('Labor Capital Intensity')
     plt.ylabel('Labor Productivity')
     plt.grid(True)
     plt.legend()
     plt.figure(2)
     plt.plot(
-        DPP, ':', label='$\\|\\frac{{\\hat Y-Y}}{{Y}}\\|, \\bar S = {:.4%}$'.format(DPP.mean()))
+        _df.iloc[:, 5],
+        ':',
+        label='$\\|\\frac{{\\hat Y-Y}}{{Y}}\\|, \\bar S = {:.4f}$'.format(
+            _df.iloc[:, 5].mean()
+        )
+    )
     plt.plot(
-        DYAA, ':', label='$\\|\\frac{{\\hat P_{{{}}}(X)-Y}}{{Y}}\\|, \\bar S = {:.4%}$'.format(1, DYAA.mean()))
+        _df.iloc[:, 6],
+        ':',
+        label='$\\|\\frac{{\\hat P_{{{}}}(X)-Y}}{{Y}}\\|, \\bar S = {:.4f}$'.format(
+            1,
+            _df.iloc[:, 6].mean()
+        )
+    )
     plt.plot(
-        DYBB, ':', label='$\\|\\frac{{\\hat P_{{{}}}(X)-Y}}{{Y}}\\|, \\bar S = {:.4%}$'.format(2, DYBB.mean()))
+        _df.iloc[:, 7],
+        ':',
+        label='$\\|\\frac{{\\hat P_{{{}}}(X)-Y}}{{Y}}\\|, \\bar S = {:.4f}$'.format(
+            2,
+            _df.iloc[:, 7].mean()
+        )
+    )
     plt.plot(
-        DYCC, ':', label='$\\|\\frac{{\\hat P_{{{}}}(X)-Y}}{{Y}}\\|, \\bar S = {:.4%}$'.format(3, DYCC.mean()))
+        _df.iloc[:, 8],
+        ':',
+        label='$\\|\\frac{{\\hat P_{{{}}}(X)-Y}}{{Y}}\\|, \\bar S = {:.4f}$'.format(
+            3,
+            _df.iloc[:, 8].mean()
+        )
+    )
     plt.plot(
-        DYDD, ':', label='$\\|\\frac{{\\hat P_{{{}}}(X)-Y}}{{Y}}\\|, \\bar S = {:.4%}$'.format(4, DYDD.mean()))
-    plt.title('Deltas of Labor Capital Intensity & Labor Productivity, {}$-${}'.format(
-        source_frame.index[0], source_frame.index[-1]))
+        _df.iloc[:, 9],
+        ':',
+        label='$\\|\\frac{{\\hat P_{{{}}}(X)-Y}}{{Y}}\\|, \\bar S = {:.4f}$'.format(
+            4,
+            _df.iloc[:, 9].mean()
+        )
+    )
+    plt.title(
+        'Deltas of Labor Capital Intensity & Labor Productivity, {}$-${}'.format(
+            df.index[0],
+            df.index[-1]
+        )
+    )
     plt.xlabel('Labor Capital Intensity')
     plt.ylabel('Labor Productivity')
     plt.grid(True)
@@ -5495,8 +5559,8 @@ def plot_turnover(source_frame):
     # Exponential: Fixed Assets Turnover
     # =========================================================================
     ke_1p = np.polyfit(source_frame.iloc[:, 0], np.log(K), 1)
-    K_1 = kl_1p[1] + kl_1p[0]*source_frame.iloc[:, 0]
-    K_2 = np.exp(ke_1p[1] + ke_1p[0]*source_frame.iloc[:, 0])
+    K_1 = kl_1p[1] + source_frame.iloc[:, 0].mul(kl_1p[0])
+    K_2 = np.exp(ke_1p[1] + source_frame.iloc[:, 0].mul(ke_1p[0]))
     # =========================================================================
     # Deltas
     # =========================================================================
@@ -5548,8 +5612,8 @@ def simple_linear_regression(source_frame):
     '''Summarize'''
     s_1 = sum(source_frame.iloc[:, 0])
     s_2 = sum(source_frame.iloc[:, 1])
-    s_3 = sum((source_frame.iloc[:, 0])**2)
-    s_4 = sum(source_frame.iloc[:, 0]*source_frame.iloc[:, 1])
+    s_3 = sum(source_frame.iloc[:, 0].pow(2))
+    s_4 = sum(source_frame.iloc[:, 0].mul(source_frame.iloc[:, 1]))
     '''Approximation'''
     a_0 = (s_2*s_3-s_1*s_4)/(source_frame.shape[0]*s_3-s_1**2)
     a_1 = (source_frame.shape[0]*s_4-s_1*s_2) / \
@@ -6067,9 +6131,9 @@ def plot_capital_modelling(source_frame, base):
     QL = np.polyfit(source_frame.iloc[:, 0], source_frame.iloc[:, 2].div(
         source_frame.iloc[:, 3]), 1)
     '''Gross Fixed Investment to Gross Domestic Product Ratio'''
-    S = QS[1] + QS[0]*source_frame.iloc[:, 0]
+    S = QS[1] + source_frame.iloc[:, 0].mul(QS[0])
     '''Fixed Assets Turnover'''
-    L = QL[1] + QL[0]*source_frame.iloc[:, 0]
+    L = QL[1] + source_frame.iloc[:, 0].mul(QL[0])
     KA = calculate_capital(source_frame, QS[1], QS[0], QL[1], QL[0], 0.875)
     KB = calculate_capital(source_frame, QS[1], QS[0], QL[1], QL[0], 1)
     KC = calculate_capital(source_frame, QS[1], QS[0], QL[1], QL[0], 1.125)
@@ -6136,7 +6200,7 @@ def plot_fourier_discrete(source_frame, precision=10):
     Discrete Fourier Transform based on Simpson's Rule
     '''
     f_1p = np.polyfit(source_frame.iloc[:, 0], source_frame.iloc[:, 1], 1)
-    LX = f_1p[1] + f_1p[0]*source_frame.iloc[:, 0]
+    LX = f_1p[1] + source_frame.iloc[:, 0].mul(f_1p[0])
     Q = []  # Blank List for Fourier Coefficients
     for i in range(1 + precision):
         c = 2*(source_frame.iloc[:, 1]-LX)*np.cos(2*np.pi*i*(
@@ -6183,7 +6247,7 @@ def plot_elasticity(source):
     while abs(source.iloc[i, 2]-source.iloc[i, 1]) > 1:
         i -= 1
         base = i
-    source['ser'] = source.iloc[:, 1]*source.iloc[:, 3].div(source.iloc[:, 2])
+    source['ser'] = source.iloc[:, 1].mul(source.iloc[:, 3]).div(source.iloc[:, 2])
     # source['sma'] = (source.iloc[:, 4] + source.iloc[:, 4].shift(1))/2
     source['sma'] = source.iloc[:, 4].rolling(window=2).mean()
     source['ela'] = 2*(source.iloc[:, 4]-source.iloc[:, 4].shift(1)
@@ -6435,8 +6499,8 @@ def plot_e(source_frame):
     source_frame['L'] = source_frame.iloc[:, 1].div(source_frame.iloc[:, 2])
     QS = np.polyfit(source_frame.iloc[:, 0], source_frame.iloc[:, 1], 1)
     QL = np.polyfit(source_frame.iloc[:, 1], source_frame.iloc[:, 2], 1)
-    source_frame['RS'] = QS[1] + QS[0]*source_frame.iloc[:, 0]
-    source_frame['RL'] = QL[1] + QL[0]*source_frame.iloc[:, 2]
+    source_frame['RS'] = QS[1] + source_frame.iloc[:, 0].mul(QS[0])
+    source_frame['RL'] = QL[1] + source_frame.iloc[:, 2].mul(QL[0])
     plt.figure()
     plt.semilogy(source_frame.iloc[:, 0], source_frame.iloc[:, 1])
     plt.semilogy(source_frame.iloc[:, 0], source_frame.iloc[:, 5])
