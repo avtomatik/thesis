@@ -5541,61 +5541,93 @@ def plot_simple_log(source_frame, coef_1, coef_2, e):
     plt.show()
 
 
-def plot_turnover(source_frame):
+def plot_turnover(df: pd.DataFrame) -> None:
     '''Static Fixed Assets Turnover Approximation
-    source_frame.iloc[:, 0]: Period,
-    source_frame.iloc[:, 1]: Capital,
-    source_frame.iloc[:, 2]: Product
+    df.index: Period,
+    df.iloc[:, 0]: Capital,
+    df.iloc[:, 1]: Product
     '''
     # =========================================================================
     # Fixed Assets Turnover
     # =========================================================================
-    K = source_frame.iloc[:, 2].div(source_frame.iloc[:, 1])
+    df['c_turnover'] = df.iloc[:, 1].div(df.iloc[:, 0])
     # =========================================================================
     # Linear: Fixed Assets Turnover
     # =========================================================================
-    kl_1p = np.polyfit(source_frame.iloc[:, 0], K, 1)
+    _lin = np.polyfit(df.index, df.iloc[:, -1], 1)
     # =========================================================================
     # Exponential: Fixed Assets Turnover
     # =========================================================================
-    ke_1p = np.polyfit(source_frame.iloc[:, 0], np.log(K), 1)
-    K_1 = kl_1p[1] + source_frame.iloc[:, 0].mul(kl_1p[0])
-    K_2 = np.exp(ke_1p[1] + source_frame.iloc[:, 0].mul(ke_1p[0]))
+    _exp = np.polyfit(df.index, np.log(df.iloc[:, -1]), 1)
+    df['c_turnover_lin'] = df.index.to_series().mul(_lin[0]).add(_lin[1])
+    df['c_turnover_exp'] = np.exp(df.index.to_series().mul(_exp[0]).add(_exp[1]))
     # =========================================================================
     # Deltas
     # =========================================================================
-    DK_1 = np.absolute((K_1-K).div(K))
-    DK_2 = np.absolute((K_2-K).div(K))
-
-    r_21 = r2_score(K, K_1)
-    r_22 = r2_score(K, K_2)
+    df['d_lin'] = np.absolute(df.iloc[:, -2].div(df.iloc[:, -3]).sub(1))
+    df['d_exp'] = np.absolute(df.iloc[:, -2].div(df.iloc[:, -4]).sub(1))
     plt.figure(1)
-    plt.plot(source_frame.iloc[:, 2].div(
-        source_frame.iloc[:, 1]), source_frame.iloc[:, 1])
-    plt.title('Fixed Assets Volume to Fixed Assets Turnover, {}$-${}'.format(
-        source_frame.iloc[0, 0], source_frame.iloc[source_frame.shape[0]-1, 0]))
+    plt.plot(df.iloc[:, 2], df.iloc[:, 0])
+    plt.title(
+        'Fixed Assets Volume to Fixed Assets Turnover, {}$-${}'.format(
+            df.index[0],
+            df.index[-1]
+        )
+    )
     plt.xlabel('Fixed Assets Turnover')
     plt.ylabel('Fixed Assets Volume')
     plt.grid(True)
     plt.figure(2)
-    plt.scatter(source_frame.iloc[:, 0], K, label='Fixed Assets Turnover')
-    plt.plot(source_frame.iloc[:, 0], K_1, label='$\\hat K_{{l}} = {:.2f} {:.2f} t, R^2 = {:.4f}$'.format(
-        kl_1p[1], kl_1p[0], r_21))
-    plt.plot(source_frame.iloc[:, 0], K_2, label='$\\hat K_{{e}} = \\exp ({:.2f} {:.2f} t), R^2 = {:.4f}$'.format(
-        ke_1p[1], ke_1p[0], r_22))
-    plt.title('Fixed Assets Turnover Approximation, {}$-${}'.format(source_frame.iloc[0, 0],
-                                                                    source_frame.iloc[source_frame.shape[0]-1, 0]))
+    plt.scatter(
+        df.index,
+        df.iloc[:, -5],
+        label='Fixed Assets Turnover'
+    )
+    plt.plot(
+        df.iloc[:, [-4]],
+        label='$\\hat K_{{l}} = {:.2f} {:.2f} t, R^2 = {:.4f}$'.format(
+            *_lin[::-1],
+            r2_score(df.iloc[:, -5], df.iloc[:, -4])
+        )
+    )
+    plt.plot(
+        df.iloc[:, [-3]],
+        label='$\\hat K_{{e}} = \\exp ({:.2f} {:.2f} t), R^2 = {:.4f}$'.format(
+            *_exp[::-1],
+            r2_score(df.iloc[:, -5], df.iloc[:, -3])
+        )
+    )
+    plt.title(
+        'Fixed Assets Turnover Approximation, {}$-${}'.format(
+            df.index[0],
+            df.index[-1]
+        )
+    )
     plt.xlabel('Period')
     plt.ylabel('Index')
     plt.grid(True)
     plt.legend()
     plt.figure(3)
-    plt.plot(source_frame.iloc[:, 0], DK_1, ':',
-             label='$\\|\\frac{{\\hat K_{{l}}-K}}{{K}}\\|, \\bar S = {:.4%}$'.format(DK_1.mean()))
-    plt.plot(source_frame.iloc[:, 0], DK_2, ':',
-             label='$\\|\\frac{{\\hat K_{{e}}-K}}{{K}}\\|, \\bar S = {:.4%}$'.format(DK_2.mean()))
-    plt.title('Deltas of Fixed Assets Turnover Approximation, {}$-${}'.format(source_frame.iloc[0, 0],
-                                                                              source_frame.iloc[source_frame.shape[0]-1, 0]))
+    plt.plot(
+        df.iloc[:, [-2]],
+        ':',
+        label='$\\|\\frac{{\\hat K_{{l}}-K}}{{K}}\\|, \\bar S = {:.4%}$'.format(
+            df.iloc[:, -2].mean()
+        )
+    )
+    plt.plot(
+        df.iloc[:, [-1]],
+        ':',
+        label='$\\|\\frac{{\\hat K_{{e}}-K}}{{K}}\\|, \\bar S = {:.4%}$'.format(
+            df.iloc[:, -1].mean()
+        )
+    )
+    plt.title(
+        'Deltas of Fixed Assets Turnover Approximation, {}$-${}'.format(
+            df.index[0],
+            df.index[-1]
+        )
+    )
     plt.xlabel('Period')
     plt.ylabel('Index')
     plt.grid(True)
