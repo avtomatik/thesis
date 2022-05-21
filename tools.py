@@ -4064,32 +4064,29 @@ def plot_d(source_frame):
     plt.show()
 
 
-def plot_block_zer(source_frame):
+def plot_block_zer(df: pd.DataFrame) -> None:
     '''
-    source_frame.index: Period,
-    source_frame.iloc[:, 0]: Capital,
-    source_frame.iloc[:, 1]: Labor,
-    source_frame.iloc[:, 2]: Product
+    df.index: Period,
+    df.iloc[:, 0]: Capital,
+    df.iloc[:, 1]: Labor,
+    df.iloc[:, 2]: Product
     '''
-    pd.options.mode.chained_assignment = None
     # =========================================================================
     # Labor Capital Intensity
     # =========================================================================
-    source_frame['lab_cap_int'] = source_frame.iloc[:, 0].div(
-        source_frame.iloc[:, 1])
+    df['lab_cap_int'] = df.iloc[:, 0].div(df.iloc[:, 1])
     # =========================================================================
     # Labor Productivity
     # =========================================================================
-    source_frame['lab_product'] = source_frame.iloc[:, 2].div(
-        source_frame.iloc[:, 1])
-    source_frame['log_lab_c'] = np.log(
-        source_frame.iloc[:, 0].div(source_frame.iloc[:, 1]))
-    source_frame['log_lab_p'] = np.log(
-        source_frame.iloc[:, 2].div(source_frame.iloc[:, 1]))
-    a_0, a_1, ea = simple_linear_regression(source_frame.iloc[:, [3, 4]])
-    plot_simple_linear(source_frame.iloc[:, [3, 4]], a_0, a_1, ea)
-    b_0, b_1, eb = simple_linear_regression(source_frame.iloc[:, [5, 6]])
-    plot_simple_log(source_frame.iloc[:, [5, 6]], b_0, b_1, eb)
+    df['lab_product'] = df.iloc[:, 2].div(df.iloc[:, 1])
+    df['log_lab_c'] = np.log(df.iloc[:, 0].div(df.iloc[:, 1]))
+    df['log_lab_p'] = np.log(df.iloc[:, 2].div(df.iloc[:, 1]))
+    plot_simple_linear(
+        *simple_linear_regression(df.iloc[:, [3, 4]])
+    )
+    plot_simple_log(
+        *simple_linear_regression(df.iloc[:, [5, 6]])
+    )
 
 
 def plot_block_one(df: pd.DataFrame) -> None:
@@ -5488,25 +5485,45 @@ def plot_lab_prod_polynomial(df: pd.DataFrame) -> None:
     plt.show()
 
 
-def plot_simple_linear(source_frame, coef_1, coef_2, E):
+def plot_simple_linear(df: pd.DataFrame, params: tuple[float]) -> None:
     '''
     Labor Productivity on Labor Capital Intensity Plot;
     Predicted Labor Productivity Plot
     '''
     plt.figure(1)
-    plt.plot(source_frame.iloc[:, 0],
-             source_frame.iloc[:, 1], label='Original')
-    plt.title('$Labor\ Capital\ Intensity$, $Labor\ Productivity$ Relation, {}$-${}'.format(
-        source_frame.index[0], source_frame.index[-1]))
+    plt.plot(
+        df.iloc[:, 0],
+        df.iloc[:, 1],
+        label='Original'
+    )
+    plt.title(
+        '$Labor\ Capital\ Intensity$, $Labor\ Productivity$ Relation, {}$-${}'.format(
+            df.index[0],
+            df.index[-1]
+        )
+    )
     plt.xlabel('Labor Capital Intensity')
     plt.ylabel('Labor Productivity')
     plt.grid(True)
     plt.legend()
     plt.figure(2)
     plt.plot(
-        E, label='$\\frac{Y}{Y_{0}} = %f\\frac{L}{L_{0}}+%f\\frac{K}{K_{0}}$' % (coef_1, coef_2))
-    plt.title('Model: $\\hat Y = {:.4f}+{:.4f}\\times X$, {}$-${}'.format(
-        coef_1, coef_2, source_frame.index[0], source_frame.index[-1]))
+        df.iloc[:, 2],
+        # =====================================================================
+        # TODO:
+        # label='$\\frac{{Y}{Y_{0}} = {{:,.4f}}\\frac{{L}{L_{0}}+{{:,.4f}}\\frac{{K}{K_{0}}$'.format(
+        #     *params[::-1]
+        # )
+        # =====================================================================
+        label='TBA'
+    )
+    plt.title(
+        'Model: $\\hat Y = {:.4f}+{:.4f}\\times X$, {}$-${}'.format(
+            *params[::-1],
+            df.index[0],
+            df.index[-1]
+        )
+    )
     plt.xlabel('Period')
     plt.ylabel('$\\hat Y = Labor\ Productivity$, $X = Labor\ Capital\ Intensity$')
     plt.grid(True)
@@ -5514,28 +5531,48 @@ def plot_simple_linear(source_frame, coef_1, coef_2, E):
     plt.show()
 
 
-def plot_simple_log(source_frame, coef_1, coef_2, e):
+def plot_simple_log(df: pd.DataFrame, params: tuple[float]) -> None:
     '''
     Log Labor Productivity on Log Labor Capital Intensity Plot;
     Predicted Log Labor Productivity Plot
     '''
     plt.figure(1)
-    plt.plot(source_frame.iloc[:, 0],
-             source_frame.iloc[:, 1], label='Logarithm')
-    plt.title('$\\ln(Labor\ Capital\ Intensity), \\ln(Labor\ Productivity)$ Relation, {}$-${}'.format(
-        source_frame.index[0], source_frame.index[-1]))
+    plt.plot(
+        df.iloc[:, 0],
+        df.iloc[:, 1],
+        label='Logarithm'
+    )
+    plt.title(
+        '$\\ln(Labor\ Capital\ Intensity), \\ln(Labor\ Productivity)$ Relation, {}$-${}'.format(
+            df.index[0],
+            df.index[-1]
+        )
+    )
     plt.xlabel('$\\ln(Labor\ Capital\ Intensity)$')
     plt.ylabel('$\\ln(Labor\ Productivity)$')
     plt.grid(True)
     plt.legend()
     plt.figure(2)
     plt.plot(
-        e, label='$\\ln(\\frac{Y}{Y_{0}}) = %f+%f\\ln(\\frac{K}{K_{0}})+%f\\ln(\\frac{L}{L_{0}})$' % (coef_1, coef_2, 1-coef_2))
+        df.iloc[:, 2],
+        # =====================================================================
+        # TODO
+        # =====================================================================
+        label='$\\ln(\\frac{Y}{Y_{0}}) = %f+%f\\ln(\\frac{K}{K_{0}})+%f\\ln(\\frac{L}{L_{0}})$' % (
+            *params[::-1],
+            1 - params[0]
+        )
+    )
     plt.title('Model: $\\ln(\\hat Y) = {:.4f}+{:.4f}\\times \\ln(X)$, {}$-${}'.format(
-        coef_1, coef_2, source_frame.index[0], source_frame.index[-1]))
+        *params[::-1],
+        df.index[0],
+        df.index[-1]
+        )
+    )
     plt.xlabel('Period')
     plt.ylabel(
-        '$\\hat Y = \\ln(Labor\ Productivity)$, $X = \\ln(Labor\ Capital\ Intensity)$')
+        '$\\hat Y = \\ln(Labor\ Productivity)$, $X = \\ln(Labor\ Capital\ Intensity)$'
+    )
     plt.grid(True)
     plt.legend()
     plt.show()
@@ -5635,35 +5672,41 @@ def plot_turnover(df: pd.DataFrame) -> None:
     plt.show()
 
 
-def simple_linear_regression(source_frame):
+def simple_linear_regression(df: pd.DataFrame):
     '''Determining of Coefficients of Regression
-    source_frame.index: Period,
-    source_frame.iloc[:, 0]: Regressor,
-    source_frame.iloc[:, 1]: Regressand
+    df.index: Period,
+    df.iloc[:, 0]: Regressor,
+    df.iloc[:, 1]: Regressand
     '''
-    '''Summarize'''
-    s_1 = sum(source_frame.iloc[:, 0])
-    s_2 = sum(source_frame.iloc[:, 1])
-    s_3 = sum(source_frame.iloc[:, 0].pow(2))
-    s_4 = sum(source_frame.iloc[:, 0].mul(source_frame.iloc[:, 1]))
-    '''Approximation'''
-    a_0 = (s_2*s_3-s_1*s_4)/(source_frame.shape[0]*s_3-s_1**2)
-    a_1 = (source_frame.shape[0]*s_4-s_1*s_2) / \
-        (source_frame.shape[0]*s_3-s_1**2)
-    e = a_0 + a_1*(source_frame.iloc[:, 0])
-    my = np.mean(source_frame.iloc[:, 1])
-    ess = sum((source_frame.iloc[:, 1]-a_0-a_1*source_frame.iloc[:, 0])**2)
-    TSS = sum((source_frame.iloc[:, 1]-MY)**2)
-    R_2 = 1-ESS/TSS
-    '''Delivery Block'''
-    print('Period From {} Through {}'.format(
-        source_frame.index[0], source_frame.index[-1]))
-    print('Model: Yhat = {:,.4f}+{:,.4f}*X'.format(A_0, A_1))
-    print('Model Parameter: A_0 = {:,.4f}'.format(A_0))
-    print('Model Parameter: A_1 = {:,.4f}'.format(A_1))
-    print(
-        'Model Result: ESS = {:,.4f}; TSS = {:,.4f}; R**2 = {:,.4f}'.format(ESS, TSS, R_2))
-    return A_0, A_1, E
+    # =========================================================================
+    # TODO: Eliminate This Function
+    # =========================================================================
+    params, _ess, *_ = np.polyfit(
+        df.iloc[:, 0],
+        df.iloc[:, 1],
+        deg=1,
+        full=True
+    )
+    # =========================================================================
+    # Approximation
+    # =========================================================================
+    df[f'{df.columns[1]}_estimate'] = df.iloc[:, 0].mul(
+        params[0]).add(params[1])
+    _r = r2_score(df.iloc[:, 1], df.iloc[:, -1])
+    _tss = _ess[0] / (1 - _r)
+    # =========================================================================
+    # Delivery Block
+    # =========================================================================
+    print('Period From {} Through {}'.format(df.index[0], df.index[-1]))
+    print('Model: Yhat = {:,.4f} + {:,.4f}*X'.format(*params[::-1]))
+    print('Model Parameter: A_0 = {:,.4f}'.format(params[1]))
+    print('Model Parameter: A_1 = {:,.4f}'.format(params[0]))
+    print('Model Result: ESS = {:,.4f}; TSS = {:,.4f}; R^2 = {:,.4f}'.format(
+        _ess[0],
+        _tss,
+        _r
+    ))
+    return df, params
 
 
 def plot_cobb_douglas_complex(source_frame):
