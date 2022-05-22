@@ -3789,66 +3789,67 @@ def preprocessing_kurenkov(data_testing: pd.DataFrame) -> tuple[pd.DataFrame]:
     return data_a, data_b, data_c, data_d
 
 
-def plot_approx_linear(source_frame):
+def plot_approx_linear(df: pd.DataFrame):
     '''
-    source_frame.iloc[:, 0]: Period,
-    source_frame.iloc[:, 1]: Real Values for Price Deflator,
-    source_frame.iloc[:, 2]: Nominal Values for Price Deflator,
-    source_frame.iloc[:, 3]: Regressor,
-    source_frame.iloc[:, 4]: Regressand
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Real Values for Price Deflator
+    df.iloc[:, 1]      Nominal Values for Price Deflator
+    df.iloc[:, 2]      Regressor
+    df.iloc[:, 3]      Regressand
+    ================== =================================
     '''
-    i = source_frame.shape[0]-1
-    while abs(source_frame.iloc[i, 2]-source_frame.iloc[i, 1]) > 1:
-        i -= 1
-        base = i  # Basic Year
-    D = source_frame.iloc[:, 1].div(source_frame.iloc[:, 2])  # Deflator
-    # DataFrame for Based Linear Approximation Results
-    result_frame = source_frame.iloc[:, 0]
-    calcul_frame = []  # Blank List for Calculation Results
-    for i in range(source_frame.shape[0]):
-        X = source_frame.iloc[i, 3]*D[i]/(source_frame.iloc[0, 3]*D[0])
-        Y = source_frame.iloc[i, 4]*D[i]/(source_frame.iloc[0, 4]*D[0])
-        calcul_frame.append({'X': X, 'Y': Y})
-
-    calcul_frame = pd.DataFrame(calcul_frame)  # Convert List to Dataframe
-    result_frame = pd.concat([result_frame, calcul_frame], axis=1, sort=True)
-
-    S_1, S_2, S_3, S_4 = 0, 0, 0, 0  # X, Y, X**2, XY # # Summarize
-    for i in range(source_frame.shape[0]):
-        S_1 += source_frame.iloc[i, 3]*D[i]/(source_frame.iloc[0, 3]*D[0])
-        S_2 += source_frame.iloc[i, 4]*D[i]/(source_frame.iloc[0, 4]*D[0])
-        S_3 += (source_frame.iloc[i, 3]*D[i]/(source_frame.iloc[0, 3]*D[0]))**2
-        S_4 += source_frame.iloc[i, 3]*source_frame.iloc[i, 4]*(D[i])**2/(
-            source_frame.iloc[0, 3]*source_frame.iloc[0, 4]*(D[0]**2))
-    '''Approximation'''
-    A_0 = (S_2*S_3-S_1*S_4)/(source_frame.shape[0]*S_3-S_1**2)
-    A_1 = (source_frame.shape[0]*S_4-S_1*S_2) / \
-        (source_frame.shape[0]*S_3-S_1**2)
-    calcul_frame = []  # Blank List for Calculation Results
-    for i in range(source_frame.shape[0]):
-        Y = A_0 + A_1*source_frame.iloc[i, 3] * \
-            D[i]/(source_frame.iloc[0, 3]*D[0])
-        calcul_frame.append({'YH': Y})
-
-    calcul_frame = pd.DataFrame(calcul_frame)  # Convert List to Dataframe
-    result_frame = pd.concat([result_frame, calcul_frame], axis=1, sort=True)
-
-    print('Period From: {} Through: {}'.format(
-        source_frame.iloc[0, 0], source_frame.iloc[source_frame.shape[0]-1, 0]))
-    print('Prices: {}=100'.format(source_frame.iloc[base, 0]))
-    print('Model: Yhat = {:.4f}+{:.4f}*X'.format(A_0, A_1))
-    print('Model Parameter: A_0 = {:.4f}'.format(A_0))
-    print('Model Parameter: A_1 = {:.4f}'.format(A_1))
+    df.iloc[:, -1] = pd.to_numeric(df.iloc[:, -1], errors='coerce')
+    df.dropna(inplace=True)
+    # =========================================================================
+    # TODO: Separate Basic Year Function
+    # =========================================================================
+    df['__deflator'] = np.absolute(df.iloc[:, 0].div(df.iloc[:, 1]).sub(1))
+    _b = df.iloc[:, -1].astype(float).argmin()
+    df.drop(df.columns[-1], axis=1, inplace=True)
+    # =========================================================================
+    # Deflator
+    # =========================================================================
+    df['deflator'] = df.iloc[:, 0].div(df.iloc[:, 1])
+    df[f'{df.columns[2]}_bas'] = df.iloc[:, 2].mul(df.iloc[:, 4]).div(
+        df.iloc[0, 2]).div(df.iloc[0, 4]).astype(float)
+    df[f'{df.columns[3]}_bas'] = df.iloc[:, 3].mul(df.iloc[:, 4]).div(
+        df.iloc[0, 3]).div(df.iloc[0, 4]).astype(float)
+    _p1 = np.polyfit(
+        df.iloc[:, -2],
+        df.iloc[:, -1],
+        deg=1
+    )
+    # =========================================================================
+    # Yhat
+    # =========================================================================
+    df[f'{df.columns[3]}_estimate'] = df.iloc[:, -2].mul(_p1[0]).add(_p1[1])
+    print('Period From: {} Through: {}'.format(df.index[0], df.index[-1]))
+    print('Prices: {}=100'.format(df.index[_b]))
+    print('Model: Yhat = {:.4f} + {:.4f}*X'.format(*_p1[::-1]))
+    print('Model Parameter: A_0 = {:.4f}'.format(_p1[1]))
+    print('Model Parameter: A_1 = {:.4f}'.format(_p1[0]))
     plt.figure()
-    plt.title('$Y(X)$, {}=100, {}$-${}'.format(
-        source_frame.iloc[base, 0], source_frame.iloc[0, 0], source_frame.iloc[source_frame.shape[0]-1, 0]))
-    plt.xlabel('Gross Private Domestic Investment, $X(\\tau)$, {}=100, {}=100'.format(
-        source_frame.iloc[base, 0], source_frame.iloc[0, 0]))
-    plt.ylabel('Gross Domestic Product, $Y(\\tau)$, {}=100, {}=100'.format(
-        source_frame.iloc[base, 0], source_frame.iloc[0, 0]))
-    plt.plot(result_frame.iloc[:, 1], result_frame.iloc[:, 2])
-    plt.plot(result_frame.iloc[:, 1], result_frame.iloc[:, 3],
-             label='$\\hat Y = {:.4f}+{:.4f}X$'.format(A_0, A_1))
+    plt.title(
+        '$Y(X)$, {}=100, {}$-${}'.format(
+            df.index[_b], df.index[0], df.index[-1]
+        )
+    )
+    plt.xlabel(
+        'Gross Private Domestic Investment, $X(\\tau)$, {}=100, {}=100'.format(
+            df.index[_b], df.index[0]
+        )
+    )
+    plt.ylabel(
+        'Gross Domestic Product, $Y(\\tau)$, {}=100, {}=100'.format(
+            df.index[_b], df.index[0]
+        )
+    )
+    plt.plot(df.iloc[:, -3], df.iloc[:, -2])
+    plt.plot(
+        df.iloc[:, -3], df.iloc[:, -1],
+        label='$\\hat Y = {:.4f}+{:.4f}X$'.format(*_p1[::-1])
+    )
     plt.grid(True)
     plt.legend()
     plt.show()
