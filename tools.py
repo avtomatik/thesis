@@ -6103,40 +6103,42 @@ def plot_census_k():
         plt.show()
 
 
-def plot_growth_elasticity(df: pd.DataFrame):
+def plot_growth_elasticity(df: pd.DataFrame) -> None:
     '''Growth Elasticity Plotting
-        df.index: Period,
-        df.iloc[:, 0]: Series
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Series
+    ================== =================================
     '''
     # =========================================================================
     # TODO: Increase Cohesion of This Code: Send Plotting to Separate Function
     # =========================================================================
     df.reset_index(level=0, inplace=True)
-    data_frame = pd.DataFrame()
+    _df = pd.DataFrame()
     # =========================================================================
-    # `period`: Period, Centered
+    # Period, Centered
     # =========================================================================
-    data_frame[f'{df.columns[0]}'] = df.iloc[:, [0]].rolling(2).mean()
+    _df[f'{df.columns[0]}'] = df.iloc[:, [0]].rolling(2).mean()
+    df.index.to_series().rolling(2).mean()
     # =========================================================================
-    # `value_a`: Value, Centered
+    # Series, Centered
     # =========================================================================
-    data_frame[f'{df.columns[1]}_centered'] = df.iloc[:, [1]].rolling(2).mean()
+    _df[f'{df.columns[1]}_centered'] = df.iloc[:, [1]].rolling(2).mean()
     # =========================================================================
-    # `value_b`: Value, Growth Rate
+    # Series, Growth Rate
     # =========================================================================
-    data_frame[f'{df.columns[1]}_growth_rate'] = df.iloc[:, [1]].sub(
+    _df[f'{df.columns[1]}_growth_rate'] = df.iloc[:, [1]].sub(
         df.iloc[:, [1]].shift(2)).div(df.iloc[:, [1]].rolling(2).sum().shift(1))
     # =========================================================================
-    # `value_c`: Value, Elasticity
+    # Series, Elasticity
     # =========================================================================
-    data_frame[f'{df.columns[1]}_elasticity'] = df.iloc[:, [1]].rolling(2).sum(
+    _df[f'{df.columns[1]}_elasticity'] = df.iloc[:, [1]].rolling(2).sum(
     ).shift(-1).mul(2).div(df.iloc[:, [1]].rolling(4).sum().shift(-1)).sub(1)
-    data_frame.set_index(data_frame.columns[0], inplace=True)
-    data_frame.dropna(inplace=True)
-    return data_frame
+    _df.set_index(_df.columns[0], inplace=True)
+    _df.dropna(inplace=True)
     plt.figure()
-    data_frame.iloc[:, 1].plot(label='Growth Rate')
-    data_frame.iloc[:, 2].plot(label='Elasticity Rate')
+    plt.plot(_df.iloc[:, [1]], label='Growth Rate')
+    plt.plot(_df.iloc[:, [2]], label='Elasticity Rate')
     plt.title('Growth & Elasticity Rates')
     plt.xlabel('Period')
     plt.ylabel('Index')
@@ -6301,69 +6303,86 @@ def plot_fourier_discrete(source_frame, precision=10):
     plt.show()
 
 
-def plot_elasticity(source):
+def plot_elasticity(df: pd.DataFrame) -> None:
     '''
-    source.iloc[:, 0]: Period,
-    source.iloc[:, 1]: Real Values for Price Deflator,
-    source.iloc[:, 2]: Nominal Values for Price Deflator,
-    source.iloc[:, 3]: Focused Series
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Real Values for Price Deflator
+    df.iloc[:, 1]      Nominal Values for Price Deflator
+    df.iloc[:, 2]      Focused Series
+    ================== =================================
     '''
-    if source.columns[3] == 'A032RC1':
-        desc = 'National Income'
-    else:
-        desc = 'Series'
-    i = source.shape[0]-1
-    while abs(source.iloc[i, 2]-source.iloc[i, 1]) > 1:
-        i -= 1
-        base = i
-    source['ser'] = source.iloc[:, 1].mul(source.iloc[:, 3]).div(source.iloc[:, 2])
-    # source['sma'] = (source.iloc[:, 4] + source.iloc[:, 4].shift(1))/2
-    source['sma'] = source.iloc[:, 4].rolling(window=2).mean()
-    source['ela'] = 2*(source.iloc[:, 4]-source.iloc[:, 4].shift(1)
-                       ).div(source.iloc[:, 4] + source.iloc[:, 4].shift(1))
-    source['elb'] = (source.iloc[:, 4].shift(-1) -
-                     source.iloc[:, 4].shift(1)).div(2*source.iloc[:, 4])
-    source['elc'] = 2*(source.iloc[:, 4].shift(-1)-source.iloc[:, 4].shift(1)).div(
-        source.iloc[:, 4].shift(1) + 2*source.iloc[:, 4] + source.iloc[:, 4].shift(-1))
-    source['eld'] = (-source.iloc[:, 4].shift(1)-source.iloc[:, 4] + source.iloc[:, 4].shift(-1) +
-                     source.iloc[:, 4].shift(-2)).div(2*source.iloc[:, 4] + 2*source.iloc[:, 4].shift(-1))
-    result_frame = source.iloc[:, [0, 4, 5, 6, 7, 8, 9]]
+    df.iloc[:, -1] = pd.to_numeric(df.iloc[:, -1], errors='coerce')
+    df.dropna(inplace=True)
+    # =========================================================================
+    # TODO: Separate Basic Year Function
+    # =========================================================================
+    df['__deflator'] = np.absolute(df.iloc[:, 0].div(df.iloc[:, 1]).sub(1))
+    _b = df.iloc[:, -1].astype(float).argmin()
+    df.drop(df.columns[-1], axis=1, inplace=True)
+    _title = (
+        'National Income' if df.columns[2] == 'A032RC1' else 'Series',
+        df.columns[2],
+        df.index[_b],
+    )
+    df[f'{df.columns[2]}_real'] = df.iloc[:, 0].mul(
+        df.iloc[:, 2]).div(df.iloc[:, 1])
+    df[f'{df.columns[2]}_centered'] = df.iloc[:, 3].rolling(2).mean()
+    # =========================================================================
+    # \dfrac{x_{k} - x_{k-1}}{\dfrac{x_{k} + x_{k-1}}{2}}
+    # =========================================================================
+    df[f'{df.columns[2]}_elasticity_a'] = df.iloc[:, 3].sub(
+        df.iloc[:, 3].shift(1)).div(df.iloc[:, -1])
+    # =========================================================================
+    # \frac{x_{k+1} - x_{k-1}}{2 x_{k}}
+    # =========================================================================
+    df[f'{df.columns[2]}_elasticity_b'] = df.iloc[:,
+                                                  3].shift(-1).sub(df.iloc[:, 3].shift(1)).div(df.iloc[:, 3]).div(2)
+    # =========================================================================
+    # 2 \times \frac{x_{k+1} - x_{k-1}}{x_{k-1} + 2 x_{k} + x_{k+1}}
+    # =========================================================================
+    df[f'{df.columns[2]}_elasticity_c'] = df.iloc[:, 3].shift(-1).sub(df.iloc[:, 3].shift(1)).div(
+        df.iloc[:, 3].mul(2).add(df.iloc[:, 3].shift(-1)).add(df.iloc[:, 3].shift(1))).mul(2)
+    # =========================================================================
+    # \frac{-x_{k-1} - x_{k} + x_{k+1} + x_{k+2}}{2 \times (x_{k} +x_{k+1})}
+    # =========================================================================
+    df[f'{df.columns[2]}_elasticity_d'] = df.iloc[:, 3].shift(-1).add(df.iloc[:, 3].shift(-2)).sub(
+        df.iloc[:, 3].shift(1)).sub(df.iloc[:, 3]).div(df.iloc[:, 3].add(df.iloc[:, 3].shift(-1)).mul(2))
     plt.figure(1)
-    plt.title('{}, {}, {}=100'.format(
-        desc, source.columns[3], result_frame.iloc[base, 0]))
+    plt.title('{}, {}, {}=100'.format(*_title))
     plt.xlabel('Period')
-    plt.ylabel('Billions of Dollars, {}=100'.format(
-        result_frame.iloc[base, 0]))
-    plt.plot(result_frame.iloc[:, 0], result_frame.iloc[:,
-             1], label='{}'.format(source.columns[3]))
-    plt.plot(result_frame.iloc[:, 0].rolling(window=2).mean(
-    ), result_frame.iloc[:, 2], label='A032RC1, Rolling Mean, Window = 2')
+    plt.ylabel(f'Billions of Dollars, {_title[2]}=100')
+    plt.plot(df.iloc[:, [3]], label=f'{_title[1]}')
+    plt.plot(
+        df.index.to_series().rolling(2).mean(),
+        df.iloc[:, 4],
+        label=f'{_title[1]}, Rolling Mean, Window = 2'
+    )
     plt.grid(True)
     plt.legend()
     plt.figure(2)
-    plt.title('Elasticity: {}, {}, {}=100'.format(
-        desc, source.columns[3], result_frame.iloc[base, 0]))
+    plt.title('Elasticity: {}, {}, {}=100'.format(*_title))
     plt.xlabel('Period')
     plt.ylabel('Index')
-    plt.plot(result_frame.iloc[:, 0].rolling(window=2).mean(
-    ), result_frame.iloc[:, 3], label='$\\overline{E}_{T+\\frac{1}{2}}$')
-    plt.plot(result_frame.iloc[:, 0],
-             result_frame.iloc[:, 4], label='$E_{T+1}$')
-    plt.plot(result_frame.iloc[:, 0], result_frame.iloc[:,
-             5], label='$\\overline{E}_{T+1}$')
-    plt.plot(result_frame.iloc[:, 0].rolling(window=2).mean(
-    ), result_frame.iloc[:, 6], label='$\\overline{\\epsilon(E_{T+\\frac{1}{2}})}$')
+    plt.plot(
+        df.index.to_series().rolling(2).mean(),
+        df.iloc[:, 5],
+        label='$\\overline{E}_{T+\\frac{1}{2}}$'
+    )
+    plt.plot(df.iloc[:, [6]], label='$E_{T+1}$')
+    plt.plot(df.iloc[:, [7]], label='$\\overline{E}_{T+1}$')
+    plt.plot(
+        df.index.to_series().rolling(2).mean(),
+        df.iloc[:, 8],
+        label='$\\overline{\\epsilon(E_{T+\\frac{1}{2}})}$'
+    )
     plt.grid(True)
     plt.legend()
     plt.figure(3)
-    plt.title('Elasticity: {}, {}, {}=100'.format(
-        desc, source.columns[3], result_frame.iloc[base, 0]))
-    plt.xlabel('{}, {}, {}=100'.format(
-        desc, source.columns[3], result_frame.iloc[base, 0]))
-    plt.ylabel('Elasticity: {}, {}, {}=100'.format(
-        desc, source.columns[3], result_frame.iloc[base, 0]))
-    plt.plot(result_frame.iloc[:, 1], result_frame.iloc[:,
-             6], label='$\\frac{\\epsilon(X)}{X}$')
+    plt.title('Elasticity: {}, {}, {}=100'.format(*_title))
+    plt.xlabel('{}, {}, {}=100'.format(*_title))
+    plt.ylabel('Elasticity: {}, {}, {}=100'.format(*_title))
+    plt.plot(df.iloc[:, 3], df.iloc[:, 8], label='$\\frac{\\epsilon(X)}{X}$')
     plt.grid(True)
     plt.legend()
     plt.show()
