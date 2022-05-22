@@ -2925,6 +2925,9 @@ def get_data_usa_frb_ip():
     # =========================================================================
     # TODO: https://www.federalreserve.gov/datadownload/Output.aspx?rel=g17&filetype=zip
     # =========================================================================
+    # =========================================================================
+    # with ZipFile('FRB_g17.zip', 'r').open('G17_data.xml') as f:
+    # =========================================================================
     FILE_NAME = 'dataset_usa_frb_us3_ip_2018_09_02.csv'
     SERIES_ID = 'AIPMA_SA_IX'
     data_frame = pd.read_csv(FILE_NAME, skiprows=7, parse_dates=[0])
@@ -3851,79 +3854,69 @@ def plot_approx_linear(source_frame):
     plt.show()
 
 
-def plot_approx_log_linear(source_frame):
+def plot_approx_log_linear(df: pd.DataFrame):
     '''
-    source_frame.iloc[:, 0]: Period,
-    source_frame.iloc[:, 1]: Real Values for Price Deflator,
-    source_frame.iloc[:, 2]: Nominal Values for Price Deflator,
-    source_frame.iloc[:, 3]: Regressor,
-    source_frame.iloc[:, 4]: Regressand
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Real Values for Price Deflator
+    df.iloc[:, 1]      Nominal Values for Price Deflator
+    df.iloc[:, 2]      Regressor
+    df.iloc[:, 3]      Regressand
+    ================== =================================
     '''
-    i = source_frame.shape[0]-1
-    while abs(source_frame.iloc[i, 2]-source_frame.iloc[i, 1]) > 1:
-        i -= 1
-        base = i  # Basic Year
-    D = source_frame.iloc[:, 1].div(source_frame.iloc[:, 2])  # Deflator
-    # DataFrame for Based Log-Linear Approximation Results
-    result_frame = source_frame.iloc[:, 0]
-    calcul_frame = []  # Blank List for Calculation Results
-
-    for i in range(source_frame.shape[0]):
-        X = math.log(source_frame.iloc[i, 3])-math.log(source_frame.iloc[0, 3])
-        Y = math.log(source_frame.iloc[i, 4]) + math.log(D[i]) - \
-            math.log(source_frame.iloc[0, 4])-math.log(D[0])
-        calcul_frame.append({'X': X, 'Y': Y})
-
-    calcul_frame = pd.DataFrame(calcul_frame)  # Convert List to Dataframe
-    result_frame = pd.concat([result_frame, calcul_frame], axis=1, sort=True)
-
-    S_1, S_2, S_3, S_4 = 0, 0, 0, 0  # Summarize
-    for i in range(source_frame.shape[0]):
-        S_1 += math.log(source_frame.iloc[i, 3]) - \
-            math.log(source_frame.iloc[0, 3])
-        S_2 += math.log(source_frame.iloc[i, 4]) + math.log(D[i]) - \
-            math.log(source_frame.iloc[0, 4])-math.log(D[0])
-        S_3 += (math.log(source_frame.iloc[i, 3]) -
-                math.log(source_frame.iloc[0, 3]))**2
-        S_4 += (math.log(source_frame.iloc[i, 3])-math.log(source_frame.iloc[0, 3]))*(math.log(
-            D[i]) + math.log(source_frame.iloc[i, 4])-math.log(D[0])-math.log(source_frame.iloc[0, 4]))
-    '''Approximation'''
-    A_0 = (S_2*S_3-S_1*S_4)/(source_frame.shape[0]*S_3-S_1**2)
-    A_1 = (source_frame.shape[0]*S_4-S_1*S_2) / \
-        (source_frame.shape[0]*S_3-S_1**2)
-    calcul_frame = []  # Blank List for Calculation Results
-    for i in range(source_frame.shape[0]):
-        Y = A_0 + A_1 * \
-            (math.log(source_frame.iloc[i, 3]) -
-             math.log(source_frame.iloc[0, 3]))  # Yhat
-        calcul_frame.append({'YH': Y})
-
-    calcul_frame = pd.DataFrame(calcul_frame)  # Convert List to Dataframe
-    result_frame = pd.concat([result_frame, calcul_frame], axis=1, sort=True)
-
-    print('Period From: {} Through: {}'.format(
-        source_frame.iloc[0, 0], source_frame.iloc[source_frame.shape[0]-1, 0]))
-    print('Prices: {}=100'.format(source_frame.iloc[base, 0]))
-    print('Model: Yhat = {:.4f}+{:.4f}*Ln(X)'.format(A_0, A_1))
-    print('Model Parameter: A_0 = {:.4f}'.format(A_0))
-    print('Model Parameter: A_1 = {:.4f}'.format(A_1))
+    MAP_DESC = {
+        'A032RC1': 'National Income',
+        'A191RC1': 'Gross Domestic Product',
+    }
+    df.iloc[:, -1] = pd.to_numeric(df.iloc[:, -1], errors='coerce')
+    df.dropna(inplace=True)
+    # =========================================================================
+    # TODO: Separate Basic Year Function
+    # =========================================================================
+    df['__deflator'] = np.absolute(df.iloc[:, 0].div(df.iloc[:, 1]).sub(1))
+    _b = df.iloc[:, -1].astype(float).argmin()
+    df.drop(df.columns[-1], axis=1, inplace=True)
+    # =========================================================================
+    # Deflator
+    # =========================================================================
+    df['deflator'] = df.iloc[:, 0].div(df.iloc[:, 1])
+    df[f'{df.columns[2]}_log_bas'] = np.log(df.iloc[:, 2].div(df.iloc[0, 2]))
+    df[f'{df.columns[3]}_log_bas'] = np.log(df.iloc[:, 3].mul(df.iloc[:, 4]).div(
+        df.iloc[0, 3]).div(df.iloc[0, 4]).astype(float))
+    _p1 = np.polyfit(
+        df.iloc[:, -2],
+        df.iloc[:, -1],
+        deg=1
+    )
+    # =========================================================================
+    # Yhat
+    # =========================================================================
+    df[f'{df.columns[3]}_estimate'] = df.iloc[:, -2].mul(_p1[0]).add(_p1[1])
+    # =========================================================================
+    # Delivery Block
+    # =========================================================================
+    print('Period From: {} Through: {}'.format(df.index[0], df.index[-1]))
+    print('Prices: {}=100'.format(df.index[_b]))
+    print('Model: Yhat = {:.4f} + {:.4f}*Ln(X)'.format(*_p1[::-1]))
+    print('Model Parameter: A_0 = {:.4f}'.format(_p1[1]))
+    print('Model Parameter: A_1 = {:.4f}'.format(_p1[0]))
     plt.figure()
-    plt.title('$Y(X)$, {}=100, {}$-${}'.format(
-        source_frame.iloc[base, 0], source_frame.iloc[0, 0], source_frame.iloc[source_frame.shape[0]-1, 0]))
-    plt.xlabel('Logarithm Prime Rate, $X(\\tau)$, {}=100'.format(
-        source_frame.iloc[0, 0]))
-    # =========================================================================
-    # TODO: What?
-    # =========================================================================
-    if source_frame.columns[4][:7] == 'A032RC1':
-        desc = 'National Income'
-    elif source_frame.columns[4][:7] == 'A191RC1':
-        desc = 'Gross Domestic Product'
-    plt.ylabel('Logarithm {}, $Y(\\tau)$, {}=100, {}=100'.format(
-        desc, source_frame.iloc[base, 0], source_frame.iloc[0, 0]))
-    plt.plot(result_frame.iloc[:, 1], result_frame.iloc[:, 2])
-    plt.plot(result_frame.iloc[:, 1], result_frame.iloc[:, 3],
-             label='$\\hat Y = {:.4f}+{:.4f}X$'.format(A_0, A_1))
+    plt.title(
+        '$Y(X)$, {}=100, {}$-${}'.format(
+            df.index[_b], df.index[0], df.index[-1]
+        )
+    )
+    plt.xlabel('Logarithm Prime Rate, $X(\\tau)$, {}=100'.format(df.index[0]))
+    plt.ylabel(
+        'Logarithm {}, $Y(\\tau)$, {}=100, {}=100'.format(
+            MAP_DESC[df.columns[3]], df.index[_b], df.index[0]
+        )
+    )
+    plt.plot(df.iloc[:, -3], df.iloc[:, -2])
+    plt.plot(
+        df.iloc[:, -3], df.iloc[:, -1],
+        label='$\\hat Y = {:.4f}+{:.4f}X$'.format(*_p1[::-1])
+    )
     plt.grid(True)
     plt.legend()
     plt.show()
@@ -6170,7 +6163,7 @@ def plot_douglas(source, dictionary, num, start, stop, step, title, measure, lab
     plt.xlabel('Period')
     plt.ylabel(measure)
     plt.grid(True)
-    if label == None:
+    if label is None:
         plt.legend()
     else:
         plt.legend(label)
@@ -6660,7 +6653,7 @@ def plot_kurenkov(data_frames: tuple[pd.DataFrame]) -> None:
 def plot_census_complex(source_frame):
     plot_pearson_r_test(source_frame)
     source_frame.reset_index(level=0, inplace=True)
-    plot_kzf(source_frame)
+    plot_kol_zur_filter(source_frame)
     plot_ses(source_frame, 5, 0.1)
 
 
