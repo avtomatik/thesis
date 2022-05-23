@@ -3526,7 +3526,7 @@ def m_spline_ea(source_frame, intervals, k):
                     np.exp(A[j] + K[j]*(source_frame.iloc[i, 0]-source_frame.iloc[0, 0])))
     S = pd.DataFrame(S, columns=['Spline'])  # Convert List to Dataframe
     result_frame = pd.concat([source_frame, S], axis=1, sort=True)
-    return K, result_frame
+    return result_frame, K
 
 
 def m_spline_eb(source_frame, intervals, k):
@@ -3549,7 +3549,7 @@ def m_spline_eb(source_frame, intervals, k):
                          (source_frame.iloc[i, 0]-source_frame.iloc[k[j], 0])))
     S = pd.DataFrame(S, columns=['Spline'])  # Convert List to Dataframe
     result_frame = pd.concat([source_frame, S], axis=1, sort=True)
-    return K, result_frame
+    return result_frame, K
 
 
 def m_spline_la(source_frame, intervals, k):
@@ -3579,7 +3579,7 @@ def m_spline_la(source_frame, intervals, k):
                          source_frame.iloc[0, 0]))
     S = pd.DataFrame(S, columns=['Spline'])  # Convert List to Dataframe
     result_frame = pd.concat([source_frame, S], axis=1, sort=True)
-    return K, result_frame
+    return result_frame, K
 
 
 def m_spline_lb(source_frame, intervals, k):
@@ -3602,7 +3602,7 @@ def m_spline_lb(source_frame, intervals, k):
                          (source_frame.iloc[i, 0]-source_frame.iloc[k[j], 0]))
     S = pd.DataFrame(S, columns=['Spline'])  # Convert List to Dataframe
     result_frame = pd.concat([source_frame, S], axis=1, sort=True)
-    return K, result_frame
+    return result_frame, K
 
 
 def m_spline_lls(source_frame, intervals, k):
@@ -3645,7 +3645,7 @@ def m_spline_lls(source_frame, intervals, k):
                 S.append(K[j] + A[1 + j]*source_frame.iloc[i, 0])
     S = pd.DataFrame(S, columns=['Spline'])  # Convert List to Dataframe
     result_frame = pd.concat([source_frame, S], axis=1, sort=True)
-    return A, result_frame
+    return result_frame, A
 
 
 def get_data_centered_by_period(data_frame: pd.DataFrame) -> pd.DataFrame:
@@ -6172,21 +6172,23 @@ def plot_douglas(source, dictionary, num, start, stop, step, title, measure, lab
         plt.legend(label)
 
 
-def results_delivery_a(intervals, coefficients):
-    '''Results Delivery Module
-    intervals (1 + N): 1 + Number of Intervals
-    coefficients: A-Coefficients'''
-    for i in range(1 + intervals):
-        print('Model Parameter: A{:02d} = {:.6f}'.format(i, coefficients[i]))
-
-
-def results_delivery_k(intervals, coefficients):
-    '''Results Delivery Module
-    intervals: Number of Intervals
-    coefficients: K-Coefficients'''
-    for i in range(intervals):
-        print('Model Parameter: K{:02d} = {:.6f}'.format(
-            1 + i, coefficients[i]))
+def _m_spline_print_params(n_spans: int, params: tuple[float]) -> None:
+    '''
+    Results Delivery Function
+    ================== =================================
+    n_spans            Number of Spans
+    params              Coefficients
+    ================== =================================
+    '''
+    if n_spans == len(params):
+        for _, _param in enumerate(params, start=1):
+            print(f'Model Parameter: K{_:02d} = {_param:.6f}')
+    else:
+        # =====================================================================
+        # n_spans (1 + N): 1 + Number of Spans
+        # =====================================================================
+        for _, _param in enumerate(params):
+            print(f'Model Parameter: A{_:02n} = {_param:.6f}')
 
 
 def plot_capital_modelling(source_frame, base):
@@ -6700,7 +6702,7 @@ def processing_spline(source_frame, kernelModule, deliveryModule):
                         i += 1
         else:
             print('Error')  # Should Never Happen
-        K, result_frame = kernelModule(source_frame, N, knt)
+        result_frame, K = kernelModule(source_frame, N, knt)
         deliveryModule(N, K)
         error_metrics(result_frame)
         plt.figure()
@@ -6721,7 +6723,7 @@ def processing_spline(source_frame, kernelModule, deliveryModule):
             source_frame = pd.concat(
                 [source_frame.iloc[:, 0], modified], axis=1, sort=True)
             source_frame.columns = ['Period', 'Original']
-            K, result_frame = kernelModule(source_frame, N, knt)
+            result_frame, K = kernelModule(source_frame, N, knt)
             deliveryModule(N, K)
             error_metrics(result_frame)
             plt.plot(result_frame.iloc[:, 0], result_frame.iloc[:,
