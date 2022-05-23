@@ -462,10 +462,10 @@ def data_select(data, query):
     return data
 
 
-def error_metrics(data_frame):
-    '''Error Metrics Module'''
+def _m_spline_error_metrics(df: pd.DataFrame) -> None:
+    '''Error Metrics Function'''
     print('Criterion, C: {:.6f}'.format(
-        np.mean(data_frame.iloc[:, 2].div(data_frame.iloc[:, 1]).sub(1).abs())))
+        df.iloc[:, 2].div(df.iloc[:, 1]).sub(1).abs().mean()))
 
 
 def fetch_can_annually(file_id, series_id):
@@ -6679,65 +6679,89 @@ def plot_census_complex(source_frame):
     plot_ses(source_frame, 5, 0.1)
 
 
-def processing_spline(source_frame, kernelModule, deliveryModule):
-    source_frame.columns = ['Period', 'Original']
+def m_spline_processing(df: pd.DataFrame, kernel: callable) -> None:
+    # =========================================================================
+    # TODO: Further Refactoring
+    # =========================================================================
+    df.columns = ['Period', 'Original']
+    # =========================================================================
     # Number of Periods
-    N = int(input('Define Number of Interpolation Intervals: '))
-    if N >= 2:
-        print(f'Number of Periods Provided: {N}')
-        knt = []  # Switch Points
-        knt.append(0)
-        i = 0
-        if N == 1:
-            knt.append(source_frame.shape[0]-1)
-        elif N >= 2:
-            while i < N:
-                if i == N-1:
-                    knt.append(source_frame.shape[0]-1)
-                    i += 1
-                else:
-                    y = int(input('Select Row for Year: '))-1
-                    if y > knt[i]:
-                        knt.append(y)
-                        i += 1
-        else:
-            print('Error')  # Should Never Happen
-        result_frame, K = kernelModule(source_frame, N, knt)
-        deliveryModule(N, K)
-        error_metrics(result_frame)
-        plt.figure()
-        plt.scatter(result_frame.iloc[:, 0], result_frame.iloc[:, 1])
-        plt.plot(result_frame.iloc[:, 0], result_frame.iloc[:, 2],
-                 color='red', label='$s_{%d}(\\tau)$' % (0,))
-        go_no_go = input('Does the Resulting Value Need an Improvement?, Y: ')
-        if go_no_go == 'Y':
-            Q = []
-            assert len(knt) == 1 + N
-            for i in range(len(knt)):
-                Q.append(
-                    float(input('Correction of Knot {:02d}: '.format(1 + i))))
-            modified = source_frame.iloc[:, 1].copy()  # Series Modification
-            for i in range(len(knt)):
-                modified[knt[i]] = Q[i]*modified[knt[i]]
-
-            source_frame = pd.concat(
-                [source_frame.iloc[:, 0], modified], axis=1, sort=True)
-            source_frame.columns = ['Period', 'Original']
-            result_frame, K = kernelModule(source_frame, N, knt)
-            deliveryModule(N, K)
-            error_metrics(result_frame)
-            plt.plot(result_frame.iloc[:, 0], result_frame.iloc[:,
-                     2], color='g', label='$s_{%d}(\\tau)$' % (1,))
-            plt.grid(True)
-            plt.legend()
-            plt.show()
-        else:
-            plt.grid(True)
-            plt.legend()
-            plt.show()
-            pass
+    # =========================================================================
+    N = int(input('Define Number of Interpolation Spans (N, N >= 2): '))
+    assert N >= 2, f'N >= 2 is Required, N = {N} Was Provided'
+    # =========================================================================
+    # Switch Knots
+    # =========================================================================
+    _knots = [0, ]
+    _ = 0
+    # =========================================================================
+    # Although N >=2, Left for Consistency Purpose Only
+    # =========================================================================
+    if N == 1:
+        _knots.append(df.index[-1])
+    elif N >= 2:
+        while _ < N:
+            if _ == N - 1:
+                _knots.append(df.index[-1])
+            else:
+                _knot = int(input('Select Row for Year: ')) - 1
+                # =============================================================
+                # Ensure Knots Are In Ascending Order
+                # =============================================================
+                if _knot > _knots[_]:
+                    _knots.append(_knot)
+            _ += 1
     else:
-        print(f'N >= 2 is Required, N = {N} Was Provided')
+        # =====================================================================
+        # Should Never Happen
+        # =====================================================================
+        print('Error')
+    _knots = tuple(_knots)
+    splined_frame, _params = kernel(df, N, _knots)
+    _m_spline_print_params(N, _params)
+    _m_spline_error_metrics(splined_frame)
+    plt.figure()
+    plt.scatter(splined_frame.iloc[:, 0], splined_frame.iloc[:, 1])
+    plt.plot(
+        splined_frame.iloc[:, 0],
+        splined_frame.iloc[:, 2],
+        color='red',
+        label='$s_{}(\\tau)$'.format(0,)
+    )
+    go_no_go = input('Does the Resulting Series Need an Improvement?, Y: ')
+    if go_no_go.lower() == 'y':
+        # =====================================================================
+        # Correction Factors
+        # =====================================================================
+        Q = []
+        assert len(_knots) == 1 + N
+        for _ in range(len(_knots)):
+            Q.append(float(input(f'Correction Factor of Knot {1 + _:02d}: ')))
+        # =====================================================================
+        # Series Modification
+        # =====================================================================
+        modified = df.iloc[:, 1].copy()
+        for _ in range(len(_knots)):
+            modified[_knots[_]] = Q[_]*modified[_knots[_]]
+
+        df = pd.concat([df.iloc[:, 0], modified], axis=1, sort=True)
+        df.columns = ['Period', 'Original']
+        splined_frame, _params = kernel(df, N, _knots)
+        _m_spline_print_params(N, _params)
+        _m_spline_error_metrics(splined_frame)
+        plt.plot(
+            splined_frame.iloc[:, 0],
+            splined_frame.iloc[:, 2],
+            color='g',
+            label='$s_{}(\\tau)$'.format(1,)
+        )
+        plt.grid(True)
+        plt.legend()
+        plt.show()
+    else:
+        plt.grid(True)
+        plt.legend()
+        plt.show()
 
 
 def test_douglas(control, series_ids):
