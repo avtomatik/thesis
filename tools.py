@@ -6680,9 +6680,24 @@ def plot_census_complex(source_frame):
 
 
 def m_spline_processing(df: pd.DataFrame, kernel: callable) -> None:
-    # =========================================================================
-    # TODO: Further Refactoring
-    # =========================================================================
+    '''
+    Interactive Shell for Processing Make Shift Spline Functions
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+    ================== =================================
+    df.iloc[:, 0]      Period
+    df.iloc[:, 1]      Target Series
+    ================== =================================
+    kernel : callable
+        One Out of m_spline_ea, m_spline_eb, m_spline_la, m_spline_lb, m_spline_lls.
+
+    Returns
+    -------
+    None
+        Draws matplotlib.pyplot Plots.
+    '''
     df.columns = ['Period', 'Original']
     # =========================================================================
     # Number of Periods
@@ -6728,25 +6743,22 @@ def m_spline_processing(df: pd.DataFrame, kernel: callable) -> None:
         color='red',
         label='$s_{}(\\tau)$'.format(0,)
     )
-    go_no_go = input('Does the Resulting Series Need an Improvement?, Y: ')
-    if go_no_go.lower() == 'y':
-        # =====================================================================
-        # Correction Factors
-        # =====================================================================
-        Q = []
+    _go_no_go = input('Does the Resulting Series Need an Improvement?, Y: ')
+    if _go_no_go.lower() == 'y':
         assert len(_knots) == 1 + N
-        for _ in range(len(_knots)):
-            Q.append(float(input(f'Correction Factor of Knot {1 + _:02d}: ')))
+        _correction_factors = [
+            float(input(f'Correction Factor of Knot {1 + _:02d} out of {len(_knots):02d}: '))
+            for _, _knot in enumerate(_knots)
+        ]
         # =====================================================================
         # Series Modification
         # =====================================================================
-        modified = df.iloc[:, 1].copy()
-        for _ in range(len(_knots)):
-            modified[_knots[_]] = Q[_]*modified[_knots[_]]
+        modified = df.copy()
+        for _knot, _factor in zip(_knots, _correction_factors):
+            modified.iloc[_knot, 1] = modified.iloc[_knot, 1]*_factor
 
-        df = pd.concat([df.iloc[:, 0], modified], axis=1, sort=True)
-        df.columns = ['Period', 'Original']
-        splined_frame, _params = kernel(df, N, _knots)
+        modified.columns = ['Period', 'Corrected']
+        splined_frame, _params = kernel(modified, N, _knots)
         _m_spline_print_params(N, _params)
         _m_spline_error_metrics(splined_frame)
         plt.plot(
@@ -6755,13 +6767,9 @@ def m_spline_processing(df: pd.DataFrame, kernel: callable) -> None:
             color='g',
             label='$s_{}(\\tau)$'.format(1,)
         )
-        plt.grid(True)
-        plt.legend()
-        plt.show()
-    else:
-        plt.grid(True)
-        plt.legend()
-        plt.show()
+    plt.grid(True)
+    plt.legend()
+    plt.show()
 
 
 def test_douglas(control, series_ids):
