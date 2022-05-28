@@ -3499,153 +3499,270 @@ def mean_by_year(data):
     return data
 
 
-def m_spline_ea(source_frame, intervals, k):
+def m_spline_ea(df: pd.DataFrame, n_spans: int, knots: tuple[int]) -> tuple[pd.DataFrame, tuple[float]]:
     '''Exponential Spline, Type A
-    source_frame.iloc[:, 0]: Period,
-    source_frame.iloc[:, 1]: Target Series,
-    intervals: Number of Intervals,
-    k: Interpolation Knots'''
-    A, K, S = [], [], []
-    for j in range(intervals):  # Coefficient Section
-        A.append(((source_frame.iloc[k[1 + j], 0]-source_frame.iloc[k[0], 0])*np.log(source_frame.iloc[k[j], 1])-(source_frame.iloc[k[j], 0] -
-                 source_frame.iloc[k[0], 0])*np.log(source_frame.iloc[k[1 + j], 1]))/(source_frame.iloc[k[1 + j], 0]-source_frame.iloc[k[j], 0]))
+    ================== =================================
+    df.iloc[:, 0]      Period
+    df.iloc[:, 1]      Target Series
+    ================== =================================
+    n_spans            Number of Spans
+    knots              Interpolation Knots
+    ================== =================================
+    '''
+    _params_a, _params_k, _splined = [], [], []
+    # =========================================================================
+    # TODO: Rework Algorithm To Make It More Clear Possibly Using `continue` Statement
+    # =========================================================================
+    # =========================================================================
+    # Coefficient Section
+    # =========================================================================
+    for j in range(n_spans):
+        _params_a.append(
+            ((df.iloc[knots[1 + j], 0] - df.iloc[knots[0], 0])*np.log(df.iloc[knots[j], 1]) - (df.iloc[knots[j], 0] -
+                                                                                               df.iloc[knots[0], 0])*np.log(df.iloc[knots[1 + j], 1])) / (df.iloc[knots[1 + j], 0] - df.iloc[knots[j], 0])
+        )
         if j == 0:
-            K.append((np.log(source_frame.iloc[k[1 + j], 1])-np.log(source_frame.iloc[k[j], 1]))/(
-                source_frame.iloc[k[1 + j], 0]-source_frame.iloc[k[j], 0]))
+            _params_k.append(
+                (np.log(df.iloc[knots[1 + j], 1]) - np.log(df.iloc[knots[j], 1])) /
+                (df.iloc[knots[1 + j], 0] - df.iloc[knots[j], 0])
+            )
         else:
-            K.append(K[j-1] + np.log(source_frame.iloc[k[1 + j], 1])/(source_frame.iloc[k[1 + j], 0]-source_frame.iloc[k[j], 0]) -
-                     (source_frame.iloc[k[1 + j], 0]-source_frame.iloc[k[j-1], 0])*np.log(source_frame.iloc[k[j], 1])/((source_frame.iloc[k[1 + j], 0]-source_frame.iloc[k[j], 0])*(source_frame.iloc[k[j], 0]-source_frame.iloc[k[j-1], 0])) +
-                     np.log(source_frame.iloc[k[j-1], 1])/(source_frame.iloc[k[j], 0]-source_frame.iloc[k[j-1], 0]))
-        if j == intervals-1:  # Spline Section
-            for i in range(k[j], 1 + k[1 + j]):
-                S.append(
-                    np.exp(A[j] + K[j]*(source_frame.iloc[i, 0]-source_frame.iloc[0, 0])))
+            _params_k.append(
+                _params_k[j - 1] + np.log(df.iloc[knots[1 + j], 1]) / (df.iloc[knots[1 + j], 0] - df.iloc[knots[j], 0]) -
+                (df.iloc[knots[1 + j], 0] - df.iloc[knots[j - 1], 0])*np.log(df.iloc[knots[j], 1]) / ((df.iloc[knots[1 + j], 0] - df.iloc[knots[j], 0])*(df.iloc[knots[j], 0] - df.iloc[knots[j - 1], 0])) +
+                np.log(df.iloc[knots[j - 1], 1]) /
+                (df.iloc[knots[j], 0] - df.iloc[knots[j - 1], 0])
+            )
+        # =====================================================================
+        # Splined Section
+        # =====================================================================
+        if 1 + j == n_spans:
+            for i in range(knots[j], 1 + knots[1 + j]):
+                _splined.append(
+                    np.exp(_params_a[j] + _params_k[j] *
+                           (df.iloc[i, 0] - df.iloc[0, 0]))
+                )
         else:
-            for i in range(k[j], k[1 + j]):
-                S.append(
-                    np.exp(A[j] + K[j]*(source_frame.iloc[i, 0]-source_frame.iloc[0, 0])))
-    S = pd.DataFrame(S, columns=['Spline'])  # Convert List to Dataframe
-    result_frame = pd.concat([source_frame, S], axis=1, sort=True)
-    return result_frame, K
+            for i in range(knots[j], knots[1 + j]):
+                _splined.append(
+                    np.exp(_params_a[j] + _params_k[j] *
+                           (df.iloc[i, 0] - df.iloc[0, 0]))
+                )
+    return (
+        pd.concat(
+            [
+                df,
+                pd.DataFrame(_splined, columns=['Splined']),
+            ],
+            axis=1, sort=True),
+        tuple(_params_k)
+    )
 
 
-def m_spline_eb(source_frame, intervals, k):
+def m_spline_eb(df: pd.DataFrame, n_spans: int, knots: tuple[int]) -> tuple[pd.DataFrame, tuple[float]]:
     '''Exponential Spline, Type B
-    source_frame.iloc[:, 0]: Period,
-    source_frame.iloc[:, 1]: Target Series,
-    intervals: Number of Intervals,
-    k: Interpolation Knots'''
-    K, S = [], []
-    for j in range(intervals):  # Coefficient Section
-        K.append((np.log(source_frame.iloc[k[1 + j], 1])-np.log(source_frame.iloc[k[j], 1]))/(
-            source_frame.iloc[k[1 + j], 0]-source_frame.iloc[k[j], 0]))
-        if j == intervals-1:  # Spline Section
-            for i in range(k[j], 1 + k[1 + j]):
-                S.append(source_frame.iloc[k[j], 1]*np.exp(K[j] *
-                         (source_frame.iloc[i, 0]-source_frame.iloc[k[j], 0])))
+    ================== =================================
+    df.iloc[:, 0]      Period
+    df.iloc[:, 1]      Target Series
+    ================== =================================
+    n_spans            Number of Spans
+    knots              Interpolation Knots
+    ================== =================================
+    '''
+    # =========================================================================
+    # TODO: Rework Algorithm To Make It More Clear Possibly Using `continue` Statement
+    # =========================================================================
+    _params_k, _splined = [], []
+    # =========================================================================
+    # Coefficient Section
+    # =========================================================================
+    for j in range(n_spans):
+        _params_k.append(
+            (np.log(df.iloc[knots[1 + j], 1]) - np.log(df.iloc[knots[j], 1]))/(
+                df.iloc[knots[1 + j], 0] - df.iloc[knots[j], 0])
+        )
+        # =====================================================================
+        # Spline Section
+        # =====================================================================
+        if 1 + j == n_spans:
+            for i in range(knots[j], 1 + knots[1 + j]):
+                _splined.append(
+                    df.iloc[knots[j], 1]*np.exp(_params_k[j] *
+                                                (df.iloc[i, 0] - df.iloc[knots[j], 0]))
+                )
         else:
-            for i in range(k[j], k[1 + j]):
-                S.append(source_frame.iloc[k[j], 1]*np.exp(K[j] *
-                         (source_frame.iloc[i, 0]-source_frame.iloc[k[j], 0])))
-    S = pd.DataFrame(S, columns=['Spline'])  # Convert List to Dataframe
-    result_frame = pd.concat([source_frame, S], axis=1, sort=True)
-    return result_frame, K
+            for i in range(knots[j], knots[1 + j]):
+                _splined.append(
+                    df.iloc[knots[j], 1]*np.exp(_params_k[j] *
+                                                (df.iloc[i, 0] - df.iloc[knots[j], 0]))
+                )
+    return (
+        pd.concat(
+            [
+                df,
+                pd.DataFrame(_splined, columns=['Spline'])
+            ],
+            axis=1, sort=True),
+        tuple(_params_k)
+    )
 
 
-def m_spline_la(source_frame, intervals, k):
+def m_spline_la(df: pd.DataFrame, n_spans: int, knots: tuple[int]) -> tuple[pd.DataFrame, tuple[float]]:
     '''Linear Spline, Type A
-    source_frame.iloc[:, 0]: Period,
-    source_frame.iloc[:, 1]: Target Series,
-    intervals: Number of Intervals,
-    k: Interpolation Knots'''
-    A, K, S = [], [], []
-    for j in range(intervals):
-        A.append(((source_frame.iloc[k[1 + j], 0]-source_frame.iloc[k[0], 0])*source_frame.iloc[k[j], 1]-(source_frame.iloc[k[j], 0] -
-                 source_frame.iloc[k[0], 0])*source_frame.iloc[k[1 + j], 1])/(source_frame.iloc[k[1 + j], 0]-source_frame.iloc[k[j], 0]))
+    ================== =================================
+    df.iloc[:, 0]      Period
+    df.iloc[:, 1]      Target Series
+    ================== =================================
+    n_spans            Number of Spans
+    knots              Interpolation Knots
+    ================== =================================
+    '''
+    # =========================================================================
+    # TODO: Rework Algorithm To Make It More Clear Possibly Using `continue` Statement
+    # =========================================================================
+    _params_a, _params_k, _splined = [], [], []
+    for j in range(n_spans):
+        _params_a.append(
+            ((df.iloc[knots[1 + j], 0] - df.iloc[knots[0], 0])*df.iloc[knots[j], 1] - (df.iloc[knots[j], 0] -
+                                                                                   df.iloc[knots[0], 0])*df.iloc[knots[1 + j], 1])/(df.iloc[knots[1 + j], 0] - df.iloc[knots[j], 0])
+        )
         if j == 0:
-            K.append((source_frame.iloc[k[1 + j], 1]-source_frame.iloc[k[j], 1])/(
-                source_frame.iloc[k[1 + j], 0]-source_frame.iloc[k[j], 0]))
+            _params_k.append(
+                (df.iloc[knots[1 + j], 1] - df.iloc[knots[j], 1]) /
+                (df.iloc[knots[1 + j], 0] - df.iloc[knots[j], 0])
+            )
         else:
-            K.append(K[j-1] + source_frame.iloc[k[1 + j], 1]/(source_frame.iloc[k[1 + j], 0]-source_frame.iloc[k[j], 0]) -
-                     (source_frame.iloc[k[1 + j], 0]-source_frame.iloc[k[j-1], 0])*source_frame.iloc[k[j], 1]/((source_frame.iloc[k[1 + j], 0]-source_frame.iloc[k[j], 0])*(source_frame.iloc[k[j], 0]-source_frame.iloc[k[j-1], 0])) +
-                     source_frame.iloc[k[j-1], 1]/(source_frame.iloc[k[j], 0]-source_frame.iloc[k[j-1], 0]))
-        if j == intervals-1:
-            for i in range(k[j], 1 + k[1 + j]):
-                S.append(A[j] + K[j]*(source_frame.iloc[i, 0] -
-                         source_frame.iloc[0, 0]))
+            _params_k.append(
+                _params_k[j - 1] + df.iloc[knots[1 + j], 1]/(df.iloc[knots[1 + j], 0] - df.iloc[knots[j], 0]) -
+                (df.iloc[knots[1 + j], 0] - df.iloc[knots[j - 1], 0])*df.iloc[knots[j], 1]/((df.iloc[knots[1 + j], 0] - df.iloc[knots[j], 0])*(df.iloc[knots[j], 0] - df.iloc[knots[j - 1], 0])) +
+                df.iloc[knots[j - 1], 1] /
+                (df.iloc[knots[j], 0] - df.iloc[knots[j - 1], 0])
+            )
+        if 1 + j == n_spans:
+            for i in range(knots[j], 1 + knots[1 + j]):
+                _splined.append(
+                    _params_a[j] + _params_k[j]*(df.iloc[i, 0] - df.iloc[0, 0])
+                )
         else:
-            for i in range(k[j], k[1 + j]):
-                S.append(A[j] + K[j]*(source_frame.iloc[i, 0] -
-                         source_frame.iloc[0, 0]))
-    S = pd.DataFrame(S, columns=['Spline'])  # Convert List to Dataframe
-    result_frame = pd.concat([source_frame, S], axis=1, sort=True)
-    return result_frame, K
+            for i in range(knots[j], knots[1 + j]):
+                _splined.append(
+                    _params_a[j] + _params_k[j]*(df.iloc[i, 0] - df.iloc[0, 0])
+                )
+    return (
+        pd.concat(
+            [
+                df,
+                pd.DataFrame(_splined, columns=['Spline'])
+            ],
+            axis=1, sort=True),
+        tuple(_params_k)
+    )
 
 
-def m_spline_lb(source_frame, intervals, k):
+def m_spline_lb(df: pd.DataFrame, n_spans: int, knots: tuple[int]) -> tuple[pd.DataFrame, tuple[float]]:
     '''Linear Spline, Type B
-    source_frame.iloc[:, 0]: Period,
-    source_frame.iloc[:, 1]: Target Series,
-    intervals: Number of Intervals,
-    k: Interpolation Knots'''
-    K, S = [], []
-    for j in range(intervals):
-        K.append((source_frame.iloc[k[1 + j], 1]-source_frame.iloc[k[j], 1])/(
-            source_frame.iloc[k[1 + j], 0]-source_frame.iloc[k[j], 0]))
-        if j == intervals-1:
-            for i in range(k[j], 1 + k[1 + j]):
-                S.append(source_frame.iloc[k[j], 1] + K[j] *
-                         (source_frame.iloc[i, 0]-source_frame.iloc[k[j], 0]))
+    ================== =================================
+    df.iloc[:, 0]      Period
+    df.iloc[:, 1]      Target Series
+    ================== =================================
+    n_spans            Number of Spans
+    knots              Interpolation Knots
+    ================== =================================
+    '''
+    # =========================================================================
+    # TODO: Rework Algorithm To Make It More Clear Possibly Using `continue` Statement
+    # =========================================================================
+    _params_k, _splined = [], []
+    for j in range(n_spans):
+        _params_k.append(
+            (df.iloc[knots[1 + j], 1] - df.iloc[knots[j], 1]) /
+            (df.iloc[knots[1 + j], 0] - df.iloc[knots[j], 0])
+        )
+        if 1 + j == n_spans:
+            for i in range(knots[j], 1 + knots[1 + j]):
+                _splined.append(
+                    df.iloc[knots[j], 1] + _params_k[j] *
+                    (df.iloc[i, 0] - df.iloc[knots[j], 0])
+                )
         else:
-            for i in range(k[j], k[1 + j]):
-                S.append(source_frame.iloc[k[j], 1] + K[j] *
-                         (source_frame.iloc[i, 0]-source_frame.iloc[k[j], 0]))
-    S = pd.DataFrame(S, columns=['Spline'])  # Convert List to Dataframe
-    result_frame = pd.concat([source_frame, S], axis=1, sort=True)
-    return result_frame, K
+            for i in range(knots[j], knots[1 + j]):
+                _splined.append(
+                    df.iloc[knots[j], 1] + _params_k[j] *
+                    (df.iloc[i, 0] - df.iloc[knots[j], 0])
+                )
+    return (
+        pd.concat(
+            [
+                df,
+                pd.DataFrame(_splined, columns=['Spline'])
+            ],
+            axis=1, sort=True),
+        tuple(_params_k)
+    )
 
 
-def m_spline_lls(source_frame, intervals, k):
+def m_spline_lls(df: pd.DataFrame, n_spans: int, knots: tuple[int]) -> tuple[pd.DataFrame, tuple[float]]:
     '''Linear Spline, Linear Regression Kernel
-    source_frame.iloc[:, 0]: Period,
-    source_frame.iloc[:, 1]: Target Series,
-    intervals: Number of Intervals,
-    k: Interpolation Knots'''
-    A, K, S = [], [], []
-    for j in range(intervals):
-        s_1, s_2, s_3, s_4 = 0, 0, 0, 0  # X, Y, X**2, XY # # Summarize
-        if j == intervals-1:
-            for i in range(k[j], 1 + k[1 + j]):
-                S_1 += source_frame.iloc[i, 0]
-                S_2 += source_frame.iloc[i, 1]
-                S_3 += (source_frame.iloc[i, 0])**2
-                S_4 += source_frame.iloc[i, 0]*source_frame.iloc[i, 1]
-            A.append(((1 + k[1 + j]-k[j])*S_4-S_1*S_2) /
-                     ((1 + k[1 + j]-k[j])*S_3-S_1**2))
+    ================== =================================
+    df.iloc[:, 0]      Period
+    df.iloc[:, 1]      Target Series
+    ================== =================================
+    n_spans            Number of Spans
+    knots              Interpolation Knots
+    ================== =================================
+    '''
+    _params_a, _params_k, _splined = [], [], []
+    # =========================================================================
+    # TODO: Rework Algorithm To Make It More Clear Possibly Using `continue` Statement
+    # =========================================================================
+    for _ in range(n_spans):
+        if 1 + _ == n_spans:
+            _s__x = df.iloc[knots[_]:, 0].sum()
+            _s__y = df.iloc[knots[_]:, 1].sum()
+            _s_x2 = df.iloc[knots[_]:, 0].pow(2).sum()
+            _s_xy = df.iloc[knots[_]:, 0].mul(df.iloc[knots[_]:, 1]).sum()
+            _params_a.append(
+                ((1 + knots[1 + _] - knots[_])*_s_xy - _s__x*_s__y) /
+                ((1 + knots[1 + _] - knots[_])*_s_x2 - _s__x**2)
+            )
         else:
-            for i in range(k[j], k[1 + j]):
-                S_1 += source_frame.iloc[i, 0]
-                S_2 += source_frame.iloc[i, 1]
-                S_3 += (source_frame.iloc[i, 0])**2
-                S_4 += source_frame.iloc[i, 0]*source_frame.iloc[i, 1]
-            if j == 0:
-                A.append((S_2*S_3-S_1*S_4)/((k[1 + j]-k[j])*S_3-S_1**2))
-            A.append(((k[1 + j]-k[j])*S_4-S_1*S_2) /
-                     ((k[1 + j]-k[j])*S_3-S_1**2))
-    for j in range(intervals):
-        if j == 0:
-            K.append(A[j])
+            _s__x = df.iloc[knots[_]:knots[1 + _], 0].sum()
+            _s__y = df.iloc[knots[_]:knots[1 + _], 1].sum()
+            _s_x2 = df.iloc[knots[_]:knots[1 + _], 0].pow(2).sum()
+            _s_xy = df.iloc[knots[_]:knots[1 + _],
+                            0].mul(df.iloc[knots[_]:knots[1 + _], 1]).sum()
+            if _ == 0:
+                _params_a.append(
+                    (_s__y*_s_x2 - _s__x*_s_xy) /
+                    ((knots[1 + _] - knots[_])*_s_x2 - _s__x**2)
+                )
+            _params_a.append(
+                ((knots[1 + _] - knots[_])*_s_xy - _s__x*_s__y) /
+                ((knots[1 + _] - knots[_])*_s_x2 - _s__x**2)
+            )
+
+    for _ in range(n_spans):
+        if _ == 0:
+            _params_k.append(_params_a[_])
         else:
-            K.append(K[j-1] + (A[j]-A[1 + j])*source_frame.iloc[k[j], 0])
-        if j == intervals-1:
-            for i in range(k[j], 1 + k[1 + j]):
-                S.append(K[j] + A[1 + j]*source_frame.iloc[i, 0])
+            _params_k.append(
+                _params_k[_ - 1] + (_params_a[_] - _params_a[1 + _])*df.iloc[knots[_], 0])
+
+        if 1 + _ == n_spans:
+            for _i in range(knots[_], 1 + knots[1 + _]):
+                _splined.append(_params_k[_] + _params_a[1 + _]*df.iloc[_i, 0])
         else:
-            for i in range(k[j], k[1 + j]):
-                S.append(K[j] + A[1 + j]*source_frame.iloc[i, 0])
-    S = pd.DataFrame(S, columns=['Spline'])  # Convert List to Dataframe
-    result_frame = pd.concat([source_frame, S], axis=1, sort=True)
-    return result_frame, A
+            for _i in range(knots[_], knots[1 + _]):
+                _splined.append(_params_k[_] + _params_a[1 + _]*df.iloc[_i, 0])
+    return (
+        pd.concat(
+            [
+                df,
+                pd.DataFrame(_splined, columns=['Splined']),
+            ],
+            axis=1, sort=True),
+        tuple(_params_a)
+    )
 
 
 def get_data_centered_by_period(data_frame: pd.DataFrame) -> pd.DataFrame:
@@ -6177,7 +6294,7 @@ def _m_spline_print_params(n_spans: int, params: tuple[float]) -> None:
     Results Delivery Function
     ================== =================================
     n_spans            Number of Spans
-    params              Coefficients
+    params             Coefficients
     ================== =================================
     '''
     if n_spans == len(params):
@@ -6687,17 +6804,18 @@ def m_spline_processing(df: pd.DataFrame, kernel: callable) -> None:
     ----------
     df : pd.DataFrame
     ================== =================================
-    df.iloc[:, 0]      Period
-    df.iloc[:, 1]      Target Series
+    df.index           Period
+    df.iloc[:, 0]      Target Series
     ================== =================================
     kernel : callable
-        One Out of m_spline_ea, m_spline_eb, m_spline_la, m_spline_lb, m_spline_lls.
+        One Out of m_spline_ea(), m_spline_eb(), m_spline_la(), m_spline_lb(), m_spline_lls().
 
     Returns
     -------
     None
         Draws matplotlib.pyplot Plots.
     '''
+    df.reset_index(level=0, inplace=True)
     df.columns = ['Period', 'Original']
     # =========================================================================
     # Number of Periods
@@ -6716,7 +6834,7 @@ def m_spline_processing(df: pd.DataFrame, kernel: callable) -> None:
         _knots.append(df.index[-1])
     elif N >= 2:
         while _ < N:
-            if _ == N - 1:
+            if 1 + _ == N:
                 _knots.append(df.index[-1])
             else:
                 _knot = int(input('Select Row for Year: ')) - 1
