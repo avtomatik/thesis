@@ -3962,10 +3962,11 @@ def preprocessing_c(source_frame):
     return result_frame.reset_index(level=0)
 
 
-def preprocessing_d(source_frame):
-    source_frame = source_frame.iloc[:, [0, 1, 2, 3, 7]]
-    source_frame = source_frame.dropna()
-    return source_frame.reset_index(level=0)
+def preprocessing_d(df: pd.DataFrame) -> pd.DataFrame:
+    # =========================================================================
+    # TODO: Eliminate This Function
+    # =========================================================================
+    return df.iloc[:, [0, 1, 2, 3, 7]].dropna()
 
 
 def preprocessing_e(data_frame):
@@ -4253,53 +4254,67 @@ def plot_c(source_frame):
     plt.show()
 
 
-def plot_d(source_frame):
+def plot_d(df: pd.DataFrame) -> None:
     '''
-    source_frame.iloc[:, 0]: Period,
-    source_frame.iloc[:, 1]: Gross Domestic Investment,
-    source_frame.iloc[:, 2]: Gross Domestic Investment Price Index,
-    source_frame.iloc[:, 3]: Fixed Investment,
-    source_frame.iloc[:, 4]: Fixed Investment Price Index,
-    source_frame.iloc[:, 5]: Real Gross Domestic Product
+    ================== =================================
+    df.index           Period,
+    df.iloc[:, 0]      Gross Domestic Investment,
+    df.iloc[:, 1]      Gross Domestic Investment Price Index,
+    df.iloc[:, 2]      Fixed Investment,
+    df.iloc[:, 3]      Fixed Investment Price Index,
+    df.iloc[:, 4]      Real Gross Domestic Product
+    ================== =================================
     '''
-    i = source_frame.shape[0]-1
-    while abs(source_frame.iloc[i, 2]-100) > 0.1:
-        i -= 1
-        base = i  # Basic Year
-    '''Real Investment, Billions'''
-    source_frame['inv'] = source_frame.iloc[:, 2].mul(source_frame.iloc[base, 1]).div(100).div(1000)
-    '''Real Fixed Investment, Billions'''
-    source_frame['fnv'] = source_frame.iloc[:, 4].mul(source_frame.iloc[base, 3]).div(100).div(1000)
-    source_frame.iloc[:, 5] = source_frame.iloc[:, 5].div(1000)
+    # =========================================================================
+    # Basic Year
+    # =========================================================================
+    df['__deflator'] = np.absolute(df.iloc[:, 1].sub(100))
+    _b = df.iloc[:, -1].astype(float).argmin()
+    df.drop(df.columns[-1], axis=1, inplace=True)
+    _for_title = (df.index[_b], df.index[0], df.index[-1])
+    # =========================================================================
+    # Convert to Billions
+    # =========================================================================
+    df.iloc[:, -1] = df.iloc[:, -1].div(1000)
+    # =========================================================================
+    # Real Investment, Billions
+    # =========================================================================
+    df['invmnt'] = df.iloc[:, 1].mul(df.iloc[_b, 0]).div(100).div(1000)
+    # =========================================================================
+    # Real Fixed Investment, Billions
+    # =========================================================================
+    df['fxd_invmnt'] = df.iloc[:, 3].mul(df.iloc[_b, 2]).div(100).div(1000)
     plt.figure(1)
-    plt.semilogy(source_frame.iloc[:, 0], source_frame.iloc[:, 6],
-                 label='Real Gross Private Domestic Investment $GPDI$')
-    plt.semilogy(source_frame.iloc[:, 0], source_frame.iloc[:, 7], color='red',
-                 label='Real Gross Private Fixed Investment, Nonresidential $GPFI(n)$')
-    plt.title('Real Indexes, {}=100, {}$-${}'.format(
-        source_frame.iloc[base, 0], source_frame.iloc[0, 0], source_frame.iloc[source_frame.shape[0]-1, 0]))
+    plt.semilogy(
+        df.iloc[:, -2],
+        label='Real Gross Private Domestic Investment $GPDI$'
+    )
+    plt.semilogy(
+        df.iloc[:, -1],
+        color='red',
+        label='Real Gross Private Fixed Investment, Nonresidential $GPFI(n)$'
+    )
+    plt.title('Real Indexes, {}=100, {}$-${}'.format(*_for_title))
     plt.xlabel('Period')
     plt.ylabel('Billions of Dollars')
     plt.legend()
     plt.grid(True)
     plt.figure(2)
-    plt.plot(source_frame.iloc[:, 0], source_frame.iloc[:, 5])
-    plt.title('Real Gross Domestic Product $GDP$, {}=100, {}$-${}'.format(
-        source_frame.iloc[base, 0], source_frame.iloc[0, 0], source_frame.iloc[source_frame.shape[0]-1, 0]))
+    plt.plot(df.iloc[:, 4])
+    plt.title(
+        'Real Gross Domestic Product $GDP$, {}=100, {}$-${}'.format(*_for_title))
     plt.xlabel('Period')
     plt.ylabel('Billions of Dollars')
     plt.grid(True)
     plt.figure(3)
-    plt.plot(source_frame.iloc[:, 6], source_frame.iloc[:, 5])
-    plt.title('$GPDI$ & $GPFI(n)$, {}=100, {}$-${}'.format(
-        source_frame.iloc[base, 0], source_frame.iloc[0, 0], source_frame.iloc[source_frame.shape[0]-1, 0]))
+    plt.plot(df.iloc[:, -2], df.iloc[:, 4])
+    plt.title('$GPDI$ & $GPFI(n)$, {}=100, {}$-${}'.format(*_for_title))
     plt.xlabel('Billions of Dollars')
     plt.ylabel('Billions of Dollars')
     plt.grid(True)
     plt.figure(4)
-    plt.plot(source_frame.iloc[:, 7], source_frame.iloc[:, 5])
-    plt.title('$GPFI(n)$ & $GDP$, {}=100, {}$-${}'.format(
-        source_frame.iloc[base, 0], source_frame.iloc[0, 0], source_frame.iloc[source_frame.shape[0]-1, 0]))
+    plt.plot(df.iloc[:, -1], df.iloc[:, 4])
+    plt.title('$GPFI(n)$ & $GDP$, {}=100, {}$-${}'.format(*_for_title))
     plt.xlabel('Billions of Dollars')
     plt.ylabel('Billions of Dollars')
     plt.grid(True)
