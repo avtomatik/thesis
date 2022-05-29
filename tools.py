@@ -5433,15 +5433,28 @@ def price_inverse_double(data_frame):
     return data_frame.iloc[:, [-1]].dropna(axis=0)
 
 
-def price_base(source_frame):
-    '''Returns Base Year'''
-    i = source_frame.shape[0]-1
-    while abs(source_frame.iloc[i, 0]-100) > 1/1000:
-        # #    while abs(source_frame.iloc[i, 0]-source_frame.iloc[i, 1])>10:
-        #    while abs(source_frame.iloc[i, 0]-source_frame.iloc[i, 1])>1:
-        i -= 1
-        base = i  # Basic Year
-    base = source_frame.index[base]
+def get_price_base(df: pd.DataFrame) -> int:
+    '''
+    Determine Base Year
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Deflator
+    ================== =================================
+
+    Returns
+    -------
+    int
+        Base Year.
+
+    '''
+    df['__deflator'] = np.absolute(df.iloc[:, 0].sub(100))
+    _b = df.iloc[:, -1].astype(float).argmin()
+    df.drop(df.columns[-1], axis=1, inplace=True)
+    return int(df.index[_b])
 
 
 def price_cobb_douglas():
