@@ -144,59 +144,61 @@ def calculate_capital_aquisition(df: pd.DataFrame) -> None:
         Draws matplotlib.pyplot Plots.
 
     '''
-    df.reset_index(level=0, inplace=True)
-    df.columns = ['period', *df.columns[1:]]
+    _df = df.copy()
+    _df.reset_index(level=0, inplace=True)
+    _df.columns = ['period', *_df.columns[1:]]
     # =========================================================================
     # TODO: Separate Basic Year Function
     # =========================================================================
-    df['__deflator'] = np.absolute(df.iloc[:, 2].div(df.iloc[:, 3]).sub(1))
-    _b = df.iloc[:, -1].astype(float).argmin()
-    df.drop(df.columns[-1], axis=1, inplace=True)
+    _df['__deflator'] = np.absolute(_df.iloc[:, 2].div(_df.iloc[:, 3]).sub(1))
+    _b = _df.iloc[:, -1].astype(float).argmin()
+    _df.drop(_df.columns[-1], axis=1, inplace=True)
+    _for_title = (_df.index[_b], _df.index[0], _df.index[-1])
     # =========================================================================
     # Calculate Static Values
     # =========================================================================
     # =========================================================================
     # Fixed Assets Turnover Ratio
     # =========================================================================
-    df['c_turnover'] = df.iloc[:, 3].div(df.iloc[:, 5])
+    _df['c_turnover'] = _df.iloc[:, 3].div(_df.iloc[:, 5])
     # =========================================================================
     # Investment to Gross Domestic Product Ratio, (I/Y)/(I_0/Y_0)
     # =========================================================================
-    df['inv_to_gdp'] = df.iloc[:, 1].div(df.iloc[:, 3])
+    _df['inv_to_gdp'] = _df.iloc[:, 1].div(_df.iloc[:, 3])
     # =========================================================================
     # Labor Capital Intensity
     # =========================================================================
-    df['lab_cap_int'] = df.iloc[:, 5].div(df.iloc[:, 6])
+    _df['lab_cap_int'] = _df.iloc[:, 5].div(_df.iloc[:, 6])
     # =========================================================================
     # Labor Productivity
     # =========================================================================
-    df['lab_product'] = df.iloc[:, 3].div(df.iloc[:, 6])
-    df.iloc[:, -3:] = df.iloc[:, -3:].div(df.iloc[0, -3:])
+    _df['lab_product'] = _df.iloc[:, 3].div(_df.iloc[:, 6])
+    _df.iloc[:, -3:] = _df.iloc[:, -3:].div(_df.iloc[0, -3:])
     # =========================================================================
     # Log Labor Capital Intensity, LN((K/L)/(K_0/L_0))
     # =========================================================================
-    df[f'{df.columns[-2]}_log_bas'] = np.log(df.iloc[:, -2].astype(float))
+    _df[f'{_df.columns[-2]}_log_bas'] = np.log(_df.iloc[:, -2].astype(float))
     # =========================================================================
     # Log Labor Productivity, LN((Y/L)/(Y_0/L_0))
     # =========================================================================
-    df[f'{df.columns[-2]}_log_bas'] = np.log(df.iloc[:, -2].astype(float))
+    _df[f'{_df.columns[-2]}_log_bas'] = np.log(_df.iloc[:, -2].astype(float))
     # =========================================================================
     # Max: Fixed Assets Turnover Ratio
     # =========================================================================
-    df[f'{df.columns[-6]}_max'] = df.iloc[:, 4].div(df.iloc[:, 5])
+    _df[f'{_df.columns[-6]}_max'] = _df.iloc[:, 4].div(_df.iloc[:, 5])
     # =========================================================================
     # Max: Investment to Gross Domestic Product Ratio
     # =========================================================================
-    df[f'{df.columns[-6]}_max'] = df.iloc[:, 1].div(df.iloc[:, 4])
+    _df[f'{_df.columns[-6]}_max'] = _df.iloc[:, 1].div(_df.iloc[:, 4])
     # =========================================================================
     # Max: Labor Productivity
     # =========================================================================
-    df[f'{df.columns[-5]}_max'] = df.iloc[:, 4].div(df.iloc[:, 6])
-    df.iloc[:, -2:] = df.iloc[:, -2:].div(df.iloc[0, -2:])
+    _df[f'{_df.columns[-5]}_max'] = _df.iloc[:, 4].div(_df.iloc[:, 6])
+    _df.iloc[:, -2:] = _df.iloc[:, -2:].div(_df.iloc[0, -2:])
     # =========================================================================
     # Max: Log Labor Productivity
     # =========================================================================
-    df[f'{df.columns[-1]}_log_bas'] = np.log(df.iloc[:, -1].astype(float))
+    _df[f'{_df.columns[-1]}_log_bas'] = np.log(_df.iloc[:, -1].astype(float))
     # =========================================================================
     # Calculate Dynamic Values
     # =========================================================================
@@ -212,25 +214,28 @@ def calculate_capital_aquisition(df: pd.DataFrame) -> None:
     pi, _knots = [], [0, ]
     _ = 0
     if N == 1:
-        _knots.append(df.index[-1])
+        _knots.append(_df.index[-1])
         pi.append(float(input('Define Pi for Period from {} to {}: '.format(
-            df.iloc[_knots[_], 0], df.iloc[_knots[1 + _] - 1, 0]))))
+            _df.iloc[_knots[_], 0], _df.iloc[_knots[1 + _] - 1, 0]))))
     elif N >= 2:
         while _ < N:
             if 1 + _ == N:
-                _knots.append(df.index[-1])
+                _knots.append(_df.index[-1])
                 pi.append(float(input('Define Pi for Period from {} to {}: '.format(
-                    df.iloc[_knots[_], 0], df.iloc[_knots[1 + _] - 1, 0]))))
+                    _df.iloc[_knots[_], 0], _df.iloc[_knots[1 + _] - 1, 0]))))
             else:
                 _knot = int(input('Select Row for Year, Should Be More Than {}: = {}: '.format(
-                    0, df.iloc[0, 0])))
+                    0, _df.iloc[0, 0])))
                 if _knot > _knots[_]:
                     _knots.append(_knot)
                     pi.append(float(input('Define Pi for Period from {} to {}: '.format(
-                        df.iloc[_knots[_], 0], df.iloc[_knots[1 + _], 0]))))
+                        _df.iloc[_knots[_], 0], _df.iloc[_knots[1 + _], 0]))))
             _ += 1
     else:
         print('Error')
+    # =========================================================================
+    # Calculate Dynamic Values
+    # =========================================================================
     _calculated = [np.nan, ]
     if N == 1:
         j = 0
@@ -239,7 +244,7 @@ def calculate_capital_aquisition(df: pd.DataFrame) -> None:
             # Estimate: GCF[-] or CA[+]
             # =================================================================
             _calculated.append(
-                df.iloc[1 + i, 5] - df.iloc[i, 5] + pi[j]*df.iloc[1 + i, 1]
+                _df.iloc[1 + i, 5] - _df.iloc[i, 5] + pi[j]*_df.iloc[1 + i, 1]
             )
     else:
         for j in range(N):
@@ -249,8 +254,8 @@ def calculate_capital_aquisition(df: pd.DataFrame) -> None:
                     # Estimate: GCF[-] or CA[+]
                     # =========================================================
                     _calculated.append(
-                        df.iloc[1 + i, 5] - df.iloc[i, 5] +
-                        pi[j]*df.iloc[1 + i, 1]
+                        _df.iloc[1 + i, 5] - _df.iloc[i, 5] +
+                        pi[j]*_df.iloc[1 + i, 1]
                     )
             else:
                 for i in range(_knots[j], _knots[1 + j]):
@@ -258,16 +263,16 @@ def calculate_capital_aquisition(df: pd.DataFrame) -> None:
                     # Estimate: GCF[-] or CA[+]
                     # =========================================================
                     _calculated.append(
-                        df.iloc[1 + i, 5] - df.iloc[i, 5] +
-                        pi[j]*df.iloc[1 + i, 1]
+                        _df.iloc[1 + i, 5] - _df.iloc[i, 5] +
+                        pi[j]*_df.iloc[1 + i, 1]
                     )
-    df = pd.concat(
+    _df = pd.concat(
         [
-            df,
+            _df,
             pd.DataFrame(_calculated, columns=['_calculated'])
         ],
         axis=1)
-    df.set_index(df.columns[0], inplace=True)
+    _df.set_index(_df.columns[0], inplace=True)
     # =========================================================================
     # `-` Gross Capital Formation
     # `+` Capital Acquisitions
@@ -275,238 +280,303 @@ def calculate_capital_aquisition(df: pd.DataFrame) -> None:
     for _ in range(N):
         if 1 + _ == N:
             print(
-                f'Model Parameter: Pi for Period from {df.index[_knots[_]]} to {df.index[_knots[1 + _] - 1]}: {pi[_]:.6f}'
+                f'Model Parameter: Pi for Period from {_df.index[_knots[_]]} to {_df.index[_knots[1 + _] - 1]}: {pi[_]:.6f}'
             )
             continue
         print(
-            f'Model Parameter: Pi for Period from {df.index[_knots[_]]} to {df.index[_knots[1 + _]]}: {pi[_]:.6f}'
+            f'Model Parameter: Pi for Period from {_df.index[_knots[_]]} to {_df.index[_knots[1 + _]]}: {pi[_]:.6f}'
         )
     plt.figure(1)
-    plt.plot(df.iloc[:, 8], df.iloc[:, 9])
-    plt.plot(df.iloc[:, 8], df.iloc[:, 14])
+    plt.plot(_df.iloc[:, 8], _df.iloc[:, 9])
+    plt.plot(_df.iloc[:, 8], _df.iloc[:, 14])
     plt.title(
         'Labor Productivity, Observed & Max, {}=100, {}$-${}'.format(
-            df.index[_b], df.index[_knots[0]], df.index[_knots[N] - 1]
+            *_for_title
         )
     )
     plt.xlabel('Labor Capital Intensity')
-    plt.ylabel(f'Labor Productivity, {df.index[_b]}=100')
+    plt.ylabel(f'Labor Productivity, {_df.index[_b]}=100')
     plt.grid(True)
     plt.figure(2)
-    plt.plot(df.iloc[:, 10], df.iloc[:, 11])
-    plt.plot(df.iloc[:, 10], df.iloc[:, 15])
+    plt.plot(_df.iloc[:, 10], _df.iloc[:, 11])
+    plt.plot(_df.iloc[:, 10], _df.iloc[:, 15])
     plt.title(
         'Log Labor Productivity, Observed & Max, {}=100, {}$-${}'.format(
-            df.index[_b], df.index[_knots[0]], df.index[_knots[N] - 1]
+            *_for_title
         )
     )
     plt.xlabel('Log Labor Capital Intensity')
-    plt.ylabel(f'Log Labor Productivity, {df.index[_b]}=100')
+    plt.ylabel(f'Log Labor Productivity, {_df.index[_b]}=100')
     plt.grid(True)
     plt.figure(3)
-    plt.plot(df.iloc[:, 6])
-    plt.plot(df.iloc[:, 12])
+    plt.plot(_df.iloc[:, 6])
+    plt.plot(_df.iloc[:, 12])
     plt.title(
         'Fixed Assets Turnover ($\\lambda$), Observed & Max, {}=100, {}$-${}'.format(
-            df.index[_b], df.index[_knots[0]], df.index[_knots[N] - 1]
+            *_for_title
         )
     )
     plt.xlabel('Period')
-    plt.ylabel(f'Fixed Assets Turnover ($\\lambda$), {df.index[_b]}=100')
+    plt.ylabel(f'Fixed Assets Turnover ($\\lambda$), {_df.index[_b]}=100')
     plt.grid(True)
     plt.figure(4)
-    plt.plot(df.iloc[:, 7])
-    plt.plot(df.iloc[:, 13])
+    plt.plot(_df.iloc[:, 7])
+    plt.plot(_df.iloc[:, 13])
     plt.title(
         'Investment to Gross Domestic Product Ratio, \nObserved & Max, {}=100, {}$-${}'.format(
-            df.index[_b], df.index[_knots[0]], df.index[_knots[N]]
+            *_for_title
         )
     )
     plt.xlabel('Period')
     plt.ylabel(
-        f'Investment to Gross Domestic Product Ratio, {df.index[_b]}=100')
+        f'Investment to Gross Domestic Product Ratio, {_df.index[_b]}=100')
     plt.grid(True)
     plt.figure(5)
-    plt.plot(df.iloc[:, 16])
+    plt.plot(_df.iloc[:, 16])
     plt.title(
         'Gross Capital Formation (GCF) or\nCapital Acquisitions (CA), {}=100, {}$-${}'.format(
-            df.index[_b], df.index[_knots[0]], df.index[_knots[N] - 1]
+            *_for_title
         )
     )
     plt.xlabel('Period')
-    plt.ylabel(f'GCF or CA, {df.index[_b]}=100')
+    plt.ylabel(f'GCF or CA, {_df.index[_b]}=100')
     plt.grid(True)
     plt.show()
 
 
-def capital_retirement(source_frame):
+def calculate_capital_retirement(df: pd.DataFrame) -> None:
     '''
-    source_frame.iloc[:, 0]: Period
-    source_frame.iloc[:, 1]: Nominal Investment
-    source_frame.iloc[:, 2]: Nominal Production
-    source_frame.iloc[:, 3]: Real Production
-    source_frame.iloc[:, 4]: Nominal Capital
-    source_frame.iloc[:, 5]: Labor
+    Interactive Shell for Processing Capital Retirement
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Nominal Investment
+    df.iloc[:, 1]      Nominal Production
+    df.iloc[:, 2]      Real Production
+    df.iloc[:, 3]      Nominal Capital
+    df.iloc[:, 4]      Labor
+    ================== =================================
+
+    Returns
+    -------
+    None
+        Draws matplotlib.pyplot Plots.
+
     '''
+    _df = df.copy()
+    _df.reset_index(level=0, inplace=True)
+    _df.columns = ['period', *_df.columns[1:]]
     # =========================================================================
     # Define Basic Year for Deflator
     # =========================================================================
-    i = source_frame.shape[0]-1
-    while abs(source_frame.iloc[i, 2]-source_frame.iloc[i, 3]) > 1:
-        i -= 1
-        base = i  # Basic Year
-    '''Calculate Static Values'''
-    YAA = source_frame.iloc[:, 4].div(source_frame.iloc[:, 5])
+    # =========================================================================
+    # TODO: Separate Basic Year Function
+    # =========================================================================
+    _df['__deflator'] = np.absolute(_df.iloc[:, 2].div(_df.iloc[:, 3]).sub(1))
+    _b = _df.iloc[:, -1].astype(float).argmin()
+    _df.drop(_df.columns[-1], axis=1, inplace=True)
+    _for_title = (_df.index[_b], _df.index[0], _df.index[-1])
+    # =========================================================================
+    # Calculate Static Values
+    # =========================================================================
+    # =========================================================================
+    # Labor Capital Intensity
+    # =========================================================================
+    _df['lab_cap_int_log_bas'] = _df.iloc[:, 4].div(_df.iloc[:, 5])
+    # =========================================================================
+    # Labor Productivity
+    # =========================================================================
+    _df['lab_product_log_bas'] = _df.iloc[:, 3].div(_df.iloc[:, 5])
+    # =========================================================================
+    # Investment to Gross Domestic Product Ratio
+    # =========================================================================
+    _df['inv_to_gdp'] = _df.iloc[:, 1].div(_df.iloc[:, 3])
+    # =========================================================================
+    # Basing
+    # =========================================================================
+    _df.iloc[:, -3:] = _df.iloc[:, -3:].div(_df.iloc[0, -3:])
+    # =========================================================================
     # Log Labor Capital Intensity, LN((K/L)/(K_0/L_0))
-    YAA = np.log(YAA.div(YAA[0]))
-    YBB = source_frame.iloc[:, 3].div(source_frame.iloc[:, 5])
+    # =========================================================================
+    _df.iloc[:, -3] = np.log(_df.iloc[:, -3].astype(float))
+    # =========================================================================
     # Log Labor Productivity, LN((Y/L)/(Y_0/L_0))
-    YBB = np.log(YBB.div(YBB[0]))
-    YCC = source_frame.iloc[:, 1].div(source_frame.iloc[:, 3])
-    # Investment to Gross Domestic Product Ratio, (I/Y)/(I_0/Y_0)
-    YCC = YCC.div(YCC[0])
-    YDD = source_frame.iloc[:, 3].div(
-        source_frame.iloc[:, 4])  # Fixed Assets Turnover Ratio
-    YAA = pd.DataFrame(YAA, columns=['YAA'])  # Convert List to Dataframe
-    YBB = pd.DataFrame(YBB, columns=['YBB'])  # Convert List to Dataframe
+    # =========================================================================
+    _df.iloc[:, -2] = np.log(_df.iloc[:, -2].astype(float))
+    # =========================================================================
+    # Fixed Assets Turnover Ratio
+    # =========================================================================
+    _df['c_turnover'] = _df.iloc[:, 3].div(_df.iloc[:, 4])
     # =========================================================================
     # Number of Periods
     # =========================================================================
     N = int(input('Define Number of Line Segments for Pi: '))
-    if N >= 1:
-        print(f'Number of Periods Provided: {N}')
-        pi, knt = [], []  # Pi Switch Points & Pi
-        knt.append(0)
-        i = 0
-        if N == 1:
-            knt.append(source_frame.shape[0]-1)
-            pi.append(float(input('Define Pi for Period from {} to {}: '.format(
-                source_frame.iloc[knt[i], 0], source_frame.iloc[:, 0][knt[1 + i]]))))
-        elif N >= 2:
-            while i < N:
-                if i == N-1:
-                    knt.append(source_frame.shape[0]-1)
-                    pi.append(float(input('Define Pi for Period from {} to {}: '.format(
-                        source_frame.iloc[knt[i], 0], source_frame.iloc[knt[1 + i], 0]))))
-                    i += 1
-                else:
-                    y = int(input('Select Row for Year: '))
-                    if y > knt[i]:
-                        knt.append(y)
-                        pi.append(float(input('Define Pi for Period from {} to {}: '.format(
-                            source_frame.iloc[knt[i], 0], source_frame.iloc[knt[1 + i], 0]))))
-                        i += 1
-        else:
-            print('Error')
-        YEE = []
-        YFF = []
-        YEE.append(np.nan)  # Fixed Assets Retirement Value
-        YFF.append(np.nan)  # Fixed Assets Retirement Ratio
-        '''Calculate Dynamic Values'''
-        if N == 1:
-            j = 0
-            for i in range(knt[j], knt[1 + j]):
-                # Fixed Assets Retirement Value
-                YEE.append(
-                    source_frame.iloc[i, 4]-source_frame.iloc[1 + i, 4] + pi[j]*source_frame.iloc[i, 1])
-                YFF.append((source_frame.iloc[i, 4]-source_frame.iloc[1 + i, 4] + pi[j] *
-                           source_frame.iloc[i, 1])/source_frame.iloc[1 + i, 4])  # Fixed Assets Retirement Ratio
-        else:
-            for j in range(N):
-                if j == N-1:
-                    for i in range(knt[j], knt[1 + j]):
-                        # Fixed Assets Retirement Value
-                        YEE.append(
-                            source_frame.iloc[i, 4]-source_frame.iloc[1 + i, 4] + pi[j]*source_frame.iloc[i, 1])
-                        # Fixed Assets Retirement Ratio
-                        YFF.append((source_frame.iloc[i, 4]-source_frame.iloc[1 + i, 4] +
-                                   pi[j]*source_frame.iloc[i, 1])/source_frame.iloc[1 + i, 4])
-                else:
-                    for i in range(knt[j], knt[1 + j]):
-                        # Fixed Assets Retirement Value
-                        YEE.append(
-                            source_frame.iloc[i, 4]-source_frame.iloc[1 + i, 4] + pi[j]*source_frame.iloc[i, 1])
-                        # Fixed Assets Retirement Ratio
-                        YFF.append((source_frame.iloc[i, 4]-source_frame.iloc[1 + i, 4] +
-                                   pi[j]*source_frame.iloc[i, 1])/source_frame.iloc[1 + i, 4])
-        YEE = pd.DataFrame(YEE, columns=['YEE'])  # Convert List to Dataframe
-        YFF = pd.DataFrame(YFF, columns=['YFF'])  # Convert List to Dataframe
-        result_frame = pd.DataFrame(
-            source_frame.iloc[:, 0], columns=['Period'])
-        result_frame = pd.concat(
-            [result_frame, YAA, YBB, YCC, YDD, YEE, YFF], axis=1, sort=True)
-        result_frame.columns = [
-            'Period', 'YAA', 'YBB', 'YCC', 'YDD', 'YEE', 'YFF'
-        ]
-        result_frame['YGG'] = result_frame['YFF']-result_frame['YFF'].mean()
-        result_frame['YGG'] = result_frame['YGG'].abs()
-        result_frame['YHH'] = result_frame['YFF']-result_frame['YFF'].shift(1)
-        result_frame['YHH'] = result_frame['YHH'].abs()
-        for i in range(N):
-            if i == N-1:
-                print('Model Parameter: Pi for Period from {} to {}: {:.6f}'.format(
-                    source_frame.iloc[knt[i], 0], source_frame.iloc[knt[1 + i], 0], pi[i]))
+    print(f'Number of Periods Provided: {N}')
+    assert N >= 1, f'N >= 1 is Required, N = {N} Was Provided'
+    # =========================================================================
+    # Pi & Pi Switch Points
+    # =========================================================================
+    pi, _knots = [], [0, ]
+    _ = 0
+    if N == 1:
+        _knots.append(_df.index[-1])
+        pi.append(float(input('Define Pi for Period from {} to {}: '.format(
+            _df.iloc[_knots[_], 0], _df.iloc[_knots[1 + _], 0]))))
+    elif N >= 2:
+        while _ < N:
+            if 1 + _ == N:
+                _knots.append(_df.index[-1])
+                pi.append(float(input('Define Pi for Period from {} to {}: '.format(
+                    _df.iloc[_knots[_], 0], _df.iloc[_knots[1 + _], 0]))))
             else:
-                print('Model Parameter: Pi for Period from {} to {}: {:.6f}'.format(
-                    source_frame.iloc[knt[i], 0], source_frame.iloc[knt[1 + i], 0], pi[i]))
-        plt.figure(1)
-        plt.title('Product, {}=100, {}$-${}'.format(
-            source_frame.iloc[base, 0], source_frame.iloc[0, 0], source_frame.iloc[knt[N], 0]))
-        plt.xlabel('Period')
-        plt.ylabel('Product, {}=100'.format(source_frame.iloc[base, 0]))
-        plt.plot(source_frame.iloc[:, 0], source_frame.iloc[:, 3])
-        plt.grid(True)
-        plt.figure(2)
-        plt.title('Capital, {}=100, {}$-${}'.format(
-            source_frame.iloc[base, 0], source_frame.iloc[0, 0], source_frame.iloc[knt[N], 0]))
-        plt.xlabel('Period')
-        plt.ylabel('Capital, {}=100'.format(source_frame.iloc[base, 0]))
-        plt.plot(source_frame.iloc[:, 0], source_frame.iloc[:, 4])
-        plt.grid(True)
-        plt.figure(3)
-        plt.title('Fixed Assets Turnover ($\\lambda$), {}=100, {}$-${}'.format(
-            source_frame.iloc[base, 0], source_frame.iloc[0, 0], source_frame.iloc[knt[N], 0]))
-        plt.xlabel('Period')
-        plt.ylabel('Fixed Assets Turnover ($\\lambda$), {}=100'.format(
-            source_frame.iloc[base, 0]))
-        plt.plot(source_frame.iloc[:, 0], source_frame.iloc[:, 3].div(
-            source_frame.iloc[:, 4]))
-        plt.grid(True)
-        plt.figure(4)
-        plt.title('Investment to Gross Domestic Product Ratio, {}=100, {}$-${}'.format(
-            source_frame.iloc[base, 0], source_frame.iloc[0, 0], source_frame.iloc[knt[N], 0]))
-        plt.xlabel('Period')
-        plt.ylabel('Investment to Gross Domestic Product Ratio, {}=100'.format(
-            source_frame.iloc[base, 0]))
-        plt.plot(source_frame.iloc[:, 0], YCC)
-        plt.grid(True)
-        plt.figure(5)
-        plt.title('$\\alpha(t)$, Fixed Assets Retirement Ratio, {}=100, {}$-${}'.format(
-            source_frame.iloc[base, 0], source_frame.iloc[0, 0], source_frame.iloc[knt[N], 0]))
-        plt.xlabel('Period')
-        plt.ylabel('$\\alpha(t)$, {}=100'.format(source_frame.iloc[base, 0]))
-        plt.plot(source_frame.iloc[:, 0], YFF)
-        plt.grid(True)
-        plt.figure(6)
-        plt.title('Fixed Assets Retirement Ratio to Fixed Assets Retirement Value, {}=100, {}$-${}'.format(
-            source_frame.iloc[base, 0], source_frame.iloc[0, 0], source_frame.iloc[knt[N], 0]))
-        plt.xlabel('$\\alpha(t)$, {}=100'.format(source_frame.iloc[base, 0]))
-        plt.ylabel('Fixed Assets Retirement Value, {}=100'.format(
-            source_frame.iloc[base, 0]))
-        plt.plot(YFF, YEE)
-        plt.grid(True)
-        plt.figure(7)
-        plt.title('Labor Capital Intensity, {}=100, {}$-${}'.format(
-            source_frame.iloc[base, 0], source_frame.iloc[0, 0], source_frame.iloc[knt[N], 0]))
-        plt.xlabel('Labor Capital Intensity, {}=100'.format(
-            source_frame.iloc[base, 0]))
-        plt.ylabel('Labor Productivity, {}=100'.format(
-            source_frame.iloc[base, 0]))
-        plt.plot(np.exp(YAA), np.exp(YBB))
-        plt.grid(True)
-        plt.show()
+                _knot = int(input('Select Row for Year: '))
+                if _knot > _knots[_]:
+                    _knots.append(_knot)
+                    pi.append(float(input('Define Pi for Period from {} to {}: '.format(
+                        _df.iloc[_knots[_], 0], _df.iloc[_knots[1 + _], 0]))))
+            _ += 1
     else:
-        print(f'N >= 1 is Required, N = {N} Was Provided')
+        print('Error')
+    # =========================================================================
+    # Calculate Dynamic Values
+    # =========================================================================
+    # =========================================================================
+    # Fixed Assets Retirement Value
+    # =========================================================================
+    _value = [np.nan, ]
+    # =========================================================================
+    # Fixed Assets Retirement Ratio
+    # =========================================================================
+    _ratio = [np.nan, ]
+    if N == 1:
+        j = 0
+        for i in range(_knots[j], _knots[1 + j]):
+            # =================================================================
+            # Fixed Assets Retirement Value
+            # =================================================================
+            _value.append(
+                _df.iloc[i, 4] - _df.iloc[1 + i, 4] + pi[j]*_df.iloc[i, 1]
+            )
+            # =================================================================
+            # Fixed Assets Retirement Ratio
+            # =================================================================
+            _ratio.append(
+                (_df.iloc[i, 4] - _df.iloc[1 + i, 4] + pi[j]
+                 * _df.iloc[i, 1]) / _df.iloc[1 + i, 4]
+            )
+    else:
+        for j in range(N):
+            if 1 + j == N:
+                for i in range(_knots[j], _knots[1 + j]):
+                    # =========================================================
+                    # Fixed Assets Retirement Value
+                    # =========================================================
+                    _value.append(
+                        _df.iloc[i, 4] - _df.iloc[1 + i, 4] +
+                        pi[j]*_df.iloc[i, 1]
+                    )
+                    # =========================================================
+                    # Fixed Assets Retirement Ratio
+                    # =========================================================
+                    _ratio.append(
+                        (_df.iloc[i, 4] - _df.iloc[1 + i, 4] +
+                         pi[j]*_df.iloc[i, 1]) / _df.iloc[1 + i, 4]
+                    )
+            else:
+                for i in range(_knots[j], _knots[1 + j]):
+                    # =========================================================
+                    # Fixed Assets Retirement Value
+                    # =========================================================
+                    _value.append(
+                        _df.iloc[i, 4] - _df.iloc[1 + i, 4] +
+                        pi[j]*_df.iloc[i, 1]
+                    )
+                    # =========================================================
+                    # Fixed Assets Retirement Ratio
+                    # =========================================================
+                    _ratio.append(
+                        (_df.iloc[i, 4] - _df.iloc[1 + i, 4] +
+                         pi[j]*_df.iloc[i, 1]) / _df.iloc[1 + i, 4]
+                    )
+    _df = pd.concat(
+        [
+            _df,
+            pd.DataFrame(_value, columns=['_value']),
+            pd.DataFrame(_ratio, columns=['_ratio'])
+        ],
+        axis=1)
+    _df.set_index(_df.columns[0], inplace=True)
+    _df['_ratio_deviation_abs'] = _df.iloc[:, 10].sub(
+        _df.iloc[:, 10].mean()).abs()
+    _df['_ratio_increment_abs'] = _df.iloc[:, 10].sub(
+        _df.iloc[:, 10].shift(1)).abs()
+    for _ in range(N):
+        if 1 + _ == N:
+            print(
+                f'Model Parameter: Pi for Period from {_df.index[_knots[_]]} to {_df.index[_knots[1 + _] - 1]}: {pi[_]:.6f}'
+            )
+            continue
+        print(
+            f'Model Parameter: Pi for Period from {_df.index[_knots[_]]} to {_df.index[_knots[1 + _]]}: {pi[_]:.6f}'
+        )
+    plt.figure(1)
+    plt.title('Product, {}=100, {}$-${}'.format(*_for_title))
+    plt.xlabel('Period')
+    plt.ylabel(f'Product, {_df.index[_b]}=100')
+    plt.plot(_df.iloc[:, 2])
+    plt.grid(True)
+    plt.figure(2)
+    plt.title('Capital, {}=100, {}$-${}'.format(*_for_title))
+    plt.xlabel('Period')
+    plt.ylabel(f'Capital, {_df.index[_b]}=100')
+    plt.plot(_df.iloc[:, 3])
+    plt.grid(True)
+    plt.figure(3)
+    plt.title(
+        'Fixed Assets Turnover ($\\lambda$), {}=100, {}$-${}'.format(*_for_title)
+    )
+    plt.xlabel('Period')
+    plt.ylabel(f'Fixed Assets Turnover ($\\lambda$), {_df.index[_b]}=100')
+    plt.plot(_df.iloc[:, 2].div(_df.iloc[:, 3]))
+    plt.grid(True)
+    plt.figure(4)
+    plt.title(
+        'Investment to Gross Domestic Product Ratio, {}=100, {}$-${}'.format(
+            *_for_title)
+    )
+    plt.xlabel('Period')
+    plt.ylabel(
+        f'Investment to Gross Domestic Product Ratio, {_df.index[_b]}=100'
+    )
+    plt.plot(_df.iloc[:, 7])
+    plt.grid(True)
+    plt.figure(5)
+    plt.title(
+        '$\\alpha(t)$, Fixed Assets Retirement Ratio, {}=100, {}$-${}'.format(*_for_title)
+    )
+    plt.xlabel('Period')
+    plt.ylabel(f'$\\alpha(t)$, {_df.index[_b]}=100')
+    plt.plot(_df.iloc[:, 9])
+    plt.grid(True)
+    plt.figure(6)
+    plt.title(
+        'Fixed Assets Retirement Ratio to Fixed Assets Retirement Value, {}=100, {}$-${}'.format(
+            *_for_title)
+    )
+    plt.xlabel(f'$\\alpha(t)$, {_df.index[_b]}=100')
+    plt.ylabel(f'Fixed Assets Retirement Value, {_df.index[_b]}=100')
+    plt.plot(_df.iloc[:, 9], _df.iloc[:, 8])
+    plt.grid(True)
+    plt.figure(7)
+    plt.title('Labor Capital Intensity, {}=100, {}$-${}'.format(*_for_title))
+    plt.xlabel(f'Labor Capital Intensity, {_df.index[_b]}=100')
+    plt.ylabel(f'Labor Productivity, {_df.index[_b]}=100')
+    plt.plot(np.exp(_df.iloc[:, 5]), np.exp(_df.iloc[:, 6]))
+    plt.grid(True)
+    plt.show()
 
 
 def convert_url(string):
@@ -6500,7 +6570,7 @@ def plot_elasticity(df: pd.DataFrame) -> None:
     df['__deflator'] = np.absolute(df.iloc[:, 0].div(df.iloc[:, 1]).sub(1))
     _b = df.iloc[:, -1].astype(float).argmin()
     df.drop(df.columns[-1], axis=1, inplace=True)
-    _title = (
+    _for_title = (
         'National Income' if df.columns[2] == 'A032RC1' else 'Series',
         df.columns[2],
         df.index[_b],
@@ -6524,24 +6594,24 @@ def plot_elasticity(df: pd.DataFrame) -> None:
     df[f'{df.columns[2]}_elasticity_c'] = df.iloc[:, 3].shift(-1).sub(df.iloc[:, 3].shift(1)).div(
         df.iloc[:, 3].mul(2).add(df.iloc[:, 3].shift(-1)).add(df.iloc[:, 3].shift(1))).mul(2)
     # =========================================================================
-    # \frac{-x_{k-1} - x_{k} + x_{k+1} + x_{k+2}}{2 \times (x_{k} +x_{k+1})}
+    # \frac{-x_{k-1} - x_{k} + x_{k+1} + x_{k+2}}{2 \times (x_{k} + x_{k+1})}
     # =========================================================================
     df[f'{df.columns[2]}_elasticity_d'] = df.iloc[:, 3].shift(-1).add(df.iloc[:, 3].shift(-2)).sub(
         df.iloc[:, 3].shift(1)).sub(df.iloc[:, 3]).div(df.iloc[:, 3].add(df.iloc[:, 3].shift(-1)).mul(2))
     plt.figure(1)
-    plt.title('{}, {}, {}=100'.format(*_title))
+    plt.title('{}, {}, {}=100'.format(*_for_title))
     plt.xlabel('Period')
-    plt.ylabel(f'Billions of Dollars, {_title[2]}=100')
-    plt.plot(df.iloc[:, [3]], label=f'{_title[1]}')
+    plt.ylabel(f'Billions of Dollars, {_for_title[2]}=100')
+    plt.plot(df.iloc[:, [3]], label=f'{_for_title[1]}')
     plt.plot(
         df.index.to_series().rolling(2).mean(),
         df.iloc[:, 4],
-        label=f'{_title[1]}, Rolling Mean, Window = 2'
+        label=f'{_for_title[1]}, Rolling Mean, Window = 2'
     )
     plt.grid(True)
     plt.legend()
     plt.figure(2)
-    plt.title('Elasticity: {}, {}, {}=100'.format(*_title))
+    plt.title('Elasticity: {}, {}, {}=100'.format(*_for_title))
     plt.xlabel('Period')
     plt.ylabel('Index')
     plt.plot(
@@ -6559,9 +6629,9 @@ def plot_elasticity(df: pd.DataFrame) -> None:
     plt.grid(True)
     plt.legend()
     plt.figure(3)
-    plt.title('Elasticity: {}, {}, {}=100'.format(*_title))
-    plt.xlabel('{}, {}, {}=100'.format(*_title))
-    plt.ylabel('Elasticity: {}, {}, {}=100'.format(*_title))
+    plt.title('Elasticity: {}, {}, {}=100'.format(*_for_title))
+    plt.xlabel('{}, {}, {}=100'.format(*_for_title))
+    plt.ylabel('Elasticity: {}, {}, {}=100'.format(*_for_title))
     plt.plot(df.iloc[:, 3], df.iloc[:, 8], label='$\\frac{\\epsilon(X)}{X}$')
     plt.grid(True)
     plt.legend()
