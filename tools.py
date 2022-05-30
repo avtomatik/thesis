@@ -103,27 +103,27 @@ def calculate_power_function_fit_params_c(df: pd.DataFrame, params: tuple[float]
         np.sqrt(mean_squared_error(df.iloc[:, 1], df.iloc[:, 2]))))
 
 
-def calculate_capital(source_frame, A, B, C, D, Pi):
+def calculate_capital(df: pd.DataFrame, p_i: tuple[float], p_t: tuple[float], ratio: float):
     '''
-    source_frame.iloc[:, 0]: Period,
-    source_frame.iloc[:, 1]: Investment,
-    source_frame.iloc[:, 2]: Production,
-    source_frame.iloc[:, 3]: Capital,
-    source_frame.iloc[:, 4]: Capital Retirement,
-    A: S - Gross Fixed Investment to Gross Domestic Product Ratio - Absolute Term over Period,
-    B: S - Gross Fixed Investment to Gross Domestic Product Ratio - Slope over Period,
-    C: Λ - Fixed Assets Turnover Ratio - Absolute Term over Period,
-    D: Λ - Fixed Assets Turnover Ratio - Slope over Period,
-    Pi: Investment to Capital Conversion Ratio
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Investment
+    df.iloc[:, 1]      Production
+    df.iloc[:, 2]      Capital
+    df.iloc[:, 3]      Capital Retirement
+    ================== =================================
+    p_i[0]: S - Gross Fixed Investment to Gross Domestic Product Ratio - Slope over Period,
+    p_i[1]: S - Gross Fixed Investment to Gross Domestic Product Ratio - Absolute Term over Period,
+    p_t[0]: Λ - Fixed Assets Turnover Ratio - Slope over Period,
+    p_t[1]: Λ - Fixed Assets Turnover Ratio - Absolute Term over Period,
+    ratio: Investment to Capital Conversion Ratio
     '''
-    series = source_frame.iloc[:, 3].shift(1)*(1 + (B*source_frame.iloc[:, 0].shift(1) + A)*(
-        D*source_frame.iloc[:, 0].shift(1) + C)*Pi-source_frame.iloc[:, 4].shift(1))
-    return series
+    return df.index.to_series().shift(1).mul(p_i[0]).add(p_i[1]).mul(df.index.to_series().shift(1).mul(p_t[0]).add(p_t[1])).mul(ratio).add(1).sub(df.iloc[:, 3].shift(1)).mul(df.iloc[:, 2].shift(1))
 
 
-def calculate_capital_aquisition(df: pd.DataFrame) -> None:
+def calculate_capital_acquisition(df: pd.DataFrame) -> None:
     '''
-    Interactive Shell for Processing Capital Aquisitions
+    Interactive Shell for Processing Capital Acquisitions
 
     Parameters
     ----------
@@ -150,7 +150,7 @@ def calculate_capital_aquisition(df: pd.DataFrame) -> None:
     # =========================================================================
     # TODO: Separate Basic Year Function
     # =========================================================================
-    _df['__deflator'] = np.absolute(_df.iloc[:, 2].div(_df.iloc[:, 3]).sub(1))
+    _df['__deflator'] = _df.iloc[:, 2].div(_df.iloc[:, 3]).sub(1).abs()
     _b = _df.iloc[:, -1].astype(float).argmin()
     _df.drop(_df.columns[-1], axis=1, inplace=True)
     _for_title = (_df.index[_b], _df.index[0], _df.index[-1])
@@ -375,7 +375,7 @@ def calculate_capital_retirement(df: pd.DataFrame) -> None:
     # =========================================================================
     # TODO: Separate Basic Year Function
     # =========================================================================
-    _df['__deflator'] = np.absolute(_df.iloc[:, 2].div(_df.iloc[:, 3]).sub(1))
+    _df['__deflator'] = _df.iloc[:, 2].div(_df.iloc[:, 3]).sub(1).abs()
     _b = _df.iloc[:, -1].astype(float).argmin()
     _df.drop(_df.columns[-1], axis=1, inplace=True)
     _for_title = (_df.index[_b], _df.index[0], _df.index[-1])
@@ -1079,12 +1079,13 @@ def get_data_archived() -> pd.DataFrame:
     # =========================================================================
     # Capital Retirement Ratio
     # =========================================================================
-    _df['rto'] = _df.iloc[:, -2].mul(1).sub(_df.iloc[:, -1].shift(-1)).div(
+    _df['ratio_mu'] = _df.iloc[:, -2].mul(1).sub(_df.iloc[:, -1].shift(-1)).div(
         _df.iloc[:, -1]).add(1)
-    return (_df.loc[:, ['inv', 'A191RX1', 'cap', 'rto']].dropna().reset_index(level=0),
-            _df.loc[:, ['rto']].dropna().reset_index(level=0),
-            _df.index.get_loc(2005)
-            )
+    return (
+        _df.loc[:, ['inv', 'A191RX1', 'cap', 'ratio_mu']].dropna(axis=0),
+        _df.loc[:, ['ratio_mu']].dropna(axis=0),
+        _df.index.get_loc(2005)
+    )
 
 
 def get_data_bea_def() -> pd.DataFrame:
@@ -2791,11 +2792,11 @@ def get_data_updated():
     # =========================================================================
     # Capital Retirement Ratio
     # =========================================================================
-    _data['_rto'] = _data.iloc[:, -
+    _data['_ratio_mu'] = _data.iloc[:, -
                                2].mul(1).sub(_data.iloc[:, -1].shift(-1)).div(_data.iloc[:, -1]).add(1)
     return (
-        _data.loc[:, ['_inv', 'A191RX', '_cap', '_rto']].dropna(axis=0),
-        _data.loc[:, ['_rto']].dropna(axis=0),
+        _data.loc[:, ['_inv', 'A191RX', '_cap', '_ratio_mu']].dropna(axis=0),
+        _data.loc[:, ['_ratio_mu']].dropna(axis=0),
         _data.index.get_loc(2012)
     )
 
@@ -4053,7 +4054,7 @@ def plot_approx_linear(df: pd.DataFrame):
     # =========================================================================
     # TODO: Separate Basic Year Function
     # =========================================================================
-    df['__deflator'] = np.absolute(df.iloc[:, 0].div(df.iloc[:, 1]).sub(1))
+    df['__deflator'] = df.iloc[:, 0].div(df.iloc[:, 1]).sub(1).abs()
     _b = df.iloc[:, -1].astype(float).argmin()
     df.drop(df.columns[-1], axis=1, inplace=True)
     # =========================================================================
@@ -4123,7 +4124,7 @@ def plot_approx_log_linear(df: pd.DataFrame):
     # =========================================================================
     # TODO: Separate Basic Year Function
     # =========================================================================
-    df['__deflator'] = np.absolute(df.iloc[:, 0].div(df.iloc[:, 1]).sub(1))
+    df['__deflator'] = df.iloc[:, 0].div(df.iloc[:, 1]).sub(1).abs()
     _b = df.iloc[:, -1].astype(float).argmin()
     df.drop(df.columns[-1], axis=1, inplace=True)
     # =========================================================================
@@ -4268,7 +4269,7 @@ def plot_d(df: pd.DataFrame) -> None:
     # =========================================================================
     # Basic Year
     # =========================================================================
-    df['__deflator'] = np.absolute(df.iloc[:, 1].sub(100))
+    df['__deflator'] = df.iloc[:, 1].sub(100).abs()
     _b = df.iloc[:, -1].astype(float).argmin()
     df.drop(df.columns[-1], axis=1, inplace=True)
     _for_title = (df.index[_b], df.index[0], df.index[-1])
@@ -5466,7 +5467,7 @@ def get_price_base(df: pd.DataFrame) -> int:
         Base Year.
 
     '''
-    df['__deflator'] = np.absolute(df.iloc[:, 0].sub(100))
+    df['__deflator'] = df.iloc[:, 0].sub(100).abs()
     _b = df.iloc[:, -1].astype(float).argmin()
     df.drop(df.columns[-1], axis=1, inplace=True)
     return int(df.index[_b])
@@ -5647,11 +5648,11 @@ def plot_lab_prod_polynomial(df: pd.DataFrame) -> None:
     # =========================================================================
     # Deltas
     # =========================================================================
-    _df['d_pow'] = np.absolute(_df.iloc[:, 0].div(df.iloc[:, -1]).sub(1))
-    _df['d_p_1'] = np.absolute(_df.iloc[:, 1].div(df.iloc[:, -1]).sub(1))
-    _df['d_p_2'] = np.absolute(_df.iloc[:, 2].div(df.iloc[:, -1]).sub(1))
-    _df['d_p_3'] = np.absolute(_df.iloc[:, 3].div(df.iloc[:, -1]).sub(1))
-    _df['d_p_4'] = np.absolute(_df.iloc[:, 4].div(df.iloc[:, -1]).sub(1))
+    _df['d_pow'] = _df.iloc[:, 0].div(df.iloc[:, -1]).sub(1).abs()
+    _df['d_p_1'] = _df.iloc[:, 1].div(df.iloc[:, -1]).sub(1).abs()
+    _df['d_p_2'] = _df.iloc[:, 2].div(df.iloc[:, -1]).sub(1).abs()
+    _df['d_p_3'] = _df.iloc[:, 3].div(df.iloc[:, -1]).sub(1).abs()
+    _df['d_p_4'] = _df.iloc[:, 4].div(df.iloc[:, -1]).sub(1).abs()
     r = _r2_scores()
     plt.figure(1)
     plt.scatter(
@@ -5871,8 +5872,8 @@ def plot_turnover(df: pd.DataFrame) -> None:
     # =========================================================================
     # Deltas
     # =========================================================================
-    df['d_lin'] = np.absolute(df.iloc[:, -2].div(df.iloc[:, -3]).sub(1))
-    df['d_exp'] = np.absolute(df.iloc[:, -2].div(df.iloc[:, -4]).sub(1))
+    df['d_lin'] = df.iloc[:, -2].div(df.iloc[:, -3]).sub(1).abs()
+    df['d_exp'] = df.iloc[:, -2].div(df.iloc[:, -4]).sub(1).abs()
     plt.figure(1)
     plt.plot(df.iloc[:, 2], df.iloc[:, 0])
     plt.title(
@@ -6467,76 +6468,89 @@ def _m_spline_print_params(n_spans: int, params: tuple[float]) -> None:
             print(f'Model Parameter: A{_:02n} = {_param:.6f}')
 
 
-def plot_capital_modelling(source_frame, base):
+def plot_capital_modelling(df: pd.DataFrame, base) -> None:
     '''
-    source_frame.iloc[:, 0]: Period,
-    source_frame.iloc[:, 1]: Investment,
-    source_frame.iloc[:, 2]: Production,
-    source_frame.iloc[:, 3]: Capital,
-    source_frame.iloc[:, 4]: Capital Retirement
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Investment
+    df.iloc[:, 1]      Production
+    df.iloc[:, 2]      Capital
+    df.iloc[:, 3]      Capital Retirement
+    ================== =================================
     '''
-    QS = np.polyfit(source_frame.iloc[:, 0], source_frame.iloc[:, 1].div(
-        source_frame.iloc[:, 2]), 1)
-    QL = np.polyfit(source_frame.iloc[:, 0], source_frame.iloc[:, 2].div(
-        source_frame.iloc[:, 3]), 1)
-    '''Gross Fixed Investment to Gross Domestic Product Ratio'''
-    S = QS[1] + source_frame.iloc[:, 0].mul(QS[0])
-    '''Fixed Assets Turnover'''
-    L = QL[1] + source_frame.iloc[:, 0].mul(QL[0])
-    KA = calculate_capital(source_frame, QS[1], QS[0], QL[1], QL[0], 0.875)
-    KB = calculate_capital(source_frame, QS[1], QS[0], QL[1], QL[0], 1)
-    KC = calculate_capital(source_frame, QS[1], QS[0], QL[1], QL[0], 1.125)
+    _params_i = np.polyfit(
+        df.index.to_series(),
+        df.iloc[:, 0].div(df.iloc[:, 1]).astype(float),
+        deg=1
+    )
+    _params_t = np.polyfit(
+        df.index.to_series(),
+        df.iloc[:, 1].div(df.iloc[:, 2]).astype(float),
+        deg=1
+    )
+    _df = df.copy()
+    # =========================================================================
+    # Gross Fixed Investment to Gross Domestic Product Ratio
+    # =========================================================================
+    _df['inv_to_pro'] = _df.index.to_series().mul(
+        _params_i[0]).add(_params_i[1])
+    # =========================================================================
+    # Fixed Assets Turnover
+    # =========================================================================
+    _df['c_turnover'] = _df.index.to_series().mul(
+        _params_t[0]).add(_params_t[1])
+    _df['cap_a'] = calculate_capital(df, _params_i, _params_t, 0.875)
+    _df['cap_b'] = calculate_capital(df, _params_i, _params_t, 1)
+    _df['cap_c'] = calculate_capital(df, _params_i, _params_t, 1.125)
     plt.figure(1)
-    plt.title('Fixed Assets Turnover ($\\lambda$) for the US, {}$-${}'.format(
-        source_frame.iloc[0, 0], source_frame.iloc[source_frame.shape[0]-1, 0]))
+    plt.title(
+        'Fixed Assets Turnover ($\\lambda$) for the US, {}$-${}'.format(
+            _df.index[0], _df.index[-1]
+        )
+    )
     plt.xlabel('Period')
     plt.ylabel('Index')
-    plt.plot(source_frame.iloc[:, 0], source_frame.iloc[:, 2].div(
-        source_frame.iloc[:, 3]), label='$\\lambda$')
-    if QL[0] < 0:
-        plt.plot(source_frame.iloc[:, 0], L, label='$\\lambda = {1:, .4f}\\ {0:, .4f}\\times t$'.format(
-            QL[0], QL[1]))
-    else:
-        plt.plot(source_frame.iloc[:, 0], L,
-                 label='$\\lambda = {1:, .4f} + {0:, .4f} \\times t$'.format(QL[0], QL[1]))
+    plt.plot(_df.iloc[:, 1].div(_df.iloc[:, 2]), label='$\\lambda$')
+    label = '$\\lambda = {1:,.4f}\\ {0:,.4f}\\times t$'.format(
+        *_params_t) if _params_t[0] < 0 else '$\\lambda = {1:,.4f} + {0:,.4f} \\times t$'.format(*_params_t)
+    plt.plot(_df.iloc[:, -4], label=label)
     plt.grid(True)
     plt.legend()
     plt.figure(2)
-    plt.title('Gross Fixed Investment as Percentage of GDP ($S$) for the US, {}$-${}'.format(
-        source_frame.iloc[0, 0], source_frame.iloc[source_frame.shape[0]-1, 0]))
+    plt.title(
+        'Gross Fixed Investment as Percentage of GDP ($S$) for the US, {}$-${}'.format(
+            _df.index[0], _df.index[-1]
+        )
+    )
     plt.xlabel('Period')
     plt.ylabel('Index')
-    plt.plot(source_frame.iloc[:, 0], source_frame.iloc[:, 1].div(
-        source_frame.iloc[:, 2]), label='$S$')
-    if QS[0] < 0:
-        plt.plot(source_frame.iloc[:, 0], S, label='$S = {1:, .4f}\\ {0:, .4f}\\times t$'.format(
-            QS[0], QS[1]))
-    else:
-        plt.plot(source_frame.iloc[:, 0], S,
-                 label='$S = {1:, .4f} + {0:, .4f} \\times t$'.format(QS[0], QS[1]))
+    plt.plot(_df.iloc[:, 0].div(_df.iloc[:, 1]), label='$S$')
+    label = '$S = {1:,.4f}\\ {0:,.4f}\\times t$'.format(
+        *_params_i) if _params_i[0] < 0 else '$S = {1:,.4f} + {0:,.4f} \\times t$'.format(*_params_i)
+    plt.plot(_df.iloc[:, -5], label=label)
     plt.grid(True)
     plt.legend()
     plt.figure(3)
-    plt.title('$\\alpha$ for the US, {}$-${}'.format(
-        source_frame.iloc[0, 0], source_frame.iloc[source_frame.shape[0]-2, 0]))
+    plt.title(
+        '$\\alpha$ for the US, {}$-${}'.format(
+            _df.index[0], _df.index[-2]
+        )
+    )
     plt.xlabel('Period')
     plt.ylabel('Index')
-    plt.plot(source_frame.iloc[:, 0],
-             source_frame.iloc[:, 4], label='$\\alpha$')
+    plt.plot(_df.iloc[:, 3], label='$\\alpha$')
     plt.grid(True)
     plt.legend()
     plt.figure(4)
-    plt.title('$K$ for the US, {}$-${}'.format(
-        source_frame.iloc[0, 0], source_frame.iloc[source_frame.shape[0]-2, 0]))
+    plt.title('$K$ for the US, {}$-${}'.format(_df.index[0], _df.index[-2]))
     plt.xlabel('Period')
-    plt.ylabel('Billions of Dollars, {}=100'.format(
-        source_frame.iloc[base, 0]))
-    plt.semilogy(source_frame.iloc[:, 0], KA,
-                 label='$K\\left(\\pi = \\frac{7}{8}\\right)$')
-    plt.semilogy(source_frame.iloc[:, 0], KB,
-                 label='$K\\left(\\pi = 1\\right)$')
-    plt.semilogy(source_frame.iloc[:, 0], KC,
-                 label='$K\\left(\\pi = \\frac{9}{8}\\right)$')
+    plt.ylabel('Billions of Dollars, {}=100'.format(_df.index[base]))
+    plt.semilogy(
+        _df.iloc[:, -3:],
+        label=['$K\\left(\\pi = \\frac{7}{8}\\right)$',
+               '$K\\left(\\pi = 1\\right)$',
+               '$K\\left(\\pi = \\frac{9}{8}\\right)$', ]
+    )
     plt.grid(True)
     plt.legend()
     plt.show()
@@ -6595,7 +6609,7 @@ def plot_elasticity(df: pd.DataFrame) -> None:
     # =========================================================================
     # TODO: Separate Basic Year Function
     # =========================================================================
-    df['__deflator'] = np.absolute(df.iloc[:, 0].div(df.iloc[:, 1]).sub(1))
+    df['__deflator'] = df.iloc[:, 0].div(df.iloc[:, 1]).sub(1).abs()
     _b = df.iloc[:, -1].astype(float).argmin()
     df.drop(df.columns[-1], axis=1, inplace=True)
     _for_title = (
