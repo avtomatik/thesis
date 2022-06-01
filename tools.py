@@ -6877,33 +6877,57 @@ def plot_ses(source_frame, window, step):
     plt.show()
 
 
-def plot_e(source_frame):
+def plot_e(df: pd.DataFrame) -> None:
     '''
-    source_frame.iloc[:, 0]: Investment,
-    source_frame.iloc[:, 1]: Production,
-    source_frame.iloc[:, 2]: Capital
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Investment
+    df.iloc[:, 1]      Production
+    df.iloc[:, 2]      Capital
+    ================== =================================
     '''
-    '''Investment to Production Ratio'''
-    source_frame['S'] = source_frame.iloc[:, 0].div(source_frame.iloc[:, 1])
-    '''Fixed Assets Turnover Ratio'''
-    source_frame['L'] = source_frame.iloc[:, 1].div(source_frame.iloc[:, 2])
-    QS = np.polyfit(source_frame.iloc[:, 0], source_frame.iloc[:, 1], deg=1)
-    QL = np.polyfit(source_frame.iloc[:, 1], source_frame.iloc[:, 2], deg=1)
-    source_frame['RS'] = QS[1] + source_frame.iloc[:, 0].mul(QS[0])
-    source_frame['RL'] = QL[1] + source_frame.iloc[:, 2].mul(QL[0])
+    # =========================================================================
+    # Investment to Production Ratio
+    # =========================================================================
+    df['inv_to_pro'] = df.iloc[:, 0].div(df.iloc[:, 1])
+    # =========================================================================
+    # Fixed Assets Turnover Ratio
+    # =========================================================================
+    df['c_turnover'] = df.iloc[:, 1].div(df.iloc[:, 2])
+    _params_i = np.polyfit(
+        df.iloc[:, 0],
+        df.iloc[:, 1],
+        deg=1
+    )
+    _params_t = np.polyfit(
+        df.iloc[:, 1].astype(float),
+        df.iloc[:, 2].astype(float),
+        deg=1
+    )
+    df['inv_to_pro_lin'] = df.iloc[:, 0].mul(_params_i[0]).add(_params_i[1])
+    df['c_turnover_lin'] = df.iloc[:, 2].mul(_params_t[0]).add(_params_t[1])
     plt.figure()
-    plt.semilogy(source_frame.iloc[:, 0], source_frame.iloc[:, 1])
-    plt.semilogy(source_frame.iloc[:, 0], source_frame.iloc[:, 5])
-    plt.title('Investment to Production Ratio, {}$-${}'.format(
-        source_frame.index[0], source_frame.index[-1]))
+    plt.semilogy(df.iloc[:, 0], df.iloc[:, 1])
+    plt.semilogy(df.iloc[:, 0], df.iloc[:, 5])
+    plt.title(
+        'Investment to Production Ratio, {}$-${}'.format(
+            df.index[0],
+            df.index[-1]
+        )
+    )
     plt.xlabel('Investment, Billions of Dollars')
     plt.ylabel('Gross Domestic Product, Billions of Dollars')
     plt.grid(True)
-    plt.legend(['$P(I)$', '$\\hat P(I) = %.4f+%.4f I$' % (QS[1], QS[0])])
-    print(source_frame.iloc[:, 3].describe())
-    print(QS)
-    print(source_frame.iloc[:, 4].describe())
-    print(QL)
+    plt.legend(
+        [
+            '$P(I)$',
+            '$\\hat{{P(I)}} = {:.4f}+{:.4f} I$'.format(*_params_i[::-1])
+        ]
+    )
+    print(df.iloc[:, 3].describe())
+    print(_params_i)
+    print(df.iloc[:, 4].describe())
+    print(_params_t)
     plt.show()
 
 
