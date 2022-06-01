@@ -1065,7 +1065,7 @@ def get_data_archived() -> pd.DataFrame:
     # =========================================================================
     # Deflator, 2005=100
     # =========================================================================
-    _df['def'] = np.cumprod(_df.iloc[:, 0].add(1))
+    _df['def'] = _df.iloc[:, 0].add(1).cumprod()
     _df.iloc[:, -1] = _df.iloc[:, -
                                1].rdiv(_df.iloc[_df.index.get_loc(2005), -1])
     # =========================================================================
@@ -4552,7 +4552,7 @@ def data_preprocessing_cobb_douglas(df: pd.DataFrame) -> tuple[pd.DataFrame, tup
     k, b = np.polyfit(
         np.log(df.iloc[:, -2]),
         np.log(df.iloc[:, -1]),
-        1
+        deg=1
     )
     # =========================================================================
     # Scipy Signal Median Filter, Non-Linear Low-Pass Filter
@@ -4561,7 +4561,7 @@ def data_preprocessing_cobb_douglas(df: pd.DataFrame) -> tuple[pd.DataFrame, tup
     # k, b = np.polyfit(
     #     np.log(signal.medfilt(df.iloc[:, -2])),
     #     np.log(signal.medfilt(df.iloc[:, -1])),
-    #     1
+    #     deg=1
     # )
     # =========================================================================
     # =========================================================================
@@ -4589,7 +4589,7 @@ def data_preprocessing_cobb_douglas(df: pd.DataFrame) -> tuple[pd.DataFrame, tup
     df['prod_comp_roll_sub'] = df.iloc[:, -2].sub(df.iloc[:, -1])
     # =========================================================================
     #     print(r2_score(df.iloc[:, 2], df.iloc[:, 3]))
-    #     print(np.absolute(df.iloc[:, 3].sub(df.iloc[:, 2]).div(df.iloc[:, 2])).mean())
+    #     print(df.iloc[:, 3].div(df.iloc[:, 2]).sub(1).abs().mean())
     # =========================================================================
     return df, (k, np.exp(b),)
 
@@ -4616,7 +4616,7 @@ def data_preprocessing_cobb_douglas_alt(df: pd.DataFrame) -> tuple[pd.DataFrame,
     k, b = np.polyfit(
         np.log(df.iloc[:, -2]),
         np.log(df.iloc[:, -1]),
-        1
+        deg=1
     )
     # =========================================================================
     # Description
@@ -4651,7 +4651,7 @@ def data_preprocessing_cobb_douglas_alt(df: pd.DataFrame) -> tuple[pd.DataFrame,
     _k, _b = np.polyfit(
         np.log(df.iloc[:, 4]),
         np.log(df.iloc[:, -1]),
-        1
+        deg=1
     )
     # =========================================================================
     # Fixed Assets Turnover Alternative
@@ -4890,7 +4890,7 @@ def plot_cobb_douglas_alt(data_frame: pd.DataFrame, params: tuple[float], mappin
 # # #     k, b = np.polyfit(
 # # #         np.log(df.iloc[:, -2]),
 # # #         np.log(df.iloc[:, -1]),
-# # #         1
+# # #         deg=1
 # # #     )
 #     # =========================================================================
 #     # Description
@@ -5424,7 +5424,7 @@ def price_direct(data_frame, base):
     data_frame.iloc[:, 0]: Growth Rate;
     base: Base Year'''
     '''Cumulative Price Index'''
-    data_frame['p_i'] = np.cumprod(data_frame.iloc[:, 0].add(1))
+    data_frame['p_i'] = data_frame.iloc[:, 0].add(1).cumprod()
     '''Cumulative Price Index for the Base Year'''
     data_frame['cpi'] = data_frame.iloc[:, 1].div(
         data_frame.iloc[base-data_frame.index[0], 1])
@@ -5625,14 +5625,14 @@ def plot_lab_prod_polynomial(df: pd.DataFrame) -> None:
     # =========================================================================
     # Power Function: Labor Productivity
     # =========================================================================
-    k, b = np.polyfit(np.log(df.iloc[:, -2]), np.log(df.iloc[:, -1]), 1)
+    k, b = np.polyfit(np.log(df.iloc[:, -2]), np.log(df.iloc[:, -1]), deg=1)
     # =========================================================================
     # Polynomials 1, 2, 3 & 4: Labor Productivity
     # =========================================================================
-    _p1 = np.polyfit(df.iloc[:, -2], df.iloc[:, -1], 1)
-    _p2 = np.polyfit(df.iloc[:, -2], df.iloc[:, -1], 2)
-    _p3 = np.polyfit(df.iloc[:, -2], df.iloc[:, -1], 3)
-    _p4 = np.polyfit(df.iloc[:, -2], df.iloc[:, -1], 4)
+    _p1 = np.polyfit(df.iloc[:, -2], df.iloc[:, -1], deg=1)
+    _p2 = np.polyfit(df.iloc[:, -2], df.iloc[:, -1], deg=2)
+    _p3 = np.polyfit(df.iloc[:, -2], df.iloc[:, -1], deg=3)
+    _p4 = np.polyfit(df.iloc[:, -2], df.iloc[:, -1], deg=4)
     # =========================================================================
     # DataFrame for Approximation Results
     # =========================================================================
@@ -5862,11 +5862,11 @@ def plot_turnover(df: pd.DataFrame) -> None:
     # =========================================================================
     # Linear: Fixed Assets Turnover
     # =========================================================================
-    _lin = np.polyfit(df.index, df.iloc[:, -1], 1)
+    _lin = np.polyfit(df.index, df.iloc[:, -1], deg=1)
     # =========================================================================
     # Exponential: Fixed Assets Turnover
     # =========================================================================
-    _exp = np.polyfit(df.index, np.log(df.iloc[:, -1]), 1)
+    _exp = np.polyfit(df.index, np.log(df.iloc[:, -1]), deg=1)
     df['c_turnover_lin'] = df.index.to_series().mul(_lin[0]).add(_lin[1])
     df['c_turnover_exp'] = np.exp(df.index.to_series().mul(_exp[0]).add(_exp[1]))
     # =========================================================================
@@ -6556,40 +6556,50 @@ def plot_capital_modelling(df: pd.DataFrame, base) -> None:
     plt.show()
 
 
-def plot_fourier_discrete(source_frame, precision=10):
+def plot_fourier_discrete(df: pd.DataFrame, precision: int = 10) -> None:
     '''
-    source_frame.iloc[:, 0]: Period;
-    source_frame.iloc[:, 1]: Series
     Discrete Fourier Transform based on Simpson's Rule
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Target Series
+    ================== =================================
     '''
-    f_1p = np.polyfit(source_frame.iloc[:, 0], source_frame.iloc[:, 1], 1)
-    LX = f_1p[1] + source_frame.iloc[:, 0].mul(f_1p[0])
-    Q = []  # Blank List for Fourier Coefficients
-    for i in range(1 + precision):
-        c = 2*(source_frame.iloc[:, 1]-LX)*np.cos(2*np.pi*i*(
-            source_frame.iloc[:, 0].sub(source_frame.iloc[0, 0])).div(source_frame.shape[0]))
-        s = 2*(source_frame.iloc[:, 1]-LX)*np.sin(2*np.pi*i*(
-            source_frame.iloc[:, 0].sub(source_frame.iloc[0, 0])).div(source_frame.shape[0]))
-        Q.append({'cos': c.mean(), 'sin': s.mean()})
-
-    Q = pd.DataFrame(Q)  # Convert List to Dataframe
-    Q['cos'][0] = Q['cos'][0]/2
-    EX = pd.DataFrame(1, index=range(
-        1 + source_frame.shape[0]), columns=['EX'])
-    EX = Q['cos'][0]
+    _df = df.copy()
+    precision += 1
+    _p = np.polyfit(
+        _df.index,
+        _df.iloc[:, 0].astype(float),
+        deg=1
+    )
+    _df['period_calibrated'] = _df.index.to_series().sub(
+        _df.index[0]).div(_df.shape[0]).mul(2).mul(np.pi)
+    _df[f'{_df.columns[0]}_line'] = _df.index.to_series().mul(_p[0]).add(_p[1])
+    _df[f'{_df.columns[0]}_wave'] = _df.iloc[:, 0].sub(_df.iloc[:, 2])
+    # =========================================================================
+    # DataFrame for Fourier Coefficients
+    # =========================================================================
+    _fourier = pd.DataFrame(columns=['cos', 'sin'])
+    for _ in range(precision):
+        _fourier.loc[_] = [
+            _df.iloc[:, 3].mul(np.cos(_df.iloc[:, 1].mul(_))).mul(2).mean(),
+            _df.iloc[:, 3].mul(np.sin(_df.iloc[:, 1].mul(_))).mul(2).mean()
+        ]
+    # =========================================================================
+    # First Entry Correction
+    # =========================================================================
+    _fourier.loc[0, 'cos'] /= 2
     plt.figure()
-    plt.title('$\\alpha$ for the US, {}$-${}'.format(
-        source_frame.iloc[0, 0], source_frame.iloc[source_frame.shape[0]-1, 0]))
+    plt.title(f'$\\alpha$ for the US, {_df.index[0]}$-${_df.index[-1]}')
     plt.xlabel('Period')
     plt.ylabel('Index')
-    plt.scatter(source_frame.iloc[:, 0],
-                source_frame.iloc[:, 1], label='$\\alpha$')
-    for i in range(1, 1 + precision):
-        EX = EX + Q['cos'][i]*np.cos(2*np.pi*i*(source_frame.iloc[:, 0].sub(source_frame.iloc[0, 0])).div(source_frame.shape[0])) + \
-            Q['sin'][i]*np.sin(2*np.pi*i*(source_frame.iloc[:, 0] -
-                               source_frame.iloc[0, 0]).div(source_frame.shape[0]))
-        plt.plot(source_frame.iloc[:, 0], LX + EX,
-                 label='$FT_{{{:02}}}(\\alpha)$'.format(i))
+    plt.scatter(_df.index, _df.iloc[:, 0], label='$\\alpha$')
+    _df[f'{_df.columns[0]}_fourier_{0}'] = np.cos(_df.iloc[:, 1].mul(0)).mul(
+        _fourier.loc[0, 'cos']).add(np.sin(_df.iloc[:, 1].mul(0)).mul(_fourier.loc[0, 'sin']))
+    for _ in range(1, precision):
+        _df[f'{_df.columns[0]}_fourier_{_}'] = _df.iloc[:, -1].add(np.cos(_df.iloc[:, 1].mul(_)).mul(
+            _fourier.loc[_, 'cos'])).add(np.sin(_df.iloc[:, 1].mul(_)).mul(_fourier.loc[_, 'sin']))
+        plt.plot(_df.iloc[:, 2].add(_df.iloc[:, -1]),
+                 label=f'$FT_{{{_:02}}}(\\alpha)$')
     plt.grid(True)
     plt.legend()
     plt.show()
@@ -6877,8 +6887,8 @@ def plot_e(source_frame):
     source_frame['S'] = source_frame.iloc[:, 0].div(source_frame.iloc[:, 1])
     '''Fixed Assets Turnover Ratio'''
     source_frame['L'] = source_frame.iloc[:, 1].div(source_frame.iloc[:, 2])
-    QS = np.polyfit(source_frame.iloc[:, 0], source_frame.iloc[:, 1], 1)
-    QL = np.polyfit(source_frame.iloc[:, 1], source_frame.iloc[:, 2], 1)
+    QS = np.polyfit(source_frame.iloc[:, 0], source_frame.iloc[:, 1], deg=1)
+    QL = np.polyfit(source_frame.iloc[:, 1], source_frame.iloc[:, 2], deg=1)
     source_frame['RS'] = QS[1] + source_frame.iloc[:, 0].mul(QS[0])
     source_frame['RL'] = QL[1] + source_frame.iloc[:, 2].mul(QL[0])
     plt.figure()
