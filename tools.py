@@ -5994,12 +5994,22 @@ def plot_cobb_douglas_complex(source_frame):
 
 
 def plot_is_lm():
-    """Data Fetch"""
+    # =========================================================================
+    # Read Data
+    # =========================================================================
     ARCHIVE_NAME = 'dataset_rus_m1.zip'
-    source_frame = pd.read_csv(ARCHIVE_NAME)
-    """Plotting"""
+    df = pd.read_csv(
+        ARCHIVE_NAME,
+        names=['period', 'prime_rate', 'm1'],
+        index_col=0,
+        skiprows=1,
+        parse_dates=True
+    )
+    # =========================================================================
+    # Plotting
+    # =========================================================================
     plt.figure()
-    plt.plot(source_frame.iloc[:, 1], source_frame.iloc[:, 2])
+    plt.plot(df.iloc[:, 0], df.iloc[:, 1])
     plt.xlabel('Percentage')
     plt.ylabel('RUB, Millions')
     plt.title('M1 Dependency on Prime Rate')
@@ -6008,14 +6018,11 @@ def plot_is_lm():
 
 
 def plot_grigoriev():
-    FILE_NAME = 'dataset_rus_Grigoriev-V.csv'
-    data_frame = pd.read_csv(FILE_NAME)
-    for series_id in sorted(set(data_frame.iloc[:, 2])):
-        chunk = data_frame[data_frame.iloc[:, 2] == series_id].iloc[:, [3, 4]]
-        chunk.columns = [chunk.columns[0], series_id]
-        chunk.set_index(chunk.columns[0],
-                        inplace=True,
-                        verify_integrity=True)
+    FILE_NAME = 'dataset_rus_grigoriev_v.csv'
+    data_frame = pd.read_csv(FILE_NAME, index_col=1, usecols=range(2, 5))
+    for series_id in sorted(set(data_frame.iloc[:, 0])):
+        chunk = data_frame[data_frame.iloc[:, 0] == series_id].iloc[:, [1]]
+        chunk.columns = [series_id]
         chunk.sort_index(inplace=True)
         chunk.plot(grid=True)
 
@@ -6742,34 +6749,37 @@ def plot_kol_zur_filter(data_frame: pd.DataFrame):
     plt.show()
 
 
-def plot_pearson_r_test(source_frame):
-    '''Left-Side & Right-Side Rolling Means' Calculation & Plotting
-    source_frame.index: Period,
-    source_frame.iloc[:, 0]: Series'''
-
-    result_frame = pd.DataFrame(columns=['window'])
-    for i in range(1 + source_frame.shape[0]//2):
+def plot_pearson_r_test(df: pd.DataFrame) -> None:
+    '''
+    Left-Side & Right-Side Rolling Means' Calculation & Plotting
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Target Series
+    ================== =================================
+    '''
+    _pearson = pd.DataFrame(columns=['right_to_left_ratio'])
+    for _ in range(1 + df.shape[0] // 2):
         # =====================================================================
         # Shift Mean Values to Left
         # =====================================================================
-        l_frame = source_frame.iloc[:, 0].rolling(
-            window=1 + i).mean().shift(-i)
+        _l_frame = df.iloc[:, 0].rolling(1 + _).mean().shift(-_)
         # =====================================================================
         # Shift Mean Values to Right
         # =====================================================================
-        r_frame = source_frame.iloc[:, 0].rolling(window=1 + i).mean()
-        numerator = stats.pearsonr(
-            source_frame.iloc[:, 0][R_frame.notna()], R_frame.dropna())[0]
-        denominator = stats.pearsonr(
-            source_frame.iloc[:, 0][L_frame.notna()], L_frame.dropna())[0]
-        result_frame = result_frame.append(
-            {'window': numerator/denominator}, ignore_index=True)
-    '''Plot 'Window' to 'Right-Side to Left-Side Pearson R'''
+        _r_frame = df.iloc[:, 0].rolling(1 + _).mean()
+        _pearson.loc[_] = [
+            stats.pearsonr(df.iloc[:, 0][_r_frame.notna()], _r_frame.dropna())[0] /
+            stats.pearsonr(
+                df.iloc[:, 0][_l_frame.notna()], _l_frame.dropna())[0]
+        ]
+    # =========================================================================
+    # Plot 'Window' to 'Right-Side to Left-Side Pearson R
+    # =========================================================================
     plt.figure()
     plt.title('Right-Side to Left-Side Pearson R Ratio')
     plt.xlabel('`Window`')
     plt.ylabel('Index')
-    plt.plot(result_frame, label='Right-Side to Left-Side Pearson R Ratio')
+    plt.plot(_pearson, label='Right-Side to Left-Side Pearson R Ratio')
     plt.grid(True)
     plt.legend()
     plt.show()
