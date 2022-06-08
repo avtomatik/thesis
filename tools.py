@@ -5308,10 +5308,10 @@ def test_data_consistency_d():
 
 def test_data_consistency_e():
     '''Project V: USA NBER Data Plotting'''
-    plot_usa_nber('dataset USA NBER-CES MID sic5811.csv', 'mean')
-    plot_usa_nber('dataset USA NBER-CES MID sic5811.csv', 'sum')
-    plot_usa_nber('dataset USA NBER-CES MID naics5811.csv', 'mean')
-    plot_usa_nber('dataset USA NBER-CES MID naics5811.csv', 'sum')
+    plot_usa_nber('dataset_usa_nber_ces_mid_sic5811.csv', 'mean')
+    plot_usa_nber('dataset_usa_nber_ces_mid_sic5811.csv', 'sum')
+    plot_usa_nber('dataset_usa_nber_ces_mid_naics5811.csv', 'mean')
+    plot_usa_nber('dataset_usa_nber_ces_mid_naics5811.csv', 'sum')
 
 
 def save_zip(data_frame, file_name):
@@ -6841,49 +6841,70 @@ def plot_rolling_mean_filter(data_frame: pd.DataFrame):
     plt.show()
 
 
-def plot_ses(source_frame, window, step):
+def plot_ewm(df: pd.DataFrame, step: float = 0.1) -> None:
     '''Single Exponential Smoothing
     Robert Goodell Brown, 1956
-    source_frame.iloc[:, 0]: Period,
-    source_frame.iloc[:, 1]: Series'''
-    '''Average of Window-First Entries'''
-    S = source_frame.iloc[:window, 1].mean()
-    '''DataFrame for Exponentially Smoothed Series'''
-    smooth_frame = pd.DataFrame(source_frame.iloc[:, 0])
-    '''DataFrame for Deltas of Exponentially Smoothed Series'''
-    deltas_frame = pd.DataFrame(
-        0.5 + source_frame.iloc[:(source_frame.shape[0]-1), 0])
-    delta = (source_frame.iloc[:, 1].shift(-1) -
-             source_frame.iloc[:, 1]).div(source_frame.iloc[:, 1].shift(-1))
-    delta = delta[:(len(delta)-1)]
-    deltas_frame = pd.concat([deltas_frame, delta], axis=1, sort=False)
-    plt.figure()
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Target Series
+    ================== =================================
+    '''
+    _alpha = 0.25
+    # =========================================================================
+    # DataFrame for Exponentially Smoothed Series
+    # =========================================================================
+    _smooth = df.copy()
+    while True:
+        if _alpha >= 1:
+            break
+        _smooth = pd.concat(
+            [
+                _smooth,
+                _smooth.iloc[:, [0]].ewm(alpha=_alpha, adjust=False).mean()
+            ],
+            axis=1
+        )
+        _smooth.columns = [
+            *_smooth.columns[:-1], f'{_smooth.columns[0]}_{_alpha:,.2f}',
+        ]
+        _alpha += step
+    # =========================================================================
+    # DataFrame for Deltas of Exponentially Smoothed Series
+    # =========================================================================
+    _deltas = pd.concat(
+        [
+            _smooth.iloc[:, [_]].div(
+                _smooth.iloc[:, [_]].shift(-1)).rsub(1).dropna()
+            for _ in range(_smooth.shape[1])
+        ],
+        axis=1
+    )
+    _deltas.index = _smooth.index.to_series().rolling(2).mean().dropna()
+    # =========================================================================
+    # Plotting
+    # =========================================================================
+    _labels = [
+        'Original Series',
+        *[
+            'Smoothing: $\\alpha={:,.2f}$'.format(float(column.split('_')[-1])) for column in _smooth.columns[1:]
+        ]
+    ]
+    plt.figure(1)
+    plt.title('Exponentially Smoothed Series')
+    plt.xlabel('Period')
+    plt.ylabel('Index')
+    plt.scatter(_smooth.index, _smooth.iloc[:, 0])
+    plt.plot(_smooth.iloc[:, 1:])
+    plt.grid(True)
+    plt.legend(_labels)
+    plt.figure(2)
     plt.title('Deltas of Exponentially Smoothed Series')
     plt.xlabel('Period')
     plt.ylabel('Index')
-    plt.scatter(source_frame.iloc[:, 0],
-                source_frame.iloc[:, 1], label='Original Series')
-    k = 0
-    while True:
-        k += 1
-        alpha = 0.25 + step*(k-1)
-        ses, dse = [], []
-        ses.append(alpha*source_frame.iloc[0, 1] + (1-alpha)*S)
-        for i in range(1, source_frame.shape[0]):
-            ses.append(alpha*source_frame.iloc[i, 1] + (1-alpha)*ses[i-1])
-            dse.append((ses[i]-ses[i-1])/ses[i-1])
-            cap = f'col_{hex(k)}'
-        ses = pd.DataFrame(ses, columns=[cap])
-        dse = pd.DataFrame(dse, columns=[cap])
-        smooth_frame = pd.concat([smooth_frame, ses], axis=1, sort=False)
-        deltas_frame = pd.concat([deltas_frame, dse], axis=1, sort=False)
-        plt.plot(source_frame.iloc[:, 0], ses, label='Smoothing: $w = {}, \\alpha={:,.2f}$'.format(
-            window, alpha))
-
-        if k >= 0.5 + 0.75/step:  # 0.25 + step*(k-0.5) >= 1
-            break
+    plt.scatter(_deltas.index, _deltas.iloc[:, 0])
+    plt.plot(_deltas.iloc[:, 1:])
     plt.grid(True)
-    plt.legend()
+    plt.legend(_labels)
     plt.show()
 
 
@@ -7007,10 +7028,12 @@ def plot_kurenkov(data_frames: tuple[pd.DataFrame]) -> None:
 
 
 def plot_census_complex(source_frame):
+    # =========================================================================
+    # TODO: Eliminate This Function
+    # =========================================================================
     plot_pearson_r_test(source_frame)
-    source_frame.reset_index(level=0, inplace=True)
     plot_kol_zur_filter(source_frame)
-    plot_ses(source_frame, 5, 0.1)
+    plot_ewm(source_frame)
 
 
 def m_spline_processing(df: pd.DataFrame, kernel: callable) -> None:
