@@ -5072,26 +5072,37 @@ def plot_can_test(data_frame):
     plt.show()
 
 
-def plot_usa_nber(file_name, method):
-    data_frame = pd.read_csv(file_name)
-    if method == 'mean':
-        data_frame = data_frame.groupby('year').mean()
-        title = 'Mean NBER-CES'
-    elif method == 'sum':
-        data_frame = data_frame.groupby('year').sum()
-        title = 'Sum NBER-CES'
-    else:
-        return
-    if 'sic' in file_name:
-        data_frame.drop(['sic'], axis=1, inplace=True)
-    elif 'naics' in file_name:
-        data_frame.drop(['naics'], axis=1, inplace=True)
-    else:
-        return
-    plt.figure()
-    for _, series_id in enumerate(data_frame.columns):
-        plt.plot(data_frame.iloc[:, _], label=series_id)
-        plt.title(title)
+def plot_usa_nber_manager():
+    FILE_NAMES = (
+        'dataset_usa_nber_ces_mid_sic5811.csv',
+        'dataset_usa_nber_ces_mid_naics5811.csv',
+    )
+    aggs = ('mean', 'sum')
+    for _agg in aggs:
+        sic = fetch_usa_nber(FILE_NAMES[0], _agg)
+        naics = fetch_usa_nber(FILE_NAMES[1], _agg)
+        plot_usa_nber(sic, naics, _agg)
+
+
+def fetch_usa_nber(file_name: str, agg: str) -> pd.DataFrame:
+    _df = pd.read_csv(file_name)
+    _df.drop(_df.columns[0], axis=1, inplace=True)
+    if agg == 'mean':
+        return _df.groupby(_df.columns[0]).mean()
+    elif agg == 'sum':
+        return _df.groupby(_df.columns[0]).sum()
+
+
+def plot_usa_nber(sic_df: pd.DataFrame, naics_df: pd.DataFrame, agg: str) -> None:
+    '''Project V: USA NBER Data Plotting'''
+    for _, (sic_id, naics_id) in enumerate(zip(sic_df.columns, naics_df.columns)):
+        # =====================================================================
+        # Ensures Columns in Two DataFrames Are in the Same Ordering
+        # =====================================================================
+        series_id = tuple(set((sic_id, naics_id)))
+        plt.plot(sic_df.iloc[:, _], label='sic_{}'.format(*series_id))
+        plt.plot(naics_df.iloc[:, _], label='naics_{}'.format(*series_id))
+        plt.title('NBER CES: {} {}'.format(*series_id, agg))
         plt.xlabel('Period')
         plt.ylabel('Dimension')
         plt.grid(True)
@@ -5304,14 +5315,6 @@ def test_data_consistency_d():
     # =========================================================================
     # TODO:
     # =========================================================================
-
-
-def test_data_consistency_e():
-    '''Project V: USA NBER Data Plotting'''
-    plot_usa_nber('dataset_usa_nber_ces_mid_sic5811.csv', 'mean')
-    plot_usa_nber('dataset_usa_nber_ces_mid_sic5811.csv', 'sum')
-    plot_usa_nber('dataset_usa_nber_ces_mid_naics5811.csv', 'mean')
-    plot_usa_nber('dataset_usa_nber_ces_mid_naics5811.csv', 'sum')
 
 
 def save_zip(data_frame, file_name):
