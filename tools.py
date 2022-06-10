@@ -153,7 +153,7 @@ def calculate_capital_acquisition(df: pd.DataFrame) -> None:
     _df['__deflator'] = _df.iloc[:, 2].div(_df.iloc[:, 3]).sub(1).abs()
     _b = _df.iloc[:, -1].astype(float).argmin()
     _df.drop(_df.columns[-1], axis=1, inplace=True)
-    _for_title = (_df.index[_b], _df.index[0], _df.index[-1])
+    _title = (_df.index[_b], _df.index[0], _df.index[-1])
     # =========================================================================
     # Calculate Static Values
     # =========================================================================
@@ -291,7 +291,7 @@ def calculate_capital_acquisition(df: pd.DataFrame) -> None:
     plt.plot(_df.iloc[:, 8], _df.iloc[:, 14])
     plt.title(
         'Labor Productivity, Observed & Max, {}=100, {}$-${}'.format(
-            *_for_title
+            *_title
         )
     )
     plt.xlabel('Labor Capital Intensity')
@@ -302,7 +302,7 @@ def calculate_capital_acquisition(df: pd.DataFrame) -> None:
     plt.plot(_df.iloc[:, 10], _df.iloc[:, 15])
     plt.title(
         'Log Labor Productivity, Observed & Max, {}=100, {}$-${}'.format(
-            *_for_title
+            *_title
         )
     )
     plt.xlabel('Log Labor Capital Intensity')
@@ -313,7 +313,7 @@ def calculate_capital_acquisition(df: pd.DataFrame) -> None:
     plt.plot(_df.iloc[:, 12])
     plt.title(
         'Fixed Assets Turnover ($\\lambda$), Observed & Max, {}=100, {}$-${}'.format(
-            *_for_title
+            *_title
         )
     )
     plt.xlabel('Period')
@@ -324,7 +324,7 @@ def calculate_capital_acquisition(df: pd.DataFrame) -> None:
     plt.plot(_df.iloc[:, 13])
     plt.title(
         'Investment to Gross Domestic Product Ratio, \nObserved & Max, {}=100, {}$-${}'.format(
-            *_for_title
+            *_title
         )
     )
     plt.xlabel('Period')
@@ -335,7 +335,7 @@ def calculate_capital_acquisition(df: pd.DataFrame) -> None:
     plt.plot(_df.iloc[:, 16])
     plt.title(
         'Gross Capital Formation (GCF) or\nCapital Acquisitions (CA), {}=100, {}$-${}'.format(
-            *_for_title
+            *_title
         )
     )
     plt.xlabel('Period')
@@ -378,7 +378,7 @@ def calculate_capital_retirement(df: pd.DataFrame) -> None:
     _df['__deflator'] = _df.iloc[:, 2].div(_df.iloc[:, 3]).sub(1).abs()
     _b = _df.iloc[:, -1].astype(float).argmin()
     _df.drop(_df.columns[-1], axis=1, inplace=True)
-    _for_title = (_df.index[_b], _df.index[0], _df.index[-1])
+    _title = (_df.index[_b], _df.index[0], _df.index[-1])
     # =========================================================================
     # Calculate Static Values
     # =========================================================================
@@ -523,20 +523,20 @@ def calculate_capital_retirement(df: pd.DataFrame) -> None:
             f'Model Parameter: Pi for Period from {_df.index[_knots[_]]} to {_df.index[_knots[1 + _]]}: {pi[_]:.6f}'
         )
     plt.figure(1)
-    plt.title('Product, {}=100, {}$-${}'.format(*_for_title))
+    plt.title('Product, {}=100, {}$-${}'.format(*_title))
     plt.xlabel('Period')
     plt.ylabel(f'Product, {_df.index[_b]}=100')
     plt.plot(_df.iloc[:, 2])
     plt.grid(True)
     plt.figure(2)
-    plt.title('Capital, {}=100, {}$-${}'.format(*_for_title))
+    plt.title('Capital, {}=100, {}$-${}'.format(*_title))
     plt.xlabel('Period')
     plt.ylabel(f'Capital, {_df.index[_b]}=100')
     plt.plot(_df.iloc[:, 3])
     plt.grid(True)
     plt.figure(3)
     plt.title(
-        'Fixed Assets Turnover ($\\lambda$), {}=100, {}$-${}'.format(*_for_title)
+        'Fixed Assets Turnover ($\\lambda$), {}=100, {}$-${}'.format(*_title)
     )
     plt.xlabel('Period')
     plt.ylabel(f'Fixed Assets Turnover ($\\lambda$), {_df.index[_b]}=100')
@@ -545,7 +545,7 @@ def calculate_capital_retirement(df: pd.DataFrame) -> None:
     plt.figure(4)
     plt.title(
         'Investment to Gross Domestic Product Ratio, {}=100, {}$-${}'.format(
-            *_for_title)
+            *_title)
     )
     plt.xlabel('Period')
     plt.ylabel(
@@ -555,7 +555,7 @@ def calculate_capital_retirement(df: pd.DataFrame) -> None:
     plt.grid(True)
     plt.figure(5)
     plt.title(
-        '$\\alpha(t)$, Fixed Assets Retirement Ratio, {}=100, {}$-${}'.format(*_for_title)
+        '$\\alpha(t)$, Fixed Assets Retirement Ratio, {}=100, {}$-${}'.format(*_title)
     )
     plt.xlabel('Period')
     plt.ylabel(f'$\\alpha(t)$, {_df.index[_b]}=100')
@@ -564,14 +564,14 @@ def calculate_capital_retirement(df: pd.DataFrame) -> None:
     plt.figure(6)
     plt.title(
         'Fixed Assets Retirement Ratio to Fixed Assets Retirement Value, {}=100, {}$-${}'.format(
-            *_for_title)
+            *_title)
     )
     plt.xlabel(f'$\\alpha(t)$, {_df.index[_b]}=100')
     plt.ylabel(f'Fixed Assets Retirement Value, {_df.index[_b]}=100')
     plt.plot(_df.iloc[:, 9], _df.iloc[:, 8])
     plt.grid(True)
     plt.figure(7)
-    plt.title('Labor Capital Intensity, {}=100, {}$-${}'.format(*_for_title))
+    plt.title('Labor Capital Intensity, {}=100, {}$-${}'.format(*_title))
     plt.xlabel(f'Labor Capital Intensity, {_df.index[_b]}=100')
     plt.ylabel(f'Labor Productivity, {_df.index[_b]}=100')
     plt.plot(np.exp(_df.iloc[:, 5]), np.exp(_df.iloc[:, 6]))
@@ -3933,11 +3933,9 @@ def get_data_centered_by_period(data_frame: pd.DataFrame) -> pd.DataFrame:
     return _data
 
 
-def preprocessing_a(source_frame):
-    source_frame = source_frame.iloc[:, [0, 4, 6, 7]]
-    source_frame = source_frame.dropna()
-    source_frame = source_frame.div(source_frame.iloc[0, :])
-    return source_frame.reset_index(level=0)
+def preprocessing_a(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.iloc[:, [0, 4, 6, 7]].dropna()
+    return df.div(df.iloc[0, :])
 
 
 def preprocessing_b(source_frame):
@@ -4173,35 +4171,44 @@ def plot_approx_log_linear(df: pd.DataFrame):
     plt.show()
 
 
-def plot_a(source_frame):
+def plot_a(df: pd.DataFrame) -> None:
     '''
-    source_frame.iloc[:, 0]: Period,
-    source_frame.iloc[:, 1]: Gross Domestic Investment,
-    source_frame.iloc[:, 2]: National Income,
-    source_frame.iloc[:, 3]: Nominal Gross Domestic Product,
-    source_frame.iloc[:, 4]: Real Gross Domestic Product
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Gross Domestic Investment
+    df.iloc[:, 1]      National Income
+    df.iloc[:, 2]      Nominal Gross Domestic Product
+    df.iloc[:, 3]      Real Gross Domestic Product
+    ================== =================================
     '''
-    '''`Real` Investment'''
-    source_frame['inv'] = source_frame.iloc[:, 1] * \
-        source_frame.iloc[:, 4].div(source_frame.iloc[:, 3])
-    '''`Real` Production'''
-    source_frame['prd'] = source_frame.iloc[:, 2] * \
-        source_frame.iloc[:, 4].div(source_frame.iloc[:, 3])
+    _df = df.copy()
+    # =========================================================================
+    # `Real` Investment
+    # =========================================================================
+    _df['inv'] = _df.iloc[:, 0].mul(_df.iloc[:, 3]).div(_df.iloc[:, 2])
+    # =========================================================================
+    # `Real` Production
+    # =========================================================================
+    _df['prd'] = _df.iloc[:, 1].mul(_df.iloc[:, 3]).div(_df.iloc[:, 2])
+    _df['inv_roll_mean'] = _df.iloc[:, -2].rolling(2).mean()
+    _df['prd_roll_mean'] = _df.iloc[:, -2].rolling(2).mean()
     plt.figure()
-    plt.title('Gross Private Domestic Investment & National Income, {}$-${}'.format(
-        source_frame.iloc[0, 0], source_frame.iloc[source_frame.shape[0]-1, 0]))
-    plt.plot(source_frame.iloc[:, 0], source_frame.iloc[:,
-             5], label='Gross Private Domestic Investment')
-    plt.plot(source_frame.iloc[:, 0],
-             source_frame.iloc[:, 6], label='National Income')
+    plt.title(
+        'Gross Private Domestic Investment & National Income, {}$-${}'.format(
+            _df.index[0], _df.index[-1]
+        )
+    )
+    plt.plot(_df.iloc[:, -4:-2], label=[
+        'Gross Private Domestic Investment',
+        'National Income',
+    ])
     plt.xlabel('Period')
     plt.ylabel('Index')
-    source_frame.iloc[:, 0] = source_frame.iloc[:,
-                                                0].shift(-1).add(source_frame.iloc[:, 0]).div(2)
-    X = source_frame.iloc[:, 5].shift(-1).add(source_frame.iloc[:, 5]).div(2)
-    Y = source_frame.iloc[:, 6].shift(-1).add(source_frame.iloc[:, 6]).div(2)
-    plt.plot(source_frame.iloc[:, 0], X, '--',
-             source_frame.iloc[:, 0], Y, '--')
+    _df.index = _df.index.to_series().rolling(2).mean()
+    plt.plot(
+        _df.index, _df.iloc[:, -2], '--',
+        _df.index, _df.iloc[:, -1], '--'
+    )
     plt.grid()
     plt.legend()
     plt.show()
@@ -4272,7 +4279,7 @@ def plot_d(df: pd.DataFrame) -> None:
     df['__deflator'] = df.iloc[:, 1].sub(100).abs()
     _b = df.iloc[:, -1].astype(float).argmin()
     df.drop(df.columns[-1], axis=1, inplace=True)
-    _for_title = (df.index[_b], df.index[0], df.index[-1])
+    _title = (df.index[_b], df.index[0], df.index[-1])
     # =========================================================================
     # Convert to Billions
     # =========================================================================
@@ -4295,7 +4302,7 @@ def plot_d(df: pd.DataFrame) -> None:
         color='red',
         label='Real Gross Private Fixed Investment, Nonresidential $GPFI(n)$'
     )
-    plt.title('Real Indexes, {}=100, {}$-${}'.format(*_for_title))
+    plt.title('Real Indexes, {}=100, {}$-${}'.format(*_title))
     plt.xlabel('Period')
     plt.ylabel('Billions of Dollars')
     plt.legend()
@@ -4303,19 +4310,19 @@ def plot_d(df: pd.DataFrame) -> None:
     plt.figure(2)
     plt.plot(df.iloc[:, 4])
     plt.title(
-        'Real Gross Domestic Product $GDP$, {}=100, {}$-${}'.format(*_for_title))
+        'Real Gross Domestic Product $GDP$, {}=100, {}$-${}'.format(*_title))
     plt.xlabel('Period')
     plt.ylabel('Billions of Dollars')
     plt.grid(True)
     plt.figure(3)
     plt.plot(df.iloc[:, -2], df.iloc[:, 4])
-    plt.title('$GPDI$ & $GPFI(n)$, {}=100, {}$-${}'.format(*_for_title))
+    plt.title('$GPDI$ & $GPFI(n)$, {}=100, {}$-${}'.format(*_title))
     plt.xlabel('Billions of Dollars')
     plt.ylabel('Billions of Dollars')
     plt.grid(True)
     plt.figure(4)
     plt.plot(df.iloc[:, -1], df.iloc[:, 4])
-    plt.title('$GPFI(n)$ & $GDP$, {}=100, {}$-${}'.format(*_for_title))
+    plt.title('$GPFI(n)$ & $GDP$, {}=100, {}$-${}'.format(*_title))
     plt.xlabel('Billions of Dollars')
     plt.ylabel('Billions of Dollars')
     plt.grid(True)
@@ -5093,15 +5100,15 @@ def fetch_usa_nber(file_name: str, agg: str) -> pd.DataFrame:
         return _df.groupby(_df.columns[0]).sum()
 
 
-def plot_usa_nber(sic_df: pd.DataFrame, naics_df: pd.DataFrame, agg: str) -> None:
+def plot_usa_nber(df_sic: pd.DataFrame, df_naics: pd.DataFrame, agg: str) -> None:
     '''Project V: USA NBER Data Plotting'''
-    for _, (sic_id, naics_id) in enumerate(zip(sic_df.columns, naics_df.columns)):
+    for _, (sic_id, naics_id) in enumerate(zip(df_sic.columns, df_naics.columns)):
         # =====================================================================
         # Ensures Columns in Two DataFrames Are in the Same Ordering
         # =====================================================================
         series_id = tuple(set((sic_id, naics_id)))
-        plt.plot(sic_df.iloc[:, _], label='sic_{}'.format(*series_id))
-        plt.plot(naics_df.iloc[:, _], label='naics_{}'.format(*series_id))
+        plt.plot(df_sic.iloc[:, _], label='sic_{}'.format(*series_id))
+        plt.plot(df_naics.iloc[:, _], label='naics_{}'.format(*series_id))
         plt.title('NBER CES: {} {}'.format(*series_id, agg))
         plt.xlabel('Period')
         plt.ylabel('Dimension')
@@ -6632,7 +6639,7 @@ def plot_elasticity(df: pd.DataFrame) -> None:
     df['__deflator'] = df.iloc[:, 0].div(df.iloc[:, 1]).sub(1).abs()
     _b = df.iloc[:, -1].astype(float).argmin()
     df.drop(df.columns[-1], axis=1, inplace=True)
-    _for_title = (
+    _title = (
         'National Income' if df.columns[2] == 'A032RC1' else 'Series',
         df.columns[2],
         df.index[_b],
@@ -6661,19 +6668,19 @@ def plot_elasticity(df: pd.DataFrame) -> None:
     df[f'{df.columns[2]}_elasticity_d'] = df.iloc[:, 3].shift(-1).add(df.iloc[:, 3].shift(-2)).sub(
         df.iloc[:, 3].shift(1)).sub(df.iloc[:, 3]).div(df.iloc[:, 3].add(df.iloc[:, 3].shift(-1)).mul(2))
     plt.figure(1)
-    plt.title('{}, {}, {}=100'.format(*_for_title))
+    plt.title('{}, {}, {}=100'.format(*_title))
     plt.xlabel('Period')
-    plt.ylabel(f'Billions of Dollars, {_for_title[2]}=100')
-    plt.plot(df.iloc[:, [3]], label=f'{_for_title[1]}')
+    plt.ylabel(f'Billions of Dollars, {_title[2]}=100')
+    plt.plot(df.iloc[:, [3]], label=f'{_title[1]}')
     plt.plot(
         df.index.to_series().rolling(2).mean(),
         df.iloc[:, 4],
-        label=f'{_for_title[1]}, Rolling Mean, Window = 2'
+        label=f'{_title[1]}, Rolling Mean, Window = 2'
     )
     plt.grid(True)
     plt.legend()
     plt.figure(2)
-    plt.title('Elasticity: {}, {}, {}=100'.format(*_for_title))
+    plt.title('Elasticity: {}, {}, {}=100'.format(*_title))
     plt.xlabel('Period')
     plt.ylabel('Index')
     plt.plot(
@@ -6691,9 +6698,9 @@ def plot_elasticity(df: pd.DataFrame) -> None:
     plt.grid(True)
     plt.legend()
     plt.figure(3)
-    plt.title('Elasticity: {}, {}, {}=100'.format(*_for_title))
-    plt.xlabel('{}, {}, {}=100'.format(*_for_title))
-    plt.ylabel('Elasticity: {}, {}, {}=100'.format(*_for_title))
+    plt.title('Elasticity: {}, {}, {}=100'.format(*_title))
+    plt.xlabel('{}, {}, {}=100'.format(*_title))
+    plt.ylabel('Elasticity: {}, {}, {}=100'.format(*_title))
     plt.plot(df.iloc[:, 3], df.iloc[:, 8], label='$\\frac{\\epsilon(X)}{X}$')
     plt.grid(True)
     plt.legend()
