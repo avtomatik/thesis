@@ -3942,22 +3942,19 @@ def preprocessing_b(df: pd.DataFrame) -> pd.DataFrame:
     return df.iloc[:, [0, 6, 7, 20]].dropna()
 
 
-def preprocessing_c(source_frame):
-    source_frame_production = source_frame.iloc[:, [0, 6, 7]]
-    source_frame_production = source_frame_production.dropna()
-    source_frame_production = source_frame_production.div(
-        source_frame_production.iloc[0, :])
-    source_frame_money = source_frame.iloc[:, 18:20]
-    source_frame_money = source_frame_money.mean(axis=1)
-    source_frame_money = pd.DataFrame(source_frame_money, columns=[
-                                      'M1'])  # Convert Series to Dataframe
-    source_frame_money = source_frame_money.dropna()
-    source_frame_money = source_frame_money.div(source_frame_money.iloc[0, :])
-    result_frame = pd.concat(
-        [source_frame_production, source_frame_money], axis=1)
-    result_frame = result_frame.dropna()
-    result_frame = result_frame.div(result_frame.iloc[0, :])
-    return result_frame.reset_index(level=0)
+def preprocessing_c(df: pd.DataFrame) -> pd.DataFrame:
+    df_production = df.iloc[:, [0, 6, 7]].dropna()
+    df_production = df_production.div(df_production.iloc[0, :])
+    df_money = df.iloc[:, range(18, 20)].dropna(how='all')
+    df_money['m1_fused'] = df_money.mean(axis=1)
+    df_money = df_money.iloc[:, -1].div(df_money.iloc[0, -1])
+    _df = pd.concat(
+        [
+            df_production,
+            df_money
+        ],
+        axis=1).dropna()
+    return _df.div(_df.iloc[0, :])
 
 
 def preprocessing_d(df: pd.DataFrame) -> pd.DataFrame:
@@ -4241,26 +4238,27 @@ def plot_b(df: pd.DataFrame) -> None:
     plt.show()
 
 
-def plot_c(source_frame):
+def plot_c(df: pd.DataFrame) -> None:
     '''
-    source_frame.iloc[:, 0]: Period,
-    source_frame.iloc[:, 1]: Gross Domestic Investment,
-    source_frame.iloc[:, 2]: Nominal Gross Domestic Product,
-    source_frame.iloc[:, 3]: Real Gross Domestic Product,
-    source_frame.iloc[:, 4]: M1
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Gross Domestic Investment
+    df.iloc[:, 1]      Nominal Gross Domestic Product
+    df.iloc[:, 2]      Real Gross Domestic Product
+    df.iloc[:, 3]      M1
+    ================== =================================
     '''
-    '''`Real` Investment'''
-    source_frame['inv'] = source_frame.iloc[:, 1].mul(
-        source_frame.iloc[:, 3]).div(source_frame.iloc[:, 2])
+    # =========================================================================
+    # `Real` Investment
+    # =========================================================================
+    df['inv'] = df.iloc[:, 0].mul(df.iloc[:, 2]).div(df.iloc[:, 1])
     plt.figure()
-    plt.plot(source_frame.iloc[:, 0], source_frame.iloc[:,
-             3], label='Real Gross Domestic Product')
-    plt.plot(source_frame.iloc[:, 0], source_frame.iloc[:,
-             5], label='`Real` Gross Domestic Investment')
-    plt.plot(source_frame.iloc[:, 0],
-             source_frame.iloc[:, 4], label='Money Supply')
-    plt.title('Indexes, {}$-${}'.format(
-        source_frame.iloc[0, 0], source_frame.iloc[source_frame.shape[0]-1, 0]))
+    plt.plot(df.iloc[:, range(2, 5)], label=[
+        'Real Gross Domestic Product',
+        'Money Supply',
+        '`Real` Gross Domestic Investment',
+    ])
+    plt.title('Indexes, {}$-${}'.format(df.index[0], df.index[-1]))
     plt.xlabel('Period')
     plt.ylabel('Index')
     plt.legend()
