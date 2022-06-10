@@ -3938,9 +3938,8 @@ def preprocessing_a(df: pd.DataFrame) -> pd.DataFrame:
     return df.div(df.iloc[0, :])
 
 
-def preprocessing_b(source_frame):
-    source_frame = source_frame.iloc[:, [0, 6, 7, 20]]
-    return source_frame.dropna().reset_index(level=0)
+def preprocessing_b(df: pd.DataFrame) -> pd.DataFrame:
+    return df.iloc[:, [0, 6, 7, 20]].dropna()
 
 
 def preprocessing_c(source_frame):
@@ -4209,26 +4208,33 @@ def plot_a(df: pd.DataFrame) -> None:
         _df.index, _df.iloc[:, -2], '--',
         _df.index, _df.iloc[:, -1], '--'
     )
-    plt.grid()
+    plt.grid(True)
     plt.legend()
     plt.show()
 
 
-def plot_b(source_frame):
+def plot_b(df: pd.DataFrame) -> None:
     '''
-    source_frame.iloc[:, 0]: Period,
-    source_frame.iloc[:, 1]: Gross Domestic Investment,
-    source_frame.iloc[:, 2]: Nominal Gross Domestic Product,
-    source_frame.iloc[:, 3]: Real Gross Domestic Product,
-    source_frame.iloc[:, 4]: Prime Rate
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Gross Domestic Investment,
+    df.iloc[:, 1]      Nominal Gross Domestic Product,
+    df.iloc[:, 2]      Real Gross Domestic Product,
+    df.iloc[:, 3]      Prime Rate
+    ================== =================================
     '''
-    '''`Real` Investment'''
-    source_frame['inv'] = source_frame.iloc[:, 1].mul(
-        source_frame.iloc[:, 3]).div(source_frame.iloc[:, 2])
+    _df = df.copy()
+    # =========================================================================
+    # `Real` Investment
+    # =========================================================================
+    _df['inv'] = _df.iloc[:, 0].mul(_df.iloc[:, 2]).div(_df.iloc[:, 1])
     plt.figure()
-    plt.plot(source_frame.iloc[:, 4], source_frame.iloc[:, 5])
-    plt.title('Gross Private Domestic Investment, A006RC, {}$-${}'.format(
-        source_frame.iloc[0, 0], source_frame.iloc[source_frame.shape[0]-1, 0]))
+    plt.plot(_df.iloc[:, 3], _df.iloc[:, -1])
+    plt.title(
+        'Gross Private Domestic Investment, A006RC, {}$-${}'.format(
+            _df.index[0], _df.index[-1]
+        )
+    )
     plt.xlabel('Percentage')
     plt.ylabel('Millions of Dollars')
     plt.grid(True)
@@ -5075,7 +5081,7 @@ def plot_can_test(data_frame):
     plt.title('Discrepancy')
     plt.xlabel('Period')
     plt.ylabel('Index')
-    plt.grid()
+    plt.grid(True)
     plt.show()
 
 
@@ -6076,7 +6082,7 @@ def plot_census_a(source_frame, base):
         source_frame.index[base]))
     plt.xlabel('Period')
     plt.ylabel('Percentage')
-    plt.grid()
+    plt.grid(True)
     plt.legend()
     plt.show()
 
@@ -6093,7 +6099,7 @@ def plot_census_b(capital_frame, deflator_frame):
     )
     plt.xlabel('Period')
     plt.ylabel('Millions of Dollars')
-    plt.grid()
+    plt.grid(True)
     plt.legend()
     plt.figure(2)
     plt.plot(deflator_frame)
@@ -6176,7 +6182,7 @@ def plot_census_e(source_frame):
     )
     plt.xlabel('Period')
     plt.ylabel('People')
-    plt.grid()
+    plt.grid(True)
     plt.show()
 
 
@@ -6186,21 +6192,21 @@ def plot_census_f_a(source_frame):
     plt.title('Unemployment, Percent of Civilian Labor Force')
     plt.xlabel('Period')
     plt.ylabel('Percentage')
-    plt.grid()
+    plt.grid(True)
     plt.figure(2)
     plt.plot(source_frame.iloc[:, 2], label='Bureau of Labour')
     plt.plot(source_frame.iloc[:, 3], label='Wolman')
     plt.title('All Manufacturing, Average Full-Time Weekly Hours, 1890-1899=100')
     plt.xlabel('Period')
     plt.ylabel('Percentage')
-    plt.grid()
+    plt.grid(True)
     plt.legend()
     plt.figure(3)
     source_frame.iloc[:, 6].plot()
     plt.title('Implicit Number of Workers')
     plt.xlabel('Period')
     plt.ylabel('Persons')
-    plt.grid()
+    plt.grid(True)
     plt.show()
 
 
@@ -6211,7 +6217,7 @@ def plot_census_f_b(source_frame):
     axs_a.set_ylabel('Number', color=color)
     axs_a.plot(source_frame.iloc[:, 4], color=color, label='Stoppages')
     axs_a.set_title('Work Conflicts')
-    axs_a.grid()
+    axs_a.grid(True)
     axs_a.legend(loc=2)
     axs_a.tick_params(axis='y', labelcolor=color)
     axs_b = axs_a.twinx()
@@ -6233,7 +6239,7 @@ def plot_census_g(source_frame):
         1958, source_frame.index[0]))
     plt.xlabel('Period')
     plt.ylabel('Percentage')
-    plt.grid()
+    plt.grid(True)
     plt.legend()
     plt.show()
 
@@ -6247,7 +6253,7 @@ def plot_census_h():
     plt.title('Land in Farms')
     plt.xlabel('Period')
     plt.ylabel('1,000 acres')
-    plt.grid()
+    plt.grid(True)
     plt.show()
 
 
@@ -6261,7 +6267,7 @@ def plot_census_i(source_frame_a, source_frame_b, source_frame_c):
         source_frame_a.index[0], source_frame_a.index[-1]))
     plt.xlabel('Period')
     plt.ylabel('Millions of Dollars')
-    plt.grid()
+    plt.grid(True)
     plt.legend()
     plt.figure(2)
     plt.plot(source_frame_b.iloc[:, 0], label='Exports, U187')
@@ -6271,7 +6277,7 @@ def plot_census_i(source_frame_a, source_frame_b, source_frame_c):
         source_frame_b.index[0], source_frame_b.index[-1]))
     plt.xlabel('Period')
     plt.ylabel('Millions of Dollars')
-    plt.grid()
+    plt.grid(True)
     plt.legend()
     plt.figure(3)
     plt.plot(source_frame_c.iloc[:, 0].sub(
@@ -6305,7 +6311,7 @@ def plot_census_i(source_frame_a, source_frame_b, source_frame_c):
     plt.title('Net Exports')
     plt.xlabel('Period')
     plt.ylabel('Millions of Dollars')
-    plt.grid()
+    plt.grid(True)
     plt.legend()
     plt.figure(4)
     plt.plot(source_frame_c.iloc[:, 0].sub(source_frame_c.iloc[:, 14]).div(
@@ -6339,7 +6345,7 @@ def plot_census_i(source_frame_a, source_frame_b, source_frame_c):
     plt.title('Net Exports')
     plt.xlabel('Period')
     plt.ylabel('Index')
-    plt.grid()
+    plt.grid(True)
     plt.legend()
     plt.show()
 
@@ -6354,7 +6360,7 @@ def plot_census_j(data_frame, base):
     plt.title('Currency Dynamics, {}=100'.format(data_frame.index[base]))
     plt.xlabel('Period')
     plt.ylabel('Percentage')
-    plt.grid()
+    plt.grid(True)
     plt.legend()
     plt.show()
 
