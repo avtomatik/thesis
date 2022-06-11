@@ -6072,15 +6072,18 @@ def procedure(output_name, criteria):
     result.to_excel(output_name)
 
 
-def plot_census_a(source_frame, base):
+def plot_census_a(df: pd.DataFrame, base: int) -> None:
     plt.figure()
-    plt.plot(source_frame.iloc[:, 0], label='Fabricant S., Shiskin J., NBER')
-    plt.plot(source_frame.iloc[:, 1], color='red',
-             linewidth=4, label='W.M. Persons')
-    plt.plot(source_frame.iloc[:, 2], label='E. Frickey')
-    plt.axvline(x=source_frame.index[base], linestyle=':')
-    plt.title('US Manufacturing Indexes Of Physical Production Of Manufacturing, {}=100'.format(
-        source_frame.index[base]))
+    plt.plot(df.iloc[:, [0, 2]], label=[
+        'Fabricant S., Shiskin J., NBER',
+        'E. Frickey',
+    ])
+    plt.plot(df.iloc[:, 1], color='red', linewidth=4, label='W.M. Persons')
+    plt.axvline(x=df.index[base], linestyle=':')
+    plt.title(
+        'US Manufacturing Indexes Of Physical Production Of Manufacturing, {}=100, {}$-${}'.format(
+            df.index[base], df.index[0], df.index[-1])
+    )
     plt.xlabel('Period')
     plt.ylabel('Percentage')
     plt.grid(True)
