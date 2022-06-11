@@ -5568,14 +5568,18 @@ def price_can_b():
     return combined
 
 
-def plot_capital_purchases(source_frame):
+def plot_capital_purchases(df: pd.DataFrame) -> None:
+    assert df.shape[1] == 27, 'Works on DataFrame Produced with `get_data_capital_purchases()`'
     plt.figure()
-    plt.semilogy(source_frame.iloc[:, 0], linewidth=3,
-                 label='$s^{2;1}_{Cobb-Douglas}$')
-    plt.semilogy(source_frame.iloc[:, 24], label='Total')
-    plt.semilogy(source_frame.iloc[:, 25], label='Structures')
-    plt.semilogy(source_frame.iloc[:, 26], label='Equipment')
-    plt.title('Fixed Assets Purchases')
+    plt.semilogy(
+        df.loc[:, [df.columns[0], *df.columns[-3:]]],
+        label=[
+            '$s^{2;1}_{Cobb-Douglas}$',
+            'Total',
+            'Structures',
+            'Equipment', ]
+    )
+    plt.title('Fixed Assets Purchases, {}$-${}'.format(df.index[0], df.index[-1]))
     plt.xlabel('Period')
     plt.ylabel('Millions of Dollars')
     plt.legend()
