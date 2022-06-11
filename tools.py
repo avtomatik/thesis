@@ -1651,13 +1651,17 @@ def get_data_census_b_b():
     return data_frame.iloc[:, [-1]]
 
 
-def get_data_census_c():
+def get_data_census_c() -> tuple[pd.DataFrame, tuple[int]]:
     '''Census Primary Metals & Railroad-Related Products Manufacturing Series'''
     ARCHIVE_NAME = 'dataset_usa_census1975.zip'
-    SERIES_IDS = ('P0262', 'P0265', 'P0266', 'P0267', 'P0268',
-                  'P0269', 'P0293', 'P0294', 'P0295',)
+    SERIES_IDS = (
+        'P0262', 'P0265', 'P0266', 'P0267', 'P0268', 'P0269', 'P0293', 'P0294', 'P0295',
+    )
     # =========================================================================
     # <base_year>=100
+    # =========================================================================
+    # =========================================================================
+    # TODO: Extract Base Years
     # =========================================================================
     BASE_YEARS = (1875, 1875, 1875, 1875, 1875, 1909, 1880, 1875, 1875,)
     data_frame = pd.concat(
@@ -1665,10 +1669,10 @@ def get_data_census_c():
          for series_id in SERIES_IDS],
         axis=1,
         sort=True)
-    for i in range(data_frame.shape[1]):
-        base_year = data_frame.index.get_loc(BASE_YEARS[i])
-        data_frame.iloc[:, i] = data_frame.iloc[:, i].div(
-            data_frame.iloc[base_year, i]).mul(100)
+    for _ in range(data_frame.shape[1]):
+        base_year = data_frame.index.get_loc(BASE_YEARS[_])
+        data_frame.iloc[:, _] = data_frame.iloc[:, _].div(
+            data_frame.iloc[base_year, _]).mul(100)
     return data_frame, BASE_YEARS
 
 
@@ -6120,20 +6124,28 @@ def plot_census_b_deflator(df: pd.DataFrame) -> None:
     plt.show()
 
 
-def plot_census_c(source_frame, base):
+def plot_census_c(df: pd.DataFrame, base: tuple[int]) -> None:
+    _DESCS_RAW = (
+        'P262 - Rails Produced, {}=100',
+        'P265 - Raw Steel Produced - Total, {}=100',
+        'P266 - Raw Steel Produced - Bessemer, {}=100',
+        'P267 - Raw Steel Produced - Open Hearth, {}=100',
+        'P268 - Raw Steel Produced - Crucible, {}=100',
+        'P269 - Raw Steel Produced - Electric and All Other, {}=100',
+        'P293 - Locomotives Produced, {}=100',
+        'P294 - Railroad Passenger Cars Produced, {}=100',
+        'P295 - Railroad Freight Cars Produced, {}=100',
+    )
+    _DESCS = [_desc.format(_b) for _desc, _b in zip(_DESCS_RAW, base)]
+    _MAPPING = dict(zip(df.columns, _DESCS))
+    _COLUMN_LOCS = [_ for _ in range(df.shape[1]) if _ not in range(1, 6)]
     plt.figure(1)
     plt.semilogy(
-        source_frame.iloc[:, 1], label='P265 - Raw Steel Produced - Total, {}=100'.format(source_frame.index[base[0]]))
-    plt.semilogy(
-        source_frame.iloc[:, 2], label='P266 - Raw Steel Produced - Bessemer, {}=100'.format(source_frame.index[base[0]]))
-    plt.semilogy(
-        source_frame.iloc[:, 3], label='P267 - Raw Steel Produced - Open Hearth, {}=100'.format(source_frame.index[base[0]]))
-    plt.semilogy(
-        source_frame.iloc[:, 4], label='P268 - Raw Steel Produced - Crucible, {}=100'.format(source_frame.index[base[0]]))
-    plt.semilogy(
-        source_frame.iloc[:, 5], label='P269 - Raw Steel Produced - Electric and All Other, {}=100'.format(source_frame.index[base[2]]))
-    plt.axvline(x=source_frame.index[base[0]], linestyle=':')
-    plt.axvline(x=source_frame.index[base[2]], linestyle=':')
+        df.iloc[:, range(1, 6)],
+        label=[_MAPPING[_] for _ in df.columns[range(1, 6)]]
+    )
+    for _ in range(1, 6):
+        plt.axvline(x=base[_], linestyle=':')
     plt.title('Steel Production')
     plt.xlabel('Period')
     plt.ylabel('Percentage')
@@ -6141,15 +6153,11 @@ def plot_census_c(source_frame, base):
     plt.legend()
     plt.figure(2)
     plt.semilogy(
-        source_frame.iloc[:, 0], label='P262 - Rails Produced, {}=100'.format(source_frame.index[base[0]]))
-    plt.semilogy(
-        source_frame.iloc[:, 6], label='P293 - Locomotives Produced, {}=100'.format(source_frame.index[base[1]]))
-    plt.semilogy(
-        source_frame.iloc[:, 7], label='P294 - Railroad Passenger Cars Produced, {}=100'.format(source_frame.index[base[0]]))
-    plt.semilogy(
-        source_frame.iloc[:, 8], label='P295 - Railroad Freight Cars Produced, {}=100'.format(source_frame.index[base[0]]))
-    plt.axvline(x=source_frame.index[base[0]], linestyle=':')
-    plt.axvline(x=source_frame.index[base[1]], linestyle=':')
+        df.iloc[:, _COLUMN_LOCS],
+        label=[_MAPPING[_] for _ in df.columns[_COLUMN_LOCS]]
+    )
+    for _ in _COLUMN_LOCS:
+        plt.axvline(x=base[_], linestyle=':')
     plt.title('Rails & Cars Production')
     plt.xlabel('Period')
     plt.ylabel('Percentage')
