@@ -917,31 +917,33 @@ def fetch_usa_bls(file_name, series_id):
     return data_frame.set_index(data_frame.columns[0])
 
 
-def fetch_usa_census_description(file_name, series_id):
-    """Retrieve Series Description U.S. Bureau of the Census"""
-    data_frame = pd.read_csv(
-        file_name, usecols=[0, 1, 3, 4, 5, 6, 8], low_memory=False)
-    data_frame = data_frame[data_frame.iloc[:, 6] == series_id]
-    data_frame.drop_duplicates(inplace=True)
-    if data_frame.iloc[0, 2] == 'no_details':
-        if data_frame.iloc[0, 5] == 'no_details':
-            if data_frame.iloc[0, 4] == 'no_details':
-                description = '{}'.format(data_frame.iloc[0, 3])
+def fetch_usa_census_description(archive_name: str, series_id: str) -> str:
+    '''Retrieve Series Description U.S. Bureau of the Census'''
+    FLAG = 'no_details'
+    _df = pd.read_csv(
+        archive_name,
+        usecols=[0, 1, 3, 4, 5, 6, 8],
+        low_memory=False
+    )
+    _df = _df[_df.iloc[:, 6] == series_id]
+    _df.drop_duplicates(inplace=True)
+    if _df.iloc[0, 2] == FLAG:
+        if _df.iloc[0, 5] == FLAG:
+            if _df.iloc[0, 4] == FLAG:
+                description = '{}'.format(_df.iloc[0, 3])
             else:
-                description = '{} -\n{}'.format(*data_frame.iloc[0, [3, 4]])
+                description = '{} -\n{}'.format(*_df.iloc[0, [3, 4]])
         else:
-            description = '{} -\n{} -\n{}'.format(*
-                                                  data_frame.iloc[0, [3, 4, 5]])
+            description = '{} -\n{} -\n{}'.format(*_df.iloc[0, [3, 4, 5]])
     else:
-        if data_frame.iloc[0, 5] == 'no_details':
-            if data_frame.iloc[0, 4] == 'no_details':
-                description = '{}; {}'.format(*data_frame.iloc[0, [3, 2]])
+        if _df.iloc[0, 5] == FLAG:
+            if _df.iloc[0, 4] == FLAG:
+                description = '{}; {}'.format(*_df.iloc[0, [3, 2]])
             else:
-                description = '{} -\n{}; {}'.format(*
-                                                    data_frame.iloc[0, [3, 4, 2]])
+                description = '{} -\n{}; {}'.format(*_df.iloc[0, [3, 4, 2]])
         else:
             description = '{} -\n{} -\n{}; {}'.format(
-                *data_frame.iloc[0, [3, 4, 5, 2]])
+                *_df.iloc[0, [3, 4, 5, 2]])
     return description
 
 
@@ -6166,21 +6168,25 @@ def plot_census_c(df: pd.DataFrame, base: tuple[int]) -> None:
     plt.show()
 
 
-def plot_census_d(series_ids):
-    '''series_ids: List for Series'''
+def plot_census_d(series_ids: tuple[str]) -> None:
     ARCHIVE_NAME = 'dataset_usa_census1975.zip'
-    result_frame = pd.DataFrame()
+    df = pd.DataFrame()
     for series_id in series_ids:
         title = fetch_usa_census_description(ARCHIVE_NAME, series_id)
         print(f'<{series_id}> {title}')
-        data_frame = fetch_usa_census(ARCHIVE_NAME, series_id)
-        data_frame = data_frame.div(data_frame.iloc[0, :]).mul(100)
-        result_frame = pd.concat([result_frame, data_frame], axis=1, sort=True)
-
+        chunk = fetch_usa_census(ARCHIVE_NAME, series_id)
+        df = pd.concat(
+            [
+                df,
+                chunk.div(chunk.iloc[0, :]).mul(100)
+            ],
+            axis=1, sort=True)
+    _title = 'Series P 231$-$300. Physical Output of Selected Manufactured Commodities: {}$-${}'.format(
+        *df.index[[0, -1]]
+    )
     plt.figure()
-    plt.semilogy(result_frame)
-    plt.title('Series P 231$-$300. Physical Output of Selected Manufactured Commodities: {}$-${}'.format(
-        result_frame.index[0], result_frame.index[-1]))
+    plt.semilogy(df)
+    plt.title(_title)
     plt.xlabel('Period')
     plt.ylabel('Percentage')
     plt.grid(True)
