@@ -5,43 +5,51 @@ Created on Wed Feb  5 22:19:02 2020
 """
 
 
-def get_dataset_usa_bea_labor():
-    # =============================================================================
-    # Labor Series: H4313C0, 1929--1948
-    # =============================================================================
-    file_name = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    semi_frame_a = fetch_usa_bea(
-        file_name, 'Section6ALL_Hist.xls', '60500A Ann', 'H4313C0')
-# =============================================================================
-# Labor Series: J4313C0, 1948--1969
-# =============================================================================
-    file_name = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
-    semi_frame_b = fetch_usa_bea(
-        file_name, 'Section6ALL_Hist.xls', '60500B Ann', 'J4313C0')
-# =============================================================================
-# Labor Series: J4313C0, 1969--1987
-# =============================================================================
-    file_name = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    semi_frame_c = fetch_usa_bea(
-        file_name, 'Section6all_xls.xls', '60500B Ann', 'J4313C0')
-# =============================================================================
-# Labor Series: A4313C0, 1987--2000
-# =============================================================================
-    file_name = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    semi_frame_d = fetch_usa_bea(
-        file_name, 'Section6all_xls.xls', '60500C Ann', 'A4313C0')
-# =============================================================================
-# Labor Series: N4313C0, 1998--2011
-# =============================================================================
-    file_name = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
-    semi_frame_e = fetch_usa_bea(
-        file_name, 'Section6all_xls.xls', '60500D Ann', 'N4313C0')
-    result_frame = pd.concat(
-        [semi_frame_a, semi_frame_b, semi_frame_c, semi_frame_d, semi_frame_e], axis=1, sort=True)
-
-    result_frame = result_frame.mean(1)
-    result_frame = result_frame.to_frame(name='Labor')
-    return result_frame
+def get_data_usa_bea_labor_mfg():
+    # =========================================================================
+    # Manufacturing Labor Series: H4313C0, 1929--1948
+    # Manufacturing Labor Series: J4313C0, 1948--1969
+    # Manufacturing Labor Series: J4313C0, 1969--1987
+    # Manufacturing Labor Series: A4313C0, 1987--2000
+    # Manufacturing Labor Series: N4313C0, 1998--2011
+    # =========================================================================
+    ARCHIVE_NAMES = (
+        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
+        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
+        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
+        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
+        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
+    )
+    WB_NAMES = (
+        'Section6ALL_Hist.xls',
+        'Section6ALL_Hist.xls',
+        'Section6all_xls.xls',
+        'Section6all_xls.xls',
+        'Section6all_xls.xls',
+    )
+    SH_NAMES = (
+        '60500A Ann',
+        '60500B Ann',
+        '60500B Ann',
+        '60500C Ann',
+        '60500D Ann',
+    )
+    SERIES_IDS = (
+        'H4313C0',
+        'J4313C0',
+        'J4313C0',
+        'A4313C0',
+        'N4313C0',
+    )
+    data_frame = pd.concat(
+        [
+            extract_usa_bea(archive_name, wb, sh, _id)
+            for archive_name, wb, sh, _id in zip(ARCHIVE_NAMES, WB_NAMES, SH_NAMES, SERIES_IDS)
+        ],
+        axis=1,
+        sort=True)
+    data_frame['mfg_labor'] = data_frame.mean(axis=1)
+    return data_frame.iloc[:, [-1]].dropna(axis=0)
 
 
 def get_dataset_usa_frb_cu():

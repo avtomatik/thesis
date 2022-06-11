@@ -6,51 +6,35 @@ Created on Tue Nov  2 21:10:29 2021
 """
 
 
-def price_cobb_douglas():
-    file_name = 'dataset_usa_cobb-douglas.zip'
-    data = pd.read_csv(file_name)
+def get_data_cobb_douglas_price() -> pd.DataFrame:
+    ARCHIVE_NAME = 'dataset_usa_cobb-douglas.zip'
     SERIES_IDS = ('CDT2S1', 'CDT2S3')
-    combined = pd.DataFrame()
-    for series_id in SERIES_IDS:
-        chunk = data[data.iloc[:, 5] == series_id].iloc[:, [6, 7]]
-        chunk.set_index(chunk.columns[0], inplace=True)
-        chunk.rename_axis('REF_DATE', inplace=True)
-        chunk.columns = [series_id]
-        combined = pd.concat([combined, chunk],
-                             axis=1,
-                             sort=False)
-    combined['def'] = combined.iloc[:, 0].div(combined.iloc[:, 1])
-    combined['prc'] = combined.iloc[:, 2].div(
-        combined.iloc[:, 2].shift(1)).sub(1)
-    combined.dropna(inplace=True)
-    return combined.iloc[:, [3]]
+    df = pd.concat(
+        [
+            extract_usa_classic(ARCHIVE_NAME, series_id) for series_id in SERIES_IDS
+        ],
+        axis=1)
+    df['def'] = df.iloc[:, 0].div(df.iloc[:, 1])
+    df['prc'] = df.iloc[:, -1].div(df.iloc[:, -1].shift(1)).sub(1)
+    return df.iloc[:, [-1]].dropna(axis=0)
 
 
-def price_census():
-    file_name = 'dataset_usa_census1975.zip'
-    data = pd.read_csv(file_name)
+def get_data_census_price() -> pd.DataFrame:
+    ARCHIVE_NAME = 'dataset_usa_census1975.zip'
     SERIES_IDS = ('P0107', 'P0110')
-    combined = pd.DataFrame()
-    for series_id in SERIES_IDS:
-        chunk = data[data.iloc[:, 8] == series_id].iloc[:, [9, 10]]
-        chunk = chunk.apply(pd.to_numeric)
-        chunk.set_index(chunk.columns[0], inplace=True)
-        chunk.sort_index(inplace=True)
-        chunk.rename_axis('REF_DATE', inplace=True)
-        chunk.columns = [series_id]
-        combined = pd.concat([combined, chunk],
-                             axis=1,
-                             sort=False)
-    combined['def'] = combined.iloc[:, 0].div(combined.iloc[:, 1])
-    combined['prc'] = combined.iloc[:, 2].div(
-        combined.iloc[:, 2].shift(1)).sub(1)
-    combined.dropna(inplace=True)
-    return combined.iloc[:, [3]]
+    df = pd.concat(
+        [
+            extract_usa_census(ARCHIVE_NAME, series_id) for series_id in SERIES_IDS
+        ],
+        axis=1)
+    df['def'] = df.iloc[:, 0].div(df.iloc[:, 1])
+    df['prc'] = df.iloc[:, -1].div(df.iloc[:, -1].shift(1)).sub(1)
+    return df.iloc[:, [-1]].dropna(axis=0)
 
 
-def price_canada_a():
-    file_name = '/home/alexander/projects/stat_can_cap.xlsx'
-    data = pd.read_excel(file_name)
+def get_data_can_price_a():
+    FILE_NAME = '/home/alexander/projects/stat_can_cap.xlsx'
+    data = pd.read_excel(FILE_NAME)
     data.set_index(data.columns[0], inplace=True)
     groups = [[[i, 5 + i] for i in range(5)],
               # [[i, 10 + i] for i in range(5)],
@@ -60,11 +44,11 @@ def price_canada_a():
     combined = pd.DataFrame()
     for pairs in groups:
         for pair in pairs:
-            chunk = data.iloc[:, pair].dropna()
+            chunk = data.iloc[:, pair].dropna(axis=0)
             chunk['def'] = chunk.iloc[:, 0].div(chunk.iloc[:, 1])
             chunk['prc'] = chunk.iloc[:, 2].div(
                 chunk.iloc[:, 2].shift(1)).sub(1)
-            chunk.dropna(inplace=True)
+            chunk.dropna(axis=0, inplace=True)
             combined = pd.concat([combined, chunk.iloc[:, [3]]],
                                  axis=1,
                                  sort=False)
@@ -72,19 +56,20 @@ def price_canada_a():
     # return combined
 
 
-# def price_canada_b():
-file_name = '/home/alexander/projects/stat_can_cap.xlsx'
-#     data = pd.read_excel(file_name)
-#     data.set_index(data.columns[0], inplace=True)
-#     combined = pd.DataFrame()
-#     for i in [i for i in range(21, 24)]:
-#         chunk = data.iloc[:, [i]].dropna()
-#         chunk[f'{data.columns[i]}_prc'] = chunk.iloc[:, 0].div(chunk.iloc[:, 0].shift(1)).sub(1)
-#         chunk.dropna(inplace=True)
-#         combined = pd.concat([combined, chunk.iloc[:, [1]]],
-#                           axis=1,
-#                           sort=False)
-#     return combined
+def get_data_can_price_b():
+    FILE_NAME = '/home/alexander/projects/stat_can_cap.xlsx'
+    data = pd.read_excel(FILE_NAME)
+    data.set_index(data.columns[0], inplace=True)
+    combined = pd.DataFrame()
+    for i in [i for i in range(21, 24)]:
+        chunk = data.iloc[:, [i]].dropna(axis=0)
+        chunk[f'{data.columns[i]}_prc'] = chunk.iloc[:, 0].div(
+            chunk.iloc[:, 0].shift(1)).sub(1)
+        chunk.dropna(axis=0, inplace=True)
+        combined = pd.concat([combined, chunk.iloc[:, [1]]],
+                             axis=1,
+                             sort=False)
+    return combined
 
 
 def append_series_ids(source_frame, data_frame, series_ids):

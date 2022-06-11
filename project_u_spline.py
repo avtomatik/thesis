@@ -5,7 +5,6 @@
 
 import os
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 from functools import partial
 from scipy.interpolate import UnivariateSpline
@@ -139,8 +138,7 @@ def calculate_plot_uspline(df: pd.DataFrame):
     )
     plt.title(
         'Labor Capital Intensity & Labor Productivity, {}$-${}'.format(
-            df.index[0],
-            df.index[-1]
+            *df.index[[0, -1]]
         )
     )
     plt.xlabel('Labor Capital Intensity')

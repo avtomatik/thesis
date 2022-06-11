@@ -6,29 +6,42 @@ Created on Sat Nov 16 20:45:44 2019
 """
 
 
-def plot_growth_elasticity(source_frame):
+def plot_growth_elasticity(df: pd.DataFrame) -> None:
     '''Growth Elasticity Plotting
-    source_frame.iloc[:, 0]: Period,
-    source_frame.iloc[:, 1]: Series
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Series
+    ================== =================================
     '''
-    result_list = []  # Create List Results
-    for i in range(source_frame.shape[0]-3):
-        '''
-        `period`: Period, Centered
-        `value_a`: Value, Centered
-        `value_b`: Value, Growth Rate
-        `value_c`: Value, Elasticity
-        '''
-        result_list.append({'period': (source_frame.iloc[1 + i, 0] + source_frame.iloc[2 + i, 0])/2,
-                            'value_a': (source_frame.iloc[1 + i, 1] + source_frame.iloc[2 + i, 1])/2,
-                            'value_b': (source_frame.iloc[2 + i, 1]-source_frame.iloc[i, 1])/(source_frame.iloc[i, 1] + source_frame.iloc[1 + i, 1]),
-                            'value_c': (source_frame.iloc[2 + i, 1] + source_frame.iloc[3 + i, 1]-source_frame.iloc[i, 1]-source_frame.iloc[1 + i, 1])/(source_frame.iloc[i, 1] + source_frame.iloc[1 + i, 1] + source_frame.iloc[2 + i, 1] + source_frame.iloc[3 + i, 1])})
-    result_frame = pd.DataFrame(result_list)  # Convert List to Dataframe
-
-    result_frame = result_frame.set_index('Period')
+    # =========================================================================
+    # TODO: Increase Cohesion of This Code: Send Plotting to Separate Function
+    # =========================================================================
+    df.reset_index(level=0, inplace=True)
+    _df = pd.DataFrame()
+    # =========================================================================
+    # Period, Centered
+    # =========================================================================
+    _df[f'{df.columns[0]}'] = df.iloc[:, [0]].rolling(2).mean()
+    df.index.to_series().rolling(2).mean()
+    # =========================================================================
+    # Series, Centered
+    # =========================================================================
+    _df[f'{df.columns[1]}_centered'] = df.iloc[:, [1]].rolling(2).mean()
+    # =========================================================================
+    # Series, Growth Rate
+    # =========================================================================
+    _df[f'{df.columns[1]}_growth_rate'] = df.iloc[:, [1]].sub(
+        df.iloc[:, [1]].shift(2)).div(df.iloc[:, [1]].rolling(2).sum().shift(1))
+    # =========================================================================
+    # Series, Elasticity
+    # =========================================================================
+    _df[f'{df.columns[1]}_elasticity'] = df.iloc[:, [1]].rolling(2).sum(
+    ).shift(-1).mul(2).div(df.iloc[:, [1]].rolling(4).sum().shift(-1)).sub(1)
+    _df.set_index(_df.columns[0], inplace=True)
+    _df.dropna(inplace=True)
     plt.figure()
-    result_frame.iloc[:, 1].plot(label='Growth Rate')
-    result_frame.iloc[:, 2].plot(label='Elasticity Rate')
+    plt.plot(_df.iloc[:, [1]], label='Growth Rate')
+    plt.plot(_df.iloc[:, [2]], label='Elasticity Rate')
     plt.title('Growth & Elasticity Rates')
     plt.xlabel('Period')
     plt.ylabel('Index')

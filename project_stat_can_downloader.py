@@ -10,15 +10,16 @@ def convert_url(string):
     return '/'.join(('https://www150.statcan.gc.ca/n1/tbl/csv', '{}-eng.zip'.format(string.split('=')[1][:-2])))
 
 
-def fetch_from_url(url, usecols=None):
+def extract_can_from_url(url: str, usecols: list = None) -> pd.DataFrame:
     '''Downloading zip file from url'''
-    # r = requests.get(url)
-    # with open(name, 'wb') as s:
-    #     s.write(r.content)
     name = url.split('/')[-1]
-    with ZipFile(name, 'r').open(name.replace('-eng.zip', '.csv')) as f:
-        print(f'{url}: Read')
-        return pd.read_csv(f, usecols=usecols)
+    if os.path.exists(name):
+        with ZipFile(name, 'r').open(name.replace('-eng.zip', '.csv')) as f:
+            return pd.read_csv(f, usecols=usecols)
+    else:
+        r = requests.get(url)
+        with ZipFile(io.BytesIO(r.content)).open(name.replace('-eng.zip', '.csv')) as f:
+            return pd.read_csv(f, usecols=usecols)
 
 
 os.chdir('/media/alexander/321B-6A94')

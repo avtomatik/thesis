@@ -221,38 +221,6 @@ def get_dataset_can():
     return result_frame.reset_index(level=0, inplace=True)
 
 
-def test_douglas(control, series_ids):
-    '''control from Original Dataset;
-    series_ids from Douglas Theory of Wages'''
-    if control == 'CDT2S4':
-        # =====================================================================
-        # Cobb C.W., Douglas P.H. Capital Series: Total Fixed Capital in 1880 dollars (4)
-        # =====================================================================
-        control_frame = fetch_usa_classic(
-            'dataset_usa_cobb-douglas.zip', 'CDT2S4')
-    elif control == 'J0014':
-        control_frame = fetch_usa_census('dataset_usa_census1949.zip', 'J0014')
-    test_frame = fetch_usa_classic('dataset_douglas.zip', series_ids)
-    if control == 'J0014':
-        control_frame.iloc[:, 0] = 100*control_frame.iloc[:,
-                                                          0].div(control_frame.iloc[36, 0])  # 1899=100
-        control_frame.iloc[:, 0] = control_frame.iloc[:, 0].round(0)
-    else:
-        pass
-    control_frame = pd.concat([control_frame, test_frame], axis=1, sort=True)
-    if control == 'J0014':
-        control_frame['dev'] = control_frame.iloc[:, 1].sub(
-            control_frame.iloc[:, 0])
-    elif control == 'CDT2S4':
-        control_frame['dev'] = control_frame.iloc[:, 0].div(
-            control_frame.iloc[:, 1])
-    else:
-        pass
-    control_frame = control_frame.dropna(axis=0)
-#    control_frame.plot(title='Cobb--Douglas Data Comparison', legend=True, grid=True)
-    print(control_frame)
-
-
 def options():
     ARCHIVE_NAME = 'dataset_douglas.zip'
     SERIES_IDS = (
@@ -273,8 +241,10 @@ def options():
         # =====================================================================
         'DT63AS03',
     )
-    [print(fetch_usa_classic(ARCHIVE_NAME, series_id))
-     for series_id in SERIES_IDS]
+    [
+        print(extract_usa_classic(ARCHIVE_NAME, series_id))
+        for series_id in SERIES_IDS
+    ]
 
 
 def get_dataset_common_archived():
@@ -464,9 +434,10 @@ def get_data_capital_combined_archived():
                 [
                     fetch_usa_bea(ARCHIVE_NAMES[0], _wb, _sh, _id)
                     for _wb, _sh, _id in zip(
-                        tuple(WB_NAMES[2*(_ // len(SH_NAMES))] for _ in range(len(SERIES_IDS))),
+                        tuple(WB_NAMES[2*(_ // len(SH_NAMES))]
+                              for _ in range(len(SERIES_IDS))),
                         tuple(SH_NAMES[2*(_ // len(SH_NAMES)) + ((_ - 1) % len(SH_NAMES)) *
-                                  (2 - ((_ - 1) % len(SH_NAMES)))] for _ in range(len(SERIES_IDS))),
+                                       (2 - ((_ - 1) % len(SH_NAMES)))] for _ in range(len(SERIES_IDS))),
                         SERIES_IDS,
                     )
                 ],
@@ -480,7 +451,7 @@ def get_data_capital_combined_archived():
                         tuple(WB_NAMES[1 + 2*(_ // len(SH_NAMES))]
                               for _ in range(len(SERIES_IDS))),
                         tuple(SH_NAMES[2*(_ // len(SH_NAMES)) + ((_ - 1) % len(SH_NAMES)) *
-                                  (2 - ((_ - 1) % len(SH_NAMES)))] for _ in range(len(SERIES_IDS))),
+                                       (2 - ((_ - 1) % len(SH_NAMES)))] for _ in range(len(SERIES_IDS))),
                         SERIES_IDS,
                     )
                 ],

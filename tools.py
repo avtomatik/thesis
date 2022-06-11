@@ -70,7 +70,8 @@ def calculate_power_function_fit_params_b(df: pd.DataFrame, params: tuple[float]
     print(f'Model Parameter: U_1 = {params[2]};')
     print(f'Model Parameter: U_2 = {params[3]};')
     print(f'Model Parameter: Alpha = {params[4]:.4f};')
-    print(f'Model Parameter: A: = (U_2-U_1)/(TAU_2-TAU_1)**Alpha = {_param:,.4f};')
+    print(
+        f'Model Parameter: A: = (U_2-U_1)/(TAU_2-TAU_1)**Alpha = {_param:,.4f};')
     print(f'Estimator Result: Mean Value: {df.iloc[:, 1].mean():,.4f};')
     print('Estimator Result: Mean Squared Deviation, MSD: {:,.4f};'.format(
         mean_squared_error(df.iloc[:, 1], df.iloc[:, 2])))
@@ -90,7 +91,8 @@ def calculate_power_function_fit_params_c(df: pd.DataFrame, params: tuple[float]
     # =========================================================================
     # '{RESULT}{Hat}{Y} = Y_1*(X_1/{X})**Alpha'
     # =========================================================================
-    df[f'estimate_{df.columns[-1]}'] = df.iloc[:, 0].rdiv(params[0]).pow(_alpha).mul(params[2])
+    df[f'estimate_{df.columns[-1]}'] = df.iloc[:,
+                                               0].rdiv(params[0]).pow(_alpha).mul(params[2])
     print(f'Model Parameter: X_1 = {params[0]:.4f};')
     print(f'Model Parameter: X_2 = {params[1]};')
     print(f'Model Parameter: Y_1 = {params[2]:.4f};')
@@ -534,7 +536,8 @@ def calculate_capital_retirement(df: pd.DataFrame) -> None:
     plt.grid(True)
     plt.figure(3)
     plt.title(
-        'Fixed Assets Turnover ($\\lambda$), {}=100, {}$-${}'.format(*df.index[[_b, 0, -1]])
+        'Fixed Assets Turnover ($\\lambda$), {}=100, {}$-${}'.format(*
+                                                                     df.index[[_b, 0, -1]])
     )
     plt.xlabel('Period')
     plt.ylabel(f'Fixed Assets Turnover ($\\lambda$), {_df.index[_b]}=100')
@@ -553,7 +556,8 @@ def calculate_capital_retirement(df: pd.DataFrame) -> None:
     plt.grid(True)
     plt.figure(5)
     plt.title(
-        '$\\alpha(t)$, Fixed Assets Retirement Ratio, {}=100, {}$-${}'.format(*df.index[[_b, 0, -1]])
+        '$\\alpha(t)$, Fixed Assets Retirement Ratio, {}=100, {}$-${}'.format(*
+                                                                              df.index[[_b, 0, -1]])
     )
     plt.xlabel('Period')
     plt.ylabel(f'$\\alpha(t)$, {_df.index[_b]}=100')
@@ -569,7 +573,8 @@ def calculate_capital_retirement(df: pd.DataFrame) -> None:
     plt.plot(_df.iloc[:, 9], _df.iloc[:, 8])
     plt.grid(True)
     plt.figure(7)
-    plt.title('Labor Capital Intensity, {}=100, {}$-${}'.format(*df.index[[_b, 0, -1]]))
+    plt.title(
+        'Labor Capital Intensity, {}=100, {}$-${}'.format(*df.index[[_b, 0, -1]]))
     plt.xlabel(f'Labor Capital Intensity, {_df.index[_b]}=100')
     plt.ylabel(f'Labor Productivity, {_df.index[_b]}=100')
     plt.plot(np.exp(_df.iloc[:, 5]), np.exp(_df.iloc[:, 6]))
@@ -595,410 +600,6 @@ def _m_spline_error_metrics(df: pd.DataFrame) -> None:
     '''Error Metrics Function'''
     print('Criterion, C: {:.6f}'.format(
         df.iloc[:, 2].div(df.iloc[:, 1]).sub(1).abs().mean()))
-
-
-def fetch_can_annually(file_id, series_id):
-    # =========================================================================
-    # Data Frame Fetching from CANSIM Zip Archives
-    # =========================================================================
-    USECOLS = {
-        2820012: (5, 7,),
-        3800102: (4, 6,),
-        3800106: (3, 5,),
-        3800518: (4, 6,),
-        3800566: (3, 5,),
-        3800567: (4, 6,),
-    }
-    data_frame = pd.read_csv(
-        f'dataset_can_{file_id:08n}-eng.zip', usecols=[0, *USECOLS[file_id]]
-    )
-    data_frame = data_frame[data_frame.iloc[:, 1] == series_id].iloc[:, [0, 2]]
-    data_frame.columns = [data_frame.columns[0].upper(), series_id]
-    data_frame.set_index(data_frame.columns[0], inplace=True)
-    data_frame.iloc[:, 0] = pd.to_numeric(data_frame.iloc[:, 0])
-    return data_frame
-
-
-def fetch_can_capital_query() -> list[str]:
-    # =========================================================================
-    # Fetch <SERIES_IDS> from Statistics Canada. Table: 36-10-0238-01 (formerly
-    # CANSIM 031-0004): Flows and stocks of fixed non-residential capital, total
-    # all industries, by asset, provinces and territories, annual
-    # (dollars x 1,000,000)
-    # =========================================================================
-    URL = 'https://www150.statcan.gc.ca/n1/en/tbl/csv/36100096-eng.zip'
-    df = fetch_can_from_url(URL, usecols=[3, 4, 5, 11])
-    query = (df.iloc[:, 0].str.contains('2012 constant prices')) & \
-            (df.iloc[:, 1].str.contains('manufacturing', flags=re.IGNORECASE)) & \
-            (df.iloc[:, 2] == 'Linear end-year net stock')
-    df = df[query]
-    return sorted(set(df.iloc[:, -1]))
-
-
-def fetch_can_capital_query_archived() -> list[str]:
-    # =========================================================================
-    # TODO: Consider Using sqlite3
-    # =========================================================================
-    # =========================================================================
-    # https://blog.panoply.io/how-to-read-a-sql-query-into-a-pandas-dataframe
-    # =========================================================================
-    # =========================================================================
-    # Fetch <series_ids> from CANSIM Table 031-0004: Flows and stocks of fixed
-    # non-residential capital, total all industries, by asset, provinces and
-    # territories, annual (dollars x 1,000,000)
-    # =========================================================================
-    ARCHIVE_NAME = 'dataset_can_00310004-eng.zip'
-    df = pd.read_csv(ARCHIVE_NAME, usecols=[2, 4, 5, 6])
-    query = (df.iloc[:, 0].str.contains('2007 constant prices')) & \
-            (df.iloc[:, 1] == 'Geometric (infinite) end-year net stock') & \
-            (df.iloc[:, 2].str.contains('industrial', flags=re.IGNORECASE))
-    df = df[query]
-    return sorted(set(df.iloc[:, -1]))
-
-
-def fetch_can_capital_query(df) -> list[str]:
-    # =========================================================================
-    # '''Fetch `Series series_ids` from Statistics Canada. Table: 36-10-0238-01\
-    # (formerly CANSIM 031-0004): Flows and stocks of fixed non-residential\
-    # capital, total all industries, by asset, provinces and territories, annual\
-    # (dollars x 1,000,000)'''
-    # =========================================================================
-    # =========================================================================
-    # ?: 36100096-eng.zip'
-    # =========================================================================
-    # =========================================================================
-    # usecols = [3, 5, 6, 11]
-    # =========================================================================
-    query = (df.iloc[:, 0].str.contains('2007 constant prices')) &\
-            (df.iloc[:, 1] == 'Straight-line end-year net stock') &\
-            (df.iloc[:, 2].str.contains('Industrial'))
-    df = df[query]
-    return sorted(set(df.iloc[:, -1]))
-
-
-def fetch_can_capital(series_ids):
-    # =========================================================================
-    # Fetch <pd.DataFrame> from Statistics Canada. Table: 36-10-0238-01 (formerly
-    # CANSIM 031-0004): Flows and stocks of fixed non-residential capital, total
-    # all industries, by asset, provinces and territories, annual
-    # (dollars x 1,000,000)
-    # =========================================================================
-    URL = 'https://www150.statcan.gc.ca/n1/en/tbl/csv/36100096-eng.zip'
-    data_frame = fetch_can_from_url(URL, usecols=[0, 11, 13])
-    data_frame = data_frame[data_frame.iloc[:, 1].isin(series_ids)]
-    result_frame = pd.DataFrame()
-    for series_id in series_ids:
-        chunk = data_frame[data_frame.iloc[:, 1] == series_id].iloc[:, [0, 2]]
-        chunk.columns = [chunk.columns[0], series_id]
-        chunk.set_index(chunk.columns[0],
-                        inplace=True,
-                        verify_integrity=True)
-        result_frame = pd.concat([result_frame, chunk], axis=1, sort=True)
-    result_frame['sum'] = result_frame.sum(axis=1)
-    return result_frame.iloc[:, [-1]]
-
-
-def fetch_can(data_frame, series_id):
-    # =========================================================================
-    # Data Frame Fetching from CANSIM Zip Archives
-    # =========================================================================
-    data_frame = data_frame[data_frame.iloc[:, 10]
-                            == series_id].iloc[:, [0, 12]]
-    data_frame.iloc[:, 0] = data_frame.iloc[:, 0].astype(int)
-    data_frame.iloc[:, 1] = data_frame.iloc[:, 1].astype(float)
-    data_frame.columns = [data_frame.columns[0], series_id]
-    return data_frame.set_index(data_frame.columns[0])
-
-
-def fetch_can_fixed_assets(series_ids):
-    # =========================================================================
-    # Fetch <series_ids> from CANSIM Table 031-0004: Flows and stocks of fixed
-    # non-residential capital, total all industries, by asset, provinces and
-    # territories, annual (dollars x 1,000,000)
-    # =========================================================================
-    ARCHIVE_NAME = 'dataset_can_00310004-eng.zip'
-    data_frame = pd.read_csv(ARCHIVE_NAME, usecols=[0, 6, 8])
-    data_frame = data_frame[data_frame.iloc[:, 1].isin(series_ids)]
-    data_frame.iloc[:, 2] = pd.to_numeric(
-        data_frame.iloc[:, 2], errors='coerce')
-    result_frame = pd.DataFrame()
-    for series_id in series_ids:
-        chunk = data_frame[data_frame.iloc[:, 1] == series_id].iloc[:, [0, 2]]
-        chunk.columns = [chunk.columns[0].upper(), series_id]
-        chunk.set_index(chunk.columns[0],
-                        inplace=True,
-                        verify_integrity=True)
-        result_frame = pd.concat([result_frame, chunk], axis=1, sort=True)
-    result_frame['sum'] = result_frame.sum(axis=1)
-    return result_frame.iloc[:, [-1]]
-
-
-def fetch_can_from_url(url: str, usecols: list = None) -> pd.DataFrame:
-    '''Downloading zip file from url'''
-    name = url.split('/')[-1]
-    if os.path.exists(name):
-        with ZipFile(name, 'r').open(name.replace('-eng.zip', '.csv')) as f:
-            return pd.read_csv(f, usecols=usecols)
-    else:
-        r = requests.get(url)
-        with ZipFile(io.BytesIO(r.content)).open(name.replace('-eng.zip', '.csv')) as f:
-            return pd.read_csv(f, usecols=usecols)
-
-
-def fetch_can_group_a(file_id, skiprows):
-    # =========================================================================
-    # Not Used Anywhere
-    # =========================================================================
-    data_frame = pd.read_csv(f'dataset_can_cansim{file_id}.csv',
-                             skiprows=skiprows)
-    if file_id == '7931814471809016759':
-        data_frame.columns = [column[:7] for column in data_frame.columns]
-        data_frame.iloc[:, -
-                        1] = pd.to_numeric(data_frame.iloc[:, -1].str.replace(';', ''))
-    data_frame = data_frame.set_index(data_frame.columns[0]).transpose()
-    data_frame.reset_index(inplace=True)
-    data_frame[['quarter',
-                'period', ]] = data_frame.iloc[:, 0].str.split(expand=True)
-    data_frame.set_index(data_frame.columns[0], inplace=True)
-    return data_frame.groupby(data_frame.columns[-1]).mean()
-
-
-def fetch_can_group_b(file_id, skiprows):
-    # =========================================================================
-    # Not Used Anywhere
-    # =========================================================================
-    data_frame = pd.read_csv(f'dataset_can_cansim{file_id}.csv',
-                             skiprows=skiprows)
-    data_frame[['month',
-                'period', ]] = data_frame.iloc[:, 0].str.split('-', expand=True)
-    return data_frame.groupby(data_frame.columns[-1]).mean()
-
-
-def fetch_can_quarterly(file_id, series_id):
-    # =========================================================================
-    # Data Frame Fetching from Quarterly Data within CANSIM Zip Archives
-    # Should Be [x 7 columns]
-    # =========================================================================
-    RESERVED_FILE_IDS = (2820011, 2820012, 3790031, 3800068,)
-    RESERVED_COMBINATIONS = ((3790031, 'v65201809',),
-                             (3800084, 'v62306938',),)
-    USECOLS = ((4, 6,), (5, 7,),)
-    usecols = (USECOLS[0], USECOLS[1])[file_id in RESERVED_FILE_IDS]
-    data_frame = pd.read_csv(f'dataset_can_{file_id:08n}-eng.zip',
-                             usecols=[0, *usecols])
-    data_frame = data_frame[data_frame.iloc[:, 1] == series_id].iloc[:, [0, 2]]
-    data_frame.columns = [data_frame.columns[0], series_id]
-    data_frame[['period',
-                'sub_period', ]] = data_frame.iloc[:, 0].str.split('/', expand=True)
-    data_frame.iloc[:, 1] = data_frame.iloc[:, 1].astype(float)
-    data_frame.iloc[:, -2] = data_frame.iloc[:, -2].astype(int)
-    if (file_id, series_id,) in RESERVED_COMBINATIONS:
-        return data_frame.groupby(data_frame.columns[-2]).sum()
-    else:
-        return data_frame.groupby(data_frame.columns[-2]).mean()
-
-
-def fetch_can_quarterly(data_frame, series_id):
-    # =========================================================================
-    # Data Frame Fetching from Quarterly Data within CANSIM Zip Archives
-    # =========================================================================
-    data_frame = data_frame[data_frame.iloc[:, 10]
-                            == series_id].iloc[:, [0, 12]]
-    data_frame.columns = [data_frame.columns[0], series_id]
-    data_frame[['period',
-                'sub_period', ]] = data_frame.iloc[:, 0].str.split('-', expand=True)
-    data_frame.iloc[:, 1] = data_frame.iloc[:, 1].astype(float)
-    data_frame.iloc[:, -2] = data_frame.iloc[:, -2].astype(int)
-    return data_frame.groupby(data_frame.columns[-2]).sum()
-
-
-def fetch_usa_bea(archive_name: str, wb_name: str, sh_name: str, series_id: str) -> pd.DataFrame:
-    # =========================================================================
-    # Data Frame Fetching from Bureau of Economic Analysis Zip Archives
-    # =========================================================================
-    with pd.ExcelFile(ZipFile(archive_name, 'r').open(wb_name)) as xl_file:
-        # =====================================================================
-        # Load
-        # =====================================================================
-        data_frame = pd.read_excel(xl_file, sh_name, skiprows=7)
-        # =====================================================================
-        # Re-Load
-        # =====================================================================
-        data_frame = pd.read_excel(xl_file,
-                                   sh_name,
-                                   usecols=range(2, data_frame.shape[1]),
-                                   skiprows=7)
-    data_frame.dropna(axis=0, inplace=True)
-    data_frame.columns = ['period', *data_frame.columns[1:]]
-    data_frame = data_frame.set_index(data_frame.columns[0]).transpose()
-    return data_frame.loc[:, [series_id]]
-
-
-def fetch_usa_bea_filter(series_id):
-    # =========================================================================
-    # Retrieve Yearly Data for BEA Series' Code
-    # =========================================================================
-    ARCHIVE_NAME = 'dataset_usa_bea-nipa-2015-05-01.zip'
-    data_frame = pd.read_csv(ARCHIVE_NAME, usecols=[0, *range(14, 18)])
-    query = (data_frame.iloc[:, 1] == series_id) & \
-            (data_frame.iloc[:, 3] == 0)
-    data_frame = data_frame[query]
-    combined = pd.DataFrame()
-    for source_id in sorted(set(data_frame.iloc[:, 0])):
-        chunk = data_frame[data_frame.iloc[:, 0] == source_id].iloc[:, [2, 4]]
-        chunk.columns = [chunk.columns[0],
-                         '{}{}'.format(source_id.split()[1].replace('.', '_'), series_id)]
-        chunk.drop_duplicates(inplace=True)
-        chunk.set_index(chunk.columns[0], inplace=True, verify_integrity=True)
-        combined = pd.concat([combined, chunk], axis=1, sort=True)
-    return combined
-
-
-def fetch_usa_bea_from_loaded(data_frame: pd.DataFrame, series_id: str) -> pd.DataFrame:
-    '''`NipaDataA.txt`: U.S. Bureau of Economic Analysis'''
-    data_frame = data_frame[data_frame.iloc[:, 0] == series_id].iloc[:, [1, 2]]
-    data_frame.columns = [data_frame.columns[0].lower(), series_id]
-    return data_frame.set_index(data_frame.columns[0], verify_integrity=True)
-
-
-def fetch_usa_bea_from_url(url: str) -> pd.DataFrame:
-    '''Retrieves U.S. Bureau of Economic Analysis DataFrame from URL'''
-    return pd.read_csv(io.BytesIO(requests.get(url).content), thousands=',')
-
-
-def fetch_usa_bea_sfat_series():
-    ARCHIVE_NAME = 'dataset_usa_bea-nipa-selected.zip'
-    SERIES_ID = 'k3n31gd1es000'
-    data_frame = pd.read_csv(ARCHIVE_NAME, usecols=[0, *range(8, 11)])
-    data_frame = data_frame[data_frame.iloc[:, 1] == SERIES_ID]
-    control_frame = pd.DataFrame()
-    for source_id in sorted(set(data_frame.iloc[:, 0])):
-        chunk = data_frame[data_frame.iloc[:, 0] == source_id].iloc[:, [2, 3]]
-        chunk.columns = [chunk.columns[0],
-                         '{}{}'.format(source_id.split()[1].replace('.', '_'), SERIES_ID)]
-        chunk.set_index(chunk.columns[0], inplace=True, verify_integrity=True)
-        control_frame = pd.concat([control_frame, chunk], axis=1, sort=True)
-
-    ARCHIVE_NAME = 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip'
-    WB_NAME = 'Section4ALL_xls.xls'
-    SH_NAME = '403 Ann'
-    # =========================================================================
-    # Fixed Assets Series, 1925--2016
-    # =========================================================================
-    SERIES_IDS = ('k3n31gd1es000', 'k3n31gd1eq000',
-                  'k3n31gd1ip000', 'k3n31gd1st000',)
-    test_frame = pd.concat(
-        [
-            fetch_usa_bea(ARCHIVE_NAME, WB_NAME, SH_NAME, series_id)
-            for series_id in SERIES_IDS
-        ],
-        axis=1,
-        sort=True
-    )
-    return pd.concat([test_frame, control_frame], axis=1, sort=True)
-
-
-def fetch_usa_bls(file_name, series_id):
-    # =========================================================================
-    # Bureau of Labor Statistics Data Fetch
-    # =========================================================================
-    data_frame = pd.read_csv(file_name,
-                             sep='\t',
-                             usecols=range(4),
-                             low_memory=False)
-    query = (data_frame.iloc[:, 0].str.contains(series_id)) & \
-            (data_frame.iloc[:, 2] == 'M13')
-    data_frame = data_frame[query].iloc[:, [1, 3]]
-    data_frame.columns = [data_frame.columns[0], series_id]
-    data_frame.iloc[:, 0] = data_frame.iloc[:, 0].astype(int)
-    data_frame.iloc[:, 1] = data_frame.iloc[:, 1].astype(float)
-    return data_frame.set_index(data_frame.columns[0])
-
-
-def fetch_usa_census_description(archive_name: str, series_id: str) -> str:
-    '''Retrieve Series Description U.S. Bureau of the Census'''
-    FLAG = 'no_details'
-    _df = pd.read_csv(
-        archive_name,
-        usecols=[0, 1, 3, 4, 5, 6, 8],
-        low_memory=False
-    )
-    _df = _df[_df.iloc[:, 6] == series_id]
-    _df.drop_duplicates(inplace=True)
-    if _df.iloc[0, 2] == FLAG:
-        if _df.iloc[0, 5] == FLAG:
-            if _df.iloc[0, 4] == FLAG:
-                description = '{}'.format(_df.iloc[0, 3])
-            else:
-                description = '{} -\n{}'.format(*_df.iloc[0, [3, 4]])
-        else:
-            description = '{} -\n{} -\n{}'.format(*_df.iloc[0, [3, 4, 5]])
-    else:
-        if _df.iloc[0, 5] == FLAG:
-            if _df.iloc[0, 4] == FLAG:
-                description = '{}; {}'.format(*_df.iloc[0, [3, 2]])
-            else:
-                description = '{} -\n{}; {}'.format(*_df.iloc[0, [3, 4, 2]])
-        else:
-            description = '{} -\n{} -\n{}; {}'.format(
-                *_df.iloc[0, [3, 4, 5, 2]])
-    return description
-
-
-def fetch_usa_census(archive_name: str, series_id: str) -> pd.DataFrame:
-    # =========================================================================
-    # Selected Series by U.S. Bureau of the Census
-    # U.S. Bureau of the Census, Historical Statistics of the United States,
-    # 1789--1945, Washington, D.C., 1949.
-    # U.S. Bureau of the Census. Historical Statistics of the United States,
-    # Colonial Times to 1970, Bicentennial Edition. Washington, D.C., 1975.
-    # =========================================================================
-    data_frame = pd.read_csv(archive_name,
-                             usecols=range(8, 11),
-                             dtype=str)
-    data_frame = data_frame[data_frame.iloc[:, 0] == series_id].iloc[:, [1, 2]]
-    data_frame.iloc[:, 0] = data_frame.iloc[:, 0].str[:4].astype(int)
-    data_frame.iloc[:, 1] = data_frame.iloc[:, 1].astype(float)
-    data_frame.columns = [data_frame.columns[0], series_id]
-    data_frame.sort_values(data_frame.columns[0], inplace=True)
-    return data_frame.groupby(data_frame.columns[0]).mean()
-
-
-def fetch_usa_classic(archive_name: str, series_id: str) -> pd.DataFrame:
-    # =========================================================================
-    # Data Fetch Procedure for Enumerated Classical Datasets
-    # =========================================================================
-    USECOLS = {
-        'dataset_douglas.zip': (4, 7,),
-        'dataset_usa_brown.zip': (3, 6,),
-        'dataset_usa_cobb-douglas.zip': (5, 8,),
-        'dataset_usa_kendrick.zip': (4, 7,),
-    }
-    data_frame = pd.read_csv(
-        archive_name,
-        skiprows=(None, 4)[archive_name == 'dataset_usa_brown.zip'],
-        usecols=range(*USECOLS[archive_name])
-    )
-    data_frame = data_frame[data_frame.iloc[:, 0] == series_id].iloc[:, [1, 2]]
-    data_frame.iloc[:, 0] = data_frame.iloc[:, 0].astype(int)
-    data_frame.iloc[:, 1] = pd.to_numeric(
-        data_frame.iloc[:, 1], errors='coerce')
-    data_frame.columns = [data_frame.columns[0], series_id]
-    return data_frame.set_index(data_frame.columns[0])
-
-
-def fetch_usa_mcconnel(series_id: str) -> pd.DataFrame:
-    '''Data Frame Fetching from McConnell C.R. & Brue S.L.'''
-    ARCHIVE_NAME = 'dataset_usa_mc_connell_brue.zip'
-    data_frame = pd.read_csv(ARCHIVE_NAME, index_col=1, usecols=range(1, 4))
-    data_frame = data_frame[data_frame.iloc[:, 0] == series_id].iloc[:, [1]]
-    return data_frame.sort_index()
-
-
-def fetch_world_bank(data_frame: pd.DataFrame, series_id: str) -> pd.DataFrame:
-    df = data_frame[data_frame.iloc[:, 1] == series_id].iloc[:, [0, 2]]
-    df.columns = [df.columns[0], series_id]
-    return df.set_index(df.columns[0])
 
 
 def get_data_archived() -> pd.DataFrame:
@@ -1036,7 +637,7 @@ def get_data_archived() -> pd.DataFrame:
         [
             pd.concat(
                 [
-                    fetch_usa_bea(ARCHIVE_NAMES[0], _wb, _sh, _id)
+                    extract_usa_bea(ARCHIVE_NAMES[0], _wb, _sh, _id)
                     for _wb, _sh, _id in zip(tuple(WB_NAMES[2*(_ // 2)] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
                 ],
                 axis=1,
@@ -1044,7 +645,7 @@ def get_data_archived() -> pd.DataFrame:
             ),
             pd.concat(
                 [
-                    fetch_usa_bea(ARCHIVE_NAMES[1], _wb, _sh, _id)
+                    extract_usa_bea(ARCHIVE_NAMES[1], _wb, _sh, _id)
                     for _wb, _sh, _id in zip(tuple(WB_NAMES[1 + 2*(_ // 2)] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
                 ],
                 axis=1,
@@ -1128,7 +729,7 @@ def get_data_bea_gdp():
         [
             pd.concat(
                 [
-                    fetch_usa_bea(ARCHIVE_NAMES[0], WB_NAMES[0], sh, _id)
+                    extract_usa_bea(ARCHIVE_NAMES[0], WB_NAMES[0], sh, _id)
                     for sh, _id in zip(SH_NAMES, SERIES_IDS)
                 ],
                 axis=1,
@@ -1136,7 +737,7 @@ def get_data_bea_gdp():
             ),
             pd.concat(
                 [
-                    fetch_usa_bea(ARCHIVE_NAMES[1], WB_NAMES[1], sh, _id)
+                    extract_usa_bea(ARCHIVE_NAMES[1], WB_NAMES[1], sh, _id)
                     for sh, _id in zip(SH_NAMES, SERIES_IDS)
                 ],
                 axis=1,
@@ -1150,7 +751,7 @@ def get_data_bea_gdp():
 def get_data_brown():
     # =========================================================================
     # Fetch Data from `Reference RU Brown M. 0597_088.pdf`, Page 193
-    # Dependent on `fetch_usa_classic`
+    # Dependent on `extract_usa_classic`
     # Out of Kendrick J.W. Data & Table 2. of `Reference RU Brown M. 0597_088.pdf`
     # =========================================================================
     # =========================================================================
@@ -1164,7 +765,7 @@ def get_data_brown():
     data_frame.columns = ['series_id', 'period', 'value']
     _b_frame = pd.concat(
         [
-            fetch_usa_classic(ARCHIVE_NAMES[0], series_id)
+            extract_usa_classic(ARCHIVE_NAMES[0], series_id)
             for series_id in sorted(set(data_frame.iloc[:, 0]))
         ],
         axis=1,
@@ -1190,8 +791,10 @@ def get_data_brown():
     # =========================================================================
     SERIES_IDS = ('KTA03S07', 'KTA03S08', 'KTA10S08', 'KTA15S07', 'KTA15S08',)
     _k_frame = pd.concat(
-        [fetch_usa_classic(ARCHIVE_NAMES[1], series_id)
-         for series_id in SERIES_IDS],
+        [
+            extract_usa_classic(ARCHIVE_NAMES[1], series_id)
+            for series_id in SERIES_IDS
+        ],
         axis=1,
         sort=True)
     result_frame = pd.concat(
@@ -1243,24 +846,24 @@ def get_data_can():
     # and territories, annual (dollars x 1,000,000)'''
     # =========================================================================
     URL = 'https://www150.statcan.gc.ca/n1/en/tbl/csv/36100096-eng.zip'
-    capital = fetch_can_from_url(URL)
-    capital = fetch_can_capital(fetch_can_capital_query())
+    capital = extract_can_from_url(URL)
+    capital = extract_can_capital(extract_can_capital_query())
     # =========================================================================
     # '''B. Labor Block: `v2523012`, Preferred Over `v3437501` Which Is Quarterly'''
     # '''`v2523012` - Table: 14-10-0027-01 (formerly CANSIM 282-0012): Employment\
     # by class of worker, annual (x 1,000)'''
     # =========================================================================
     URL = 'https://www150.statcan.gc.ca/n1/tbl/csv/14100027-eng.zip'
-    labor = fetch_can_from_url(URL)
-    labor = fetch_can(labor, 'v2523012')
+    labor = extract_can_from_url(URL)
+    labor = extract_can(labor, 'v2523012')
     # =========================================================================
     # '''C. Production Block: `v65201809`'''
     # '''`v65201809` - Table: 36-10-0434-01 (formerly CANSIM 379-0031): Gross\
     # domestic product (GDP) at basic prices, by industry, monthly (x 1,000,000)'''
     # =========================================================================
     URL = 'https://www150.statcan.gc.ca/n1/tbl/csv/36100434-eng.zip'
-    product = fetch_can_from_url(URL)
-    product = fetch_can_quarterly(product, 'v65201809')
+    product = extract_can_from_url(URL)
+    product = extract_can_quarter(product, 'v65201809')
     result_frame = pd.concat([capital, labor, product], axis=1, sort=True)
     # result_frame = result_frame.dropna(axis=0)
     result_frame.columns = ['capital', 'labor', 'product']
@@ -1281,19 +884,19 @@ def get_data_can():
             # Industrial machinery (x 1,000,000): `v43975594`, `v43977674`, `v43978090`, `v43978506`, `v43978922`, `v43979338`, `v43979754`, `v43980170`, `v43980586`, \
             #     `v43976010`,  `v43976426`, `v43976842`, `v43977258`
             # =============================================================================
-            fetch_can_fixed_assets(fetch_can_capital_query_archived()),
+            extract_can_fixed_assets(extract_can_capital_query_archived()),
             # =============================================================================
             # B. Labor Block: `v2523012`, Preferred Over `v3437501` Which Is Quarterly
             # `v2523012` - 282-0012 Labour Force Survey Estimates (LFS), employment by class of worker, North American Industry Classification System (NAICS)\
             # and sex; Canada; Total employed, all class of workers; Manufacturing; Both sexes (x 1,000) (annual, 1987 to 2017)
             # =============================================================================
-            fetch_can_annually(2820012, 'v2523012'),
+            extract_can_annual(2820012, 'v2523012'),
             # =============================================================================
             # C. Production Block: `v65201809`
             # `v65201809` - 379-0031 Gross domestic product (GDP) at basic prices, by North American Industry Classification System (NAICS); Canada; Trading-day\
             # adjusted; 2007 constant prices; Manufacturing (x 1,000,000) (monthly, 1997-01-01 to 2017-10-01)
             # =============================================================================
-            fetch_can_quarterly(3790031, 'v65201809'),
+            extract_can_quarter(3790031, 'v65201809'),
         ], axis=1, sort=True
     ).dropna(axis=0)
     data_frame.columns = ['capital', 'labor', 'product']
@@ -1333,13 +936,13 @@ def get_data_can():
     '''1.0. Labor Block: `v2523012`, Preferred Over `v3437501` Which Is Quarterly'''
     '''`v2523012` - 282-0012 Labour Force Survey Estimates (LFS), employment by class of worker, North American Industry Classification System (NAICS)\
     and sex; Canada; Total employed, all class of workers; Manufacturing; Both sexes (x 1,000) (annual, 1987 to 2017)'''
-    labor = fetch_can_annually(2820012, 'v2523012')
+    labor = extract_can_annual(2820012, 'v2523012')
     '''1.1. Labor Block, Alternative Option Not Used'''
     '''`v3437501` - 282-0011 Labour Force Survey estimates (LFS), employment by class of worker, North American Industry Classification System (NAICS)\
     and sex, unadjusted for seasonality; Canada; Total employed, all classes of workers; Manufacturing; Both sexes (x 1,000) (monthly, 1987-01-01 to\
     2017-12-01)'''
     # =============================================================================
-    # fetch_can_quarterly(2820011, 'v3437501')
+    # extract_can_quarter(2820011, 'v3437501')
     # =============================================================================
     '''2.i. Fixed Assets Block: `Industrial buildings`, `Industrial machinery` for `Newfoundland and Labrador`, `Prince Edward Island`, `Nova Scotia`, `New Brunswick`, \
     `Quebec`, `Ontario`, `Manitoba`, `Saskatchewan`, `Alberta`, `British Columbia`, `Yukon`, `Northwest Territories`, `Nunavut`'''
@@ -1383,17 +986,17 @@ def get_data_can():
     #               'v43978298', 'v43978714', 'v43979130', 'v43979546',
     #               'v43979962', 'v43980378', 'v43975802', 'v43976218',
     #               'v43976634', 'v43977050',)
-    capital = fetch_can_fixed_assets(fetch_can_capital_query_archived())
+    capital = extract_can_fixed_assets(extract_can_capital_query_archived())
     '''3.i. Production Block: `v65201809`, Preferred Over `v65201536` Which Is Quarterly'''
     '''3.0. Production Block: `v65201809`'''
     '''`v65201809` - 379-0031 Gross domestic product (GDP) at basic prices, by North American Industry Classification System (NAICS); Canada; Trading-day\
     adjusted; 2007 constant prices; Manufacturing (x 1,000,000) (monthly, 1997-01-01 to 2017-10-01)'''
-    product = fetch_can_quarterly(3790031, 'v65201809')
+    product = extract_can_quarter(3790031, 'v65201809')
     '''3.1. Production Block: `v65201536`, Alternative Option Not Used'''
     '''`v65201536` - 379-0031 Gross domestic product (GDP) at basic prices, by North American Industry Classification System (NAICS); Canada; Seasonnaly\
     adjusted at annual rates; 2007 constant prices; Manufacturing (x 1,000,000) (monthly, 1997-01-01 to 2017-10-01)'''
     # =============================================================================
-    # fetch_can_quarterly(3790031, 'v65201536')
+    # extract_can_quarter(3790031, 'v65201536')
     # =============================================================================
     data_frame = pd.concat(
         [
@@ -1454,11 +1057,12 @@ def get_data_capital_combined_archived():
         [
             pd.concat(
                 [
-                    fetch_usa_bea(ARCHIVE_NAMES[0], _wb, _sh, _id)
+                    extract_usa_bea(ARCHIVE_NAMES[0], _wb, _sh, _id)
                     for _wb, _sh, _id in zip(
-                        tuple(WB_NAMES[2*(_ // len(SH_NAMES))] for _ in range(len(SERIES_IDS))),
+                        tuple(WB_NAMES[2*(_ // len(SH_NAMES))]
+                              for _ in range(len(SERIES_IDS))),
                         tuple(SH_NAMES[2*(_ // len(SH_NAMES)) + ((_ - 1) % len(SH_NAMES)) *
-                                  (2 - ((_ - 1) % len(SH_NAMES)))] for _ in range(len(SERIES_IDS))),
+                                       (2 - ((_ - 1) % len(SH_NAMES)))] for _ in range(len(SERIES_IDS))),
                         SERIES_IDS,
                     )
                 ],
@@ -1467,12 +1071,12 @@ def get_data_capital_combined_archived():
             ),
             pd.concat(
                 [
-                    fetch_usa_bea(ARCHIVE_NAMES[1], _wb, _sh, _id)
+                    extract_usa_bea(ARCHIVE_NAMES[1], _wb, _sh, _id)
                     for _wb, _sh, _id in zip(
                         tuple(WB_NAMES[1 + 2*(_ // len(SH_NAMES))]
                               for _ in range(len(SERIES_IDS))),
                         tuple(SH_NAMES[2*(_ // len(SH_NAMES)) + ((_ - 1) % len(SH_NAMES)) *
-                                  (2 - ((_ - 1) % len(SH_NAMES)))] for _ in range(len(SERIES_IDS))),
+                                       (2 - ((_ - 1) % len(SH_NAMES)))] for _ in range(len(SERIES_IDS))),
                         SERIES_IDS,
                     )
                 ],
@@ -1511,7 +1115,7 @@ def get_data_capital_purchases():
     _args = [tuple(((ARCHIVE_NAMES[0], ARCHIVE_NAMES[1])[series_id.startswith(
         'DT')], series_id,)) for series_id in SERIES_IDS]
     _data_frame = pd.concat(
-        [fetch_usa_classic(*arg) for arg in _args],
+        [extract_usa_classic(*arg) for arg in _args],
         axis=1,
         sort=True)
 
@@ -1533,7 +1137,7 @@ def get_data_capital_purchases():
     _args = [(tuple((ARCHIVE_NAMES[0], series_id, 1,)), tuple((ARCHIVE_NAMES[1], series_id, 1000,)))[
         series_id.startswith('P')] for series_id in SERIES_IDS]
     data_frame_ = pd.concat(
-        [fetch_usa_census(*_[:2]).mul(_[-1]) for _ in _args],
+        [extract_usa_census(*_[:2]).mul(_[-1]) for _ in _args],
         axis=1,
         sort=True)
     data_frame = pd.concat([_data_frame, data_frame_], axis=1, sort=True)
@@ -1567,7 +1171,7 @@ def get_data_census_a():
         'P0017',)
     _args = [tuple((ARCHIVE_NAMES[1], series_id,)) if series_id.startswith(
         'P') else tuple((ARCHIVE_NAMES[0], series_id,)) for series_id in SERIES_IDS]
-    data_frame = pd.concat([fetch_usa_census(*_)
+    data_frame = pd.concat([extract_usa_census(*_)
                            for _ in _args], axis=1, sort=True)
     data_frame = data_frame.div(
         data_frame.iloc[data_frame.index.get_loc(1899), :]).mul(100)
@@ -1594,7 +1198,7 @@ def get_data_census_b_a():
     _args = [(tuple((ARCHIVE_NAMES[0], series_id, 1,)), tuple((ARCHIVE_NAMES[1], series_id, 1000,)))[
         series_id.startswith('P')] for series_id in SERIES_IDS]
     data_frame = pd.concat(
-        [fetch_usa_census(*_[:2]).mul(_[-1]) for _ in _args],
+        [extract_usa_census(*_[:2]).mul(_[-1]) for _ in _args],
         axis=1,
         sort=True)
     data_frame = data_frame[data_frame.index.get_loc(1875):]
@@ -1625,7 +1229,7 @@ def get_data_census_b_b():
         'P0118',  # 1958=100
     )
     _data_frame = pd.concat(
-        [fetch_usa_census(ARCHIVE_NAME, series_id)
+        [extract_usa_census(ARCHIVE_NAME, series_id)
          for series_id in SERIES_IDS],
         axis=1,
         sort=True)
@@ -1665,8 +1269,10 @@ def get_data_census_c() -> tuple[pd.DataFrame, tuple[int]]:
     # =========================================================================
     BASE_YEARS = (1875, 1875, 1875, 1875, 1875, 1909, 1880, 1875, 1875,)
     data_frame = pd.concat(
-        [fetch_usa_census(ARCHIVE_NAME, series_id)
-         for series_id in SERIES_IDS],
+        [
+            extract_usa_census(ARCHIVE_NAME, series_id)
+            for series_id in SERIES_IDS
+        ],
         axis=1,
         sort=True)
     for _ in range(data_frame.shape[1]):
@@ -1687,7 +1293,7 @@ def get_data_census_e() -> pd.DataFrame:
     )
     data_frame = pd.concat(
         [
-            fetch_usa_census(ARCHIVE_NAME, series_id)
+            extract_usa_census(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -1703,7 +1309,7 @@ def get_data_census_f() -> pd.DataFrame:
     SERIES_IDS = ('D0085', 'D0086', 'D0796', 'D0797', 'D0977', 'D0982',)
     df = pd.concat(
         [
-            fetch_usa_census(ARCHIVE_NAME, series_id)
+            extract_usa_census(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -1722,7 +1328,7 @@ def get_data_census_g() -> pd.DataFrame:
     SERIES_IDS = ('F0003', 'F0004',)
     data_frame = pd.concat(
         [
-            fetch_usa_census(ARCHIVE_NAME, series_id)
+            extract_usa_census(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -1737,7 +1343,7 @@ def get_data_census_i_a() -> pd.DataFrame:
     SERIES_IDS = ('U0001', 'U0008', 'U0015',)
     return pd.concat(
         [
-            fetch_usa_census(ARCHIVE_NAME, series_id)
+            extract_usa_census(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -1750,7 +1356,7 @@ def get_data_census_i_b() -> pd.DataFrame:
     SERIES_IDS = ('U0187', 'U0188', 'U0189',)
     return pd.concat(
         [
-            fetch_usa_census(ARCHIVE_NAME, series_id)
+            extract_usa_census(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -1768,7 +1374,7 @@ def get_data_census_i_c() -> pd.DataFrame:
     )
     df = pd.concat(
         [
-            fetch_usa_census(ARCHIVE_NAME, series_id)
+            extract_usa_census(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -1783,7 +1389,8 @@ def get_data_census_i_c() -> pd.DataFrame:
 
     for _ in range(len(SERIES_IDS) // 2):
         _title = f'{df.columns[_ + len(SERIES_IDS)]}_over_all'
-        df[_title] = df.iloc[:, _ + len(SERIES_IDS)].div(df.loc[:, 'exports'].sub(df.loc[:, 'imports']))
+        df[_title] = df.iloc[:, _ +
+                             len(SERIES_IDS)].div(df.loc[:, 'exports'].sub(df.loc[:, 'imports']))
 
     return df
 
@@ -1795,7 +1402,7 @@ def get_data_census_j() -> pd.DataFrame:
     SERIES_IDS = ('X0410', 'X0414', 'X0415',)
     df = pd.concat(
         [
-            fetch_usa_census(ARCHIVE_NAME, series_id)
+            extract_usa_census(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -1887,7 +1494,7 @@ def get_data_cobb_douglas_deflator():
         [
             pd.concat(
                 [
-                    fetch_usa_census(**{
+                    extract_usa_census(**{
                         'archive_name': archive_name,
                         'series_id': series_id,
                     })
@@ -1898,7 +1505,7 @@ def get_data_cobb_douglas_deflator():
             ),
             pd.concat(
                 [
-                    fetch_usa_census(**{
+                    extract_usa_census(**{
                         'archive_name': archive_name,
                         'series_id': series_id,
                     })
@@ -1914,7 +1521,7 @@ def get_data_cobb_douglas_deflator():
     # =========================================================================
     # Bureau of Economic Analysis
     # =========================================================================
-    web_data = fetch_usa_bea_from_url(URL)
+    web_data = extract_usa_bea_from_url(URL)
     data_frame = pd.concat(
         [
             # =================================================================
@@ -1926,7 +1533,7 @@ def get_data_cobb_douglas_deflator():
             # =================================================================
             pd.concat(
                 [
-                    fetch_usa_bea_from_loaded(**{
+                    extract_usa_bea_from_loaded(**{
                         'data_frame': web_data,
                         'series_id': series_id,
                     }
@@ -1996,11 +1603,11 @@ def get_data_cobb_douglas(series_number: int = 3) -> pd.DataFrame:
         'DT24AS01': 'product_rev',
     }
     FUNCTIONS = (
-        fetch_usa_classic,
-        fetch_usa_classic,
-        fetch_usa_census,
-        fetch_usa_census,
-        fetch_usa_classic,
+        extract_usa_classic,
+        extract_usa_classic,
+        extract_usa_census,
+        extract_usa_census,
+        extract_usa_classic,
     )
     data_frame = pd.concat(
         [
@@ -2048,7 +1655,8 @@ def get_data_cobb_douglas_extension_capital() -> pd.DataFrame:
     # Filling the Gaps within Capital Structure Series
     # =========================================================================
     df.loc[1899:, df.columns[-1]].fillna(0.275, inplace=True)
-    df.loc[:, df.columns[-1]].fillna(df.loc[1899, df.columns[-1]], inplace=True)
+    df.loc[:, df.columns[-1]
+           ].fillna(df.loc[1899, df.columns[-1]], inplace=True)
     # =========================================================================
     # Patch Series `Douglas P.H. -- Kendrick J.W. (Blended) Series` Multiplied by `Capital Structure Series`
     # =========================================================================
@@ -2108,13 +1716,13 @@ def get_data_cobb_douglas_extension_labor():
         'KTD02S02',
     )
     FUNCTIONS = (
-        fetch_usa_classic,
-        fetch_usa_census,
-        fetch_usa_census,
-        fetch_usa_census,
-        fetch_usa_census,
-        fetch_usa_census,
-        fetch_usa_classic,
+        extract_usa_classic,
+        extract_usa_census,
+        extract_usa_census,
+        extract_usa_census,
+        extract_usa_census,
+        extract_usa_census,
+        extract_usa_classic,
     )
     data_frame = pd.concat(
         [
@@ -2128,7 +1736,7 @@ def get_data_cobb_douglas_extension_labor():
     # =========================================================================
     # Bureau of Economic Analysis, H4313C & J4313C & A4313C & N4313C
     # =========================================================================
-    _data_frame = fetch_usa_bea_from_url(URL)
+    _data_frame = extract_usa_bea_from_url(URL)
     SERIES_IDS = (
         'H4313C',
         'J4313C',
@@ -2137,7 +1745,7 @@ def get_data_cobb_douglas_extension_labor():
     )
     data_nipa = pd.concat(
         [
-            fetch_usa_bea_from_loaded(_data_frame, series_id) for series_id in SERIES_IDS
+            extract_usa_bea_from_loaded(_data_frame, series_id) for series_id in SERIES_IDS
         ],
         axis=1,
         sort=True
@@ -2188,10 +1796,10 @@ def get_data_cobb_douglas_extension_product():
         'DT24AS01',
     )
     FUNCTIONS = (
-        fetch_usa_census,
-        fetch_usa_census,
-        fetch_usa_census,
-        fetch_usa_classic,
+        extract_usa_census,
+        extract_usa_census,
+        extract_usa_census,
+        extract_usa_classic,
     )
     data_frame = pd.concat(
         [
@@ -2238,7 +1846,7 @@ def get_data_combined():
     # TODO: Refactor It
     # =========================================================================
     URL = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
-    _data = fetch_usa_bea_from_url(URL)
+    _data = extract_usa_bea_from_url(URL)
     SERIES_IDS = (
         'A006RC',
         'A006RD',
@@ -2253,7 +1861,7 @@ def get_data_combined():
     )
     _data_nipa = pd.concat(
         [
-            fetch_usa_bea_from_loaded(_data, _id) for _id in SERIES_IDS
+            extract_usa_bea_from_loaded(_data, _id) for _id in SERIES_IDS
         ],
         axis=1,
         sort=True
@@ -2266,7 +1874,7 @@ def get_data_combined():
     )
     _labor_frame = pd.concat(
         [
-            fetch_usa_bea_from_loaded(_data, _id) for _id in SERIES_IDS
+            extract_usa_bea_from_loaded(_data, _id) for _id in SERIES_IDS
         ],
         axis=1,
         sort=True
@@ -2287,7 +1895,7 @@ def get_data_combined():
     # =========================================================================
     _data_sfat = pd.concat(
         [
-            fetch_usa_bea(_archive, _wb, SH_NAME, SERIES_ID) for _archive, _wb in zip(ARCHIVE_NAMES, WB_NAMES)
+            extract_usa_bea(_archive, _wb, SH_NAME, SERIES_ID) for _archive, _wb in zip(ARCHIVE_NAMES, WB_NAMES)
         ],
         sort=True
     ).drop_duplicates()
@@ -2330,7 +1938,7 @@ def get_data_combined():
     )
     _data_sfat_ = pd.concat(
         [
-            fetch_usa_bea(ARCHIVE_NAME, _wb, _sh, _id) for _wb, _sh, _id in zip(
+            extract_usa_bea(ARCHIVE_NAME, _wb, _sh, _id) for _wb, _sh, _id in zip(
                 tuple(WB_NAMES[_ // 3] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
         ],
         axis=1,
@@ -2429,7 +2037,7 @@ def get_data_combined_archived():
         [
             pd.concat(
                 [
-                    fetch_usa_bea(ARCHIVE_NAMES[0], _wb, _sh, _id) for _wb, _sh, _id in zip(
+                    extract_usa_bea(ARCHIVE_NAMES[0], _wb, _sh, _id) for _wb, _sh, _id in zip(
                         tuple(WB_NAMES[2*(_ // 8)] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
                 ],
                 axis=1,
@@ -2437,7 +2045,7 @@ def get_data_combined_archived():
             ),
             pd.concat(
                 [
-                    fetch_usa_bea(ARCHIVE_NAMES[1], _wb, _sh, _id) for _wb, _sh, _id in zip(
+                    extract_usa_bea(ARCHIVE_NAMES[1], _wb, _sh, _id) for _wb, _sh, _id in zip(
                         tuple(WB_NAMES[1 + 2*(_ // 8)] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
                 ],
                 axis=1,
@@ -2482,7 +2090,7 @@ def get_data_combined_archived():
     )
     _data_sfat = pd.concat(
         [
-            fetch_usa_bea(ARCHIVE_NAME, _wb, _sh, _id) for _wb, _sh, _id in zip(
+            extract_usa_bea(ARCHIVE_NAME, _wb, _sh, _id) for _wb, _sh, _id in zip(
                 tuple(WB_NAMES[_ // 3] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
         ],
         axis=1,
@@ -2509,7 +2117,7 @@ def get_data_combined_archived():
          # Labor Series
          # ====================================================================
          get_data_usa_bea_labor_mfg(),
-         fetch_usa_census(ARCHIVE_NAME, SERIES_ID),
+         extract_usa_census(ARCHIVE_NAME, SERIES_ID),
          get_data_usa_frb_ms()],
         axis=1,
         sort=True
@@ -2562,7 +2170,7 @@ def get_data_common_archived():
         [
             pd.concat(
                 [
-                    fetch_usa_bea(ARCHIVE_NAMES[0], _wb, _sh, _id) for _wb, _sh, _id in zip(
+                    extract_usa_bea(ARCHIVE_NAMES[0], _wb, _sh, _id) for _wb, _sh, _id in zip(
                         tuple(WB_NAMES[2*(_ // 4)] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
                 ],
                 axis=1,
@@ -2570,7 +2178,7 @@ def get_data_common_archived():
             ),
             pd.concat(
                 [
-                    fetch_usa_bea(ARCHIVE_NAMES[1], _wb, _sh, _id) for _wb, _sh, _id in zip(
+                    extract_usa_bea(ARCHIVE_NAMES[1], _wb, _sh, _id) for _wb, _sh, _id in zip(
                         tuple(WB_NAMES[1 + 2*(_ // 4)] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
                 ],
                 axis=1,
@@ -2579,7 +2187,8 @@ def get_data_common_archived():
         ],
         sort=True
     ).drop_duplicates()
-    _data_nipa.loc[:, [SERIES_IDS[2]]] = _data_nipa.loc[:, [SERIES_IDS[2]]].rdiv(100)
+    _data_nipa.loc[:, [SERIES_IDS[2]]
+                   ] = _data_nipa.loc[:, [SERIES_IDS[2]]].rdiv(100)
 
     ARCHIVE_NAME = 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip'
     WB_NAMES = (
@@ -2612,7 +2221,7 @@ def get_data_common_archived():
     )
     _data_sfat = pd.concat(
         [
-            fetch_usa_bea(ARCHIVE_NAME, _wb, _sh, _id) for _wb, _sh, _id in zip(
+            extract_usa_bea(ARCHIVE_NAME, _wb, _sh, _id) for _wb, _sh, _id in zip(
                 tuple(WB_NAMES[_ // 2] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
         ],
         axis=1,
@@ -2636,8 +2245,10 @@ def get_data_douglas():
     ARCHIVE_NAME = 'dataset_douglas.zip'
     SERIES_IDS = ('DT19AS03', 'DT19AS02', 'DT19AS01',)
     data_frame = pd.concat(
-        [fetch_usa_classic(ARCHIVE_NAME, series_id)
-         for series_id in SERIES_IDS],
+        [
+            extract_usa_classic(ARCHIVE_NAME, series_id)
+            for series_id in SERIES_IDS
+        ],
         axis=1,
         sort=True)
     return data_frame.div(data_frame.iloc[data_frame.index.get_loc(1899), :])
@@ -2702,13 +2313,13 @@ def get_data_local():
     _data_nipa = pd.concat(
         [
             pd.concat(
-                [fetch_usa_bea(ARCHIVE_NAMES[0], _wb, _sh, _id)
+                [extract_usa_bea(ARCHIVE_NAMES[0], _wb, _sh, _id)
                  for _wb, _sh, _id in zip(tuple(WB_NAMES[2*(_ // 3)] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)],
                 axis=1,
                 sort=True,
             ),
             pd.concat(
-                [fetch_usa_bea(ARCHIVE_NAMES[1], _wb, _sh, _id)
+                [extract_usa_bea(ARCHIVE_NAMES[1], _wb, _sh, _id)
                  for _wb, _sh, _id in zip(tuple(WB_NAMES[1 + 2*(_ // 3)] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)],
                 axis=1,
                 sort=True,
@@ -2726,7 +2337,7 @@ def get_data_local():
     )
 
 
-def get_dataset() -> pd.DataFrame:
+def get_data() -> pd.DataFrame:
     '''Data Fetch'''
     # =========================================================================
     # TODO: Update Accodring to Change in get_data_cobb_douglas_deflator()
@@ -2766,7 +2377,7 @@ def get_dataset() -> pd.DataFrame:
 
 def get_data_updated():
     URL = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
-    _data = fetch_usa_bea_from_url(URL)
+    _data = extract_usa_bea_from_url(URL)
     SERIES_IDS = (
         'A006RC',
         'A006RD',
@@ -2775,7 +2386,7 @@ def get_data_updated():
     )
     _data_nipa = pd.concat(
         [
-            fetch_usa_bea_from_loaded(_data, _id) for _id in SERIES_IDS
+            extract_usa_bea_from_loaded(_data, _id) for _id in SERIES_IDS
         ],
         axis=1,
         sort=True
@@ -2798,7 +2409,7 @@ def get_data_updated():
     )
     _data_sfat = pd.concat(
         [
-            fetch_usa_bea(ARCHIVE_NAME, WB_NAME, _sh, _id) for _sh, _id in zip(SH_NAMES, SERIES_IDS)
+            extract_usa_bea(ARCHIVE_NAME, WB_NAME, _sh, _id) for _sh, _id in zip(SH_NAMES, SERIES_IDS)
         ],
         axis=1,
         sort=True
@@ -2825,7 +2436,7 @@ def get_data_updated():
     # Capital Retirement Ratio
     # =========================================================================
     _data['_ratio_mu'] = _data.iloc[:, -
-                               2].mul(1).sub(_data.iloc[:, -1].shift(-1)).div(_data.iloc[:, -1]).add(1)
+                                    2].mul(1).sub(_data.iloc[:, -1].shift(-1)).div(_data.iloc[:, -1]).add(1)
     return (
         _data.loc[:, ['_inv', 'A191RX', '_cap', '_ratio_mu']].dropna(axis=0),
         _data.loc[:, ['_ratio_mu']].dropna(axis=0),
@@ -2860,8 +2471,10 @@ def get_data_usa_bea_labor():
     )
     SERIES_ID = 'A4601C0'
     data_frame = pd.concat(
-        [fetch_usa_bea(archive_name, wb, sh, SERIES_ID)
-         for archive_name, wb, sh in zip(ARCHIVE_NAMES, WB_NAMES, SH_NAMES)],
+        [
+            extract_usa_bea(archive_name, wb, sh, SERIES_ID)
+            for archive_name, wb, sh in zip(ARCHIVE_NAMES, WB_NAMES, SH_NAMES)
+        ],
         axis=1,
         sort=True)
     data_frame[SERIES_ID] = data_frame.mean(axis=1)
@@ -2905,8 +2518,10 @@ def get_data_usa_bea_labor_mfg():
         'N4313C0',
     )
     data_frame = pd.concat(
-        [fetch_usa_bea(archive_name, wb, sh, _id)
-         for archive_name, wb, sh, _id in zip(ARCHIVE_NAMES, WB_NAMES, SH_NAMES, SERIES_IDS)],
+        [
+            extract_usa_bea(archive_name, wb, sh, _id)
+            for archive_name, wb, sh, _id in zip(ARCHIVE_NAMES, WB_NAMES, SH_NAMES, SERIES_IDS)
+        ],
         axis=1,
         sort=True)
     data_frame['mfg_labor'] = data_frame.mean(axis=1)
@@ -2958,12 +2573,12 @@ def get_data_usa_capital():
     )
     data_frame = pd.concat(
         [
-            fetch_usa_classic(ARCHIVE_NAME, series_id) for series_id in SERIES_IDS
+            extract_usa_classic(ARCHIVE_NAME, series_id) for series_id in SERIES_IDS
         ],
         axis=1,
         sort=True
     )
-    _data_frame = fetch_usa_bea_from_url(URL)
+    _data_frame = extract_usa_bea_from_url(URL)
     SERIES_IDS = (
         # =====================================================================
         # Fixed Assets: k1n31gd1es00, 1925--2019, Table 4.1. Current-Cost Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
@@ -2979,7 +2594,7 @@ def get_data_usa_capital():
             data_frame,
             pd.concat(
                 [
-                    fetch_usa_bea_from_loaded(_data_frame, series_id) for series_id in SERIES_IDS
+                    extract_usa_bea_from_loaded(_data_frame, series_id) for series_id in SERIES_IDS
                 ],
                 axis=1,
                 sort=True
@@ -3009,11 +2624,11 @@ def get_data_usa_capital():
         'DT63AS01',
     )
     FUNCTIONS = (
-        fetch_usa_census,
-        fetch_usa_census,
-        fetch_usa_census,
-        fetch_usa_classic,
-        fetch_usa_classic,
+        extract_usa_census,
+        extract_usa_census,
+        extract_usa_census,
+        extract_usa_classic,
+        extract_usa_classic,
     )
     return pd.concat(
         [
@@ -3118,7 +2733,7 @@ def get_data_usa_frb_ms() -> pd.DataFrame:
 
 def get_data_usa_mcconnel_a():
     SERIES_ID = 'Валовой внутренний продукт, млрд долл. США'
-    data_frame = fetch_usa_mcconnel(SERIES_ID)
+    data_frame = extract_usa_mcconnel(SERIES_ID)
     return data_frame[data_frame.index.get_loc(1980):]
 
 
@@ -3127,7 +2742,7 @@ def get_data_usa_mcconnel_b():
         'Ставка прайм-рейт, %': 'prime_rate',
         'Национальный доход, млрд долл. США': 'A032RC1',
     }
-    data_frame = pd.concat([fetch_usa_mcconnel(series_id)
+    data_frame = pd.concat([extract_usa_mcconnel(series_id)
                            for series_id in SERIES_IDS.keys()],
                            axis=1,
                            sort=True)
@@ -3140,7 +2755,7 @@ def get_data_usa_mcconnel_c():
         'Ставка прайм-рейт, %': 'prime_rate',
         'Валовой объем внутренних частных инвестиций, млрд долл. США': 'A006RC1',
     }
-    data_frame = pd.concat([fetch_usa_mcconnel(series_id)
+    data_frame = pd.concat([extract_usa_mcconnel(series_id)
                            for series_id in SERIES_IDS.keys()],
                            axis=1,
                            sort=True)
@@ -3184,13 +2799,13 @@ def get_data_usa_xlsm():
     _data = pd.concat(
         [
             pd.concat(
-                [fetch_usa_bea(ARCHIVE_NAMES[0], WB_NAMES[0], _sh, _id)
+                [extract_usa_bea(ARCHIVE_NAMES[0], WB_NAMES[0], _sh, _id)
                  for _sh, _id in zip(SH_NAMES, SERIES_IDS)],
                 axis=1,
                 sort=True
             ),
             pd.concat(
-                [fetch_usa_bea(ARCHIVE_NAMES[1], WB_NAMES[1], _sh, _id)
+                [extract_usa_bea(ARCHIVE_NAMES[1], WB_NAMES[1], _sh, _id)
                  for _sh, _id in zip(SH_NAMES, SERIES_IDS)],
                 axis=1,
                 sort=True
@@ -3233,7 +2848,7 @@ def get_data_version_a():
             # =================================================================
             # Fixed Assets: kcn31gd1es000, 1925--2016, Table 4.2. Chain-Type Quantity Indexes for Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
             # =================================================================
-            fetch_usa_bea(**KWARGS),
+            extract_usa_bea(**KWARGS),
             # =================================================================
             # Labor
             # =================================================================
@@ -3243,7 +2858,7 @@ def get_data_version_a():
             # =================================================================
             pd.concat(
                 [
-                    fetch_usa_bea(_archive_name, _wb, SH_NAME, SERIES_ID) for _archive_name, _wb in zip(ARCHIVE_NAMES, WB_NAMES)
+                    extract_usa_bea(_archive_name, _wb, SH_NAME, SERIES_ID) for _archive_name, _wb in zip(ARCHIVE_NAMES, WB_NAMES)
                 ],
                 sort=True).drop_duplicates(),
         ],
@@ -3253,7 +2868,7 @@ def get_data_version_a():
             # =================================================================
             # Fixed Assets: kcn31gd1es000, 1925--2016, Table 4.2. Chain-Type Quantity Indexes for Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
             # =================================================================
-            fetch_usa_bea(**KWARGS),
+            extract_usa_bea(**KWARGS),
             # =================================================================
             # Labor
             # =================================================================
@@ -3263,7 +2878,7 @@ def get_data_version_a():
             # =================================================================
             pd.concat(
                 [
-                    fetch_usa_bea(_archive_name, _wb, SH_NAME, SERIES_ID) for _archive_name, _wb in zip(ARCHIVE_NAMES, WB_NAMES)
+                    extract_usa_bea(_archive_name, _wb, SH_NAME, SERIES_ID) for _archive_name, _wb in zip(ARCHIVE_NAMES, WB_NAMES)
                 ],
                 sort=True).drop_duplicates(),
             # =================================================================
@@ -3295,7 +2910,7 @@ def get_data_version_b():
             # =================================================================
             # Fixed Assets: kcn31gd1es000, 1925--2016, Table 4.2. Chain-Type Quantity Indexes for Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
             # =================================================================
-            fetch_usa_bea(**KWARGS),
+            extract_usa_bea(**KWARGS),
             # =================================================================
             # Labor
             # =================================================================
@@ -3314,7 +2929,7 @@ def get_data_version_b():
             # =================================================================
             # Fixed Assets: kcn31gd1es000, 1925--2016, Table 4.2. Chain-Type Quantity Indexes for Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
             # =================================================================
-            fetch_usa_bea(**KWARGS),
+            extract_usa_bea(**KWARGS),
             # =================================================================
             # Labor
             # =================================================================
@@ -3395,12 +3010,6 @@ def get_mean_for_min_std():
     result['std'] = result.std(axis=1)
     return (result.iloc[:, [-1]].idxmin()[0],
             result.loc[result.iloc[:, [-1]].idxmin()[0], :][:-1].mean())
-
-
-def get_series_ids(archive_name):
-    '''Returns Dictionary for Series from Douglas's & Kendrick's Databases'''
-    data_frame = pd.read_csv(archive_name, usecols=[3, 4, ])
-    return dict(zip(data_frame.iloc[:, 1], data_frame.iloc[:, 0]))
 
 
 def kol_zur_filter(df: pd.DataFrame, k: int = None) -> tuple[pd.DataFrame]:
@@ -3484,7 +3093,7 @@ def kol_zur_filter(df: pd.DataFrame, k: int = None) -> tuple[pd.DataFrame]:
                 [
                     residuals_o,
                     df_o.iloc[:, [-2]
-                                      ].div(df_o.iloc[:, [-2]].shift(1)).sub(1),
+                              ].div(df_o.iloc[:, [-2]].shift(1)).sub(1),
                 ],
                 axis=1
             )
@@ -3507,7 +3116,8 @@ def kol_zur_filter(df: pd.DataFrame, k: int = None) -> tuple[pd.DataFrame]:
             residuals_e = pd.concat(
                 [
                     residuals_e,
-                    df_e.iloc[:, [-1]].shift(-1).div(df_e.iloc[:, [-1]]).sub(1),
+                    df_e.iloc[:, [-1]
+                              ].shift(-1).div(df_e.iloc[:, [-1]]).sub(1),
                 ],
                 axis=1
             )
@@ -3789,7 +3399,7 @@ def m_spline_la(df: pd.DataFrame, n_spans: int, knots: tuple[int]) -> tuple[pd.D
     for j in range(n_spans):
         _params_a.append(
             ((df.iloc[knots[1 + j], 0] - df.iloc[knots[0], 0])*df.iloc[knots[j], 1] - (df.iloc[knots[j], 0] -
-                                                                                   df.iloc[knots[0], 0])*df.iloc[knots[1 + j], 1])/(df.iloc[knots[1 + j], 0] - df.iloc[knots[j], 0])
+                                                                                       df.iloc[knots[0], 0])*df.iloc[knots[1 + j], 1])/(df.iloc[knots[1 + j], 0] - df.iloc[knots[j], 0])
         )
         if j == 0:
             _params_k.append(
@@ -3958,7 +3568,8 @@ def get_data_centered_by_period(data_frame: pd.DataFrame) -> pd.DataFrame:
                 period_roll,
                 series_roll,
                 series_roll.div(_data.iloc[:, 1]),
-                series_roll.shift(-2).sub(series_roll).div(series_roll.shift(-1)).div(2),
+                series_roll.shift(-2).sub(series_roll).div(
+                    series_roll.shift(-1)).div(2),
             ],
             axis=1,
             sort=True
@@ -3966,16 +3577,16 @@ def get_data_centered_by_period(data_frame: pd.DataFrame) -> pd.DataFrame:
     return _data
 
 
-def preprocessing_a(df: pd.DataFrame) -> pd.DataFrame:
+def transform_a(df: pd.DataFrame) -> pd.DataFrame:
     df = df.iloc[:, [0, 4, 6, 7]].dropna()
     return df.div(df.iloc[0, :])
 
 
-def preprocessing_b(df: pd.DataFrame) -> pd.DataFrame:
+def transform_b(df: pd.DataFrame) -> pd.DataFrame:
     return df.iloc[:, [0, 6, 7, 20]].dropna()
 
 
-def preprocessing_c(df: pd.DataFrame) -> pd.DataFrame:
+def transform_c(df: pd.DataFrame) -> pd.DataFrame:
     df_production = df.iloc[:, [0, 6, 7]].dropna()
     df_production = df_production.div(df_production.iloc[0, :])
     df_money = df.iloc[:, range(18, 20)].dropna(how='all')
@@ -3990,14 +3601,14 @@ def preprocessing_c(df: pd.DataFrame) -> pd.DataFrame:
     return _df.div(_df.iloc[0, :])
 
 
-def preprocessing_d(df: pd.DataFrame) -> pd.DataFrame:
+def transform_d(df: pd.DataFrame) -> pd.DataFrame:
     # =========================================================================
     # TODO: Eliminate This Function
     # =========================================================================
     return df.iloc[:, [0, 1, 2, 3, 7]].dropna()
 
 
-def preprocessing_e(df: pd.DataFrame) -> tuple[pd.DataFrame]:
+def transform_e(df: pd.DataFrame) -> tuple[pd.DataFrame]:
     assert df.shape[1] == 21, 'Works on DataFrame Produced with `get_data_combined_archived()`'
     # =========================================================================
     # `Real` Investment
@@ -4019,7 +3630,7 @@ def preprocessing_e(df: pd.DataFrame) -> tuple[pd.DataFrame]:
     )
 
 
-def preprocessing_kurenkov(data_testing: pd.DataFrame) -> tuple[pd.DataFrame]:
+def transform_kurenkov(data_testing: pd.DataFrame) -> tuple[pd.DataFrame]:
     '''Returns Four DataFrames with Comparison of data_testing: pd.DataFrame and Yu.V. Kurenkov Data'''
     FILE_NAME = 'dataset_usa_reference_ru_kurenkov_yu_v.csv'
     data_control = pd.read_csv(FILE_NAME, index_col=0)
@@ -4347,13 +3958,15 @@ def plot_d(df: pd.DataFrame) -> None:
     plt.grid(True)
     plt.figure(3)
     plt.plot(df.iloc[:, -2], df.iloc[:, 4])
-    plt.title('$GPDI$ & $GPFI(n)$, {}=100, {}$-${}'.format(*df.index[[_b, 0, -1]]))
+    plt.title(
+        '$GPDI$ & $GPFI(n)$, {}=100, {}$-${}'.format(*df.index[[_b, 0, -1]]))
     plt.xlabel('Billions of Dollars')
     plt.ylabel('Billions of Dollars')
     plt.grid(True)
     plt.figure(4)
     plt.plot(df.iloc[:, -1], df.iloc[:, 4])
-    plt.title('$GPFI(n)$ & $GDP$, {}=100, {}$-${}'.format(*df.index[[_b, 0, -1]]))
+    plt.title(
+        '$GPFI(n)$ & $GDP$, {}=100, {}$-${}'.format(*df.index[[_b, 0, -1]]))
     plt.xlabel('Billions of Dollars')
     plt.ylabel('Billions of Dollars')
     plt.grid(True)
@@ -4557,19 +4170,19 @@ def plot_built_in(module: callable):
     data = pd.read_csv(FILE_NAMES[0])
     for _, series_id in enumerate(sorted(set(data.iloc[:, 1])), start=1):
         plt.figure(_)
-        module(fetch_world_bank(data, series_id))
+        module(extract_world_bank(data, series_id))
         plt.grid(True)
 
     data = pd.read_csv(FILE_NAMES[1])
     for _, series_id in enumerate(sorted(set(data.iloc[:, 1])), start=1):
         plt.figure(_)
-        module(fetch_world_bank(data, series_id))
+        module(extract_world_bank(data, series_id))
         plt.grid(True)
 
     plt.show()
 
 
-def data_preprocessing_cobb_douglas(df: pd.DataFrame) -> tuple[pd.DataFrame, tuple[float]]:
+def transform_cobb_douglas(df: pd.DataFrame) -> tuple[pd.DataFrame, tuple[float]]:
     '''
     df.index: Period,
     df.iloc[:, 0]: Capital,
@@ -4632,7 +4245,7 @@ def data_preprocessing_cobb_douglas(df: pd.DataFrame) -> tuple[pd.DataFrame, tup
     return df, (k, np.exp(b),)
 
 
-def data_preprocessing_cobb_douglas_alt(df: pd.DataFrame) -> tuple[pd.DataFrame, tuple[float]]:
+def transform_cobb_douglas_alt(df: pd.DataFrame) -> tuple[pd.DataFrame, tuple[float]]:
     '''
     df.index: Period,
     df.iloc[:, 0]: Capital,
@@ -4730,10 +4343,10 @@ def plot_cobb_douglas(data_frame: pd.DataFrame, params: tuple[float], mapping: d
     '''
     assert data_frame.shape[1] == 12
 
-    def lab_productivity(array: np.array, k: float = 0.25, b: float = 1.01) -> np.array:
+    def _lab_productivity(array: np.array, k: float = 0.25, b: float = 1.01) -> np.array:
         return np.multiply(np.power(array, -k), b)
 
-    def cap_productivity(array: np.array, k: float = 0.25, b: float = 1.01) -> np.array:
+    def _cap_productivity(array: np.array, k: float = 0.25, b: float = 1.01) -> np.array:
         return np.multiply(np.power(array, 1-k), b)
 
     plt.figure(1)
@@ -4786,9 +4399,9 @@ def plot_cobb_douglas(data_frame: pd.DataFrame, params: tuple[float], mapping: d
     lc = np.arange(0.2, 1.0, 0.005)
     plt.scatter(data_frame.iloc[:, 5], data_frame.iloc[:, 4])
     plt.scatter(data_frame.iloc[:, 5], data_frame.iloc[:, 6])
-    plt.plot(lc, lab_productivity(lc, *params),
+    plt.plot(lc, _lab_productivity(lc, *params),
              label='$\\frac{3}{4}\\frac{P}{L}$')
-    plt.plot(lc, cap_productivity(lc, *params),
+    plt.plot(lc, _cap_productivity(lc, *params),
              label='$\\frac{1}{4}\\frac{P}{C}$')
     plt.xlabel('$\\frac{L}{C}$')
     plt.ylabel('Indexes')
@@ -4804,10 +4417,10 @@ def plot_cobb_douglas_alt(data_frame: pd.DataFrame, params: tuple[float], mappin
     '''
     assert data_frame.shape[1] == 20
 
-    def lab_productivity(array: np.array, k: float = 0.25, b: float = 1.01) -> np.array:
+    def _lab_productivity(array: np.array, k: float = 0.25, b: float = 1.01) -> np.array:
         return np.multiply(np.power(array, -k), b)
 
-    def cap_productivity(array: np.array, k: float = 0.25, b: float = 1.01) -> np.array:
+    def _cap_productivity(array: np.array, k: float = 0.25, b: float = 1.01) -> np.array:
         return np.multiply(np.power(array, 1-k), b)
 
     plt.figure(1)
@@ -4861,9 +4474,9 @@ def plot_cobb_douglas_alt(data_frame: pd.DataFrame, params: tuple[float], mappin
     lc = np.arange(0.2, 1.0, 0.005)
     plt.scatter(data_frame.iloc[:, 6], data_frame.iloc[:, 13])
     plt.scatter(data_frame.iloc[:, 6], data_frame.iloc[:, 14])
-    plt.plot(lc, lab_productivity(lc, *params),
+    plt.plot(lc, _lab_productivity(lc, *params),
              label='$\\frac{3}{4}\\frac{P}{L}$')
-    plt.plot(lc, cap_productivity(lc, *params),
+    plt.plot(lc, _cap_productivity(lc, *params),
              label='$\\frac{1}{4}\\frac{P}{C}$')
     plt.xlabel('$\\frac{L}{C}$')
     plt.ylabel('Indexes')
@@ -4873,7 +4486,7 @@ def plot_cobb_douglas_alt(data_frame: pd.DataFrame, params: tuple[float], mappin
     plt.show()
 
 
-# def data_preprocessing_cobb_douglas(df: pd.DataFrame) -> tuple[pd.DataFrame, tuple[float]]:
+# def transform_cobb_douglas(df: pd.DataFrame) -> tuple[pd.DataFrame, tuple[float]]:
 # =============================================================================
 #     TODO: Implement Additional Features
 # =============================================================================
@@ -4999,10 +4612,10 @@ def plot_cobb_douglas_tight_layout(data_frame: pd.DataFrame, params: tuple[float
     '''
     assert data_frame.shape[1] == 12
 
-    def lab_productivity(array: np.array, k: float = 0.25, b: float = 1.01) -> np.array:
+    def _lab_productivity(array: np.array, k: float = 0.25, b: float = 1.01) -> np.array:
         return np.multiply(np.power(array, -k), b)
 
-    def cap_productivity(array: np.array, k: float = 0.25, b: float = 1.01) -> np.array:
+    def _cap_productivity(array: np.array, k: float = 0.25, b: float = 1.01) -> np.array:
         return np.multiply(np.power(array, 1-k), b)
 
     fig, axs = plt.subplots(5, 1)
@@ -5050,9 +4663,9 @@ def plot_cobb_douglas_tight_layout(data_frame: pd.DataFrame, params: tuple[float
     lc = np.arange(0.2, 1.0, 0.005)
     axs[4].scatter(data_frame.iloc[:, 10], data_frame.iloc[:, 4])
     axs[4].scatter(data_frame.iloc[:, 10], data_frame.iloc[:, 11])
-    axs[4].plot(lc, lab_productivity(lc, *params),
+    axs[4].plot(lc, _lab_productivity(lc, *params),
                 label='$\\frac{3}{4}\\frac{P}{L}$')
-    axs[4].plot(lc, cap_productivity(lc, *params),
+    axs[4].plot(lc, _cap_productivity(lc, *params),
                 label='$\\frac{1}{4}\\frac{P}{C}$')
     axs[4].set_xlabel('$\\frac{L}{C}$')
     axs[4].set_ylabel('Indexes')
@@ -5066,7 +4679,7 @@ def plot_cobb_douglas_tight_layout(data_frame: pd.DataFrame, params: tuple[float
 def test_procedure(kwargs_list: list[dict]) -> None:
     data_frame = pd.concat(
         [
-            fetch_usa_bea(**_kwargs) for _kwargs in kwargs_list
+            extract_usa_bea(**_kwargs) for _kwargs in kwargs_list
         ],
         axis=1,
         sort=True
@@ -5108,18 +4721,9 @@ def plot_usa_nber_manager():
     )
     aggs = ('mean', 'sum')
     for _agg in aggs:
-        sic = fetch_usa_nber(FILE_NAMES[0], _agg)
-        naics = fetch_usa_nber(FILE_NAMES[1], _agg)
+        sic = extract_usa_nber(FILE_NAMES[0], _agg)
+        naics = extract_usa_nber(FILE_NAMES[1], _agg)
         plot_usa_nber(sic, naics, _agg)
-
-
-def fetch_usa_nber(file_name: str, agg: str) -> pd.DataFrame:
-    _df = pd.read_csv(file_name)
-    _df.drop(_df.columns[0], axis=1, inplace=True)
-    if agg == 'mean':
-        return _df.groupby(_df.columns[0]).mean()
-    elif agg == 'sum':
-        return _df.groupby(_df.columns[0]).sum()
 
 
 def plot_usa_nber(df_sic: pd.DataFrame, df_naics: pd.DataFrame, agg: str) -> None:
@@ -5176,14 +4780,14 @@ def test_data_consistency_a():
         [
             pd.concat(
                 [
-                    fetch_can_quarterly(*_args) for _args in ARGS[:3]
+                    extract_can_quarter(*_args) for _args in ARGS[:3]
                 ],
                 axis=1,
                 sort=True
             ),
             pd.concat(
                 [
-                    fetch_can_annually(*_args) for _args in ARGS[3:]
+                    extract_can_annual(*_args) for _args in ARGS[3:]
                 ],
                 axis=1,
                 sort=True
@@ -5237,7 +4841,7 @@ def test_data_consistency_b():
     )
     data_frame = pd.concat(
         [
-            fetch_usa_bea(ARCHIVE_NAME, WB_NAME, sh, _id)
+            extract_usa_bea(ARCHIVE_NAME, WB_NAME, sh, _id)
             for sh, _id in zip(SH_NAMES, SERIES_IDS)
         ],
         axis=1,
@@ -5263,7 +4867,7 @@ def test_data_consistency_c():
         'LNU04000000',
         'PCUOMFG--OMFG',
     )
-    [print(fetch_usa_bls(file_name, series_id))
+    [print(extract_usa_bls(file_name, series_id))
      for file_name, series_id in zip(FILE_NAMES, SERIES_IDS)]
 
 
@@ -5272,7 +4876,7 @@ def test_data_consistency_d():
     # =========================================================================
     # Macroeconomic Data Tests
     # =========================================================================
-    def generate_kwargs_list(
+    def _generate_kwargs_list(
             archive_name: str,
             wb_name: str,
             sheet_names: tuple[str],
@@ -5294,7 +4898,7 @@ def test_data_consistency_d():
     WB_NAME = 'Section1all_xls.xlsx'
     SH_NAMES = ('T10705-A', 'T11200-A', 'T10705-A',)
     SERIES_IDS = ('A051RC', 'A052RC', 'A262RC',)
-    test_procedure(generate_kwargs_list(
+    test_procedure(_generate_kwargs_list(
         ARCHIVE_NAME, WB_NAME, SH_NAMES, SERIES_IDS))
     # =========================================================================
     # Tested: `Government` = `Federal` + `State and local`
@@ -5303,13 +4907,13 @@ def test_data_consistency_d():
     WB_NAME = 'Section1all_xls.xlsx'
     SH_NAMES = ('T10105-A', 'T10105-A', 'T10105-A',)
     SERIES_IDS = ('A822RC', 'A823RC', 'A829RC',)
-    test_procedure(generate_kwargs_list(
+    test_procedure(_generate_kwargs_list(
         ARCHIVE_NAME, WB_NAME, SH_NAMES, SERIES_IDS))
     ARCHIVE_NAME = 'dataset_usa_bea-release-2019-12-19-Survey.zip'
     WB_NAME = 'Section3all_xls.xlsx'
     SH_NAMES = ('T30100-A', 'T30200-A', 'T30300-A',)
     SERIES_IDS = ('A955RC', 'A957RC', 'A991RC',)
-    test_procedure(generate_kwargs_list(
+    test_procedure(_generate_kwargs_list(
         ARCHIVE_NAME, WB_NAME, SH_NAMES, SERIES_IDS))
     # # =========================================================================
     # # Tested: `Federal` = `National defense` + `Nondefense`
@@ -5318,18 +4922,18 @@ def test_data_consistency_d():
     WB_NAME = 'Section1all_xls.xlsx'
     SH_NAMES = ('T10105-A', 'T10105-A', 'T10105-A',)
     SERIES_IDS = ('A823RC', 'A824RC', 'A825RC',)
-    test_procedure(generate_kwargs_list(
+    test_procedure(_generate_kwargs_list(
         ARCHIVE_NAME, WB_NAME, SH_NAMES, SERIES_IDS))
     ARCHIVE_NAME = 'dataset_usa_bea-release-2019-12-19-Survey.zip'
     WB_NAME = 'Section3all_xls.xlsx'
     SH_NAMES = ('T30200-A', 'T30905-A', 'T30905-A',)
     SERIES_IDS = ('A957RC', 'A997RC', 'A542RC',)
-    test_procedure(generate_kwargs_list(
+    test_procedure(_generate_kwargs_list(
         ARCHIVE_NAME, WB_NAME, SH_NAMES, SERIES_IDS))
     # =========================================================================
     # Fixed Assets Data Tests
     # =========================================================================
-    result_frame = fetch_usa_bea_sfat_series()
+    result_frame = extract_usa_bea_sfat_series()
     # =========================================================================
     # Tested: `k3n31gd1es000` = `k3n31gd1eq000` + `k3n31gd1ip000` + `k3n31gd1st000`
     # =========================================================================
@@ -5366,7 +4970,8 @@ def plot_increment(df: pd.DataFrame) -> None:
     axs[1].plot(df.iloc[:, 2], df.iloc[:, 3], label='Curve')
     axs[1].set_xlabel('Labor Capital Intensity Increment')
     axs[1].set_ylabel('Labor Productivity Increment')
-    axs[1].set_title('Labor Capital Intensity to Labor Productivity Increments Relation')
+    axs[1].set_title(
+        'Labor Capital Intensity to Labor Productivity Increments Relation')
     axs[1].grid(True)
     axs[1].legend()
     for _ in range(3, df.shape[0], 5):
@@ -5511,12 +5116,12 @@ def get_price_base(df: pd.DataFrame) -> int:
     return int(df.index[_b])
 
 
-def get_cobb_douglas_price() -> pd.DataFrame:
+def get_data_cobb_douglas_price() -> pd.DataFrame:
     ARCHIVE_NAME = 'dataset_usa_cobb-douglas.zip'
     SERIES_IDS = ('CDT2S1', 'CDT2S3')
     df = pd.concat(
         [
-            fetch_usa_classic(ARCHIVE_NAME, series_id) for series_id in SERIES_IDS
+            extract_usa_classic(ARCHIVE_NAME, series_id) for series_id in SERIES_IDS
         ],
         axis=1)
     df['def'] = df.iloc[:, 0].div(df.iloc[:, 1])
@@ -5524,12 +5129,12 @@ def get_cobb_douglas_price() -> pd.DataFrame:
     return df.iloc[:, [-1]].dropna(axis=0)
 
 
-def get_census_price() -> pd.DataFrame:
+def get_data_census_price() -> pd.DataFrame:
     ARCHIVE_NAME = 'dataset_usa_census1975.zip'
     SERIES_IDS = ('P0107', 'P0110')
     df = pd.concat(
         [
-            fetch_usa_census(ARCHIVE_NAME, series_id) for series_id in SERIES_IDS
+            extract_usa_census(ARCHIVE_NAME, series_id) for series_id in SERIES_IDS
         ],
         axis=1)
     df['def'] = df.iloc[:, 0].div(df.iloc[:, 1])
@@ -5537,7 +5142,7 @@ def get_census_price() -> pd.DataFrame:
     return df.iloc[:, [-1]].dropna(axis=0)
 
 
-def price_can_a():
+def get_data_can_price_a():
     FILE_NAME = '/home/alexander/projects/stat_can_cap.xlsx'
     data = pd.read_excel(FILE_NAME)
     data.set_index(data.columns[0], inplace=True)
@@ -5561,7 +5166,7 @@ def price_can_a():
     # return combined
 
 
-def price_can_b():
+def get_data_can_price_b():
     FILE_NAME = '/home/alexander/projects/stat_can_cap.xlsx'
     data = pd.read_excel(FILE_NAME)
     data.set_index(data.columns[0], inplace=True)
@@ -5859,7 +5464,7 @@ def plot_simple_log(df: pd.DataFrame, params: tuple[float]) -> None:
     plt.title('Model: $\\ln(\\hat Y) = {:.4f}+{:.4f}\\times \\ln(X)$, {}$-${}'.format(
         *params[::-1],
         *df.index[[0, -1]]
-        )
+    )
     )
     plt.xlabel('Period')
     plt.ylabel(
@@ -5889,7 +5494,8 @@ def plot_turnover(df: pd.DataFrame) -> None:
     # =========================================================================
     _exp = np.polyfit(df.index, np.log(df.iloc[:, -1]), deg=1)
     df['c_turnover_lin'] = df.index.to_series().mul(_lin[0]).add(_lin[1])
-    df['c_turnover_exp'] = np.exp(df.index.to_series().mul(_exp[0]).add(_exp[1]))
+    df['c_turnover_exp'] = np.exp(
+        df.index.to_series().mul(_exp[0]).add(_exp[1]))
     # =========================================================================
     # Deltas
     # =========================================================================
@@ -6060,7 +5666,7 @@ def string_to_numeric(string):
 def procedure(output_name, criteria):
     result = pd.DataFrame()
     for item in criteria:
-        data = fetch_can_from_url(string_to_url(item['file_name']))
+        data = extract_can_from_url(string_to_url(item['file_name']))
         data = data[data['VECTOR'].isin(item['series_ids'])]
         data = data[['REF_DATE', 'VECTOR', 'VALUE']]
         for series_id in item['series_ids']:
@@ -6097,8 +5703,8 @@ def plot_census_b_capital(df: pd.DataFrame) -> None:
     plt.figure()
     plt.semilogy(df, label=['Total', 'Structures', 'Equipment'])
     plt.title('Census Manufacturing Fixed Assets, {}$-${}'.format(
-       *df.index[[0, -1]]
-       ))
+        *df.index[[0, -1]]
+    ))
     plt.xlabel('Period')
     plt.ylabel('Millions of Dollars')
     plt.grid(True)
@@ -6165,9 +5771,9 @@ def plot_census_d(series_ids: tuple[str]) -> None:
     ARCHIVE_NAME = 'dataset_usa_census1975.zip'
     df = pd.DataFrame()
     for series_id in series_ids:
-        title = fetch_usa_census_description(ARCHIVE_NAME, series_id)
+        title = extract_usa_census_description(ARCHIVE_NAME, series_id)
         print(f'<{series_id}> {title}')
-        chunk = fetch_usa_census(ARCHIVE_NAME, series_id)
+        chunk = extract_usa_census(ARCHIVE_NAME, series_id)
         df = pd.concat(
             [
                 df,
@@ -6264,7 +5870,7 @@ def plot_census_h() -> None:
         'series_id': 'K0005',
     }
     plt.figure()
-    plt.plot(fetch_usa_census(**_kwargs))
+    plt.plot(extract_usa_census(**_kwargs))
     plt.title('Land in Farms')
     plt.xlabel('Period')
     plt.ylabel('1,000 acres')
@@ -6389,9 +5995,9 @@ def plot_census_k() -> None:
         'X0951', 'X0952', 'X0953', 'X0954', 'X0955', 'X0956',
     )
     for _, series_id in enumerate(SERIES_IDS, start=1):
-        df = fetch_usa_census(ARCHIVE_NAME, series_id)
+        df = extract_usa_census(ARCHIVE_NAME, series_id)
         df = df.div(df.iloc[0, :]).mul(100)
-        _title = fetch_usa_census_description(ARCHIVE_NAME, series_id)
+        _title = extract_usa_census_description(ARCHIVE_NAME, series_id)
         plt.figure(_)
         plt.plot(df, label=series_id)
         plt.title('{}, {}$-${}'.format(_title, *df.index[[0, -1]]))
@@ -6459,7 +6065,7 @@ def plot_douglas(source, dictionary, num, start, stop, step, title, measure, lab
     label: Additional Sublabels'''
     plt.figure(num)
     for i in range(start, stop, step):
-        plt.plot(fetch_usa_classic(
+        plt.plot(extract_usa_classic(
             source, dictionary.iloc[i, 0]), label=dictionary.iloc[i, 1])
     plt.title(title)
     plt.xlabel('Period')
@@ -6717,7 +6323,8 @@ def plot_kol_zur_filter(data_frame: pd.DataFrame):
         data_frame.index: Period,
         data_frame.iloc[:, 0]: Series
     '''
-    data_frame_o, data_frame_e, residuals_o, residuals_e = kol_zur_filter(data_frame)
+    data_frame_o, data_frame_e, residuals_o, residuals_e = kol_zur_filter(
+        data_frame)
 
     plt.figure(1)
     plt.title('Kolmogorov$-$Zurbenko Filter')
@@ -6805,7 +6412,8 @@ def plot_rolling_mean_filter(data_frame: pd.DataFrame):
         data_frame.index: Period;
         data_frame.iloc[:, 0]: Series
     '''
-    data_frame_o, data_frame_e, residuals_o, residuals_e = rolling_mean_filter(data_frame)
+    data_frame_o, data_frame_e, residuals_o, residuals_e = rolling_mean_filter(
+        data_frame)
     plt.figure(1)
     plt.title(
         f'Rolling Mean {data_frame_o.index[0]}$-${data_frame_o.index[-1]}'
@@ -7120,7 +6728,8 @@ def m_spline_processing(df: pd.DataFrame, kernel: callable) -> None:
     if _go_no_go.lower() == 'y':
         assert len(_knots) == 1 + N
         _correction_factors = [
-            float(input(f'Correction Factor of Knot {1 + _:02d} out of {len(_knots):02d}: '))
+            float(
+                input(f'Correction Factor of Knot {1 + _:02d} out of {len(_knots):02d}: '))
             for _, _knot in enumerate(_knots)
         ]
         # =====================================================================
@@ -7166,12 +6775,13 @@ def test_douglas() -> None:
     )
     data = pd.concat(
         [
-            partial(fetch_usa_census, **_kwargs[0])(),
-            partial(fetch_usa_classic, **_kwargs[1])(),
+            partial(extract_usa_census, **_kwargs[0])(),
+            partial(extract_usa_classic, **_kwargs[1])(),
         ],
         axis=1)
     _loc = _kwargs[0]['series_id']
-    data.loc[:, [_loc]] = data.loc[:, [_loc]].div(data.loc[1899, [_loc]]).mul(100).round(0)
+    data.loc[:, [_loc]] = data.loc[:, [_loc]].div(
+        data.loc[1899, [_loc]]).mul(100).round(0)
     data['dif'] = data.iloc[:, 1].sub(data.iloc[:, 0])
     data.dropna().plot(title='Cobb--Douglas Data Comparison', legend=True, grid=True)
     _kwargs = (
@@ -7189,7 +6799,7 @@ def test_douglas() -> None:
     )
     data = pd.concat(
         [
-            partial(fetch_usa_classic, **kwargs)() for kwargs in _kwargs
+            partial(extract_usa_classic, **kwargs)() for kwargs in _kwargs
         ],
         axis=1)
     data['div'] = data.iloc[:, 0].div(data.iloc[:, 1])
@@ -7216,5 +6826,5 @@ def options():
         # =====================================================================
         'DT63AS03',
     )
-    [print(fetch_usa_classic(ARCHIVE_NAME, series_id))
+    [print(extract_usa_classic(ARCHIVE_NAME, series_id))
      for series_id in SERIES_IDS]
