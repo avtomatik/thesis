@@ -5546,26 +5546,17 @@ def price_cobb_douglas():
     return combined.iloc[:, [3]]
 
 
-def price_census():
+def get_census_price():
     ARCHIVE_NAME = 'dataset_usa_census1975.zip'
-    data = pd.read_csv(ARCHIVE_NAME)
     SERIES_IDS = ('P0107', 'P0110')
-    combined = pd.DataFrame()
-    for series_id in SERIES_IDS:
-        chunk = data[data.iloc[:, 8] == series_id].iloc[:, [9, 10]]
-        chunk = chunk.apply(pd.to_numeric)
-        chunk.set_index(chunk.columns[0], inplace=True)
-        chunk.sort_index(inplace=True)
-        chunk.rename_axis('REF_DATE', inplace=True)
-        chunk.columns = [series_id]
-        combined = pd.concat([combined, chunk],
-                             axis=1,
-                             sort=False)
-    combined['def'] = combined.iloc[:, 0].div(combined.iloc[:, 1])
-    combined['prc'] = combined.iloc[:, 2].div(
-        combined.iloc[:, 2].shift(1)).sub(1)
-    combined.dropna(axis=0, inplace=True)
-    return combined.iloc[:, [3]]
+    df = pd.concat(
+        [
+            fetch_usa_census(ARCHIVE_NAME, series_id) for series_id in SERIES_IDS
+        ],
+        axis=1)
+    df['def'] = df.iloc[:, 0].div(df.iloc[:, 1])
+    df['prc'] = df.iloc[:, 2].div(df.iloc[:, 2].shift(1)).sub(1)
+    return df.iloc[:, [-1]].dropna(axis=0)
 
 
 def price_can_a():
