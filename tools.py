@@ -6389,8 +6389,8 @@ def plot_census_j(df: pd.DataFrame) -> None:
     plt.show()
 
 
-def plot_census_k():
-    """Census Financial Markets & Institutions Series"""
+def plot_census_k() -> None:
+    '''Census Financial Markets & Institutions Series'''
     ARCHIVE_NAME = 'dataset_usa_census1975.zip'
     SERIES_IDS = (
         'X0410', 'X0411', 'X0412', 'X0413', 'X0414', 'X0415', 'X0416',
@@ -6413,13 +6413,12 @@ def plot_census_k():
         'X0951', 'X0952', 'X0953', 'X0954', 'X0955', 'X0956',
     )
     for _, series_id in enumerate(SERIES_IDS, start=1):
-        title = fetch_usa_census_description(ARCHIVE_NAME, series_id)
-        data_frame = fetch_usa_census(ARCHIVE_NAME, series_id)
-        data_frame = data_frame.div(data_frame.iloc[0, :]).mul(100)
+        df = fetch_usa_census(ARCHIVE_NAME, series_id)
+        df = df.div(df.iloc[0, :]).mul(100)
+        _title = fetch_usa_census_description(ARCHIVE_NAME, series_id)
         plt.figure(_)
-        plt.plot(data_frame, label=f'{series_id}')
-        plt.title('{}, {}$-${}'.format(title,
-                  data_frame.index[0], data_frame.index[-1]))
+        plt.plot(df, label=series_id)
+        plt.title('{}, {}$-${}'.format(_title, *df.index[[0, -1]]))
         plt.xlabel('Period')
         plt.ylabel('Percentage')
         plt.grid(True)
