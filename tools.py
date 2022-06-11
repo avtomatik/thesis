@@ -1718,13 +1718,15 @@ def get_data_census_f() -> pd.DataFrame:
     return df
 
 
-def get_data_census_g():
+def get_data_census_g() -> pd.DataFrame:
     '''Census Gross National Product Series'''
     ARCHIVE_NAME = 'dataset_usa_census1975.zip'
     SERIES_IDS = ('F0003', 'F0004',)
     data_frame = pd.concat(
-        [fetch_usa_census(ARCHIVE_NAME, series_id)
-         for series_id in SERIES_IDS],
+        [
+            fetch_usa_census(ARCHIVE_NAME, series_id)
+            for series_id in SERIES_IDS
+        ],
         axis=1,
         sort=True)
     data_frame = data_frame[data_frame.index.get_loc(1889):]
@@ -4278,11 +4280,11 @@ def plot_c(df: pd.DataFrame) -> None:
 def plot_d(df: pd.DataFrame) -> None:
     '''
     ================== =================================
-    df.index           Period,
-    df.iloc[:, 0]      Gross Domestic Investment,
-    df.iloc[:, 1]      Gross Domestic Investment Price Index,
-    df.iloc[:, 2]      Fixed Investment,
-    df.iloc[:, 3]      Fixed Investment Price Index,
+    df.index           Period
+    df.iloc[:, 0]      Gross Domestic Investment
+    df.iloc[:, 1]      Gross Domestic Investment Price Index
+    df.iloc[:, 2]      Fixed Investment
+    df.iloc[:, 3]      Fixed Investment Price Index
     df.iloc[:, 4]      Real Gross Domestic Product
     ================== =================================
     '''
@@ -6251,13 +6253,16 @@ def plot_census_f_b(df: pd.DataFrame) -> None:
     plt.show()
 
 
-def plot_census_g(source_frame):
+def plot_census_g(df: pd.DataFrame) -> None:
     plt.figure()
-    plt.plot(source_frame.iloc[:, 0], label='Gross National Product')
-    plt.plot(source_frame.iloc[:, 1],
-             label='Gross National Product Per Capita')
-    plt.title('Gross National Product, Prices {}=100, {}=100'.format(
-        1958, source_frame.index[0]))
+    plt.plot(df, label=[
+        'Gross National Product',
+        'Gross National Product Per Capita',
+    ])
+    plt.title(
+        'Gross National Product, Prices {}=100, {}=100'.format(
+            1958, df.index[0]
+        ))
     plt.xlabel('Period')
     plt.ylabel('Percentage')
     plt.grid(True)
