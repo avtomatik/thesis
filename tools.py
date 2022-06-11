@@ -1699,22 +1699,23 @@ def get_data_census_e() -> pd.DataFrame:
     return data_frame.iloc[:, [-1]]
 
 
-def get_data_census_f():
+def get_data_census_f() -> pd.DataFrame:
     '''Census Employment Series'''
     ARCHIVE_NAME = 'dataset_usa_census1975.zip'
     SERIES_IDS = ('D0085', 'D0086', 'D0796', 'D0797', 'D0977', 'D0982',)
-    data_frame = pd.concat(
-        [fetch_usa_census(ARCHIVE_NAME, series_id)
-         for series_id in SERIES_IDS],
+    df = pd.concat(
+        [
+            fetch_usa_census(ARCHIVE_NAME, series_id)
+            for series_id in SERIES_IDS
+        ],
         axis=1,
         sort=True)
-    data_frame['workers'] = data_frame.iloc[:, 0].div(
-        data_frame.iloc[:, 1]).mul(100)
-    data_frame.iloc[:, 4].fillna(
-        data_frame.iloc[:data_frame.index.get_loc(1906), 4].mean(), inplace=True)
-    data_frame.iloc[:, 5].fillna(
-        data_frame.iloc[:data_frame.index.get_loc(1906), 5].mean(), inplace=True)
-    return data_frame
+    df['workers'] = df.iloc[:, 0].div(df.iloc[:, 1]).mul(100)
+    df.iloc[:, 4].fillna(
+        df.iloc[:df.index.get_loc(1906), 4].mean(), inplace=True)
+    df.iloc[:, 5].fillna(
+        df.iloc[:df.index.get_loc(1906), 5].mean(), inplace=True)
+    return df
 
 
 def get_data_census_g():
@@ -6207,23 +6208,22 @@ def plot_census_e(df: pd.DataFrame) -> None:
     plt.show()
 
 
-def plot_census_f_a(source_frame):
+def plot_census_f_a(df: pd.DataFrame) -> None:
     plt.figure(1)
-    source_frame.iloc[:, 1].plot()
+    plt.plot(df.iloc[:, 1])
     plt.title('Unemployment, Percent of Civilian Labor Force')
     plt.xlabel('Period')
     plt.ylabel('Percentage')
     plt.grid(True)
     plt.figure(2)
-    plt.plot(source_frame.iloc[:, 2], label='Bureau of Labour')
-    plt.plot(source_frame.iloc[:, 3], label='Wolman')
+    plt.plot(df.iloc[:, [2, 3]], label=['Bureau of Labour', 'Wolman'])
     plt.title('All Manufacturing, Average Full-Time Weekly Hours, 1890-1899=100')
     plt.xlabel('Period')
     plt.ylabel('Percentage')
     plt.grid(True)
     plt.legend()
     plt.figure(3)
-    source_frame.iloc[:, 6].plot()
+    plt.plot(df.iloc[:, 6])
     plt.title('Implicit Number of Workers')
     plt.xlabel('Period')
     plt.ylabel('Persons')
@@ -6231,22 +6231,22 @@ def plot_census_f_a(source_frame):
     plt.show()
 
 
-def plot_census_f_b(source_frame):
-    fig, axs_a = plt.subplots()
+def plot_census_f_b(df: pd.DataFrame) -> None:
+    fig, _axs_stoppages = plt.subplots()
     color = 'tab:red'
-    axs_a.set_xlabel('Period')
-    axs_a.set_ylabel('Number', color=color)
-    axs_a.plot(source_frame.iloc[:, 4], color=color, label='Stoppages')
-    axs_a.set_title('Work Conflicts')
-    axs_a.grid(True)
-    axs_a.legend(loc=2)
-    axs_a.tick_params(axis='y', labelcolor=color)
-    axs_b = axs_a.twinx()
+    _axs_stoppages.set_xlabel('Period')
+    _axs_stoppages.set_ylabel('Number', color=color)
+    _axs_stoppages.plot(df.iloc[:, 4], color=color, label='Stoppages')
+    _axs_stoppages.set_title('Work Conflicts')
+    _axs_stoppages.grid(True)
+    _axs_stoppages.legend(loc=2)
+    _axs_stoppages.tick_params(axis='y', labelcolor=color)
+    _axs_workers = _axs_stoppages.twinx()
     color = 'tab:blue'
-    axs_b.set_ylabel('1,000 People', color=color)
-    axs_b.plot(source_frame.iloc[:, 5], color=color, label='Workers Involved')
-    axs_b.legend(loc=1)
-    axs_b.tick_params(axis='y', labelcolor=color)
+    _axs_workers.set_ylabel('1,000 People', color=color)
+    _axs_workers.plot(df.iloc[:, 5], color=color, label='Workers Involved')
+    _axs_workers.legend(loc=1)
+    _axs_workers.tick_params(axis='y', labelcolor=color)
     fig.tight_layout()
     plt.show()
 
