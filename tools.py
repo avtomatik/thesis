@@ -1678,17 +1678,20 @@ def get_data_census_c() -> tuple[pd.DataFrame, tuple[int]]:
     return data_frame, BASE_YEARS
 
 
-def get_data_census_e():
+def get_data_census_e() -> pd.DataFrame:
     '''Census Total Immigration Series'''
     ARCHIVE_NAME = 'dataset_usa_census1975.zip'
-    SERIES_IDS = ('C0091', 'C0092', 'C0093', 'C0094', 'C0095', 'C0096',
-                  'C0097', 'C0098', 'C0099', 'C0100', 'C0101', 'C0103',
-                  'C0104', 'C0105', 'C0106', 'C0107', 'C0108', 'C0109',
-                  'C0111', 'C0112', 'C0113', 'C0114', 'C0115', 'C0117',
-                  'C0118', 'C0119',)
+    SERIES_IDS = (
+        'C0091', 'C0092', 'C0093', 'C0094', 'C0095', 'C0096', 'C0097', 'C0098',
+        'C0099', 'C0100', 'C0101', 'C0103', 'C0104', 'C0105', 'C0106', 'C0107',
+        'C0108', 'C0109', 'C0111', 'C0112', 'C0113', 'C0114', 'C0115', 'C0117',
+        'C0118', 'C0119',
+    )
     data_frame = pd.concat(
-        [fetch_usa_census(ARCHIVE_NAME, series_id)
-         for series_id in SERIES_IDS],
+        [
+            fetch_usa_census(ARCHIVE_NAME, series_id)
+            for series_id in SERIES_IDS
+        ],
         axis=1,
         sort=True)
 
@@ -6194,13 +6197,10 @@ def plot_census_d(series_ids: tuple[str]) -> None:
     plt.show()
 
 
-def plot_census_e(source_frame):
+def plot_census_e(df: pd.DataFrame) -> None:
     plt.figure()
-    plt.plot(source_frame.iloc[:, 0])
-    plt.title('Total Immigration, {}$-${}'.format(
-        source_frame.index[0],
-        source_frame.index[-1])
-    )
+    plt.plot(df)
+    plt.title('Total Immigration, {}$-${}'.format(*df.index[[0, -1]]))
     plt.xlabel('Period')
     plt.ylabel('People')
     plt.grid(True)
