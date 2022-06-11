@@ -6091,25 +6091,28 @@ def plot_census_a(df: pd.DataFrame, base: int) -> None:
     plt.show()
 
 
-def plot_census_b(capital_frame, deflator_frame):
-    """Census Manufacturing Fixed Assets Series"""
-    plt.figure(1)
-    plt.semilogy(capital_frame.iloc[:, 0], label='Total')
-    plt.semilogy(capital_frame.iloc[:, 1], label='Structures')
-    plt.semilogy(capital_frame.iloc[:, 2], label='Equipment')
-    plt.title('Manufacturing Fixed Assets, {}$-${}'.format(
-        capital_frame.index[0],
-        capital_frame.index[-1])
+def plot_census_b_capital(df: pd.DataFrame) -> None:
+    '''Census Manufacturing Fixed Assets Series'''
+    plt.figure()
+    plt.semilogy(df, label=['Total', 'Structures', 'Equipment'])
+    plt.title('Census Manufacturing Fixed Assets, {}$-${}'.format(
+        df.index[0],
+        df.index[-1])
     )
     plt.xlabel('Period')
     plt.ylabel('Millions of Dollars')
     plt.grid(True)
     plt.legend()
-    plt.figure(2)
-    plt.plot(deflator_frame)
-    plt.title('Census Fused Capital Deflator, {}$-${}'.format(
-        deflator_frame.index[0],
-        deflator_frame.index[-1])
+    plt.show()
+
+
+def plot_census_b_deflator(df: pd.DataFrame) -> None:
+    '''Census Manufacturing Fixed Assets Deflator Series'''
+    plt.figure()
+    plt.plot(df)
+    plt.title('Census Fused Fixed Assets Deflator, {}$-${}'.format(
+        df.index[0],
+        df.index[-1])
     )
     plt.xlabel('Period')
     plt.ylabel('Index')
