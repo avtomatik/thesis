@@ -1790,18 +1790,19 @@ def get_data_census_i_c() -> pd.DataFrame:
     return df
 
 
-def get_data_census_j():
+def get_data_census_j() -> pd.DataFrame:
     '''Census Money Supply Aggregates'''
+    YEAR_BASE = 1915
     ARCHIVE_NAME = 'dataset_usa_census1975.zip'
     SERIES_IDS = ('X0410', 'X0414', 'X0415',)
-    data_frame = pd.concat(
-        [fetch_usa_census(ARCHIVE_NAME, series_id)
-         for series_id in SERIES_IDS],
+    df = pd.concat(
+        [
+            fetch_usa_census(ARCHIVE_NAME, series_id)
+            for series_id in SERIES_IDS
+        ],
         axis=1,
         sort=True)
-    data_frame = data_frame.div(
-        data_frame.iloc[data_frame.index.get_loc(1915), :]).mul(100)
-    return data_frame, data_frame.index.get_loc(1915)
+    return df.div(df.iloc[df.index.get_loc(YEAR_BASE), :]).mul(100)
 
 
 def get_data_cobb_douglas_deflator():
@@ -6368,14 +6369,19 @@ def plot_census_i_c(df: pd.DataFrame) -> None:
     plt.show()
 
 
-def plot_census_j(data_frame, base):
+def plot_census_j(df: pd.DataFrame) -> None:
+    YEAR_BASE = 1915
     plt.figure()
-    plt.semilogy(data_frame,
-                 label=['Currency Held by the Public',
-                        'M1 Money Supply (Currency Plus Demand Deposits)',
-                        'M2 Money Supply (M1 Plus Time Deposits)'])
-    plt.axvline(x=data_frame.index[base], linestyle=':')
-    plt.title('Currency Dynamics, {}=100'.format(data_frame.index[base]))
+    plt.semilogy(
+        df,
+        label=[
+            'Currency Held by the Public',
+            'M1 Money Supply (Currency Plus Demand Deposits)',
+            'M2 Money Supply (M1 Plus Time Deposits)',
+        ]
+    )
+    plt.axvline(x=YEAR_BASE, linestyle=':')
+    plt.title('Currency Dynamics, {}=100'.format(YEAR_BASE))
     plt.xlabel('Period')
     plt.ylabel('Percentage')
     plt.grid(True)
