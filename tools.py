@@ -4247,9 +4247,9 @@ def plot_b(df: pd.DataFrame) -> None:
     '''
     ================== =================================
     df.index           Period
-    df.iloc[:, 0]      Gross Domestic Investment,
-    df.iloc[:, 1]      Nominal Gross Domestic Product,
-    df.iloc[:, 2]      Real Gross Domestic Product,
+    df.iloc[:, 0]      Gross Domestic Investment
+    df.iloc[:, 1]      Nominal Gross Domestic Product
+    df.iloc[:, 2]      Real Gross Domestic Product
     df.iloc[:, 3]      Prime Rate
     ================== =================================
     '''
@@ -5368,27 +5368,34 @@ def save_zip(data_frame, file_name):
         os.unlink(f'{file_name}.csv')
 
 
-def plot_increment(frame):
-    fig, axs = plt.subplots(2, 1)  # fig, axs = plt.subplots()
-    axs[0].plot(frame.iloc[:, 0], frame.iloc[:, 1], label='Description Here')
+def plot_increment(df: pd.DataFrame) -> None:
+    FLAG = True
+    FOLDER = '/home/alexander/science'
+    fig, axs = plt.subplots(2, 1)
+    axs[0].plot(df.iloc[:, 0], df.iloc[:, 1], label='Curve')
     axs[0].set_xlabel('Labor Capital Intensity')
     axs[0].set_ylabel('Labor Productivity')
-    axs[0].set_title('Description')
+    axs[0].set_title('Labor Capital Intensity to Labor Productivity Relation')
     axs[0].legend()
     axs[0].grid(True)
-    axs[1].plot(frame.iloc[:, 2], frame.iloc[:, 3], label='Description Here')
+    axs[1].plot(df.iloc[:, 2], df.iloc[:, 3], label='Curve')
     axs[1].set_xlabel('Labor Capital Intensity Increment')
     axs[1].set_ylabel('Labor Productivity Increment')
-    axs[1].set_title('Description')
+    axs[1].set_title('Labor Capital Intensity to Labor Productivity Increments Relation')
     axs[1].grid(True)
     axs[1].legend()
-    for i in range(3, frame.shape[0], 5):
-        axs[1].annotate(frame.index[i], (frame.iloc[i, 2], frame.iloc[i, 3]))
-#    os.chdir('/media/alexander/321B-6A94')
-#    plt.tight_layout()
-#    fig.set_size_inches(10., 25.)
-#    fig.savefig('name_figure_a.pdf', format='pdf', dpi=900)
-    plt.show()
+    for _ in range(3, df.shape[0], 5):
+        axs[0].annotate(df.index[_], (df.iloc[_, 0], df.iloc[_, 1]))
+        axs[1].annotate(df.index[_], (df.iloc[_, 2], df.iloc[_, 3]))
+    fig.set_size_inches(10., 20.)
+    fig.tight_layout()
+    if FLAG:
+        fig.savefig(
+            os.path.join(FOLDER, 'fig_file_name.pdf'),
+            format='pdf', dpi=900
+        )
+    else:
+        plt.show()
 
 
 def calculate_plot_uspline(df: pd.DataFrame):
