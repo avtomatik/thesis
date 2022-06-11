@@ -7144,36 +7144,55 @@ def m_spline_processing(df: pd.DataFrame, kernel: callable) -> None:
     plt.show()
 
 
-def test_douglas(control, series_ids):
-    '''control from Original Dataset;
-    series_ids from Douglas Theory of Wages'''
-    if control == 'CDT2S4':
-        # =====================================================================
-        # Cobb C.W., Douglas P.H. Capital Series: Total Fixed Capital in 1880 dollars (4)
-        # =====================================================================
-        control_frame = fetch_usa_classic(
-            'dataset_usa_cobb-douglas.zip', 'CDT2S4')
-    elif control == 'J0014':
-        control_frame = fetch_usa_census('dataset_usa_census1949.zip', 'J0014')
-    test_frame = fetch_usa_classic('dataset_douglas.zip', series_ids)
-    if control == 'J0014':
-        control_frame.iloc[:, 0] = 100*control_frame.iloc[:,
-                                                          0].div(control_frame.iloc[36, 0])  # 1899=100
-        control_frame.iloc[:, 0] = control_frame.iloc[:, 0].round(0)
-    else:
-        pass
-    control_frame = pd.concat([control_frame, test_frame], axis=1, sort=True)
-    if control == 'J0014':
-        control_frame['dev'] = control_frame.iloc[:, 1].sub(
-            control_frame.iloc[:, 0])
-    elif control == 'CDT2S4':
-        control_frame['dev'] = control_frame.iloc[:, 0].div(
-            control_frame.iloc[:, 1])
-    else:
-        pass
-    control_frame = control_frame.dropna(axis=0)
-#    control_frame.plot(title='Cobb--Douglas Data Comparison', legend=True, grid=True)
-    print(control_frame)
+def test_douglas() -> None:
+    '''
+    Data Consistency Test
+
+    Returns
+    -------
+    None
+
+    '''
+    _kwargs = (
+        {
+            'archive_name': 'dataset_usa_census1949.zip',
+            'series_id': 'J0014',
+        },
+        {
+            'archive_name': 'dataset_douglas.zip',
+            'series_id': 'DT24AS01',
+        },
+    )
+    data = pd.concat(
+        [
+            partial(fetch_usa_census, **_kwargs[0])(),
+            partial(fetch_usa_classic, **_kwargs[1])(),
+        ],
+        axis=1)
+    _loc = _kwargs[0]['series_id']
+    data.loc[:, [_loc]] = data.loc[:, [_loc]].div(data.loc[1899, [_loc]]).mul(100).round(0)
+    data['dif'] = data.iloc[:, 1].sub(data.iloc[:, 0])
+    data.dropna().plot(title='Cobb--Douglas Data Comparison', legend=True, grid=True)
+    _kwargs = (
+        {
+            # =================================================================
+            # Cobb C.W., Douglas P.H. Capital Series: Total Fixed Capital in 1880 dollars (4)
+            # =================================================================
+            'archive_name': 'dataset_usa_cobb-douglas.zip',
+            'series_id': 'CDT2S4',
+        },
+        {
+            'archive_name': 'dataset_douglas.zip',
+            'series_id': 'DT63AS01',
+        },
+    )
+    data = pd.concat(
+        [
+            partial(fetch_usa_classic, **kwargs)() for kwargs in _kwargs
+        ],
+        axis=1)
+    data['div'] = data.iloc[:, 0].div(data.iloc[:, 1])
+    data.dropna().plot(title='Cobb--Douglas Data Comparison', legend=True, grid=True)
 
 
 def options():
