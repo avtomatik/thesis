@@ -153,7 +153,7 @@ def calculate_capital_acquisition(df: pd.DataFrame) -> None:
     _df['__deflator'] = _df.iloc[:, 2].div(_df.iloc[:, 3]).sub(1).abs()
     _b = _df.iloc[:, -1].astype(float).argmin()
     _df.drop(_df.columns[-1], axis=1, inplace=True)
-    _title = (_df.index[_b], _df.index[0], _df.index[-1])
+    _title = (_df.index[_b], *_df.index[[0, -1]])
     # =========================================================================
     # Calculate Static Values
     # =========================================================================
@@ -378,7 +378,7 @@ def calculate_capital_retirement(df: pd.DataFrame) -> None:
     _df['__deflator'] = _df.iloc[:, 2].div(_df.iloc[:, 3]).sub(1).abs()
     _b = _df.iloc[:, -1].astype(float).argmin()
     _df.drop(_df.columns[-1], axis=1, inplace=True)
-    _title = (_df.index[_b], _df.index[0], _df.index[-1])
+    _title = (_df.index[_b], *_df.index[[0, -1]])
     # =========================================================================
     # Calculate Static Values
     # =========================================================================
@@ -1733,40 +1733,61 @@ def get_data_census_g() -> pd.DataFrame:
     return data_frame.div(data_frame.iloc[0, :]).mul(100)
 
 
-def get_data_census_i():
+def get_data_census_i_a() -> pd.DataFrame:
     '''Census Foreign Trade Series'''
-    # =========================================================================
-    # TODO: Divide Into Three Functions
-    # =========================================================================
     ARCHIVE_NAME = 'dataset_usa_census1975.zip'
-    SERIES_IDS = ('U0001', 'U0008',)
-    data_frame_a = pd.concat(
-        [fetch_usa_census(ARCHIVE_NAME, series_id)
-         for series_id in SERIES_IDS],
+    SERIES_IDS = ('U0001', 'U0008', 'U0015',)
+    return pd.concat(
+        [
+            fetch_usa_census(ARCHIVE_NAME, series_id)
+            for series_id in SERIES_IDS
+        ],
         axis=1,
         sort=True)
+
+
+def get_data_census_i_b() -> pd.DataFrame:
+    '''Census Foreign Trade Series'''
+    ARCHIVE_NAME = 'dataset_usa_census1975.zip'
     SERIES_IDS = ('U0187', 'U0188', 'U0189',)
-    data_frame_b = pd.concat(
-        [fetch_usa_census(ARCHIVE_NAME, series_id)
-         for series_id in SERIES_IDS],
+    return pd.concat(
+        [
+            fetch_usa_census(ARCHIVE_NAME, series_id)
+            for series_id in SERIES_IDS
+        ],
         axis=1,
         sort=True)
+
+
+def get_data_census_i_c() -> pd.DataFrame:
+    '''Census Foreign Trade Series'''
+    ARCHIVE_NAME = 'dataset_usa_census1975.zip'
     SERIES_IDS = (
-        'U0319', 'U0320', 'U0321', 'U0322', 'U0323', 'U0325', 'U0326',
-        'U0327', 'U0328', 'U0330', 'U0331', 'U0332', 'U0333', 'U0334',
-        'U0337', 'U0338', 'U0339', 'U0340', 'U0341', 'U0343', 'U0344',
-        'U0345', 'U0346', 'U0348', 'U0349', 'U0350', 'U0351', 'U0352',
+        'U0319', 'U0320', 'U0321', 'U0322', 'U0323', 'U0325', 'U0326', 'U0327',
+        'U0328', 'U0330', 'U0331', 'U0332', 'U0333', 'U0334', 'U0337', 'U0338',
+        'U0339', 'U0340', 'U0341', 'U0343', 'U0344', 'U0345', 'U0346', 'U0348',
+        'U0349', 'U0350', 'U0351', 'U0352',
     )
-    data_frame_c = pd.concat(
-        [fetch_usa_census(ARCHIVE_NAME, series_id)
-         for series_id in SERIES_IDS],
+    df = pd.concat(
+        [
+            fetch_usa_census(ARCHIVE_NAME, series_id)
+            for series_id in SERIES_IDS
+        ],
         axis=1,
         sort=True)
-    data_frame_c['exports'] = data_frame_c.loc[:,
-                                               SERIES_IDS[:len(SERIES_IDS) // 2]].sum(1)
-    data_frame_c['imports'] = data_frame_c.loc[:,
-                                               SERIES_IDS[len(SERIES_IDS) // 2:]].sum(1)
-    return data_frame_a, data_frame_b, data_frame_c
+
+    for _ in range(len(SERIES_IDS) // 2):
+        _title = f'{df.columns[_]}_net_{df.columns[_ + len(SERIES_IDS) // 2]}'
+        df[_title] = df.iloc[:, _].sub(df.iloc[:, _ + len(SERIES_IDS) // 2])
+
+    df['exports'] = df.loc[:, SERIES_IDS[:len(SERIES_IDS) // 2]].sum(1)
+    df['imports'] = df.loc[:, SERIES_IDS[len(SERIES_IDS) // 2:]].sum(1)
+
+    for _ in range(len(SERIES_IDS) // 2):
+        _title = f'{df.columns[_ + len(SERIES_IDS)]}_over_all'
+        df[_title] = df.iloc[:, _ + len(SERIES_IDS)].div(df.loc[:, 'exports'].sub(df.loc[:, 'imports']))
+
+    return df
 
 
 def get_data_census_j():
@@ -4079,7 +4100,7 @@ def plot_approx_linear(df: pd.DataFrame):
     # Yhat
     # =========================================================================
     df[f'{df.columns[3]}_estimate'] = df.iloc[:, -2].mul(_p1[0]).add(_p1[1])
-    print('Period From: {} Through: {}'.format(df.index[0], df.index[-1]))
+    print('Period From: {} Through: {}'.format(*df.index[[0, -1]]))
     print('Prices: {}=100'.format(df.index[_b]))
     print('Model: Yhat = {:.4f} + {:.4f}*X'.format(*_p1[::-1]))
     print('Model Parameter: A_0 = {:.4f}'.format(_p1[1]))
@@ -4087,7 +4108,7 @@ def plot_approx_linear(df: pd.DataFrame):
     plt.figure()
     plt.title(
         '$Y(X)$, {}=100, {}$-${}'.format(
-            df.index[_b], df.index[0], df.index[-1]
+            df.index[_b], *df.index[[0, -1]]
         )
     )
     plt.xlabel(
@@ -4151,7 +4172,7 @@ def plot_approx_log_linear(df: pd.DataFrame):
     # =========================================================================
     # Delivery Block
     # =========================================================================
-    print('Period From: {} Through: {}'.format(df.index[0], df.index[-1]))
+    print('Period From: {} Through: {}'.format(*df.index[[0, -1]]))
     print('Prices: {}=100'.format(df.index[_b]))
     print('Model: Yhat = {:.4f} + {:.4f}*Ln(X)'.format(*_p1[::-1]))
     print('Model Parameter: A_0 = {:.4f}'.format(_p1[1]))
@@ -4159,7 +4180,7 @@ def plot_approx_log_linear(df: pd.DataFrame):
     plt.figure()
     plt.title(
         '$Y(X)$, {}=100, {}$-${}'.format(
-            df.index[_b], df.index[0], df.index[-1]
+            df.index[_b], *df.index[[0, -1]]
         )
     )
     plt.xlabel('Logarithm Prime Rate, $X(\\tau)$, {}=100'.format(df.index[0]))
@@ -4202,7 +4223,7 @@ def plot_a(df: pd.DataFrame) -> None:
     plt.figure()
     plt.title(
         'Gross Private Domestic Investment & National Income, {}$-${}'.format(
-            _df.index[0], _df.index[-1]
+            *_df.index[[0, -1]]
         )
     )
     plt.plot(_df.iloc[:, -4:-2], label=[
@@ -4240,7 +4261,7 @@ def plot_b(df: pd.DataFrame) -> None:
     plt.plot(_df.iloc[:, 3], _df.iloc[:, -1])
     plt.title(
         'Gross Private Domestic Investment, A006RC, {}$-${}'.format(
-            _df.index[0], _df.index[-1]
+            *_df.index[[0, -1]]
         )
     )
     plt.xlabel('Percentage')
@@ -4269,7 +4290,7 @@ def plot_c(df: pd.DataFrame) -> None:
         'Money Supply',
         '`Real` Gross Domestic Investment',
     ])
-    plt.title('Indexes, {}$-${}'.format(df.index[0], df.index[-1]))
+    plt.title('Indexes, {}$-${}'.format(*df.index[[0, -1]]))
     plt.xlabel('Period')
     plt.ylabel('Index')
     plt.legend()
@@ -4294,7 +4315,7 @@ def plot_d(df: pd.DataFrame) -> None:
     df['__deflator'] = df.iloc[:, 1].sub(100).abs()
     _b = df.iloc[:, -1].astype(float).argmin()
     df.drop(df.columns[-1], axis=1, inplace=True)
-    _title = (df.index[_b], df.index[0], df.index[-1])
+    _title = (df.index[_b], *df.index[[0, -1]])
     # =========================================================================
     # Convert to Billions
     # =========================================================================
@@ -5404,8 +5425,7 @@ def calculate_plot_uspline(df: pd.DataFrame):
     )
     plt.title(
         'Labor Capital Intensity & Labor Productivity, {}$-${}'.format(
-            df.index[0],
-            df.index[-1]
+            *df.index[[0, -1]]
         )
     )
     plt.xlabel('Labor Capital Intensity')
@@ -5591,7 +5611,7 @@ def plot_capital_purchases(df: pd.DataFrame) -> None:
             'Structures',
             'Equipment', ]
     )
-    plt.title('Fixed Assets Purchases, {}$-${}'.format(df.index[0], df.index[-1]))
+    plt.title('Fixed Assets Purchases, {}$-${}'.format(*df.index[[0, -1]]))
     plt.xlabel('Period')
     plt.ylabel('Millions of Dollars')
     plt.legend()
@@ -5727,7 +5747,7 @@ def plot_lab_prod_polynomial(df: pd.DataFrame) -> None:
         )
     )
     plt.title('Labor Capital Intensity & Labor Productivity, {}$-${}'.format(
-        df.index[0], df.index[-1]))
+        *df.index[[0, -1]]))
     plt.xlabel('Labor Capital Intensity')
     plt.ylabel('Labor Productivity')
     plt.grid(True)
@@ -5774,8 +5794,7 @@ def plot_lab_prod_polynomial(df: pd.DataFrame) -> None:
     )
     plt.title(
         'Deltas of Labor Capital Intensity & Labor Productivity, {}$-${}'.format(
-            df.index[0],
-            df.index[-1]
+            *df.index[[0, -1]]
         )
     )
     plt.xlabel('Labor Capital Intensity')
@@ -5798,8 +5817,7 @@ def plot_simple_linear(df: pd.DataFrame, params: tuple[float]) -> None:
     )
     plt.title(
         '$Labor\ Capital\ Intensity$, $Labor\ Productivity$ Relation, {}$-${}'.format(
-            df.index[0],
-            df.index[-1]
+            *df.index[[0, -1]]
         )
     )
     plt.xlabel('Labor Capital Intensity')
@@ -5820,8 +5838,7 @@ def plot_simple_linear(df: pd.DataFrame, params: tuple[float]) -> None:
     plt.title(
         'Model: $\\hat Y = {:.4f}+{:.4f}\\times X$, {}$-${}'.format(
             *params[::-1],
-            df.index[0],
-            df.index[-1]
+            *df.index[[0, -1]]
         )
     )
     plt.xlabel('Period')
@@ -5844,8 +5861,7 @@ def plot_simple_log(df: pd.DataFrame, params: tuple[float]) -> None:
     )
     plt.title(
         '$\\ln(Labor\ Capital\ Intensity), \\ln(Labor\ Productivity)$ Relation, {}$-${}'.format(
-            df.index[0],
-            df.index[-1]
+            *df.index[[0, -1]]
         )
     )
     plt.xlabel('$\\ln(Labor\ Capital\ Intensity)$')
@@ -5865,8 +5881,7 @@ def plot_simple_log(df: pd.DataFrame, params: tuple[float]) -> None:
     )
     plt.title('Model: $\\ln(\\hat Y) = {:.4f}+{:.4f}\\times \\ln(X)$, {}$-${}'.format(
         *params[::-1],
-        df.index[0],
-        df.index[-1]
+        *df.index[[0, -1]]
         )
     )
     plt.xlabel('Period')
@@ -5907,8 +5922,7 @@ def plot_turnover(df: pd.DataFrame) -> None:
     plt.plot(df.iloc[:, 2], df.iloc[:, 0])
     plt.title(
         'Fixed Assets Volume to Fixed Assets Turnover, {}$-${}'.format(
-            df.index[0],
-            df.index[-1]
+            *df.index[[0, -1]]
         )
     )
     plt.xlabel('Fixed Assets Turnover')
@@ -5936,8 +5950,7 @@ def plot_turnover(df: pd.DataFrame) -> None:
     )
     plt.title(
         'Fixed Assets Turnover Approximation, {}$-${}'.format(
-            df.index[0],
-            df.index[-1]
+            *df.index[[0, -1]]
         )
     )
     plt.xlabel('Period')
@@ -5961,8 +5974,7 @@ def plot_turnover(df: pd.DataFrame) -> None:
     )
     plt.title(
         'Deltas of Fixed Assets Turnover Approximation, {}$-${}'.format(
-            df.index[0],
-            df.index[-1]
+            *df.index[[0, -1]]
         )
     )
     plt.xlabel('Period')
@@ -5997,7 +6009,7 @@ def simple_linear_regression(df: pd.DataFrame):
     # =========================================================================
     # Delivery Block
     # =========================================================================
-    print('Period From {} Through {}'.format(df.index[0], df.index[-1]))
+    print('Period From {} Through {}'.format(*df.index[[0, -1]]))
     print('Model: Yhat = {:,.4f} + {:,.4f}*X'.format(*params[::-1]))
     print('Model Parameter: A_0 = {:,.4f}'.format(params[1]))
     print('Model Parameter: A_1 = {:,.4f}'.format(params[0]))
@@ -6094,7 +6106,7 @@ def plot_census_a(df: pd.DataFrame, base: int) -> None:
     plt.axvline(x=df.index[base], linestyle=':')
     plt.title(
         'US Manufacturing Indexes Of Physical Production Of Manufacturing, {}=100, {}$-${}'.format(
-            df.index[base], df.index[0], df.index[-1])
+            df.index[base], *df.index[[0, -1]])
     )
     plt.xlabel('Period')
     plt.ylabel('Percentage')
@@ -6108,9 +6120,8 @@ def plot_census_b_capital(df: pd.DataFrame) -> None:
     plt.figure()
     plt.semilogy(df, label=['Total', 'Structures', 'Equipment'])
     plt.title('Census Manufacturing Fixed Assets, {}$-${}'.format(
-        df.index[0],
-        df.index[-1])
-    )
+       *df.index[[0, -1]]
+       ))
     plt.xlabel('Period')
     plt.ylabel('Millions of Dollars')
     plt.grid(True)
@@ -6123,8 +6134,7 @@ def plot_census_b_deflator(df: pd.DataFrame) -> None:
     plt.figure()
     plt.plot(df)
     plt.title('Census Fused Fixed Assets Deflator, {}$-${}'.format(
-        df.index[0],
-        df.index[-1])
+        *df.index[[0, -1]])
     )
     plt.xlabel('Period')
     plt.ylabel('Index')
@@ -6285,92 +6295,72 @@ def plot_census_h() -> None:
     plt.show()
 
 
-def plot_census_i(source_frame_a, source_frame_b, source_frame_c):
+def plot_census_i_a(df: pd.DataFrame) -> None:
+    plt.figure()
+    plt.plot(df, label=[
+        'Exports, U1',
+        'Imports, U8',
+        'Net Exports, U15',
+    ])
+    plt.title(
+        'Exports & Imports of Goods and Services, {}$-${}'.format(
+            *df.index[[0, -1]]
+        )
+    )
+    plt.xlabel('Period')
+    plt.ylabel('Millions of Dollars')
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+
+
+def plot_census_i_b(df: pd.DataFrame) -> None:
+    plt.figure()
+    plt.plot(df, label=[
+        'Exports, U187',
+        'Imports, U188',
+        'Net Exports, U189',
+    ])
+    plt.title(
+        'Total Merchandise, Gold and Silver, {}$-${}'.format(
+            *df.index[[0, -1]]
+        )
+    )
+    plt.xlabel('Period')
+    plt.ylabel('Millions of Dollars')
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+
+
+def plot_census_i_c(df: pd.DataFrame) -> None:
+    assert df.shape[1] == 58, 'Works on DataFrame Produced with `get_data_census_i_c()`'
+    _LABELS = (
+        'America-Canada',
+        'America-Cuba',
+        'America-Mexico',
+        'America-Brazil',
+        'America-Other',
+        'Europe-United Kingdom',
+        'Europe-France',
+        'Europe-Germany',
+        'Europe-Other',
+        'Asia-Mainland China',
+        'Asia-Japan',
+        'Asia-Other',
+        'Australia and Oceania-All',
+        'Africa-All',
+    )
     plt.figure(1)
-    plt.plot(source_frame_a.iloc[:, 0], label='Exports, U1')
-    plt.plot(source_frame_a.iloc[:, 1], label='Imports, U8')
-    plt.plot(source_frame_a.iloc[:, 0].sub(
-        source_frame_a.iloc[:, 1]), label='Net Exports')
-    plt.title('Exports & Imports of Goods and Services, {}$-${}'.format(
-        source_frame_a.index[0], source_frame_a.index[-1]))
+    plt.plot(df.iloc[:, range(28, 42)], label=_LABELS)
+    plt.title('Net Exports by Regions')
     plt.xlabel('Period')
     plt.ylabel('Millions of Dollars')
     plt.grid(True)
     plt.legend()
     plt.figure(2)
-    plt.plot(source_frame_b.iloc[:, 0], label='Exports, U187')
-    plt.plot(source_frame_b.iloc[:, 1], label='Imports, U188')
-    plt.plot(source_frame_b.iloc[:, 2], label='Net Exports, U189')
-    plt.title('Total Merchandise, Gold and Silver, {}$-${}'.format(
-        source_frame_b.index[0], source_frame_b.index[-1]))
-    plt.xlabel('Period')
-    plt.ylabel('Millions of Dollars')
-    plt.grid(True)
-    plt.legend()
-    plt.figure(3)
-    plt.plot(source_frame_c.iloc[:, 0].sub(
-        source_frame_c.iloc[:, 14]), label='America-Canada')
-    plt.plot(source_frame_c.iloc[:, 1].sub(
-        source_frame_c.iloc[:, 15]), label='America-Cuba')
-    plt.plot(source_frame_c.iloc[:, 2].sub(
-        source_frame_c.iloc[:, 16]), label='America-Mexico')
-    plt.plot(source_frame_c.iloc[:, 3].sub(
-        source_frame_c.iloc[:, 17]), label='America-Brazil')
-    plt.plot(source_frame_c.iloc[:, 4].sub(
-        source_frame_c.iloc[:, 18]), label='America-Other')
-    plt.plot(source_frame_c.iloc[:, 5].sub(
-        source_frame_c.iloc[:, 19]), label='Europe-United Kingdom')
-    plt.plot(source_frame_c.iloc[:, 6].sub(
-        source_frame_c.iloc[:, 20]), label='Europe-France')
-    plt.plot(source_frame_c.iloc[:, 7].sub(
-        source_frame_c.iloc[:, 21]), label='Europe-Germany')
-    plt.plot(source_frame_c.iloc[:, 8].sub(
-        source_frame_c.iloc[:, 22]), label='Europe-Other')
-    plt.plot(source_frame_c.iloc[:, 9].sub(
-        source_frame_c.iloc[:, 23]), label='Asia-Mainland China')
-    plt.plot(source_frame_c.iloc[:, 10].sub(
-        source_frame_c.iloc[:, 24]), label='Asia-Japan')
-    plt.plot(source_frame_c.iloc[:, 11].sub(
-        source_frame_c.iloc[:, 25]), label='Asia-Other')
-    plt.plot(source_frame_c.iloc[:, 12].sub(
-        source_frame_c.iloc[:, 26]), label='Australia and Oceania-All')
-    plt.plot(source_frame_c.iloc[:, 13].sub(
-        source_frame_c.iloc[:, 27]), label='Africa-All')
-    plt.title('Net Exports')
-    plt.xlabel('Period')
-    plt.ylabel('Millions of Dollars')
-    plt.grid(True)
-    plt.legend()
-    plt.figure(4)
-    plt.plot(source_frame_c.iloc[:, 0].sub(source_frame_c.iloc[:, 14]).div(
-        source_frame_c.iloc[:, 28].sub(source_frame_c.iloc[:, 29])), label='America-Canada')
-    plt.plot(source_frame_c.iloc[:, 1].sub(source_frame_c.iloc[:, 15]).div(
-        source_frame_c.iloc[:, 28].sub(source_frame_c.iloc[:, 29])), label='America-Cuba')
-    plt.plot(source_frame_c.iloc[:, 2].sub(source_frame_c.iloc[:, 16]).div(
-        source_frame_c.iloc[:, 28].sub(source_frame_c.iloc[:, 29])), label='America-Mexico')
-    plt.plot(source_frame_c.iloc[:, 3].sub(source_frame_c.iloc[:, 17]).div(
-        source_frame_c.iloc[:, 28].sub(source_frame_c.iloc[:, 29])), label='America-Brazil')
-    plt.plot(source_frame_c.iloc[:, 4].sub(source_frame_c.iloc[:, 18]).div(
-        source_frame_c.iloc[:, 28].sub(source_frame_c.iloc[:, 29])), label='America-Other')
-    plt.plot(source_frame_c.iloc[:, 5].sub(source_frame_c.iloc[:, 19]).div(
-        source_frame_c.iloc[:, 28].sub(source_frame_c.iloc[:, 29])), label='Europe-United Kingdom')
-    plt.plot(source_frame_c.iloc[:, 6].sub(source_frame_c.iloc[:, 20]).div(
-        source_frame_c.iloc[:, 28].sub(source_frame_c.iloc[:, 29])), label='Europe-France')
-    plt.plot(source_frame_c.iloc[:, 7].sub(source_frame_c.iloc[:, 21]).div(
-        source_frame_c.iloc[:, 28].sub(source_frame_c.iloc[:, 29])), label='Europe-Germany')
-    plt.plot(source_frame_c.iloc[:, 8].sub(source_frame_c.iloc[:, 22]).div(
-        source_frame_c.iloc[:, 28].sub(source_frame_c.iloc[:, 29])), label='Europe-Other')
-    plt.plot(source_frame_c.iloc[:, 9].sub(source_frame_c.iloc[:, 23]).div(
-        source_frame_c.iloc[:, 28].sub(source_frame_c.iloc[:, 29])), label='Asia-Mainland China')
-    plt.plot(source_frame_c.iloc[:, 10].sub(source_frame_c.iloc[:, 24]).div(
-        source_frame_c.iloc[:, 28].sub(source_frame_c.iloc[:, 29])), label='Asia-Japan')
-    plt.plot(source_frame_c.iloc[:, 11].sub(source_frame_c.iloc[:, 25]).div(
-        source_frame_c.iloc[:, 28].sub(source_frame_c.iloc[:, 29])), label='Asia-Other')
-    plt.plot(source_frame_c.iloc[:, 12].sub(source_frame_c.iloc[:, 26]).div(
-        source_frame_c.iloc[:, 28].sub(source_frame_c.iloc[:, 29])), label='Australia and Oceania-All')
-    plt.plot(source_frame_c.iloc[:, 13].sub(source_frame_c.iloc[:, 27]).div(
-        source_frame_c.iloc[:, 28].sub(source_frame_c.iloc[:, 29])), label='Africa-All')
-    plt.title('Net Exports')
+    plt.semilogy(df.iloc[:, -len(_LABELS):], label=_LABELS)
+    plt.title('Net Exports by Regions to Overall Net Exports')
     plt.xlabel('Period')
     plt.ylabel('Index')
     plt.grid(True)
@@ -6556,7 +6546,7 @@ def plot_capital_modelling(df: pd.DataFrame, base) -> None:
     plt.figure(1)
     plt.title(
         'Fixed Assets Turnover ($\\lambda$) for the US, {}$-${}'.format(
-            _df.index[0], _df.index[-1]
+            *_df.index[[0, -1]]
         )
     )
     plt.xlabel('Period')
@@ -6570,7 +6560,7 @@ def plot_capital_modelling(df: pd.DataFrame, base) -> None:
     plt.figure(2)
     plt.title(
         'Gross Fixed Investment as Percentage of GDP ($S$) for the US, {}$-${}'.format(
-            _df.index[0], _df.index[-1]
+            *_df.index[[0, -1]]
         )
     )
     plt.xlabel('Period')
@@ -6584,7 +6574,7 @@ def plot_capital_modelling(df: pd.DataFrame, base) -> None:
     plt.figure(3)
     plt.title(
         '$\\alpha$ for the US, {}$-${}'.format(
-            _df.index[0], _df.index[-2]
+            *_df.index[[0, -2]]
         )
     )
     plt.xlabel('Period')
@@ -6593,7 +6583,7 @@ def plot_capital_modelling(df: pd.DataFrame, base) -> None:
     plt.grid(True)
     plt.legend()
     plt.figure(4)
-    plt.title('$K$ for the US, {}$-${}'.format(_df.index[0], _df.index[-2]))
+    plt.title('$K$ for the US, {}$-${}'.format(*_df.index[[0, -2]]))
     plt.xlabel('Period')
     plt.ylabel('Billions of Dollars, {}=100'.format(_df.index[base]))
     plt.semilogy(
@@ -6986,8 +6976,7 @@ def plot_e(df: pd.DataFrame) -> None:
     plt.semilogy(df.iloc[:, 0], df.iloc[:, 5])
     plt.title(
         'Investment to Production Ratio, {}$-${}'.format(
-            df.index[0],
-            df.index[-1]
+            *df.index[[0, -1]]
         )
     )
     plt.xlabel('Investment, Billions of Dollars')
