@@ -3964,27 +3964,26 @@ def preprocessing_d(df: pd.DataFrame) -> pd.DataFrame:
     return df.iloc[:, [0, 1, 2, 3, 7]].dropna()
 
 
-def preprocessing_e(data_frame):
-    '''Works on Result of `get_data_combined_archived()`'''
+def preprocessing_e(df: pd.DataFrame) -> tuple[pd.DataFrame]:
+    assert df.shape[1] == 21, 'Works on DataFrame Produced with `get_data_combined_archived()`'
     # =========================================================================
     # `Real` Investment
     # =========================================================================
-    data_frame['inv'] = data_frame.iloc[:, 0].mul(
-        data_frame.iloc[:, 7]).div(data_frame.iloc[:, 6])
+    df['inv'] = df.iloc[:, 0].mul(df.iloc[:, 7]).div(df.iloc[:, 6])
     # =========================================================================
     # `Real` Capital
     # =========================================================================
-    data_frame['cap'] = data_frame.iloc[:, 11].mul(
-        data_frame.iloc[:, 7]).div(data_frame.iloc[:, 6])
-    # =========================================================================
-    # Nominal DataSet
-    # =========================================================================
-    nominal_frame = data_frame.iloc[:, [0, 6, 11]].dropna()
-    # =========================================================================
-    # `Real` DataSet
-    # =========================================================================
-    real_frame = data_frame.iloc[:, [21, 7, 22]].dropna()
-    return nominal_frame, real_frame
+    df['cap'] = df.iloc[:, 11].mul(df.iloc[:, 7]).div(df.iloc[:, 6])
+    return (
+        # =====================================================================
+        # DataFrame Nominal
+        # =====================================================================
+        df.iloc[:, [0, 6, 11]].dropna(),
+        # =====================================================================
+        # DataFrame `Real`
+        # =====================================================================
+        df.iloc[:, [-2, 7, -1]].dropna(),
+    )
 
 
 def preprocessing_kurenkov(data_testing: pd.DataFrame) -> tuple[pd.DataFrame]:
