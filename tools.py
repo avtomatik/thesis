@@ -6270,12 +6270,14 @@ def plot_census_g(df: pd.DataFrame) -> None:
     plt.show()
 
 
-def plot_census_h():
+def plot_census_h() -> None:
     '''Census 1975, Land in Farms'''
-    ARCHIVE_NAME = 'dataset_usa_census1975.zip'
-    result_frame = fetch_usa_census(ARCHIVE_NAME, 'K0005')
+    _kwargs = {
+        'archive_name': 'dataset_usa_census1975.zip',
+        'series_id': 'K0005',
+    }
     plt.figure()
-    plt.plot(result_frame.iloc[:, 0])
+    plt.plot(fetch_usa_census(**_kwargs))
     plt.title('Land in Farms')
     plt.xlabel('Period')
     plt.ylabel('1,000 acres')
