@@ -153,7 +153,6 @@ def calculate_capital_acquisition(df: pd.DataFrame) -> None:
     _df['__deflator'] = _df.iloc[:, 2].div(_df.iloc[:, 3]).sub(1).abs()
     _b = _df.iloc[:, -1].astype(float).argmin()
     _df.drop(_df.columns[-1], axis=1, inplace=True)
-    _title = (_df.index[_b], *_df.index[[0, -1]])
     # =========================================================================
     # Calculate Static Values
     # =========================================================================
@@ -291,7 +290,7 @@ def calculate_capital_acquisition(df: pd.DataFrame) -> None:
     plt.plot(_df.iloc[:, 8], _df.iloc[:, 14])
     plt.title(
         'Labor Productivity, Observed & Max, {}=100, {}$-${}'.format(
-            *_title
+            *df.index[[_b, 0, -1]]
         )
     )
     plt.xlabel('Labor Capital Intensity')
@@ -302,7 +301,7 @@ def calculate_capital_acquisition(df: pd.DataFrame) -> None:
     plt.plot(_df.iloc[:, 10], _df.iloc[:, 15])
     plt.title(
         'Log Labor Productivity, Observed & Max, {}=100, {}$-${}'.format(
-            *_title
+            *df.index[[_b, 0, -1]]
         )
     )
     plt.xlabel('Log Labor Capital Intensity')
@@ -313,7 +312,7 @@ def calculate_capital_acquisition(df: pd.DataFrame) -> None:
     plt.plot(_df.iloc[:, 12])
     plt.title(
         'Fixed Assets Turnover ($\\lambda$), Observed & Max, {}=100, {}$-${}'.format(
-            *_title
+            *df.index[[_b, 0, -1]]
         )
     )
     plt.xlabel('Period')
@@ -324,7 +323,7 @@ def calculate_capital_acquisition(df: pd.DataFrame) -> None:
     plt.plot(_df.iloc[:, 13])
     plt.title(
         'Investment to Gross Domestic Product Ratio, \nObserved & Max, {}=100, {}$-${}'.format(
-            *_title
+            *df.index[[_b, 0, -1]]
         )
     )
     plt.xlabel('Period')
@@ -335,7 +334,7 @@ def calculate_capital_acquisition(df: pd.DataFrame) -> None:
     plt.plot(_df.iloc[:, 16])
     plt.title(
         'Gross Capital Formation (GCF) or\nCapital Acquisitions (CA), {}=100, {}$-${}'.format(
-            *_title
+            *df.index[[_b, 0, -1]]
         )
     )
     plt.xlabel('Period')
@@ -378,7 +377,6 @@ def calculate_capital_retirement(df: pd.DataFrame) -> None:
     _df['__deflator'] = _df.iloc[:, 2].div(_df.iloc[:, 3]).sub(1).abs()
     _b = _df.iloc[:, -1].astype(float).argmin()
     _df.drop(_df.columns[-1], axis=1, inplace=True)
-    _title = (_df.index[_b], *_df.index[[0, -1]])
     # =========================================================================
     # Calculate Static Values
     # =========================================================================
@@ -523,20 +521,20 @@ def calculate_capital_retirement(df: pd.DataFrame) -> None:
             f'Model Parameter: Pi for Period from {_df.index[_knots[_]]} to {_df.index[_knots[1 + _]]}: {pi[_]:.6f}'
         )
     plt.figure(1)
-    plt.title('Product, {}=100, {}$-${}'.format(*_title))
+    plt.title('Product, {}=100, {}$-${}'.format(*df.index[[_b, 0, -1]]))
     plt.xlabel('Period')
     plt.ylabel(f'Product, {_df.index[_b]}=100')
     plt.plot(_df.iloc[:, 2])
     plt.grid(True)
     plt.figure(2)
-    plt.title('Capital, {}=100, {}$-${}'.format(*_title))
+    plt.title('Capital, {}=100, {}$-${}'.format(*df.index[[_b, 0, -1]]))
     plt.xlabel('Period')
     plt.ylabel(f'Capital, {_df.index[_b]}=100')
     plt.plot(_df.iloc[:, 3])
     plt.grid(True)
     plt.figure(3)
     plt.title(
-        'Fixed Assets Turnover ($\\lambda$), {}=100, {}$-${}'.format(*_title)
+        'Fixed Assets Turnover ($\\lambda$), {}=100, {}$-${}'.format(*df.index[[_b, 0, -1]])
     )
     plt.xlabel('Period')
     plt.ylabel(f'Fixed Assets Turnover ($\\lambda$), {_df.index[_b]}=100')
@@ -545,7 +543,7 @@ def calculate_capital_retirement(df: pd.DataFrame) -> None:
     plt.figure(4)
     plt.title(
         'Investment to Gross Domestic Product Ratio, {}=100, {}$-${}'.format(
-            *_title)
+            *df.index[[_b, 0, -1]])
     )
     plt.xlabel('Period')
     plt.ylabel(
@@ -555,7 +553,7 @@ def calculate_capital_retirement(df: pd.DataFrame) -> None:
     plt.grid(True)
     plt.figure(5)
     plt.title(
-        '$\\alpha(t)$, Fixed Assets Retirement Ratio, {}=100, {}$-${}'.format(*_title)
+        '$\\alpha(t)$, Fixed Assets Retirement Ratio, {}=100, {}$-${}'.format(*df.index[[_b, 0, -1]])
     )
     plt.xlabel('Period')
     plt.ylabel(f'$\\alpha(t)$, {_df.index[_b]}=100')
@@ -564,14 +562,14 @@ def calculate_capital_retirement(df: pd.DataFrame) -> None:
     plt.figure(6)
     plt.title(
         'Fixed Assets Retirement Ratio to Fixed Assets Retirement Value, {}=100, {}$-${}'.format(
-            *_title)
+            *df.index[[_b, 0, -1]])
     )
     plt.xlabel(f'$\\alpha(t)$, {_df.index[_b]}=100')
     plt.ylabel(f'Fixed Assets Retirement Value, {_df.index[_b]}=100')
     plt.plot(_df.iloc[:, 9], _df.iloc[:, 8])
     plt.grid(True)
     plt.figure(7)
-    plt.title('Labor Capital Intensity, {}=100, {}$-${}'.format(*_title))
+    plt.title('Labor Capital Intensity, {}=100, {}$-${}'.format(*df.index[[_b, 0, -1]]))
     plt.xlabel(f'Labor Capital Intensity, {_df.index[_b]}=100')
     plt.ylabel(f'Labor Productivity, {_df.index[_b]}=100')
     plt.plot(np.exp(_df.iloc[:, 5]), np.exp(_df.iloc[:, 6]))
@@ -3405,37 +3403,39 @@ def get_series_ids(archive_name):
     return dict(zip(data_frame.iloc[:, 1], data_frame.iloc[:, 0]))
 
 
-def kol_zur_filter(data_frame: pd.DataFrame, k: int = None) -> tuple[pd.DataFrame]:
+def kol_zur_filter(df: pd.DataFrame, k: int = None) -> tuple[pd.DataFrame]:
     '''Kolmogorov--Zurbenko Filter
-        data_frame.index: Period,
-        data_frame.iloc[:, 0]: Series
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Target Series
+    ================== =================================
     '''
     if k is None:
-        k = data_frame.shape[0] // 2
-    data_frame.reset_index(level=0, inplace=True)
+        k = df.shape[0] // 2
+    df.reset_index(level=0, inplace=True)
     # =========================================================================
     # DataFrame for Kolmogorov--Zurbenko Filter Results: Odd
     # =========================================================================
-    data_frame_o = pd.concat(
+    df_o = pd.concat(
         [
             # =================================================================
             # No Period Shift
             # =================================================================
-            data_frame,
+            df,
         ],
-        axis=1,
+        axis=1
     )
     # =========================================================================
     # DataFrame for Kolmogorov--Zurbenko Filter Results: Even
     # =========================================================================
-    data_frame_e = pd.concat(
+    df_e = pd.concat(
         [
             # =================================================================
             # Period Shift
             # =================================================================
-            data_frame.iloc[:, [0]].rolling(2).mean(),
+            df.iloc[:, [0]].rolling(2).mean(),
         ],
-        axis=1,
+        axis=1
     )
     # =========================================================================
     # DataFrame for Kolmogorov--Zurbenko Filter Residuals: Odd
@@ -3445,9 +3445,9 @@ def kol_zur_filter(data_frame: pd.DataFrame, k: int = None) -> tuple[pd.DataFram
             # =================================================================
             # Period Shift
             # =================================================================
-            data_frame.iloc[:, [0]].rolling(2).mean(),
+            df.iloc[:, [0]].rolling(2).mean(),
         ],
-        axis=1,
+        axis=1
     )
     # =========================================================================
     # DataFrame for Kolmogorov--Zurbenko Filter Residuals: Even
@@ -3457,70 +3457,69 @@ def kol_zur_filter(data_frame: pd.DataFrame, k: int = None) -> tuple[pd.DataFram
             # =================================================================
             # No Period Shift
             # =================================================================
-            data_frame.iloc[:, [0]],
+            df.iloc[:, [0]],
         ],
-        axis=1,
+        axis=1
     )
-    chunk = data_frame.iloc[:, [1]]
+    chunk = df.iloc[:, [1]]
     for _ in range(k):
         chunk = chunk.rolling(2).mean()
         if _ % 2 == 1:
             # =================================================================
             # DataFrame for Kolmogorov--Zurbenko Filter Results: Odd
             # =================================================================
-            data_frame_o = pd.concat(
+            df_o = pd.concat(
                 [
-                    data_frame_o,
+                    df_o,
                     chunk.shift(-((1 + _) // 2)),
                 ],
-                axis=1,
+                axis=1
             )
-            data_frame_o.columns = [*data_frame_o.columns[:-1],
-                                    f'{data_frame.columns[1]}_{hex(2 + _)}', ]
+            df_o.columns = [*df_o.columns[:-1],
+                            f'{df.columns[1]}_{hex(2 + _)}', ]
             # =================================================================
             # DataFrame for Kolmogorov--Zurbenko Filter Residuals: Odd
             # =================================================================
             residuals_o = pd.concat(
                 [
                     residuals_o,
-                    data_frame_o.iloc[:, [-2]
-                                      ].div(data_frame_o.iloc[:, [-2]].shift(1)).sub(1),
+                    df_o.iloc[:, [-2]
+                                      ].div(df_o.iloc[:, [-2]].shift(1)).sub(1),
                 ],
-                axis=1,
+                axis=1
             )
         else:
             # =================================================================
             # DataFrame for Kolmogorov--Zurbenko Filter Results: Even
             # =================================================================
-            data_frame_e = pd.concat(
+            df_e = pd.concat(
                 [
-                    data_frame_e,
+                    df_e,
                     chunk.shift(-((1 + _) // 2)),
                 ],
-                axis=1,
+                axis=1
             )
-            data_frame_e.columns = [*data_frame_e.columns[:-1],
-                                    f'{data_frame.columns[1]}_{hex(2 + _)}', ]
+            df_e.columns = [*df_e.columns[:-1],
+                            f'{df.columns[1]}_{hex(2 + _)}', ]
             # =================================================================
             # DataFrame for Kolmogorov--Zurbenko Filter Residuals: Even
             # =================================================================
             residuals_e = pd.concat(
                 [
                     residuals_e,
-                    data_frame_e.iloc[:, [-1]
-                                      ].shift(-1).div(data_frame_e.iloc[:, [-1]]).sub(1),
+                    df_e.iloc[:, [-1]].shift(-1).div(df_e.iloc[:, [-1]]).sub(1),
                 ],
-                axis=1,
+                axis=1
             )
-    data_frame_o.set_index(data_frame_o.columns[0], inplace=True)
-    data_frame_e.set_index(data_frame_e.columns[0], inplace=True)
+    df_o.set_index(df_o.columns[0], inplace=True)
+    df_e.set_index(df_e.columns[0], inplace=True)
     residuals_o.set_index(residuals_o.columns[0], inplace=True)
     residuals_e.set_index(residuals_e.columns[0], inplace=True)
-    data_frame_o.dropna(how='all', inplace=True)
-    data_frame_e.dropna(how='all', inplace=True)
+    df_o.dropna(how='all', inplace=True)
+    df_e.dropna(how='all', inplace=True)
     residuals_o.dropna(how='all', inplace=True)
     residuals_e.dropna(how='all', inplace=True)
-    return data_frame_o, data_frame_e, residuals_o, residuals_e
+    return df_o, df_e, residuals_o, residuals_e
 
 
 def rolling_mean_filter(data_frame: pd.DataFrame, k: int = None) -> tuple[pd.DataFrame]:
@@ -4107,19 +4106,15 @@ def plot_approx_linear(df: pd.DataFrame):
     print('Model Parameter: A_0 = {:.4f}'.format(_p1[1]))
     print('Model Parameter: A_1 = {:.4f}'.format(_p1[0]))
     plt.figure()
-    plt.title(
-        '$Y(X)$, {}=100, {}$-${}'.format(
-            df.index[_b], *df.index[[0, -1]]
-        )
-    )
+    plt.title('$Y(X)$, {}=100, {}$-${}'.format(*df.index[[_b, 0, -1]]))
     plt.xlabel(
         'Gross Private Domestic Investment, $X(\\tau)$, {}=100, {}=100'.format(
-            df.index[_b], df.index[0]
+            *df.index[[_b, 0]]
         )
     )
     plt.ylabel(
         'Gross Domestic Product, $Y(\\tau)$, {}=100, {}=100'.format(
-            df.index[_b], df.index[0]
+            *df.index[[_b, 0]]
         )
     )
     plt.plot(df.iloc[:, -3], df.iloc[:, -2])
@@ -4181,13 +4176,13 @@ def plot_approx_log_linear(df: pd.DataFrame):
     plt.figure()
     plt.title(
         '$Y(X)$, {}=100, {}$-${}'.format(
-            df.index[_b], *df.index[[0, -1]]
+            *df.index[[_b, 0, -1]]
         )
     )
     plt.xlabel('Logarithm Prime Rate, $X(\\tau)$, {}=100'.format(df.index[0]))
     plt.ylabel(
         'Logarithm {}, $Y(\\tau)$, {}=100, {}=100'.format(
-            MAP_DESC[df.columns[3]], df.index[_b], df.index[0]
+            MAP_DESC[df.columns[3]], *df.index[[_b, 0]]
         )
     )
     plt.plot(df.iloc[:, -3], df.iloc[:, -2])
@@ -4316,7 +4311,6 @@ def plot_d(df: pd.DataFrame) -> None:
     df['__deflator'] = df.iloc[:, 1].sub(100).abs()
     _b = df.iloc[:, -1].astype(float).argmin()
     df.drop(df.columns[-1], axis=1, inplace=True)
-    _title = (df.index[_b], *df.index[[0, -1]])
     # =========================================================================
     # Convert to Billions
     # =========================================================================
@@ -4339,7 +4333,7 @@ def plot_d(df: pd.DataFrame) -> None:
         color='red',
         label='Real Gross Private Fixed Investment, Nonresidential $GPFI(n)$'
     )
-    plt.title('Real Indexes, {}=100, {}$-${}'.format(*_title))
+    plt.title('Real Indexes, {}=100, {}$-${}'.format(*df.index[[_b, 0, -1]]))
     plt.xlabel('Period')
     plt.ylabel('Billions of Dollars')
     plt.legend()
@@ -4347,19 +4341,19 @@ def plot_d(df: pd.DataFrame) -> None:
     plt.figure(2)
     plt.plot(df.iloc[:, 4])
     plt.title(
-        'Real Gross Domestic Product $GDP$, {}=100, {}$-${}'.format(*_title))
+        'Real Gross Domestic Product $GDP$, {}=100, {}$-${}'.format(*df.index[[_b, 0, -1]]))
     plt.xlabel('Period')
     plt.ylabel('Billions of Dollars')
     plt.grid(True)
     plt.figure(3)
     plt.plot(df.iloc[:, -2], df.iloc[:, 4])
-    plt.title('$GPDI$ & $GPFI(n)$, {}=100, {}$-${}'.format(*_title))
+    plt.title('$GPDI$ & $GPFI(n)$, {}=100, {}$-${}'.format(*df.index[[_b, 0, -1]]))
     plt.xlabel('Billions of Dollars')
     plt.ylabel('Billions of Dollars')
     plt.grid(True)
     plt.figure(4)
     plt.plot(df.iloc[:, -1], df.iloc[:, 4])
-    plt.title('$GPFI(n)$ & $GDP$, {}=100, {}$-${}'.format(*_title))
+    plt.title('$GPFI(n)$ & $GDP$, {}=100, {}$-${}'.format(*df.index[[_b, 0, -1]]))
     plt.xlabel('Billions of Dollars')
     plt.ylabel('Billions of Dollars')
     plt.grid(True)
@@ -4750,8 +4744,7 @@ def plot_cobb_douglas(data_frame: pd.DataFrame, params: tuple[float], mapping: d
     ])
     plt.xlabel('Period')
     plt.ylabel('Indexes')
-    plt.title(mapping['fg_a'].format(data_frame.index[0],
-                                     data_frame.index[-1],
+    plt.title(mapping['fg_a'].format(*data_frame.index[[0, -1]],
                                      mapping['year_price']))
     plt.legend()
     plt.grid(True)
@@ -4766,8 +4759,7 @@ def plot_cobb_douglas(data_frame: pd.DataFrame, params: tuple[float], mapping: d
     ])
     plt.xlabel('Period')
     plt.ylabel('Production')
-    plt.title(mapping['fg_b'].format(data_frame.index[0],
-                                     data_frame.index[-1],
+    plt.title(mapping['fg_b'].format(*data_frame.index[[0, -1]],
                                      mapping['year_price']))
     plt.legend()
     plt.grid(True)
@@ -4788,8 +4780,7 @@ def plot_cobb_douglas(data_frame: pd.DataFrame, params: tuple[float], mapping: d
     plt.plot(data_frame.iloc[:, 9].div(data_frame.iloc[:, 2]).sub(1))
     plt.xlabel('Period')
     plt.ylabel('Percentage Deviation')
-    plt.title(mapping['fg_d'].format(data_frame.index[0],
-                                     data_frame.index[-1]))
+    plt.title(mapping['fg_d'].format(*data_frame.index[[0, -1]]))
     plt.grid(True)
     plt.figure(5, figsize=(5, 8))
     lc = np.arange(0.2, 1.0, 0.005)
@@ -4828,8 +4819,7 @@ def plot_cobb_douglas_alt(data_frame: pd.DataFrame, params: tuple[float], mappin
     ])
     plt.xlabel('Period')
     plt.ylabel('Indexes')
-    plt.title(mapping['fg_a'].format(data_frame.index[0],
-                                     data_frame.index[-1],
+    plt.title(mapping['fg_a'].format(*data_frame.index[[0, -1]],
                                      mapping['year_price']))
     plt.legend()
     plt.grid(True)
@@ -4844,8 +4834,7 @@ def plot_cobb_douglas_alt(data_frame: pd.DataFrame, params: tuple[float], mappin
     ])
     plt.xlabel('Period')
     plt.ylabel('Production')
-    plt.title(mapping['fg_b'].format(data_frame.index[0],
-                                     data_frame.index[-1],
+    plt.title(mapping['fg_b'].format(*data_frame.index[[0, -1]],
                                      mapping['year_price']))
     plt.legend()
     plt.grid(True)
@@ -4866,8 +4855,7 @@ def plot_cobb_douglas_alt(data_frame: pd.DataFrame, params: tuple[float], mappin
     plt.plot(data_frame.iloc[:, 17].div(data_frame.iloc[:, 3]).sub(1))
     plt.xlabel('Period')
     plt.ylabel('Percentage Deviation')
-    plt.title(mapping['fg_d'].format(data_frame.index[0],
-                                     data_frame.index[-1]))
+    plt.title(mapping['fg_d'].format(*data_frame.index[[0, -1]]))
     plt.grid(True)
     plt.figure(5, figsize=(5, 8))
     lc = np.arange(0.2, 1.0, 0.005)
@@ -5025,8 +5013,7 @@ def plot_cobb_douglas_tight_layout(data_frame: pd.DataFrame, params: tuple[float
     ])
     axs[0].set_xlabel('Period')
     axs[0].set_ylabel('Indexes')
-    axs[0].set_title(mapping['fg_a'].format(data_frame.index[0],
-                                            data_frame.index[-1],
+    axs[0].set_title(mapping['fg_a'].format(*data_frame.index[[0, -1]],
                                             mapping['year_price']))
     axs[0].legend()
     axs[0].grid(True)
@@ -5037,8 +5024,7 @@ def plot_cobb_douglas_tight_layout(data_frame: pd.DataFrame, params: tuple[float
     ])
     axs[1].set_xlabel('Period')
     axs[1].set_ylabel('Production')
-    axs[1].set_title(mapping['fg_b'].format(data_frame.index[0],
-                                            data_frame.index[-1],
+    axs[1].set_title(mapping['fg_b'].format(*data_frame.index[[0, -1]],
                                             mapping['year_price']))
     axs[1].legend()
     axs[1].grid(True)
@@ -5059,8 +5045,7 @@ def plot_cobb_douglas_tight_layout(data_frame: pd.DataFrame, params: tuple[float
     axs[3].plot(data_frame.iloc[:, 5].div(data_frame.iloc[:, 2]).sub(1))
     axs[3].set_xlabel('Period')
     axs[3].set_ylabel('Percentage Deviation')
-    axs[3].set_title(mapping['fg_d'].format(data_frame.index[0],
-                                            data_frame.index[-1]))
+    axs[3].set_title(mapping['fg_d'].format(*data_frame.index[[0, -1]]))
     axs[3].grid(True)
     lc = np.arange(0.2, 1.0, 0.005)
     axs[4].scatter(data_frame.iloc[:, 10], data_frame.iloc[:, 4])
@@ -5369,7 +5354,7 @@ def save_zip(data_frame, file_name):
 
 
 def plot_increment(df: pd.DataFrame) -> None:
-    FLAG = True
+    FLAG = False
     FOLDER = '/home/alexander/science'
     fig, axs = plt.subplots(2, 1)
     axs[0].plot(df.iloc[:, 0], df.iloc[:, 1], label='Curve')
