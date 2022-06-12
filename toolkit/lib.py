@@ -492,10 +492,12 @@ def calculate_capital(df: DataFrame, p_i: tuple[float], p_t: tuple[float], ratio
 
 def calculate_curve_fit_params(data_frame: DataFrame) -> None:
     '''
-    data_frame.index: Period,
-    data_frame.iloc[:, 0]: Capital,
-    data_frame.iloc[:, 1]: Labor,
-    data_frame.iloc[:, 2]: Product
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Capital
+    df.iloc[:, 1]      Labor
+    df.iloc[:, 2]      Product
+    ================== =================================
     '''
     def _curve(regressor: pd.Series, b: float, k: float) -> pd.Series:
         return regressor.pow(k).mul(b)
@@ -521,10 +523,12 @@ def calculate_curve_fit_params(data_frame: DataFrame) -> None:
 
 def calculate_plot_uspline(df: DataFrame):
     '''
-    df.index: Period,
-    df.iloc[:, 0]: Capital,
-    df.iloc[:, 1]: Labor,
-    df.iloc[:, 2]: Product
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Capital
+    df.iloc[:, 1]      Labor
+    df.iloc[:, 2]      Product
+    ================== =================================
     '''
     # =========================================================================
     # TODO: Increase Cohesion
@@ -582,9 +586,20 @@ def calculate_plot_uspline(df: DataFrame):
 
 def calculate_power_function_fit_params_a(df: DataFrame, params: tuple[float]):
     '''
-    df.index: Regressor: = Period,
-    df.iloc[:, 0]: Regressand,
-    params: Parameters
+    Parameters
+    ----------
+    df : DataFrame
+    ================== =================================
+    df.index           Regressor: = Period
+    df.iloc[:, 0]      Regressand
+    ================== =================================
+    params : tuple[float]
+        Parameters.
+
+    Returns
+    -------
+    None.
+
     '''
     df.reset_index(level=0, inplace=True)
     _t_0 = df.iloc[:, 0].min() - 1
@@ -606,10 +621,21 @@ def calculate_power_function_fit_params_a(df: DataFrame, params: tuple[float]):
 
 def calculate_power_function_fit_params_b(df: DataFrame, params: tuple[float]):
     '''
-    df.index: Period,
-    df.iloc[:, 0]: Regressor,
-    df.iloc[:, 1]: Regressand,
-    params: Model Parameters
+    Parameters
+    ----------
+    df : DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Regressor
+    df.iloc[:, 1]      Regressand
+    ================== =================================
+    params : tuple[float]
+        Model Parameters.
+
+    Returns
+    -------
+    None.
+
     '''
     _param = (params[3]-params[2])/(params[1]-params[0])**params[4]
     # =========================================================================
@@ -633,10 +659,21 @@ def calculate_power_function_fit_params_b(df: DataFrame, params: tuple[float]):
 
 def calculate_power_function_fit_params_c(df: DataFrame, params: tuple[float]):
     '''
-    df.index: Period,
-    df.iloc[:, 0]: Regressor,
-    df.iloc[:, 1]: Regressand,
-    params: Model Parameters
+    Parameters
+    ----------
+    df : DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Regressor
+    df.iloc[:, 1]      Regressand
+    ================== =================================
+    params : tuple[float]
+        Model Parameters.
+
+    Returns
+    -------
+    None.
+
     '''
     _alpha = (np.log(params[3])-np.log(params[2])) / \
         (np.log(params[0])-np.log(params[1]))
@@ -777,23 +814,29 @@ def kol_zur_filter(df: DataFrame, k: int = None) -> tuple[DataFrame]:
     return df_o, df_e, residuals_o, residuals_e
 
 
-def mean_by_year(data):
-    # =========================================================================
-    # Process Non-Indexed Flat DataFrame
-    # =========================================================================
+def mean_by_year(df: DataFrame) -> DataFrame:
+    '''
+    Process Non-Indexed Flat DataFrame
+    Parameters
+    ----------
+    df : DataFrame
+    Returns
+    -------
+    DataFrame
+    '''
     # =========================================================================
     # Index Width Check
     # =========================================================================
     width = 0
-    for item in data.index:
+    for item in df.index:
         width = max(len(f'{item}'), width)
     if width > 4:
-        data[['YEAR', 'Q']] = data.index.to_series().str.split('-', expand=True)
-        data = data.iloc[:, [1, 0]]
-        data = data.apply(pd.to_numeric)
-        data = data.groupby('YEAR').mean()
-        data.index.rename('REF_DATE', inplace=True)
-    return data
+        df[['YEAR', 'Q']] = df.index.to_series().str.split('-', expand=True)
+        df = df.iloc[:, [1, 0]]
+        df = df.apply(pd.to_numeric)
+        df = df.groupby('YEAR').mean()
+        df.index.rename('REF_DATE', inplace=True)
+    return df
 
 
 def m_spline_ea(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFrame, tuple[float]]:
@@ -1183,16 +1226,32 @@ def m_spline_manager(df: DataFrame, kernel: callable) -> None:
     plt.show()
 
 
-def price_direct(data_frame, base):
-    '''Intent: Returns Cumulative Price Index for Base Year;
-    data_frame.iloc[:, 0]: Growth Rate;
-    base: Base Year'''
-    '''Cumulative Price Index'''
-    data_frame['p_i'] = data_frame.iloc[:, 0].add(1).cumprod()
-    '''Cumulative Price Index for the Base Year'''
-    data_frame['cpi'] = data_frame.iloc[:, 1].div(
-        data_frame.iloc[base-data_frame.index[0], 1])
-    return data_frame.iloc[:, [2]]
+def price_direct(df: DataFrame, base: int) -> DataFrame:
+    '''
+    Returns Cumulative Price Index for Base Year
+    Parameters
+    ----------
+    df : DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Growth Rate
+    ================== =================================
+    base : int
+        Base Year.
+
+    Returns
+    -------
+    DataFrame
+    '''
+    # =========================================================================
+    # Cumulative Price Index
+    # =========================================================================
+    df['p_i'] = df.iloc[:, 0].add(1).cumprod()
+    # =========================================================================
+    # Cumulative Price Index for the Base Year
+    # =========================================================================
+    df['cpi'] = df.iloc[:, 1].div(df.iloc[base-df.index[0], 1])
+    return df.iloc[:, [-1]]
 
 
 def price_inverse(data_frame):
