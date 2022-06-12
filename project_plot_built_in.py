@@ -15,6 +15,7 @@ import logging
 from zipfile import ZipFile
 from pandas.plotting import autocorrelation_plot
 import matplotlib.pyplot as plt
+from extract.lib import extract_world_bank
 
 
 # =============================================================================
@@ -23,10 +24,6 @@ import matplotlib.pyplot as plt
 #     Bootstrap Plot, Pandas;
 #     Lag Plot, Pandas
 # =============================================================================
-def fetch_world_bank(data_frame: pd.DataFrame, series_id: str) -> pd.DataFrame:
-    df = data_frame[data_frame.iloc[:, 1] == series_id].iloc[:, [0, 2]]
-    df.columns = [df.columns[0], series_id]
-    return df.set_index(df.columns[0])
 
 
 def plot_built_in(module: callable):

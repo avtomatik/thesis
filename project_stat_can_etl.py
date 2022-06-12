@@ -68,17 +68,15 @@ Created on Sat Sep 18 22:20:54 2021
 # =============================================================================
 
 
+from toolkit.lib import procedure
+from toolkit.lib import mean_by_year
+from load.lib import load_files_to_zip
+
+
 def data_filter(data, query):
     for column, value in query['filter'].items():
         data = data[data.iloc[:, column] == value]
     return data
-
-
-def zip_pack(archive, members):
-    with zipfile.ZipFile('{}.zip'.format(archive), 'w') as z:
-        for file in members:
-            z.write('{}'.format(file), compress_type=zipfile.ZIP_DEFLATED)
-            os.unlink(file)
 
 
 def string_to_url(string):
@@ -87,42 +85,7 @@ def string_to_url(string):
 
 def string_to_numeric(string):
     y, m = string.split('-')
-    return int(y) + (int(m)-0.5)/12
-
-
-def mean_by_year(data):
-    # =============================================================================
-    # Process Non-Indexed Flat DataFrame
-    # =============================================================================
-    # =============================================================================
-    # Index Width Check
-    # =============================================================================
-    width = 0
-    for item in data.index:
-        width = max(len('{}'.format(item)), width)
-    if width > 4:
-        data[['YEAR', 'Q']] = data.index.to_series().str.split('-', expand=True)
-        data = data.iloc[:, [1, 0]]
-        data = data.apply(pd.to_numeric)
-        data = data.groupby('YEAR').mean()
-        data.index.rename('REF_DATE', inplace=True)
-    return data
-
-
-def procedure(output_name, criteria):
-    result = pd.DataFrame()
-    for item in criteria:
-        data = fetch_from_url(string_to_url(item['file_name']))
-        data = data[data['VECTOR'].isin(item['series_ids'])]
-        data = data[['REF_DATE', 'VECTOR', 'VALUE']]
-        for series_id in item['series_ids']:
-            chunk = data[data['VECTOR'] == series_id]
-            chunk.set_index(chunk.columns[0], inplace=True)
-            chunk = chunk.iloc[:, [1]]
-            chunk = mean_by_year(chunk)
-            chunk.rename(columns={'VALUE': series_id}, inplace=True)
-            result = pd.concat([result, chunk], axis=1, sort=True)
-    result.to_excel(output_name)
+    return int(y) + (int(m) - 0.5) / 12
 
 
 CAPITAL = (

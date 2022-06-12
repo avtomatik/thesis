@@ -1,108 +1,26 @@
-def get_dataset_douglas():
-    '''Douglas Data Preprocessing'''
-    file_name = 'dataset_douglas.zip'
-    SERIES_IDS = ('DT19AS03', 'DT19AS02', 'DT19AS01',)
-    data_frame = pd.concat(
-        [fetch_classic(FILE_NAME, series_id) for series_id in SERIES_IDS],
-        axis=1,
-        sort=True)
-    return data_frame.div(data_frame.iloc[data_frame.index.get_loc(1899), :])
+from prepare.lib import get_data_douglas
+from plot.lib import plot_douglas
+from plot.lib import plot_cobb_douglas
 
 
-def plot_douglas(source, dictionary, num, start, stop, step, title, measure, label=None):
-    '''
-    source: Source Database,
-    dictionary: Dictionary of Series IDs to Series Titles from Source Database,
-    num: Plot Number,
-    start: Start Series Code,
-    stop: Stop Series Code,
-    step: Step for Series IDs,
-    title: Plot Title,
-    measure: Dimenstion for Series,
-    label: Additional Sublabels'''
-    plt.figure(num)
-    for i in range(start, stop, step):
-        plt.plot(fetch_classic(
-            source, dictionary.iloc[i, 0]), label=dictionary.iloc[i, 1])
-    plt.title(title)
-    plt.xlabel('Period')
-    plt.ylabel(measure)
-    plt.grid(True)
-    if label == None:
-        plt.legend()
-    else:
-        plt.legend(label)
-
-
-def plot_cobb_douglas_modified(data_frame):
-    '''Cobb--Douglas Algorithm as per C.W. Cobb, P.H. Douglas. A Theory of Production, 1928 & P.H. Douglas. The Theory of Wages, 1934;
-    data_frame.index: Period,
-    data_frame.iloc[:, 0]: Capital,
-    data_frame.iloc[:, 1]: Labor,
-    data_frame.iloc[:, 2]: Product
-    '''
-    FIGURES = {
-        'fig_a': 'Chart 15 Relative Increase in Capital, Labor, and Physical Product in Manufacturing Industries of Massachussets, %d$-$%d (%d=100)',
-        'fig_b': 'Chart 16 Theoretical and Actual Curves of Production, Massachusetts, %d$-$%d (%d=100)',
-        'fig_c': 'Chart III Percentage Deviations of $P$ and $P\'$ from Their Trend Lines, Massachusetts\nTrend Lines = 3 Year Moving Average',
-        'fig_d': 'Chart 17 The Percentage Deviations of the Computed Product ($P\'$) from the Actual Product ($P$) in Massachusetts Manufacturing, %d$-$%d',
-        'priceyear': 1899
-    }
-    X = data_frame.iloc[:, 0].div(data_frame.iloc[:, 1])
-    Y = data_frame.iloc[:, 2].div(data_frame.iloc[:, 1])
-    X = sp.log(X)
-    Y = sp.log(Y)
 # =============================================================================
-# Original: k=0.25
+# Cobb--Douglas Algorithm as per C.W. Cobb, P.H. Douglas. A Theory of Production, 1928 & P.H. Douglas. The Theory of Wages, 1934;
 # =============================================================================
-    k, b = np.polyfit(X, Y, 1)
-    b = sp.exp(b)
-    PP = b*(data_frame.iloc[:, 1]**(1-k))*(data_frame.iloc[:, 0]**k)
-    PR = data_frame.iloc[:, 2].rolling(window=3, center=True).mean()
-    PPR = PP.rolling(window=3, center=True).mean()
-    plt.figure(1)
-    plt.plot(data_frame.iloc[:, 0], label='Fixed Capital')
-    plt.plot(data_frame.iloc[:, 1], label='Labor Force')
-    plt.plot(data_frame.iloc[:, 2], label='Physical Product')
-    plt.xlabel('Period')
-    plt.ylabel('Indexes')
-    plt.title(FIGURES['fig_a'] % (data_frame.index[0],
-                                  data_frame.index[-1],
-                                  FIGURES['priceyear']))
-    plt.legend()
-    plt.grid(True)
-    plt.figure(2)
-    plt.plot(data_frame.iloc[:, 2], label='Actual Product')
-    plt.plot(
-        PP, label='Computed Product, $P\' = %fL^{%f}C^{%f}$' % (b, 1-k, k))
-    plt.xlabel('Period')
-    plt.ylabel('Production')
-    plt.title(FIGURES['fig_b'] % (data_frame.index[0],
-                                  data_frame.index[-1],
-                                  FIGURES['priceyear']))
-    plt.legend()
-    plt.grid(True)
-    plt.figure(3)
-    plt.plot(data_frame.iloc[:, 2].sub(PR), label='Deviations of $P$')
-    plt.plot(PP.sub(PPR), '--', label='Deviations of $P\'$')
-    plt.xlabel('Period')
-    plt.ylabel('Percentage Deviation')
-    plt.title(FIGURES['fig_c'])
-    plt.legend()
-    plt.grid(True)
-    plt.figure(4)
-    plt.plot(PP.div(data_frame.iloc[:, 2]).sub(1))
-    plt.xlabel('Period')
-    plt.ylabel('Percentage Deviation')
-    plt.title(FIGURES['fig_d'].format(data_frame.index[0],
-                                      data_frame.index[-1]))
-    plt.grid(True)
-    plt.show()
+FIG_MAP = {
+    'fg_a': 'Chart 15 Relative Increase in Capital, Labor, and Physical Product in Manufacturing Industries of Massachussets, {}$-${} ({}=100',
+    'fg_b': 'Chart 16 Theoretical and Actual Curves of Production, Massachusetts, {}$-${} ({}=100',
+    'fg_c': 'Chart III Percentage Deviations of $P$ and $P\'$ from Their Trend Lines, Massachusetts\nTrend Lines = 3 Year Moving Average',
+    'fg_d': 'Chart 17 The Percentage Deviations of the Computed Product ($P\'$) from the Actual Product ($P$) in Massachusetts Manufacturing, {}$-${}',
+    'fg_e': 'Chart V Relative Final Productivities of Labor and Capital',
+    'year_price': 1899
+}
 
 
-'''Douglas European Demographics & Growth of US Capital'''
-file_name = 'dataset_douglas.zip'
-series_dict = get_series_ids(file_name)
+# =============================================================================
+# Douglas European Demographics & Growth of US Capital
+# =============================================================================
+ARCHIVE_NAME = 'dataset_douglas.zip'
+series_dict = get_series_ids(ARCHIVE_NAME)
 titles_deu = ['Germany Birth Rate', 'Germany Death Rate', 'Germany Net Fertility Rate',
               'Prussia Birth Rate', 'Prussia Death Rate', 'Prussia Net Fertility Rate']
 titles_eur = ['Sweden', 'Norway', 'Denmark', 'England & Wales',
@@ -128,69 +46,69 @@ titles = ['Table I Indexes of Physical Production, 1899=100 [1899$-$1926]',
           'Table 62 Estimated Total British Capital In Terms of the 1865 Price Level\nInvested Inside and Outside the United Kingdom by Years From\n1865 to 1909, and Rate of Growth of This Capital',
           'Table 63 Growth of Capital in the United States, 1880$-$1922',
           'Birth Rates by Countries']
-file_name = 'dataset_douglas.zip'
-plot_douglas(file_name, series_dict, 1, 0, 12, 1, titles[0], 'Percentage')
-file_name = 'dataset_douglas.zip'
-plot_douglas(file_name, series_dict, 2, 12, 23, 1, titles[1], 'Percentage')
-file_name = 'dataset_douglas.zip'
-plot_douglas(file_name, series_dict, 3, 23, 34, 1, titles[2], 'Percentage')
-file_name = 'dataset_douglas.zip'
-plot_douglas(file_name, series_dict, 4, 34, 45, 1, titles[3], 'Percentage')
-file_name = 'dataset_douglas.zip'
-plot_douglas(file_name, series_dict, 5, 45, 55, 1, titles[4], 'Percentage')
-file_name = 'dataset_douglas.zip'
-plot_douglas(file_name, series_dict, 6, 55, 66, 1, titles[5], 'Percentage')
-file_name = 'dataset_douglas.zip'
-plot_douglas(file_name, series_dict, 7, 66, 76, 1, titles[6], 'Percentage')
-file_name = 'dataset_douglas.zip'
-plot_douglas(file_name, series_dict, 8, 76, 86, 1, titles[7], 'Percentage')
-file_name = 'dataset_douglas.zip'
-plot_douglas(file_name, series_dict, 9, 86, 89, 1, titles[8], 'Percentage')
-file_name = 'dataset_douglas.zip'
-plot_douglas(file_name, series_dict, 10, 89, 90, 1, titles[9], 'Percentage')
-file_name = 'dataset_douglas.zip'
-plot_douglas(file_name, series_dict, 11, 90,
+ARCHIVE_NAME = 'dataset_douglas.zip'
+plot_douglas(ARCHIVE_NAME, series_dict, 1, 0, 12, 1, titles[0], 'Percentage')
+ARCHIVE_NAME = 'dataset_douglas.zip'
+plot_douglas(ARCHIVE_NAME, series_dict, 2, 12, 23, 1, titles[1], 'Percentage')
+ARCHIVE_NAME = 'dataset_douglas.zip'
+plot_douglas(ARCHIVE_NAME, series_dict, 3, 23, 34, 1, titles[2], 'Percentage')
+ARCHIVE_NAME = 'dataset_douglas.zip'
+plot_douglas(ARCHIVE_NAME, series_dict, 4, 34, 45, 1, titles[3], 'Percentage')
+ARCHIVE_NAME = 'dataset_douglas.zip'
+plot_douglas(ARCHIVE_NAME, series_dict, 5, 45, 55, 1, titles[4], 'Percentage')
+ARCHIVE_NAME = 'dataset_douglas.zip'
+plot_douglas(ARCHIVE_NAME, series_dict, 6, 55, 66, 1, titles[5], 'Percentage')
+ARCHIVE_NAME = 'dataset_douglas.zip'
+plot_douglas(ARCHIVE_NAME, series_dict, 7, 66, 76, 1, titles[6], 'Percentage')
+ARCHIVE_NAME = 'dataset_douglas.zip'
+plot_douglas(ARCHIVE_NAME, series_dict, 8, 76, 86, 1, titles[7], 'Percentage')
+ARCHIVE_NAME = 'dataset_douglas.zip'
+plot_douglas(ARCHIVE_NAME, series_dict, 9, 86, 89, 1, titles[8], 'Percentage')
+ARCHIVE_NAME = 'dataset_douglas.zip'
+plot_douglas(ARCHIVE_NAME, series_dict, 10, 89, 90, 1, titles[9], 'Percentage')
+ARCHIVE_NAME = 'dataset_douglas.zip'
+plot_douglas(ARCHIVE_NAME, series_dict, 11, 90,
              93, 1, titles[10], 'Rate Per 1000')
-file_name = 'dataset_douglas.zip'
-plot_douglas(file_name, series_dict, 12, 93,
+ARCHIVE_NAME = 'dataset_douglas.zip'
+plot_douglas(ARCHIVE_NAME, series_dict, 12, 93,
              96, 1, titles[11], 'Rate Per 1000')
-file_name = 'dataset_douglas.zip'
-plot_douglas(file_name, series_dict, 13, 96,
+ARCHIVE_NAME = 'dataset_douglas.zip'
+plot_douglas(ARCHIVE_NAME, series_dict, 13, 96,
              99, 1, titles[12], 'Rate Per 1000')
-file_name = 'dataset_douglas.zip'
-plot_douglas(file_name, series_dict, 14, 99,
+ARCHIVE_NAME = 'dataset_douglas.zip'
+plot_douglas(ARCHIVE_NAME, series_dict, 14, 99,
              102, 1, titles[13], 'Rate Per 1000')
-file_name = 'dataset_douglas.zip'
-plot_douglas(file_name, series_dict, 15, 102,
+ARCHIVE_NAME = 'dataset_douglas.zip'
+plot_douglas(ARCHIVE_NAME, series_dict, 15, 102,
              105, 1, titles[14], 'Rate Per 1000')
-file_name = 'dataset_douglas.zip'
-plot_douglas(file_name, series_dict, 16, 105, 111, 1,
+ARCHIVE_NAME = 'dataset_douglas.zip'
+plot_douglas(ARCHIVE_NAME, series_dict, 16, 105, 111, 1,
              titles[15], 'Rate Per 1000', titles_deu)
-file_name = 'dataset_douglas.zip'
-plot_douglas(file_name, series_dict, 17, 111,
+ARCHIVE_NAME = 'dataset_douglas.zip'
+plot_douglas(ARCHIVE_NAME, series_dict, 17, 111,
              114, 1, titles[16], 'Rate Per 1000')
-file_name = 'dataset_douglas.zip'
-plot_douglas(file_name, series_dict, 18, 114,
+ARCHIVE_NAME = 'dataset_douglas.zip'
+plot_douglas(ARCHIVE_NAME, series_dict, 18, 114,
              117, 1, titles[17], 'Rate Per 1000')
-file_name = 'dataset_douglas.zip'
-plot_douglas(file_name, series_dict, 19, 117, 121, 1, titles[18], 'Mixed')
-file_name = 'dataset_douglas.zip'
-plot_douglas(file_name, series_dict, 20, 121, 124,
+ARCHIVE_NAME = 'dataset_douglas.zip'
+plot_douglas(ARCHIVE_NAME, series_dict, 19, 117, 121, 1, titles[18], 'Mixed')
+ARCHIVE_NAME = 'dataset_douglas.zip'
+plot_douglas(ARCHIVE_NAME, series_dict, 20, 121, 124,
              1, titles[19], 'Millions of Dollars')
-file_name = 'dataset_douglas.zip'
-plot_douglas(file_name, series_dict, 21, 90, 115, 3,
+ARCHIVE_NAME = 'dataset_douglas.zip'
+plot_douglas(ARCHIVE_NAME, series_dict, 21, 90, 115, 3,
              titles[20], 'Births Rate Per 1000 People', titles_eur)
 plt.show()
 
 # =============================================================================
 # Douglas Production Function
 # =============================================================================
-plot_cobb_douglas_modified(get_dataset_douglas())
+plot_cobb_douglas(get_dataset_douglas())
 # =============================================================================
 # Kendrick Macroeconomic Series
 # =============================================================================
-file_name = 'dataset_usa_kendrick.zip'
-series_dict = get_series_ids(file_name)
+ARCHIVE_NAME = 'dataset_usa_kendrick.zip'
+series_dict = get_series_ids(ARCHIVE_NAME)
 titles = ['Table A-I Gross And Net National Product, Adjusted Kuznets Concepts, Peacetime And National Security Version, 1869$-$1957 (Millions Of 1929 Dollars)',
           'Table A-IIa Gross National Product, Commerce Concept, Derivation From Kuznets Estimates, 1869$-$1957 (Millions Of 1929 Dollars)',
           'Table A-IIb Gross National Product, Commerce Concept, Derivation From Kuznets Estimates, 1869$-$1929; And Reconciliation With Kuznets Estimates, 1937, 1948, And 1953 (Millions Of Current Dollars)',
@@ -204,36 +122,36 @@ titles = ['Table A-I Gross And Net National Product, Adjusted Kuznets Concepts, 
           'Table A-XXII: Supplement Private Domestic Economy: Productivity Ratios Based On Unweighted Inputs, 1869$-$1957 (1929=100)',
           'Table A-XXIII Private Domestic Nonfarm Economy: Real Gross Product, Inputs, And Productivity Ratios, Commerce Concept, 1869$-$1957 (1929=100)',
           'Table D-II. Manufacturing: Output, Labor Inputs, and Labor Productivity Ratios, 1869-1957 (1929=100)']
-file_name = 'dataset_usa_kendrick.zip'
-plot_douglas(file_name, series_dict, 1, 0, 8, 1,
+ARCHIVE_NAME = 'dataset_usa_kendrick.zip'
+plot_douglas(ARCHIVE_NAME, series_dict, 1, 0, 8, 1,
              titles[0], 'Millions Of 1929 Dollars')
-file_name = 'dataset_usa_kendrick.zip'
-plot_douglas(file_name, series_dict, 2, 8, 19, 1,
+ARCHIVE_NAME = 'dataset_usa_kendrick.zip'
+plot_douglas(ARCHIVE_NAME, series_dict, 2, 8, 19, 1,
              titles[1], 'Millions Of 1929 Dollars')
-file_name = 'dataset_usa_kendrick.zip'
-plot_douglas(file_name, series_dict, 3, 19, 30, 1,
+ARCHIVE_NAME = 'dataset_usa_kendrick.zip'
+plot_douglas(ARCHIVE_NAME, series_dict, 3, 19, 30, 1,
              titles[2], 'Millions Of Current Dollars')
-file_name = 'dataset_usa_kendrick.zip'
-plot_douglas(file_name, series_dict, 4, 30, 38, 1,
+ARCHIVE_NAME = 'dataset_usa_kendrick.zip'
+plot_douglas(ARCHIVE_NAME, series_dict, 4, 30, 38, 1,
              titles[3], 'Millions Of 1929 Dollars')
-file_name = 'dataset_usa_kendrick.zip'
-plot_douglas(file_name, series_dict, 5, 38, 46, 1, titles[4], 'Thousands')
-file_name = 'dataset_usa_kendrick.zip'
-plot_douglas(file_name, series_dict, 6, 46, 54, 1, titles[5], 'Millions')
-file_name = 'dataset_usa_kendrick.zip'
-plot_douglas(file_name, series_dict, 7, 54, 60, 1,
+ARCHIVE_NAME = 'dataset_usa_kendrick.zip'
+plot_douglas(ARCHIVE_NAME, series_dict, 5, 38, 46, 1, titles[4], 'Thousands')
+ARCHIVE_NAME = 'dataset_usa_kendrick.zip'
+plot_douglas(ARCHIVE_NAME, series_dict, 6, 46, 54, 1, titles[5], 'Millions')
+ARCHIVE_NAME = 'dataset_usa_kendrick.zip'
+plot_douglas(ARCHIVE_NAME, series_dict, 7, 54, 60, 1,
              titles[6], 'Millions Of 1929 Dollars')
-file_name = 'dataset_usa_kendrick.zip'
-plot_douglas(file_name, series_dict, 8, 60, 72, 1,
+ARCHIVE_NAME = 'dataset_usa_kendrick.zip'
+plot_douglas(ARCHIVE_NAME, series_dict, 8, 60, 72, 1,
              titles[7], 'Millions Of 1929 Dollars')
-file_name = 'dataset_usa_kendrick.zip'
-plot_douglas(file_name, series_dict, 9, 72, 84, 1, titles[8], 'Percentage')
-file_name = 'dataset_usa_kendrick.zip'
-plot_douglas(file_name, series_dict, 10, 84, 96, 1, titles[9], 'Percentage')
-file_name = 'dataset_usa_kendrick.zip'
-plot_douglas(file_name, series_dict, 11, 96, 100, 1, titles[10], 'Percentage')
-file_name = 'dataset_usa_kendrick.zip'
-plot_douglas(file_name, series_dict, 12, 100, 111, 1, titles[11], 'Percentage')
-file_name = 'dataset_usa_kendrick.zip'
-plot_douglas(file_name, series_dict, 13, 111, 118, 1, titles[12], 'Percentage')
+ARCHIVE_NAME = 'dataset_usa_kendrick.zip'
+plot_douglas(ARCHIVE_NAME, series_dict, 9, 72, 84, 1, titles[8], 'Percentage')
+ARCHIVE_NAME = 'dataset_usa_kendrick.zip'
+plot_douglas(ARCHIVE_NAME, series_dict, 10, 84, 96, 1, titles[9], 'Percentage')
+ARCHIVE_NAME = 'dataset_usa_kendrick.zip'
+plot_douglas(ARCHIVE_NAME, series_dict, 11, 96, 100, 1, titles[10], 'Percentage')
+ARCHIVE_NAME = 'dataset_usa_kendrick.zip'
+plot_douglas(ARCHIVE_NAME, series_dict, 12, 100, 111, 1, titles[11], 'Percentage')
+ARCHIVE_NAME = 'dataset_usa_kendrick.zip'
+plot_douglas(ARCHIVE_NAME, series_dict, 13, 111, 118, 1, titles[12], 'Percentage')
 plt.show()

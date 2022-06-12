@@ -17,17 +17,22 @@ Created on Tue Nov  2 21:10:29 2021
 # v65522415 # Not Useful
 # =============================================================================
 
-def append_series_ids_sum(source_frame, data_frame, series_ids):
-    chunk = pd.DataFrame()
+def append_series_ids_sum(df, chunk, series_ids):
     for series_id in series_ids:
-        _ = source_frame.loc[:, [series_id]]
-        _.dropna(inplace=True)
-        chunk = pd.concat([chunk, _], axis=1, sort=False)
+        _chunk = pd.concat(
+            [
+                _chunk,
+                df.loc[:, [series_id]].dropna(axis=0)
+            ],
+            axis=1, sort=False)
     series_ids.extend(['sum'])
-    chunk['_'.join(series_ids)] = chunk.sum(1)
-    data_frame = pd.concat(
-        [data_frame, chunk.iloc[:, [-1]]], axis=1, sort=False)
-    return data_frame
+    _chunk['_'.join(series_ids)] = _chunk.sum(1)
+    return pd.concat(
+        [
+            chunk,
+            _chunk.iloc[:, [-1]]
+        ],
+        axis=1, sort=False)
 
 
 def get_mean_for_min_std():
