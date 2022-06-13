@@ -10,7 +10,7 @@ import pandas as pd
 pd.options.display.max_columns = 8
 
 
-def page_0x8e_table_0x1():
+def page_0x8e_table_0x1() -> pd.DataFrame:
     '''
     # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 142: Table I
     '''
@@ -76,11 +76,10 @@ def page_0x8e_table_0x1():
     )
     df.set_index(df.columns[0], inplace=True, verify_integrity=True)
     df['val'] = df.iloc[:, 2].add(df.iloc[:, 3])
-    FILE_NAME = 'data_cobb_douglas_theory_of_production_page_0x8e_table_0x1.dat'
-    df.to_csv(FILE_NAME, sep='\t')
+    return df
 
 
-def page_0x90():
+def page_0x90() -> pd.DataFrame:
     '''
     # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 144
     '''
@@ -118,11 +117,10 @@ def page_0x90():
     )
     df.set_index(df.columns[0], inplace=True, verify_integrity=True)
     df.loc['Total'] = df.sum()
-    FILE_NAME = 'data_cobb_douglas_theory_of_production_page_0x90.dat'
-    df.to_csv(FILE_NAME, sep='\t')
+    return df
 
 
-def page_0x91_table_0x2():
+def page_0x91_table_0x2() -> pd.DataFrame:
     '''
     # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 145: Table II
     '''
@@ -214,14 +212,19 @@ def page_0x91_table_0x2():
         }
     )
     df.set_index(df.columns[0], inplace=True, verify_integrity=True)
-    df['col_c'] = df.iloc[:, 0].div(df.iloc[:, 1]).mul(100).round().astype(int)
-    df['col_d'] = df.iloc[:, 2].cumsum().add(4062)
-    df['col_e'] = df.iloc[:, 3].div(df.iloc[0, 3]).mul(100).round().astype(int)
-    FILE_NAME = 'data_cobb_douglas_theory_of_production_page_0x91_table_0x2.dat'
-    df.to_csv(FILE_NAME, sep='\t')
+    # =========================================================================
+    #     # ===================================================================
+    #     # Test
+    #     # ===================================================================
+    #     df['col_c'] = df.iloc[:, 0].div(df.iloc[:, 1]).mul(100).round().astype(int)
+    # =========================================================================
+    df['col_d'] = df.iloc[:, -1].cumsum().add(4062)
+    df['col_e'] = df.iloc[:, -
+                          1].div(df.iloc[0, -1]).mul(100).round().astype(int)
+    return df
 
 
-def page_0x92():
+def page_0x92() -> pd.DataFrame:
     '''
     # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 146
     '''
@@ -257,12 +260,10 @@ def page_0x92():
             'us': us,
         }
     )
-    df.set_index(df.columns[0], inplace=True, verify_integrity=True)
-    FILE_NAME = 'data_cobb_douglas_theory_of_production_page_0x92.dat'
-    df.to_csv(FILE_NAME, sep='\t')
+    return df.set_index(df.columns[0], verify_integrity=True)
 
 
-def page_0x94_table_0x3():
+def page_0x94_table_0x3() -> pd.DataFrame:
     '''
     # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 148: Table III
     '''
@@ -301,11 +302,10 @@ def page_0x94_table_0x3():
     )
     df.set_index(df.columns[0], inplace=True, verify_integrity=True)
     df['idx'] = df.iloc[:, 0].div(df.iloc[0, 0]).mul(100).round().astype(int)
-    FILE_NAME = 'data_cobb_douglas_theory_of_production_page_0x94_table_0x3.dat'
-    df.to_csv(FILE_NAME, sep='\t')
+    return df
 
 
-def page_0x95_table_0x4():
+def page_0x95_table_0x4() -> pd.DataFrame:
     '''
     # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 149: Table IV
     '''
@@ -342,12 +342,10 @@ def page_0x95_table_0x4():
             'pro': pro,
         }
     )
-    df.set_index(df.columns[0], inplace=True, verify_integrity=True)
-    FILE_NAME = 'data_cobb_douglas_theory_of_production_page_0x95_table_0x4.dat'
-    df.to_csv(FILE_NAME, sep='\t')
+    return df.set_index(df.columns[0], verify_integrity=True)
 
 
-def page_0x96_table_0x5():
+def page_0x96_table_0x5() -> pd.DataFrame:
     '''
     # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 150: Table V
     '''
@@ -357,17 +355,16 @@ def page_0x96_table_0x5():
     df_b = pd.read_csv(FILE_NAME, sep='\t', index_col=0)
     df = pd.concat(
         [
-            df_a.iloc[:, [4]],
-            df_b.iloc[:, [1]],
+            df_a.iloc[:, [-1]],
+            df_b.iloc[:, [-1]],
         ],
         axis=1)
     df['lab_to_cap'] = df.iloc[:, 1].div(
         df.iloc[:, 0]).mul(100).round().astype(int)
-    FILE_NAME = 'data_cobb_douglas_theory_of_production_page_0x96_table_0x5.dat'
-    df.iloc[:, [2]].to_csv(FILE_NAME, sep='\t')
+    return df.iloc[:, [-1]]
 
 
-def page_0x98_table_0x6():
+def page_0x98_table_0x6() -> pd.DataFrame:
     '''
     # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 152: Table VI
     '''
@@ -485,14 +482,11 @@ def page_0x98_table_0x6():
             'ba': ba,
         }
     )
-    df.set_index(df.columns[0], inplace=True, verify_integrity=True)
-    df['abs'] = df.iloc[:, 2].abs()
-    print(f'{df.iloc[:, 4].mean():,.6f}')
-    FILE_NAME = 'data_cobb_douglas_theory_of_production_page_0x98_table_0x6.dat'
-    df.iloc[:, range(4)].to_csv(FILE_NAME, sep='\t')
+    print(f'Page 153: The average percentage deviation of P` from P without regard to sign is {df.iloc[:, 2].abs().mean():,.6f} per cent.')
+    return df.set_index(df.columns[0], verify_integrity=True).iloc[:, range(4)]
 
 
-def page_0x99_table_0x7():
+def page_0x99_table_0x7() -> pd.DataFrame:
     '''
     # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 153: Table VII
     '''
@@ -502,13 +496,10 @@ def page_0x99_table_0x7():
         df.iloc[:, 1].rolling(window=3, center=True).mean())
     df['sub_pro_com'] = df.iloc[:, 0].sub(
         df.iloc[:, 0].rolling(window=3, center=True).mean())
-    df.dropna(inplace=True)
-    df = df.astype(int)
-    FILE_NAME = 'data_cobb_douglas_theory_of_production_page_0x99_table_0x7.dat',
-    df.to_csv(FILE_NAME, sep='\t')
+    return df.iloc[:, -2:].dropna().astype(int)
 
 
-def page_0x9f_table_0x8():
+def page_0x9f_table_0x8() -> pd.DataFrame:
     '''
     # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 159: Table VIII
     '''
@@ -575,11 +566,10 @@ def page_0x9f_table_0x8():
     df.set_index(df.columns[0], inplace=True, verify_integrity=True)
     df['dev'] = df.iloc[:, 0].sub(df.iloc[:, 1]).div(
         df.iloc[:, 0]).mul(100).round().astype(int)
-    FILE_NAME = 'data_cobb_douglas_theory_of_production_page_0x9f_table_0x8.dat'
-    df.to_csv(FILE_NAME, sep='\t')
+    return df
 
 
-def page_0xa1():
+def page_0xa1() -> pd.DataFrame:
     '''
     # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 161
     '''
@@ -616,12 +606,10 @@ def page_0xa1():
             'idx': idx,
         }
     )
-    df.set_index(df.columns[0], inplace=True, verify_integrity=True)
-    FILE_NAME = 'data_cobb_douglas_theory_of_production_page_0xa1.dat'
-    df.to_csv(FILE_NAME, sep='\t')
+    return df.set_index(df.columns[0], verify_integrity=True)
 
 
-def page_0xa2_table_0x9():
+def page_0xa2_table_0x9() -> pd.DataFrame:
     '''
     # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 162: Table IX
     '''
@@ -691,11 +679,10 @@ def page_0xa2_table_0x9():
     df_pro = pd.read_csv(FILE_NAME, sep='\t', index_col=0)
     df['pro'] = df_pro.iloc[:, 0].mul(
         df.iloc[:, 2]).div(100).round().astype(int)
-    FILE_NAME = 'data_cobb_douglas_theory_of_production_page_0xa2_table_0x9.dat'
-    df.to_csv(FILE_NAME, sep='\t')
+    return df
 
 
-def page_0xa3_footnote_0x25():
+def page_0xa3_footnote_0x25() -> pd.DataFrame:
     '''
     # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 163: Table X
     '''
@@ -732,12 +719,10 @@ def page_0xa3_footnote_0x25():
             'idx': idx,
         }
     )
-    df.set_index(df.columns[0], inplace=True, verify_integrity=True)
-    FILE_NAME = 'data_cobb_douglas_theory_of_production_page_0xa3_footnote_0x25.dat'
-    df.to_csv(FILE_NAME, sep='\t')
+    return df.set_index(df.columns[0], verify_integrity=True)
 
 
-def page_0xa3_table_0xa():
+def page_0xa3_table_0xa() -> pd.DataFrame:
     '''
     # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 163: Footnote 37
     '''
@@ -772,13 +757,11 @@ def page_0xa3_table_0xa():
             'value': value,
         }
     )
-    df.set_index(df.columns[0], inplace=True, verify_integrity=True)
-    df.sort_index(inplace=True)
-    print(f'{df.iloc[:, 0].mean():,.6f}')
-    df.plot(grid=True)
+    print(f'Pgae 163: They found that wages and salaries formed on the average {df.iloc[:, 0].mean():,.6f} per cent of the total value added by manufactures during these years.[37]')
+    return df.set_index(df.columns[0], verify_integrity=True).sort_index()
 
 
-def page_0xa4_table_0xb():
+def page_0xa4_table_0xb() -> pd.DataFrame:
     '''
     # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 164: Table XI
     '''
@@ -870,35 +853,41 @@ def page_0xa4_table_0xb():
         }
     )
     df.set_index(df.columns[0], inplace=True, verify_integrity=True)
-    df['dev'] = df.iloc[:, 1].sub(df.iloc[:, 0]).div(
-        df.iloc[:, 0]).mul(100).round().astype(int)
-    df['pro_val_rm_7'] = df.iloc[:, 0].rolling(7).mean()
-    df['wages_rm_7'] = df.iloc[:, 1].rolling(7).mean()
-    df['dev_abs'] = df.iloc[:, -3].abs()
-    df.plot(grid=True)
-    print(f'{df.iloc[:, -1].mean():,.6f}')
+    df.insert(
+        2,
+        'dev',
+        df.iloc[:, 1].sub(df.iloc[:, 0]).div(
+            df.iloc[:, 0]).mul(100).round().astype(int)
+    )
+    df['pro_val_rm_7'] = df.iloc[:, 0].rolling(7, center=True).mean()
+    df['wages_rm_7'] = df.iloc[:, 1].rolling(7, center=True).mean()
+    print(f'Page 164: (2) Average deviation = {df.iloc[:, 2].abs().mean():,.6f} per cent')
+    print(f'Page 164: (4) Average deviations with regard to sign = {df.iloc[:, 2].mean():,.6f} per cent')
     print(df.corr())
-    print(df)
-    FILE_NAME = 'data_cobb_douglas_theory_of_production_page_0xa4_table_0xb.dat'
-    df.to_csv(FILE_NAME, sep='\t')
+    return df.iloc[:, range(4)]
 
 
 def main():
-    page_0x8e_table_0x1()
-    page_0x90()
-    page_0x91_table_0x2()
-    page_0x92()
-    page_0x94_table_0x3()
-    page_0x95_table_0x4()
-    page_0x96_table_0x5()
-    page_0x98_table_0x6()
-    page_0x99_table_0x7()
-    page_0x9f_table_0x8()
-    page_0xa1()
-    page_0xa2_table_0x9()
-    page_0xa3_footnote_0x25()
-    page_0xa3_table_0xa()
-    page_0xa4_table_0xb()
+    MAP = {
+        page_0x8e_table_0x1: 'data_cobb_douglas_theory_of_production_page_0x8e_table_0x1.dat',
+        page_0x90: 'data_cobb_douglas_theory_of_production_page_0x90.dat',
+        page_0x91_table_0x2: 'data_cobb_douglas_theory_of_production_page_0x91_table_0x2.dat',
+        page_0x92: 'data_cobb_douglas_theory_of_production_page_0x92.dat',
+        page_0x94_table_0x3: 'data_cobb_douglas_theory_of_production_page_0x94_table_0x3.dat',
+        page_0x95_table_0x4: 'data_cobb_douglas_theory_of_production_page_0x95_table_0x4.dat',
+        page_0x96_table_0x5: 'data_cobb_douglas_theory_of_production_page_0x96_table_0x5.dat',
+        page_0x98_table_0x6: 'data_cobb_douglas_theory_of_production_page_0x98_table_0x6.dat',
+        page_0x99_table_0x7: 'data_cobb_douglas_theory_of_production_page_0x99_table_0x7.dat',
+        page_0x9f_table_0x8: 'data_cobb_douglas_theory_of_production_page_0x9f_table_0x8.dat',
+        page_0xa1: 'data_cobb_douglas_theory_of_production_page_0xa1.dat',
+        page_0xa2_table_0x9: 'data_cobb_douglas_theory_of_production_page_0xa2_table_0x9.dat',
+        page_0xa3_footnote_0x25: 'data_cobb_douglas_theory_of_production_page_0xa3_footnote_0x25.dat',
+        page_0xa3_table_0xa: None,
+        page_0xa4_table_0xb: 'data_cobb_douglas_theory_of_production_page_0xa4_table_0xb.dat',
+    }
+    for func in MAP.keys():
+        if MAP[func] is not None:
+            func().to_csv(MAP[func], sep='\t')
 
 
 if __name__ == '__main__':
