@@ -200,7 +200,7 @@ def get_data_bea_gdp():
     ).drop_duplicates()
 
 
-def get_data_brown():
+def get_data_brown() -> DataFrame:
     # =========================================================================
     # Fetch Data from `Reference RU Brown M. 0597_088.pdf`, Page 193
     # Dependent on `extract_usa_classic`
@@ -213,12 +213,12 @@ def get_data_brown():
     # EMAIL;PREF;INTERNET:mbrown@buffalo.edu
     # =========================================================================
     ARCHIVE_NAMES = ('dataset_usa_brown.zip', 'dataset_usa_kendrick.zip',)
-    data_frame = pd.read_csv(ARCHIVE_NAMES[0], skiprows=4, usecols=range(3, 6))
-    data_frame.columns = ['series_id', 'period', 'value']
+    _df = pd.read_csv(ARCHIVE_NAMES[0], skiprows=4, usecols=range(3, 6))
+    _df.columns = ['series_id', 'period', 'value']
     _b_frame = pd.concat(
         [
             extract_usa_classic(ARCHIVE_NAMES[0], series_id)
-            for series_id in sorted(set(data_frame.iloc[:, 0]))
+            for series_id in sorted(set(_df.iloc[:, 0]))
         ],
         axis=1,
         sort=True)
@@ -248,33 +248,34 @@ def get_data_brown():
             for series_id in SERIES_IDS
         ],
         axis=1,
-        sort=True)
-    result_frame = pd.concat(
+        sort=True).truncate(before=1889)
+    df = pd.concat(
         [
-            _k_frame[_k_frame.index.get_loc(
-                1889):2+_k_frame.index.get_loc(1952)],
+            # =================================================================
+            # Omit Two Last Rows
+            # =================================================================
+            _k_frame[:-2],
             # =================================================================
             # Первая аппроксимация рядов загрузки мощностей, полученная с помощью метода Уортонской школы
             # =================================================================
-            _b_frame.iloc[:1+_b_frame.index.get_loc(1953), [4]]
+            _b_frame.iloc[:, [-2]].truncate(after=1953)
         ],
         axis=1,
         sort=True)
-    result_frame = result_frame.assign(
-        series_0x0=result_frame.iloc[:, 0].sub(result_frame.iloc[:, 1]),
-        series_0x1=result_frame.iloc[:, 3].add(result_frame.iloc[:, 4]),
-        series_0x2=result_frame.iloc[:, [3, 4]].sum(axis=1).rolling(
-            window=2).mean().mul(result_frame.iloc[:, 5]).div(100),
-        series_0x3=result_frame.iloc[:, 2],
+    df = df.assign(
+        series_0x0=df.iloc[:, 0].sub(df.iloc[:, 1]),
+        series_0x1=df.iloc[:, 3].add(df.iloc[:, 4]),
+        series_0x2=df.iloc[:, [3, 4]].sum(axis=1).rolling(
+            2).mean().mul(df.iloc[:, 5]).div(100),
+        series_0x3=df.iloc[:, 2],
     )
-    result_frame = result_frame.iloc[:, [6, 7, 8, 9]].dropna(axis=0)
     return pd.concat(
         [
-            result_frame,
+            df.iloc[:, -4:].dropna(axis=0),
             # =================================================================
             # Brown M. Numbers Not Found in Kendrick J.W. For Years Starting From 1954 Inclusive
             # =================================================================
-            _b_frame.iloc[1+_b_frame.index.get_loc(1953):, [0, 1, 2, 3]]
+            _b_frame.iloc[:, range(4)].truncate(before=1954)
         ]
     ).round()
 
