@@ -16,6 +16,19 @@ from extract.lib import extract_usa_census_description
 from extract.lib import extract_usa_census
 
 
+ARCHIVE_NAMES_UTILISED = (
+    'CHN_TUR_GDP.zip',
+    'dataset_rus_m1.zip',
+    'dataset_usa_census1975.zip',
+)
+FILE_NAMES_UTILISED = (
+    'datasetAutocorrelation.txt',
+    'dataset_rus_grigoriev_v.csv',
+    'dataset_usa_nber_ces_mid_naics5811.csv',
+    'dataset_usa_nber_ces_mid_sic5811.csv',
+)
+
+
 def plot_a(df: DataFrame) -> None:
     '''
     ================== =================================
@@ -1931,7 +1944,8 @@ def plot_rolling_mean_filter(df: DataFrame) -> None:
         df.index: Period;
         df.iloc[:, 0]: Series
     '''
-    data_frame_o, data_frame_e, residuals_o, residuals_e = rolling_mean_filter(df)
+    data_frame_o, data_frame_e, residuals_o, residuals_e = rolling_mean_filter(
+        df)
     plt.figure(1)
     plt.title(
         f'Rolling Mean {data_frame_o.index[0]}$-${data_frame_o.index[-1]}'

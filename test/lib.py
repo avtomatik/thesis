@@ -7,6 +7,18 @@ Created on Sun Jun 12 12:19:54 2022
 """
 
 
+ARCHIVE_NAMES_UTILISED = (
+    'dataset_douglas.zip',
+    'dataset_usa_bea-release-2019-12-19-Survey.zip',
+    'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip',
+)
+FILE_NAMES_UTILISED = (
+    'dataset_usa_bls-2015-02-23-ln.data.1.AllData',
+    'dataset_usa_bls-2017-07-06-ln.data.1.AllData',
+    'dataset_usa_bls-pc.data.0.Current',
+)
+
+
 def options():
     ARCHIVE_NAME = 'dataset_douglas.zip'
     SERIES_IDS = (
