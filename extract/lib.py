@@ -49,28 +49,34 @@ def extract_can_annual(file_id: int, series_id: str) -> DataFrame:
     return df
 
 
-def extract_can_capital_query_archived() -> list[str]:
+def extract_can_capital_series_ids_archived() -> list[str]:
     '''
     Fetch <SERIES_IDS> from CANSIM Table 031-0004: Flows and stocks of fixed
     non-residential capital, total all industries, by asset, provinces and
     territories, annual (dollars x 1,000,000)
     '''
-    # =========================================================================
-    # TODO: Consider Using sqlite3
-    # =========================================================================
-    # =========================================================================
-    # https://blog.panoply.io/how-to-read-a-sql-query-into-a-pandas-dataframe
-    # =========================================================================
-    ARCHIVE_NAME = 'dataset_can_00310004-eng.zip'
-    df = pd.read_csv(ARCHIVE_NAME, usecols=[2, 4, 5, 6])
-    query = (df.iloc[:, 0].str.contains('2007 constant prices')) & \
-            (df.iloc[:, 1] == 'Geometric (infinite) end-year net stock') & \
-            (df.iloc[:, 2].str.contains('industrial', flags=re.IGNORECASE))
-    df = df[query]
-    return sorted(set(df.iloc[:, -1]))
+    ARCHIVE_NAME = "dataset_can_00310004-eng.zip"
+    df = pd.read_csv(
+        ARCHIVE_NAME,
+        usecols=["PRICES", "CATEGORY", "COMPONENT", "Vector", ]
+    )
+    with sqlite3.connect("capital.db") as con:
+        cursor = con.cursor()
+        df.to_sql("capital", con, if_exists="replace", index=False)
+        stmt = """
+        SELECT Vector FROM capital
+        WHERE
+            PRICES LIKE '%2007 constant prices%'
+            AND CATEGORY = 'Geometric (infinite) end-year net stock'
+            AND lower(COMPONENT) LIKE '%industrial%'
+            ;
+        """
+        cursor = con.execute(stmt)
+        rows = cursor.fetchall()
+        return sorted(set(_[0] for _ in rows))
 
 
-def extract_can_capital_query(df: DataFrame) -> list[str]:
+def extract_can_capital_series_ids(df: DataFrame) -> list[str]:
     '''
     Fetch <SERIES_IDS> from Statistics Canada. Table: 36-10-0238-01\
     (formerly CANSIM 031-0004): Flows and stocks of fixed non-residential\
@@ -90,7 +96,7 @@ def extract_can_capital_query(df: DataFrame) -> list[str]:
     return sorted(set(df.iloc[:, -1]))
 
 
-def extract_can_capital_query() -> list[str]:
+def extract_can_capital_series_ids() -> list[str]:
     '''
     Fetch <SERIES_IDS> from Statistics Canada. Table: 36-10-0238-01 (formerly
     CANSIM 031-0004): Flows and stocks of fixed non-residential capital, total
