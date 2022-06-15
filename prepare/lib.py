@@ -17,6 +17,7 @@ from extract.lib import extract_usa_census
 from extract.lib import extract_usa_bea
 from extract.lib import extract_usa_bea_from_url
 from extract.lib import extract_usa_bea_from_loaded
+from extract.lib import extract_usa_mcconnel
 from toolkit.lib import price_inverse_single
 
 
@@ -144,14 +145,14 @@ def get_data_archived() -> DataFrame:
 def get_data_bea_def() -> DataFrame:
     '''Intent: Returns Cumulative Price Index for Some Base Year from Certain Type BEA Deflator File'''
     FILE_NAME = 'dataset_usa_bea-GDPDEF.xls'
-    data_frame = pd.read_excel(
+    df = pd.read_excel(
         FILE_NAME,
         names=['period', 'value'],
         index_col=0,
         skiprows=15,
         parse_dates=True
     )
-    return data_frame.groupby(data_frame.index.year).prod().pow(1/4)
+    return df.groupby(df.index.year).prod().pow(1/4)
 
 
 def get_data_bea_gdp():
@@ -325,7 +326,7 @@ def get_data_can():
 
 
 def get_data_can():
-    data_frame = pd.concat(
+    df = pd.concat(
         [
             # =============================================================================
             # A. Fixed Assets Block: `Industrial buildings`, `Industrial machinery` for `Newfoundland and Labrador`, `Prince Edward Island`, `Nova Scotia`, `New Brunswick`, \
@@ -352,123 +353,139 @@ def get_data_can():
             extract_can_quarter(3790031, 'v65201809'),
         ], axis=1, sort=True
     ).dropna(axis=0)
-    data_frame.columns = ['capital', 'labor', 'product']
-    return data_frame
+    df.columns = ['capital', 'labor', 'product']
+    return df
 
 
 def get_data_can():
-    '''Number 1. CANSIM Table 282-0012 Labour Force Survey Estimates (LFS), employment by class of worker, North American Industry Classification\
-    System (NAICS) and sex'''
-    '''Number 2. CANSIM Table 03790031'''
-    '''Title: Gross domestic product (GDP) at basic prices, by North American Industry Classification System (NAICS)'''
-    '''Measure: monthly (dollars x 1,000,000)'''
-    '''Number 3. CANSIM Table 03800068'''
-    '''Title: Gross fixed capital formation'''
-    '''Measure: quarterly (dollars x 1,000,000)'''
-    '''Number 4. CANSIM Table 031-0004: Flows and stocks of fixed non-residential capital, total all industries, by asset, provinces and territories, \
-    annual (dollars x 1,000,000)'''
-    '''Number 5. CANSIM Table 03790028'''
-    '''Title: Gross domestic product (GDP) at basic prices, by North American Industry Classification System (NAICS), provinces and territories'''
-    '''Measure: annual (percentage share)'''
-    '''Number 6. CANSIM Table 03800001'''
-    '''Title: Gross domestic product (GDP), income-based, *Terminated*'''
-    '''Measure: quarterly (dollars x 1,000,000)'''
-    '''Number 7. CANSIM Table 03800002'''
-    '''Title: Gross domestic product (GDP), expenditure-based, *Terminated*'''
-    '''Measure: quarterly (dollars x 1,000,000)'''
-    '''Number 8. CANSIM Table 03800063'''
-    '''Title: Gross domestic product, income-based'''
-    '''Measure: quarterly (dollars x 1,000,000)'''
-    '''Number 9. CANSIM Table 03800064'''
-    '''Title: Gross domestic product, expenditure-based'''
-    '''Measure: quarterly (dollars x 1,000,000)'''
-    '''Number 10. CANSIM Table 03800069'''
-    '''Title: Investment in inventories'''
-    '''Measure: quarterly (dollars unless otherwise noted)'''
-    '''---'''
-    '''1.0. Labor Block: `v2523012`, Preferred Over `v3437501` Which Is Quarterly'''
-    '''`v2523012` - 282-0012 Labour Force Survey Estimates (LFS), employment by class of worker, North American Industry Classification System (NAICS)\
-    and sex; Canada; Total employed, all class of workers; Manufacturing; Both sexes (x 1,000) (annual, 1987 to 2017)'''
+    # =========================================================================
+    # Number 1. CANSIM Table 282-0012 Labour Force Survey Estimates (LFS), employment by class of worker, North American Industry Classification\
+    # System (NAICS) and sex
+    # Number 2. CANSIM Table 03790031
+    # Title: Gross domestic product (GDP) at basic prices, by North American Industry Classification System (NAICS)
+    # Measure: monthly (dollars x 1,000,000)
+    # Number 3. CANSIM Table 03800068
+    # Title: Gross fixed capital formation
+    # Measure: quarterly (dollars x 1,000,000)
+    # Number 4. CANSIM Table 031-0004: Flows and stocks of fixed non-residential capital, total all industries, by asset, provinces and territories, \
+    # annual (dollars x 1,000,000)
+    # Number 5. CANSIM Table 03790028
+    # Title: Gross domestic product (GDP) at basic prices, by North American Industry Classification System (NAICS), provinces and territories
+    # Measure: annual (percentage share)
+    # Number 6. CANSIM Table 03800001
+    # Title: Gross domestic product (GDP), income-based, *Terminated*
+    # Measure: quarterly (dollars x 1,000,000)
+    # Number 7. CANSIM Table 03800002
+    # Title: Gross domestic product (GDP), expenditure-based, *Terminated*
+    # Measure: quarterly (dollars x 1,000,000)
+    # Number 8. CANSIM Table 03800063
+    # Title: Gross domestic product, income-based
+    # Measure: quarterly (dollars x 1,000,000)
+    # Number 9. CANSIM Table 03800064
+    # Title: Gross domestic product, expenditure-based
+    # Measure: quarterly (dollars x 1,000,000)
+    # Number 10. CANSIM Table 03800069
+    # Title: Investment in inventories
+    # Measure: quarterly (dollars unless otherwise noted)
+    # =========================================================================
+    # =========================================================================
+    # 1.0. Labor Block: `v2523012`, Preferred Over `v3437501` Which Is Quarterly
+    # `v2523012` - 282-0012 Labour Force Survey Estimates (LFS), employment by class of worker, North American Industry Classification System (NAICS)\
+    # and sex; Canada; Total employed, all class of workers; Manufacturing; Both sexes (x 1,000) (annual, 1987 to 2017)
     labor = extract_can_annual(2820012, 'v2523012')
-    '''1.1. Labor Block, Alternative Option Not Used'''
-    '''`v3437501` - 282-0011 Labour Force Survey estimates (LFS), employment by class of worker, North American Industry Classification System (NAICS)\
-    and sex, unadjusted for seasonality; Canada; Total employed, all classes of workers; Manufacturing; Both sexes (x 1,000) (monthly, 1987-01-01 to\
-    2017-12-01)'''
-    # =============================================================================
+    # 1.1. Labor Block, Alternative Option Not Used
+    # `v3437501` - 282-0011 Labour Force Survey estimates (LFS), employment by class of worker, North American Industry Classification System (NAICS)\
+    # and sex, unadjusted for seasonality; Canada; Total employed, all classes of workers; Manufacturing; Both sexes (x 1,000) (monthly, 1987-01-01 to\
+    # 2017-12-01)
+    # =========================================================================
+    # =========================================================================
     # extract_can_quarter(2820011, 'v3437501')
-    # =============================================================================
-    '''2.i. Fixed Assets Block: `Industrial buildings`, `Industrial machinery` for `Newfoundland and Labrador`, `Prince Edward Island`, `Nova Scotia`, `New Brunswick`, \
-    `Quebec`, `Ontario`, `Manitoba`, `Saskatchewan`, `Alberta`, `British Columbia`, `Yukon`, `Northwest Territories`, `Nunavut`'''
-    '''2.0. 2007 constant prices'''
-    '''Geometric (infinite) end-year net stock'''
-    '''Industrial buildings (x 1,000,000): `v43975603`, `v43977683`, `v43978099`, `v43978515`, `v43978931`, `v43979347`, `v43979763`, `v43980179`, `v43980595`, \
-    `v43976019`, `v43976435`, `v43976851`, `v43977267`'''
-    '''Industrial machinery (x 1,000,000): `v43975594`, `v43977674`, `v43978090`, `v43978506`, `v43978922`, `v43979338`, `v43979754`, `v43980170`, `v43980586`, \
-    `v43976010`, `v43976426`, `v43976842`, `v43977258`'''
-    SERIES_IDS = ('v43975603', 'v43977683', 'v43978099', 'v43978515',
-                  'v43978931', 'v43979347', 'v43979763', 'v43980179',
-                  'v43980595', 'v43976019', 'v43976435', 'v43976851',
-                  'v43977267', 'v43975594', 'v43977674', 'v43978090',
-                  'v43978506', 'v43978922', 'v43979338', 'v43979754',
-                  'v43980170', 'v43980586', 'v43976010', 'v43976426',
-                  'v43976842', 'v43977258',)
-    '''2.1. Fixed Assets Block, Alternative Option Not Used'''
-    '''2.1.1. Chained (2007) dollars'''
-    '''Geometric (infinite) end-year net stock'''
-    '''Industrial buildings (x 1,000,000): `v43980803`, `v43981843`, `v43982051`, `v43982259`, `v43982467`, `v43982675`, `v43982883`, `v43983091`, `v43983299`, \
-    `v43981011`, `v43981219`, `v43981427`, `v43981635`'''
-    '''Industrial machinery (x 1,000,000): `v43980794`, `v43981834`, `v43982042`, `v43982250`, `v43982458`, `v43982666`, `v43982874`, `v43983082`, `v43983290`, \
-    `v43981002`, `v43981210`, `v43981418`, `v43981626`'''
-    # SERIES_IDS = ('v43980803', 'v43981843', 'v43982051', 'v43982259',
-    #               'v43982467', 'v43982675', 'v43982883', 'v43983091',
-    #               'v43983299', 'v43981011', 'v43981219', 'v43981427',
-    #               'v43981635', 'v43980794', 'v43981834', 'v43982042',
-    #               'v43982250', 'v43982458', 'v43982666', 'v43982874',
-    #               'v43983082', 'v43983290', 'v43981002', 'v43981210',
-    #               'v43981418', 'v43981626',)
-    '''2.1.2. Current prices'''
-    '''Geometric (infinite) end-year net stock'''
-    '''Industrial buildings (x 1,000,000): `v43975395`, `v43977475`, `v43977891`, `v43978307`, `v43978723`, `v43979139`, `v43979555`, `v43979971`, `v43980387`, \
-    `v43975811`, `v43976227`, `v43976643`, `v43977059`'''
-    '''Industrial machinery (x 1,000,000): `v43975386`, `v43977466`, `v43977882`, `v43978298`, `v43978714`, `v43979130`, `v43979546`, `v43979962`, `v43980378`, \
-    `v43975802`, `v43976218`, `v43976634`, `v43977050`'''
-    # SERIES_IDS = ('v43975395', 'v43977475', 'v43977891', 'v43978307',
-    #               'v43978723', 'v43979139', 'v43979555', 'v43979971',
-    #               'v43980387', 'v43975811', 'v43976227', 'v43976643',
-    #               'v43977059', 'v43975386', 'v43977466', 'v43977882',
-    #               'v43978298', 'v43978714', 'v43979130', 'v43979546',
-    #               'v43979962', 'v43980378', 'v43975802', 'v43976218',
-    #               'v43976634', 'v43977050',)
+    # =========================================================================
+    # =========================================================================
+    # 2.i. Fixed Assets Block: `Industrial buildings`, `Industrial machinery` for `Newfoundland and Labrador`, `Prince Edward Island`, `Nova Scotia`, `New Brunswick`, \
+    # `Quebec`, `Ontario`, `Manitoba`, `Saskatchewan`, `Alberta`, `British Columbia`, `Yukon`, `Northwest Territories`, `Nunavut`
+    # 2.0. 2007 constant prices
+    # Geometric (infinite) end-year net stock
+    # Industrial buildings (x 1,000,000): `v43975603`, `v43977683`, `v43978099`, `v43978515`, `v43978931`, `v43979347`, `v43979763`, `v43980179`, `v43980595`, \
+    # `v43976019`, `v43976435`, `v43976851`, `v43977267`
+    # Industrial machinery (x 1,000,000): `v43975594`, `v43977674`, `v43978090`, `v43978506`, `v43978922`, `v43979338`, `v43979754`, `v43980170`, `v43980586`, \
+    # `v43976010`, `v43976426`, `v43976842`, `v43977258`
+    # =========================================================================
+    SERIES_IDS = (
+        'v43975603', 'v43977683', 'v43978099', 'v43978515', 'v43978931',
+        'v43979347', 'v43979763', 'v43980179', 'v43980595', 'v43976019',
+        'v43976435', 'v43976851', 'v43977267', 'v43975594', 'v43977674',
+        'v43978090', 'v43978506', 'v43978922', 'v43979338', 'v43979754',
+        'v43980170', 'v43980586', 'v43976010', 'v43976426', 'v43976842',
+        'v43977258',
+    )
+    # =========================================================================
+    # 2.1. Fixed Assets Block, Alternative Option Not Used
+    # 2.1.1. Chained (2007) dollars
+    # Geometric (infinite) end-year net stock
+    # Industrial buildings (x 1,000,000): `v43980803`, `v43981843`, `v43982051`, `v43982259`, `v43982467`, `v43982675`, `v43982883`, `v43983091`, `v43983299`, \
+    # `v43981011`, `v43981219`, `v43981427`, `v43981635`
+    # Industrial machinery (x 1,000,000): `v43980794`, `v43981834`, `v43982042`, `v43982250`, `v43982458`, `v43982666`, `v43982874`, `v43983082`, `v43983290`, \
+    # `v43981002`, `v43981210`, `v43981418`, `v43981626`
+    # =========================================================================
+    # SERIES_IDS = (
+    #     'v43980803', 'v43981843', 'v43982051', 'v43982259', 'v43982467',
+    #     'v43982675', 'v43982883', 'v43983091', 'v43983299', 'v43981011',
+    #     'v43981219', 'v43981427', 'v43981635', 'v43980794', 'v43981834',
+    #     'v43982042', 'v43982250', 'v43982458', 'v43982666', 'v43982874',
+    #     'v43983082', 'v43983290', 'v43981002', 'v43981210', 'v43981418',
+    #     'v43981626',
+    # )
+    # =========================================================================
+    # 2.1.2. Current prices
+    # Geometric (infinite) end-year net stock
+    # Industrial buildings (x 1,000,000): `v43975395`, `v43977475`, `v43977891`, `v43978307`, `v43978723`, `v43979139`, `v43979555`, `v43979971`, `v43980387`, \
+    # `v43975811`, `v43976227`, `v43976643`, `v43977059`
+    # Industrial machinery (x 1,000,000): `v43975386`, `v43977466`, `v43977882`, `v43978298`, `v43978714`, `v43979130`, `v43979546`, `v43979962`, `v43980378`, \
+    # `v43975802`, `v43976218`, `v43976634`, `v43977050`
+    # =========================================================================
+    # SERIES_IDS = (
+    #     'v43975395', 'v43977475', 'v43977891', 'v43978307', 'v43978723',
+    #     'v43979139', 'v43979555', 'v43979971', 'v43980387', 'v43975811',
+    #     'v43976227', 'v43976643', 'v43977059', 'v43975386', 'v43977466',
+    #     'v43977882', 'v43978298', 'v43978714', 'v43979130', 'v43979546',
+    #     'v43979962', 'v43980378', 'v43975802', 'v43976218', 'v43976634',
+    #     'v43977050',
+    # )
     capital = extract_can_fixed_assets(extract_can_capital_query_archived())
-    '''3.i. Production Block: `v65201809`, Preferred Over `v65201536` Which Is Quarterly'''
-    '''3.0. Production Block: `v65201809`'''
-    '''`v65201809` - 379-0031 Gross domestic product (GDP) at basic prices, by North American Industry Classification System (NAICS); Canada; Trading-day\
-    adjusted; 2007 constant prices; Manufacturing (x 1,000,000) (monthly, 1997-01-01 to 2017-10-01)'''
+    # =========================================================================
+    # 3.i. Production Block: `v65201809`, Preferred Over `v65201536` Which Is Quarterly
+    # 3.0. Production Block: `v65201809`
+    # `v65201809` - 379-0031 Gross domestic product (GDP) at basic prices, by North American Industry Classification System (NAICS); Canada; Trading-day\
+    # adjusted; 2007 constant prices; Manufacturing (x 1,000,000) (monthly, 1997-01-01 to 2017-10-01)
+    # =========================================================================
     product = extract_can_quarter(3790031, 'v65201809')
-    '''3.1. Production Block: `v65201536`, Alternative Option Not Used'''
-    '''`v65201536` - 379-0031 Gross domestic product (GDP) at basic prices, by North American Industry Classification System (NAICS); Canada; Seasonnaly\
-    adjusted at annual rates; 2007 constant prices; Manufacturing (x 1,000,000) (monthly, 1997-01-01 to 2017-10-01)'''
-    # =============================================================================
+    # =========================================================================
+    # 3.1. Production Block: `v65201536`, Alternative Option Not Used
+    # `v65201536` - 379-0031 Gross domestic product (GDP) at basic prices, by North American Industry Classification System (NAICS); Canada; Seasonnaly\
+    # adjusted at annual rates; 2007 constant prices; Manufacturing (x 1,000,000) (monthly, 1997-01-01 to 2017-10-01)
+    # =========================================================================
+    # =========================================================================
     # extract_can_quarter(3790031, 'v65201536')
-    # =============================================================================
-    data_frame = pd.concat(
+    # =========================================================================
+    df = pd.concat(
         [
             capital,
             labor,
             product
         ], axis=1, sort=True).dropna(axis=0)
-    data_frame.columns = ['capital', 'labor', 'product']
-    return data_frame
+    df.columns = ['capital', 'labor', 'product']
+    return df
 
 
 def get_data_can_price_a():
     FILE_NAME = '/home/alexander/projects/stat_can_cap.xlsx'
     data = pd.read_excel(FILE_NAME)
     data.set_index(data.columns[0], inplace=True)
-    groups = [[[i, 5 + i] for i in range(5)],
-              # [[i, 10 + i] for i in range(5)],
-              [[i, 5 + i] for i in range(35, 39)],
-              # [[i, 10 + i] for i in range(35, 40)],
+    groups = [[[_, 5 + _] for _ in range(5)],
+              # [[_, 10 + _] for _ in range(5)],
+              [[_, 5 + _] for _ in range(35, 39)],
+              # [[_, 10 + _] for _ in range(35, 40)],
               ]
     combined = DataFrame()
     for pairs in groups:
@@ -490,9 +507,9 @@ def get_data_can_price_b():
     data = pd.read_excel(FILE_NAME)
     data.set_index(data.columns[0], inplace=True)
     combined = DataFrame()
-    for i in [i for i in range(21, 24)]:
-        chunk = data.iloc[:, [i]].dropna(axis=0)
-        chunk[f'{data.columns[i]}_prc'] = chunk.iloc[:, 0].div(
+    for _ in [_ for _ in range(21, 24)]:
+        chunk = data.iloc[:, [_]].dropna(axis=0)
+        chunk[f'{data.columns[_]}_prc'] = chunk.iloc[:, 0].div(
             chunk.iloc[:, 0].shift(1)).sub(1)
         chunk.dropna(axis=0, inplace=True)
         combined = pd.concat([combined, chunk.iloc[:, [1]]],
@@ -636,16 +653,16 @@ def get_data_capital_purchases():
         [extract_usa_census(*_[:2]).mul(_[-1]) for _ in _args],
         axis=1,
         sort=True)
-    data_frame = pd.concat([_data_frame, data_frame_], axis=1, sort=True)
-    data_frame = data_frame[data_frame.index.get_loc(1875):]
-    data_frame['total'] = data_frame.loc[:, [
+    df = pd.concat([_data_frame, data_frame_], axis=1, sort=True)
+    df = df[df.index.get_loc(1875):]
+    df['total'] = df.loc[:, [
         'CDT2S1', 'J0149', 'P0107']].mean(axis=1)
-    data_frame['struc'] = data_frame.loc[:, ['J0150', 'P0108']].mean(axis=1)
-    data_frame['equip'] = data_frame.loc[:, ['J0151', 'P0109']].mean(axis=1)
-    data_frame.iloc[:, -3] = signal.wiener(data_frame.iloc[:, -3]).round()
-    data_frame.iloc[:, -2] = signal.wiener(data_frame.iloc[:, -2]).round()
-    data_frame.iloc[:, -1] = signal.wiener(data_frame.iloc[:, -1]).round()
-    return data_frame
+    df['struc'] = df.loc[:, ['J0150', 'P0108']].mean(axis=1)
+    df['equip'] = df.loc[:, ['J0151', 'P0109']].mean(axis=1)
+    df.iloc[:, -3] = signal.wiener(df.iloc[:, -3]).round()
+    df.iloc[:, -2] = signal.wiener(df.iloc[:, -2]).round()
+    df.iloc[:, -1] = signal.wiener(df.iloc[:, -1]).round()
+    return df
 
 
 def get_data_census_a():
@@ -667,11 +684,11 @@ def get_data_census_a():
         'P0017',)
     _args = [tuple((ARCHIVE_NAMES[1], series_id,)) if series_id.startswith(
         'P') else tuple((ARCHIVE_NAMES[0], series_id,)) for series_id in SERIES_IDS]
-    data_frame = pd.concat([extract_usa_census(*_)
+    df = pd.concat([extract_usa_census(*_)
                            for _ in _args], axis=1, sort=True)
-    data_frame = data_frame.div(
-        data_frame.iloc[data_frame.index.get_loc(1899), :]).mul(100)
-    return data_frame, data_frame.index.get_loc(1899)
+    df = df.div(
+        df.iloc[df.index.get_loc(1899), :]).mul(100)
+    return df, df.index.get_loc(1899)
 
 
 def get_data_census_b_a():
@@ -685,7 +702,8 @@ def get_data_census_b_a():
         # P0107, P0108, P0109, P0113, P0114, P0115 -- Nominal Series, USD Billions
         # P0110, P0111, P0112, P0116, P0117, P0118, P0119, P0120, P0121, P0122 -- Real Series, 1958=100, USD Billions
         # =====================================================================
-        'dataset_usa_census1975.zip',)
+        'dataset_usa_census1975.zip',
+    )
     SERIES_IDS = (
         'J0149', 'J0150', 'J0151', 'P0107', 'P0108', 'P0109', 'P0110',
         'P0111', 'P0112', 'P0113', 'P0114', 'P0115', 'P0116', 'P0117',
@@ -693,18 +711,21 @@ def get_data_census_b_a():
     )
     _args = [(tuple((ARCHIVE_NAMES[0], series_id, 1,)), tuple((ARCHIVE_NAMES[1], series_id, 1000,)))[
         series_id.startswith('P')] for series_id in SERIES_IDS]
-    data_frame = pd.concat(
+    df = pd.concat(
         [extract_usa_census(*_[:2]).mul(_[-1]) for _ in _args],
         axis=1,
         sort=True)
-    data_frame = data_frame[data_frame.index.get_loc(1875):]
-    data_frame['total'] = data_frame.loc[:, ['J0149', 'P0107']].mean(axis=1)
-    data_frame['struc'] = data_frame.loc[:, ['J0150', 'P0108']].mean(axis=1)
-    data_frame['equip'] = data_frame.loc[:, ['J0151', 'P0109']].mean(axis=1)
-    # data_frame.iloc[:, -3] = signal.wiener(data_frame.iloc[:, -3]).round()
-    # data_frame.iloc[:, -2] = signal.wiener(data_frame.iloc[:, -2]).round()
-    # data_frame.iloc[:, -1] = signal.wiener(data_frame.iloc[:, -1]).round()
-    return data_frame.iloc[:, -3:]
+    # =========================================================================
+    # TODO: Use .truncate
+    # =========================================================================
+    df = df[df.index.get_loc(1875):]
+    df['total'] = df.loc[:, ['J0149', 'P0107']].mean(axis=1)
+    df['struc'] = df.loc[:, ['J0150', 'P0108']].mean(axis=1)
+    df['equip'] = df.loc[:, ['J0151', 'P0109']].mean(axis=1)
+    # df.iloc[:, -3] = signal.wiener(df.iloc[:, -3]).round()
+    # df.iloc[:, -2] = signal.wiener(df.iloc[:, -2]).round()
+    # df.iloc[:, -1] = signal.wiener(df.iloc[:, -1]).round()
+    return df.iloc[:, -3:]
 
 
 def get_data_census_b_b():
@@ -742,15 +763,15 @@ def get_data_census_b_b():
         _data_frame.iloc[:, 10])
     _data_frame['depreciat_equip'] = _data_frame.iloc[:, 8].div(
         _data_frame.iloc[:, 11])
-    data_frame = pd.concat(
+    df = pd.concat(
         [
             price_inverse_single(
-                _data_frame.iloc[:, [-(1+i)]].dropna()).dropna() for i in range(6)
+                _data_frame.iloc[:, [-(1+_)]].dropna()).dropna() for _ in range(6)
         ],
         axis=1,
         sort=True)
-    data_frame['census_fused'] = data_frame.mean(axis=1)
-    return data_frame.iloc[:, [-1]]
+    df['census_fused'] = df.mean(axis=1)
+    return df.iloc[:, [-1]]
 
 
 def get_data_census_c() -> tuple[DataFrame, tuple[int]]:
@@ -766,18 +787,17 @@ def get_data_census_c() -> tuple[DataFrame, tuple[int]]:
     # TODO: Extract Base Years
     # =========================================================================
     BASE_YEARS = (1875, 1875, 1875, 1875, 1875, 1909, 1880, 1875, 1875,)
-    data_frame = pd.concat(
+    df = pd.concat(
         [
             extract_usa_census(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
         sort=True)
-    for _ in range(data_frame.shape[1]):
-        base_year = data_frame.index.get_loc(BASE_YEARS[_])
-        data_frame.iloc[:, _] = data_frame.iloc[:, _].div(
-            data_frame.iloc[base_year, _]).mul(100)
-    return data_frame, BASE_YEARS
+    for _ in range(df.shape[1]):
+        base_year = df.index.get_loc(BASE_YEARS[_])
+        df.iloc[:, _] = df.iloc[:, _].div(df.iloc[base_year, _]).mul(100)
+    return df, BASE_YEARS
 
 
 def get_data_census_e() -> DataFrame:
@@ -789,7 +809,7 @@ def get_data_census_e() -> DataFrame:
         'C0108', 'C0109', 'C0111', 'C0112', 'C0113', 'C0114', 'C0115', 'C0117',
         'C0118', 'C0119',
     )
-    data_frame = pd.concat(
+    df = pd.concat(
         [
             extract_usa_census(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
@@ -797,8 +817,8 @@ def get_data_census_e() -> DataFrame:
         axis=1,
         sort=True)
 
-    data_frame['C89'] = data_frame.sum(1)
-    return data_frame.iloc[:, [-1]]
+    df['C89'] = df.sum(1)
+    return df.iloc[:, [-1]]
 
 
 def get_data_census_f() -> DataFrame:
@@ -824,15 +844,15 @@ def get_data_census_g() -> DataFrame:
     '''Census Gross National Product Series'''
     ARCHIVE_NAME = 'dataset_usa_census1975.zip'
     SERIES_IDS = ('F0003', 'F0004',)
-    data_frame = pd.concat(
+    df = pd.concat(
         [
             extract_usa_census(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
         sort=True)
-    data_frame = data_frame[data_frame.index.get_loc(1889):]
-    return data_frame.div(data_frame.iloc[0, :]).mul(100)
+    df = df[df.index.get_loc(1889):]
+    return df.div(df.iloc[0, :]).mul(100)
 
 
 def get_data_census_i_a() -> DataFrame:
@@ -921,10 +941,18 @@ def get_data_census_price() -> DataFrame:
     return df.iloc[:, [-1]].dropna(axis=0)
 
 
-def get_data_centered_by_period(data_frame: DataFrame) -> DataFrame:
+def get_data_centered_by_period(df: DataFrame) -> DataFrame:
     '''
-    data_frame.index: Period,
-    data_frame.iloc[:, 0]: Series
+    Parameters
+    ----------
+    df : DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Target Series
+    ================== =================================
+    Returns
+    -------
+    DataFrame
     '''
     # =========================================================================
     # TODO: Any Use?
@@ -932,7 +960,7 @@ def get_data_centered_by_period(data_frame: DataFrame) -> DataFrame:
     # =========================================================================
     # DataFrame for Results
     # =========================================================================
-    _data = data_frame.reset_index(level=0).copy()
+    _data = df.reset_index(level=0).copy()
     period = _data.iloc[:, 0]
     series = _data.iloc[:, 1]
     # =========================================================================
@@ -989,9 +1017,9 @@ def get_data_cobb_douglas_deflator():
     # =========================================================================
     # =========================================================================
     # Correlation Test:
-    # `data_frame.corr(method='kendall')`
-    # `data_frame.corr(method='pearson')`
-    # `data_frame.corr(method='spearman')`
+    # `df.corr(method='kendall')`
+    # `df.corr(method='pearson')`
+    # `df.corr(method='spearman')`
     # Correlation Test Result: kendall & pearson & spearman: L2, L15, E7, E23, E40, E68
     # =========================================================================
     ARCHIVE_NAMES = (
@@ -1038,7 +1066,7 @@ def get_data_cobb_douglas_deflator():
         'mcn31gd1es00',
         'mcntotl1si00',
     )
-    data_frame = pd.concat(
+    df = pd.concat(
         [
             pd.concat(
                 [
@@ -1070,19 +1098,19 @@ def get_data_cobb_douglas_deflator():
     # Bureau of Economic Analysis
     # =========================================================================
     web_data = extract_usa_bea_from_url(URL)
-    data_frame = pd.concat(
+    df = pd.concat(
         [
             # =================================================================
             # Bureau of the Census
             # =================================================================
-            data_frame,
+            df,
             # =================================================================
             # Bureau of Economic Analysis
             # =================================================================
             pd.concat(
                 [
                     extract_usa_bea_from_loaded(**{
-                        'data_frame': web_data,
+                        'df': web_data,
                         'series_id': series_id,
                     }
                     )
@@ -1099,11 +1127,11 @@ def get_data_cobb_douglas_deflator():
         axis=1,
         sort=True
     ).truncate(before=1794)
-    data_frame['fa_def_cs'] = data_frame.loc[:, CS_SERIES_IDS[-2]].div(
-        data_frame.loc[:, CS_SERIES_IDS[-1]])
-    data_frame['ppi_bea'] = data_frame.loc[:, BE_SERIES_IDS[0]].div(
-        data_frame.loc[:, BE_SERIES_IDS[1]]).div(data_frame.loc[2012, BE_SERIES_IDS[0]]).mul(100)
-    data_frame.drop(
+    df['fa_def_cs'] = df.loc[:, CS_SERIES_IDS[-2]].div(
+        df.loc[:, CS_SERIES_IDS[-1]])
+    df['ppi_bea'] = df.loc[:, BE_SERIES_IDS[0]].div(
+        df.loc[:, BE_SERIES_IDS[1]]).div(df.loc[2012, BE_SERIES_IDS[0]]).mul(100)
+    df.drop(
         [*CS_SERIES_IDS[-2:], *BE_SERIES_IDS[:2]],
         axis=1,
         inplace=True
@@ -1111,12 +1139,12 @@ def get_data_cobb_douglas_deflator():
     # =========================================================================
     # Strip Deflators
     # =========================================================================
-    for _ in range(data_frame.shape[1]):
-        data_frame.iloc[:, _] = strip_cumulated_deflator(
-            data_frame.iloc[:, [_]]
+    for _ in range(df.shape[1]):
+        df.iloc[:, _] = strip_cumulated_deflator(
+            df.iloc[:, [_]]
         )
-    data_frame['def_mean'] = data_frame.mean(axis=1)
-    return data_frame.iloc[:, [-1]].dropna()
+    df['def_mean'] = df.mean(axis=1)
+    return df.iloc[:, [-1]].dropna()
 
 
 def get_data_cobb_douglas_extension_capital() -> DataFrame:
@@ -1221,7 +1249,7 @@ def get_data_cobb_douglas_extension_labor():
         extract_usa_census,
         extract_usa_classic,
     )
-    data_frame = pd.concat(
+    df = pd.concat(
         [
             partial(func, **{'archive_name': archive_name,
                              'series_id': series_id})()
@@ -1249,9 +1277,9 @@ def get_data_cobb_douglas_extension_labor():
     )
     data_nipa['bea_mfg_labor'] = data_nipa.mean(axis=1)
     data_nipa = data_nipa.iloc[:, [-1]]
-    data_frame = pd.concat(
+    df = pd.concat(
         [
-            data_frame,
+            df,
             data_nipa,
             # =================================================================
             # Yu.V. Kurenkov
@@ -1260,11 +1288,11 @@ def get_data_cobb_douglas_extension_labor():
         ],
         axis=1, sort=True
     )
-    data_frame.drop(data_frame[data_frame.index < 1889].index, inplace=True)
-    data_frame.iloc[:, 6] = data_frame.iloc[:, 6].mul(data_frame.iloc[data_frame.index.get_loc(
-        1899), 0]).div(data_frame.iloc[data_frame.index.get_loc(1899), 6])
-    data_frame['labor'] = data_frame.iloc[:, [0, 1, 3, 6, 7, 8]].mean(axis=1)
-    return data_frame.iloc[:, [-1]]
+    df.drop(df[df.index < 1889].index, inplace=True)
+    df.iloc[:, 6] = df.iloc[:, 6].mul(df.iloc[df.index.get_loc(
+        1899), 0]).div(df.iloc[df.index.get_loc(1899), 6])
+    df['labor'] = df.iloc[:, [0, 1, 3, 6, 7, 8]].mean(axis=1)
+    return df.iloc[:, [-1]]
 
 
 def get_data_cobb_douglas_extension_product():
@@ -1298,7 +1326,7 @@ def get_data_cobb_douglas_extension_product():
         extract_usa_census,
         extract_usa_classic,
     )
-    data_frame = pd.concat(
+    df = pd.concat(
         [
             partial(func, **{'archive_name': archive_name,
                              'series_id': series_id})()
@@ -1308,9 +1336,9 @@ def get_data_cobb_douglas_extension_product():
         sort=True
     )
     FILE_NAME = 'dataset_usa_davis-j-h-ip-total.xls'
-    data_frame = pd.concat(
+    df = pd.concat(
         [
-            data_frame,
+            df,
             # =================================================================
             # Joseph H. Davis Production Index
             # =================================================================
@@ -1324,17 +1352,17 @@ def get_data_cobb_douglas_extension_product():
         axis=1,
         sort=True
     )
-    data_frame.iloc[:, 1] = data_frame.iloc[:, 1].div(
-        data_frame.iloc[data_frame.index.get_loc(1899), 1]).mul(100)
-    data_frame.iloc[:, 4] = data_frame.iloc[:, 4].div(
-        data_frame.iloc[data_frame.index.get_loc(1899), 4]).mul(100)
-    data_frame.iloc[:, 5] = data_frame.iloc[:, 5].div(
-        data_frame.iloc[data_frame.index.get_loc(1939), 5]).mul(100)
-    data_frame['fused_classic'] = data_frame.iloc[:, range(5)].mean(axis=1)
-    data_frame.iloc[:, -1] = data_frame.iloc[:, -1].div(
-        data_frame.iloc[data_frame.index.get_loc(1939), -1]).mul(100)
-    data_frame['fused'] = data_frame.iloc[:, -2:].mean(axis=1)
-    return data_frame.iloc[:, [-1]]
+    df.iloc[:, 1] = df.iloc[:, 1].div(
+        df.iloc[df.index.get_loc(1899), 1]).mul(100)
+    df.iloc[:, 4] = df.iloc[:, 4].div(
+        df.iloc[df.index.get_loc(1899), 4]).mul(100)
+    df.iloc[:, 5] = df.iloc[:, 5].div(
+        df.iloc[df.index.get_loc(1939), 5]).mul(100)
+    df['fused_classic'] = df.iloc[:, range(5)].mean(axis=1)
+    df.iloc[:, -1] = df.iloc[:, -1].div(
+        df.iloc[df.index.get_loc(1939), -1]).mul(100)
+    df['fused'] = df.iloc[:, -2:].mean(axis=1)
+    return df.iloc[:, [-1]]
 
 
 def get_data_cobb_douglas_price() -> DataFrame:
@@ -1388,7 +1416,7 @@ def get_data_cobb_douglas(series_number: int = 3) -> DataFrame:
         extract_usa_census,
         extract_usa_classic,
     )
-    data_frame = pd.concat(
+    df = pd.concat(
         [
             partial(func, **{'archive_name': archive_name,
                              'series_id': series_id})()
@@ -1397,8 +1425,8 @@ def get_data_cobb_douglas(series_number: int = 3) -> DataFrame:
         axis=1,
         sort=True
     ).dropna(axis=0)
-    data_frame.columns = SERIES_IDS.values()
-    return data_frame.div(data_frame.iloc[0, :]).iloc[:, range(series_number)]
+    df.columns = SERIES_IDS.values()
+    return df.div(df.iloc[0, :]).iloc[:, range(series_number)]
 
 
 def get_data_combined():
@@ -1670,24 +1698,26 @@ def get_data_combined_archived():
     )
     ARCHIVE_NAME = 'dataset_usa_census1975.zip'
     SERIES_ID = 'X0414'
-    data_frame = pd.concat(
-        [_data_nipa,
-         _data_sfat,
-         _data,
-         # ====================================================================
-         # Labor Series
-         # ====================================================================
-         get_data_usa_bea_labor_mfg(),
-         extract_usa_census(ARCHIVE_NAME, SERIES_ID),
-         get_data_usa_frb_ms()],
+    df = pd.concat(
+        [
+            _data_nipa,
+            _data_sfat,
+            _data,
+            # =================================================================
+            # Labor Series
+            # =================================================================
+            get_data_usa_bea_labor_mfg(),
+            extract_usa_census(ARCHIVE_NAME, SERIES_ID),
+            get_data_usa_frb_ms(),
+        ],
         axis=1,
         sort=True
     )
-    return data_frame.iloc[:, [0, 1, 2, 3, 4, 7, 5, 6, 18, 9, 10, 8, 11, 12, 13, 14, 15, 16, 19, 20, 17, ]]
+    return df.iloc[:, [0, 1, 2, 3, 4, 7, 5, 6, 18, 9, 10, 8, 11, 12, 13, 14, 15, 16, 19, 20, 17, ]]
 
 
 def get_data_common_archived():
-    """Data Fetch"""
+    '''Data Fetch'''
     ARCHIVE_NAMES = (
         'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1929_1969.zip',
         'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1969_2015.zip',
@@ -1807,14 +1837,14 @@ def get_data_douglas():
     '''Douglas Data Preprocessing'''
     ARCHIVE_NAME = 'dataset_douglas.zip'
     SERIES_IDS = ('DT19AS03', 'DT19AS02', 'DT19AS01',)
-    data_frame = pd.concat(
+    df = pd.concat(
         [
             extract_usa_classic(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
         sort=True)
-    return data_frame.div(data_frame.iloc[data_frame.index.get_loc(1899), :])
+    return df.div(df.iloc[df.index.get_loc(1899), :])
 
 
 def get_data_local():
@@ -1900,7 +1930,7 @@ def get_data() -> DataFrame:
         sort=True
     ).dropna(axis=0)
     capital['capital_real'] = capital.iloc[:, 0].div(capital.iloc[:, 1])
-    data_frame = pd.concat(
+    df = pd.concat(
         [
             capital.iloc[:, [-1]],
             # =================================================================
@@ -1915,7 +1945,7 @@ def get_data() -> DataFrame:
         axis=1,
         sort=True
     ).dropna(axis=0)
-    return data_frame.div(data_frame.iloc[0, :])
+    return df.div(df.iloc[0, :])
 
 
 def get_data_updated():
@@ -2013,15 +2043,15 @@ def get_data_usa_bea_labor():
         '60800D Ann',
     )
     SERIES_ID = 'A4601C0'
-    data_frame = pd.concat(
+    df = pd.concat(
         [
             extract_usa_bea(archive_name, wb, sh, SERIES_ID)
             for archive_name, wb, sh in zip(ARCHIVE_NAMES, WB_NAMES, SH_NAMES)
         ],
         axis=1,
         sort=True)
-    data_frame[SERIES_ID] = data_frame.mean(axis=1)
-    return data_frame.iloc[:, [-1]].dropna(axis=0)
+    df[SERIES_ID] = df.mean(axis=1)
+    return df.iloc[:, [-1]].dropna(axis=0)
 
 
 def get_data_usa_bea_labor_mfg():
@@ -2060,38 +2090,37 @@ def get_data_usa_bea_labor_mfg():
         'A4313C0',
         'N4313C0',
     )
-    data_frame = pd.concat(
+    df = pd.concat(
         [
             extract_usa_bea(archive_name, wb, sh, _id)
             for archive_name, wb, sh, _id in zip(ARCHIVE_NAMES, WB_NAMES, SH_NAMES, SERIES_IDS)
         ],
         axis=1,
         sort=True)
-    data_frame['mfg_labor'] = data_frame.mean(axis=1)
-    return data_frame.iloc[:, [-1]].dropna(axis=0)
+    df['mfg_labor'] = df.mean(axis=1)
+    return df.iloc[:, [-1]].dropna(axis=0)
 
 
 def get_data_usa_bls_cpiu():
     '''BLS CPI-U Price Index Fetch'''
     FILE_NAME = 'dataset_usa_bls_cpiai.txt'
-    data_frame = pd.read_csv(FILE_NAME,
-                             sep='\s+',
-                             index_col=0,
-                             usecols=range(13),
-                             skiprows=16)
-    data_frame.rename_axis('period', inplace=True)
-    data_frame['mean'] = data_frame.mean(axis=1)
-    data_frame['sqrt'] = data_frame.iloc[:, :-1].prod(1).pow(1/12)
+    df = pd.read_csv(
+        FILE_NAME,
+        sep='\s+',
+        index_col=0,
+        usecols=range(13),
+        skiprows=16
+    )
+    df.rename_axis('period', inplace=True)
+    df['mean'] = df.mean(axis=1)
+    df['sqrt'] = df.iloc[:, :-1].prod(1).pow(1/12)
     # =========================================================================
     # Tests
     # =========================================================================
-    data_frame['mean_less_sqrt'] = data_frame.iloc[:, -
-                                                   2].sub(data_frame.iloc[:, -1])
-    data_frame['dec_on_dec'] = data_frame.iloc[:, -
-                                               3].div(data_frame.iloc[:, -3].shift(1)).sub(1)
-    data_frame['mean_on_mean'] = data_frame.iloc[:, -
-                                                 4].div(data_frame.iloc[:, -4].shift(1)).sub(1)
-    return data_frame.iloc[:, [-1]].dropna(axis=0)
+    df['mean_less_sqrt'] = df.iloc[:, -2].sub(df.iloc[:, -1])
+    df['dec_on_dec'] = df.iloc[:, -3].div(df.iloc[:, -3].shift(1)).sub(1)
+    df['mean_on_mean'] = df.iloc[:, -4].div(df.iloc[:, -4].shift(1)).sub(1)
+    return df.iloc[:, [-1]].dropna(axis=0)
 
 
 def get_data_usa_capital():
@@ -2114,7 +2143,7 @@ def get_data_usa_capital():
         # =====================================================================
         'CDT2S4',
     )
-    data_frame = pd.concat(
+    df = pd.concat(
         [
             extract_usa_classic(ARCHIVE_NAME, series_id) for series_id in SERIES_IDS
         ],
@@ -2132,9 +2161,9 @@ def get_data_usa_capital():
         # =====================================================================
         'k3n31gd1es00',
     )
-    data_frame = pd.concat(
+    df = pd.concat(
         [
-            data_frame,
+            df,
             pd.concat(
                 [
                     extract_usa_bea_from_loaded(_data_frame, series_id) for series_id in SERIES_IDS
@@ -2175,7 +2204,7 @@ def get_data_usa_capital():
     )
     return pd.concat(
         [
-            data_frame,
+            df,
             pd.concat(
                 [
                     partial(func, **{'archive_name': archive_name,
@@ -2200,31 +2229,31 @@ def get_data_usa_frb_cu():
     CAPUTL.B50001.A Fetching'''
     FILE_NAME = 'dataset_usa_frb_g17_all_annual_2013_06_23.csv'
     SERIES_ID = 'CAPUTLB50001A'
-    data_frame = pd.read_csv(FILE_NAME, skiprows=1, usecols=range(5, 100))
-    data_frame.columns = ['period', *data_frame.columns[1:]]
-    data_frame.iloc[:, 0] = data_frame.iloc[:, 0].str.replace(r"[,@\'?\.$%_]",
+    df = pd.read_csv(FILE_NAME, skiprows=1, usecols=range(5, 100))
+    df.columns = ['period', *df.columns[1:]]
+    df.iloc[:, 0] = df.iloc[:, 0].str.replace(r"[,@\'?\.$%_]",
                                                               '',
                                                               regex=True)
-    data_frame = data_frame.set_index(data_frame.columns[0]).transpose()
-    data_frame.index = pd.to_numeric(data_frame.index, downcast='integer')
-    return data_frame.loc[:, [SERIES_ID]].dropna(axis=0)
+    df = df.set_index(df.columns[0]).transpose()
+    df.index = pd.to_numeric(df.index, downcast='integer')
+    return df.loc[:, [SERIES_ID]].dropna(axis=0)
 
 
 def get_data_usa_frb_fa():
     '''Returns Frame of Manufacturing Fixed Assets Series, Billion USD:
-    data_frame.iloc[:,0]: Nominal;
-    data_frame.iloc[:,1]: Real
+    df.iloc[:,0]: Nominal;
+    df.iloc[:,1]: Real
     '''
     FILE_NAME = 'dataset_usa_frb_invest_capital.csv'
-    data_frame = pd.read_csv(FILE_NAME,
+    df = pd.read_csv(FILE_NAME,
                              skiprows=4, skipfooter=688, engine='python')
-    data_frame.columns = ['period', *data_frame.columns[1:]]
-    data_frame = data_frame.set_index(data_frame.columns[0]).transpose()
-    data_frame.index = data_frame.index.astype(int)
-    data_frame['frb_nominal'] = ((data_frame.iloc[:, 1].mul(data_frame.iloc[:, 2]).div(data_frame.iloc[:, 0])).add(
-        data_frame.iloc[:, 4].mul(data_frame.iloc[:, 5]).div(data_frame.iloc[:, 3]))).div(1000)
-    data_frame['frb_real'] = data_frame.iloc[:, [2, 5]].sum(axis=1).div(1000)
-    return data_frame.iloc[:, -2:]
+    df.columns = ['period', *df.columns[1:]]
+    df = df.set_index(df.columns[0]).transpose()
+    df.index = df.index.astype(int)
+    df['frb_nominal'] = ((df.iloc[:, 1].mul(df.iloc[:, 2]).div(df.iloc[:, 0])).add(
+        df.iloc[:, 4].mul(df.iloc[:, 5]).div(df.iloc[:, 3]))).div(1000)
+    df['frb_real'] = df.iloc[:, [2, 5]].sum(axis=1).div(1000)
+    return df.iloc[:, -2:]
 
 
 def get_data_usa_frb_fa_def():
@@ -2232,14 +2261,14 @@ def get_data_usa_frb_fa_def():
     result_frame.iloc[:,0]: Deflator
     '''
     FILE_NAME = 'dataset_usa_frb_invest_capital.csv'
-    data_frame = pd.read_csv(FILE_NAME,
+    df = pd.read_csv(FILE_NAME,
                              skiprows=4, skipfooter=688, engine='python')
-    data_frame.columns = ['period', *data_frame.columns[1:]]
-    data_frame = data_frame.set_index(data_frame.columns[0]).transpose()
-    data_frame.index = data_frame.index.astype(int)
-    data_frame['fa_def_frb'] = (data_frame.iloc[:, [1, 4]].sum(axis=1)).div(
-        data_frame.iloc[:, [0, 3]].sum(axis=1))
-    return data_frame.iloc[:, [-1]]
+    df.columns = ['period', *df.columns[1:]]
+    df = df.set_index(df.columns[0]).transpose()
+    df.index = df.index.astype(int)
+    df['fa_def_frb'] = (df.iloc[:, [1, 4]].sum(axis=1)).div(
+        df.iloc[:, [0, 3]].sum(axis=1))
+    return df.iloc[:, [-1]]
 
 
 def get_data_usa_frb_ip():
@@ -2252,17 +2281,17 @@ def get_data_usa_frb_ip():
     # =========================================================================
     FILE_NAME = 'dataset_usa_frb_us3_ip_2018_09_02.csv'
     SERIES_ID = 'AIPMA_SA_IX'
-    data_frame = pd.read_csv(FILE_NAME, skiprows=7, parse_dates=[0])
-    data_frame.columns = [column.strip() for column in data_frame.columns]
-    data_frame = data_frame.loc[:, [data_frame.columns[0], SERIES_ID]]
-    data_frame['period'] = data_frame.iloc[:, 0].dt.year
-    return data_frame.groupby(data_frame.columns[-1]).mean()
+    df = pd.read_csv(FILE_NAME, skiprows=7, parse_dates=[0])
+    df.columns = [column.strip() for column in df.columns]
+    df = df.loc[:, [df.columns[0], SERIES_ID]]
+    df['period'] = df.iloc[:, 0].dt.year
+    return df.groupby(df.columns[-1]).mean()
 
 
 def get_data_usa_frb_ms() -> DataFrame:
     ''''Indexed Money Stock Measures (H.6) Series'''
     URL = 'https://www.federalreserve.gov/datadownload/Output.aspx?rel=H6&series=5398d8d1734b19f731aba3105eb36d47&lastobs=&from=01/01/1959&to=12/31/2018&filetype=csv&label=include&layout=seriescolumn'
-    data_frame = pd.read_csv(
+    df = pd.read_csv(
         io.BytesIO(requests.get(URL).content),
         names=['period', 'm1_m'],
         index_col=0,
@@ -2271,13 +2300,13 @@ def get_data_usa_frb_ms() -> DataFrame:
         parse_dates=True,
         thousands=','
     )
-    return data_frame.groupby(data_frame.index.year).mean()
+    return df.groupby(df.index.year).mean()
 
 
 def get_data_usa_mcconnel_a():
     SERIES_ID = 'Валовой внутренний продукт, млрд долл. США'
-    data_frame = extract_usa_mcconnel(SERIES_ID)
-    return data_frame[data_frame.index.get_loc(1980):]
+    df = extract_usa_mcconnel(SERIES_ID)
+    return df[df.index.get_loc(1980):]
 
 
 def get_data_usa_mcconnel_b():
@@ -2285,12 +2314,12 @@ def get_data_usa_mcconnel_b():
         'Ставка прайм-рейт, %': 'prime_rate',
         'Национальный доход, млрд долл. США': 'A032RC1',
     }
-    data_frame = pd.concat([extract_usa_mcconnel(series_id)
+    df = pd.concat([extract_usa_mcconnel(series_id)
                            for series_id in SERIES_IDS.keys()],
                            axis=1,
                            sort=True)
-    data_frame.columns = SERIES_IDS.values()
-    return data_frame[data_frame.index.get_loc(1980):]
+    df.columns = SERIES_IDS.values()
+    return df[df.index.get_loc(1980):]
 
 
 def get_data_usa_mcconnel_c():
@@ -2298,24 +2327,24 @@ def get_data_usa_mcconnel_c():
         'Ставка прайм-рейт, %': 'prime_rate',
         'Валовой объем внутренних частных инвестиций, млрд долл. США': 'A006RC1',
     }
-    data_frame = pd.concat([extract_usa_mcconnel(series_id)
+    df = pd.concat([extract_usa_mcconnel(series_id)
                            for series_id in SERIES_IDS.keys()],
                            axis=1,
                            sort=True)
-    data_frame.columns = SERIES_IDS.values()
-    return data_frame[data_frame.index.get_loc(1980):]
+    df.columns = SERIES_IDS.values()
+    return df[df.index.get_loc(1980):]
 
 
 def get_data_usa_sahr_infcf():
     '''Retrieve Yearly Price Rates from `dataset_usa_infcf16652007.zip`'''
     ARCHIVE_NAME = 'dataset_usa_infcf16652007.zip'
-    data_frame = pd.read_csv(ARCHIVE_NAME, usecols=range(4, 7))
+    _df = pd.read_csv(ARCHIVE_NAME, usecols=range(4, 7))
     result_frame = DataFrame()
     # =========================================================================
     # Retrieve First 14 Series
     # =========================================================================
-    for series_id in data_frame.iloc[:, 0].unique()[:14]:
-        chunk = data_frame[data_frame.iloc[:, 0] == series_id].iloc[:, [1, 2]]
+    for series_id in _df.iloc[:, 0].unique()[:14]:
+        chunk = _df[_df.iloc[:, 0] == series_id].iloc[:, [1, 2]]
         chunk.columns = [chunk.columns[0],
                          series_id.replace(' ', '_').lower()]
         chunk.set_index(chunk.columns[0], inplace=True)
@@ -2455,12 +2484,12 @@ def get_data_version_a():
 
 
 def get_data_version_b():
-    """
+    '''
     Returns
         data_frame_a: Capital, Labor, Product;
         data_frame_b: Capital, Labor, Product;
         data_frame_c: Capital, Labor, Product Adjusted to Capacity Utilisation
-    """
+    '''
     '''Data Fetch Revised'''
     KWARGS = {
         'archive_name': 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip',
@@ -2519,7 +2548,7 @@ def get_data_version_b():
 
 
 def get_data_version_c():
-    """Data Fetch"""
+    '''Data Fetch'''
     # =========================================================================
     # Data Fetch for Capital
     # Data Fetch for Capital Deflator
