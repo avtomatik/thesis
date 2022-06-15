@@ -8,9 +8,10 @@ Thesis Project
 '''
 
 
-from export.lib import extract_series_ids
-from export.lib import extract_can_fixed_assets
-from export.lib import extract_can_capital_query_archived
+import os
+from extract.lib import extract_series_ids
+from extract.lib import extract_can_fixed_assets
+from extract.lib import extract_can_capital_series_ids_archived
 from prepare.lib import get_data_combined_archived
 from prepare.lib import get_data_archived
 from prepare.lib import get_data_usa_mcconnel_a
@@ -46,10 +47,10 @@ from plot.lib import plot_built_in
 from plot.lib import plot_capital_modelling
 from plot.lib import plot_fourier_discrete
 from plot.lib import plot_elasticity
-from plot.lib import plot_kzf
+from plot.lib import plot_kol_zur_filter
 from plot.lib import plot_pearson_r_test
-from plot.lib import plot_rmf
-from plot.lib import plot_ses
+from plot.lib import plot_rolling_mean_filter
+from plot.lib import plot_ewm
 from plot.lib import plot_e
 from plot.lib import plot_kurenkov
 from plot.lib import plot_census_complex
@@ -102,6 +103,8 @@ print(__doc__)
 
 
 def main():
+    FOLDER = '/media/alexander/321B-6A94'
+    os.chdir(FOLDER)
     # =========================================================================
     # Subproject I. Approximation
     # =========================================================================
@@ -112,29 +115,20 @@ def main():
     `calculate_power_function_fit_params_b`: Power Function Approximation,
     `calculate_power_function_fit_params_c`: Power Function Approximation
     '''
-    source_frame = get_data_combined_archived()
-    result_frame_a = source_frame.iloc[:, [7, 6, 0, 6]]
-    result_frame_a = result_frame_a.dropna()
-    result_frame_a.reset_index(level=0, inplace=True)
-    result_frame_b = source_frame.iloc[:, [7, 6, 20, 4]]
-    result_frame_b = result_frame_b.dropna()
-    result_frame_b.reset_index(level=0, inplace=True)
-    result_frame_c = source_frame.iloc[:, [7, 6, 20, 6]]
-    result_frame_c = result_frame_c.dropna()
-    result_frame_c.reset_index(level=0, inplace=True)
-    plot_approx_linear(result_frame_a)
-    plot_approx_log_linear(result_frame_b)
-    plot_approx_log_linear(result_frame_c)
+    _df = get_data_combined_archived()
+    plot_approx_linear(_df.iloc[:, [7, 6, 0, 6]].dropna())
+    plot_approx_log_linear(_df.iloc[:, [7, 6, 20, 4]].dropna())
+    plot_approx_log_linear(_df.iloc[:, [7, 6, 20, 6]].dropna())
 
-    source_frame = get_data_usa_mcconnel_a()
-    calculate_power_function_fit_params_a(source_frame, 2800, 0.01, 0.5)
-
-    source_frame = get_data_usa_mcconnel_b()
+    calculate_power_function_fit_params_a(
+        get_data_usa_mcconnel_a(), (2800, 0.01, 0.5,)
+    )
     calculate_power_function_fit_params_b(
-        source_frame, 4, 12, 9000, 3000, 0.87)
-
-    source_frame = get_data_usa_mcconnel_c()
-    calculate_power_function_fit_params_c(source_frame, 1.5, 19, 1.7, 1760)
+        get_data_usa_mcconnel_b(), (4, 12, 9000, 3000, 0.87,)
+    )
+    calculate_power_function_fit_params_c(
+        get_data_usa_mcconnel_c(), (1.5, 19, 1.7, 1760,)
+    )
 
     # =========================================================================
     # Subproject II. Capital
@@ -147,105 +141,15 @@ def main():
     Original Result on Archived Data: {s_1;s_2} = {-7.28110931679034e-05;0.302917968959722}
     Original Result on Archived Data: {λ1;λ2} = {-0.000413347827690062;1.18883834418742}
     '''
-    result_frame_a, result_frame_b, A = get_data_archived()
-    result_frame_c, result_frame_d, B = get_data_updated()
-    plot_capital_modelling(result_frame_a, a)
-    plot_capital_modelling(result_frame_c, b)
-    '''Project: Discrete Fourier Transform based on Simpson's Rule Applied to Fixed Assets of the US'''
-    plot_fourier_discrete(result_frame_b)
-    plot_fourier_discrete(result_frame_d)
-
-    # =========================================================================
-    # Subproject III. Capital Interactive
-    # =========================================================================
-    '''
-    Alpha: Capital Retirement Ratio
-    Pi: Investment to Capital Conversion Ratio
-    # =========================================================================
-    # Project: Interactive Capital Acquisitions
-    # =========================================================================
-    Option 1
-        Define Number of Line Segments for Pi: 1
-        Number of Periods Provided: 1
-        Pi for Period from 1968 to 2010: 0
-    Option 2
-        Define Number of Line Segments for Pi: 1
-        Number of Periods Provided: 1
-        Pi for Period from 1968 to 2010: 1
-    Option 3
-        Define Number of Line Segments for Pi: 2
-        Number of Periods Provided: 2
-        Pi for Period from 1968 to 1981: 1
-        Pi for Period from 1982 to 2010: 0
-    Option 4
-        Define Number of Line Segments for Pi: 4
-        Number of Periods Provided: 4
-        Pi for Period from 1968 to 1981: 1
-        Pi for Period from 1982 to 1991: 0.537711622818944
-        Pi for Period from 1992 to 2001: 0.815869779361117
-        Pi for Period from 2002 to 2010: 0.956084835528969
-    # =========================================================================
-    # Project: Interactive Capital Retirement
-    # =========================================================================
-    Option 1
-        Define Number of Line Segments for Pi: 1
-        Number of Periods Provided: 1
-        Define Pi for Period from 1951 to 2011: 0
-    Option 2
-        Define Number of Line Segments for Pi: 2
-        Number of Periods Provided: 2
-        Select Row for Year: 52
-        Define Pi for Period from 1951 to 2003: 1
-        Define Pi for Period from 2003 to 2011: 1.4
-    Option 3
-        Define Number of Line Segments for Pi: 2
-        Number of Periods Provided: 2
-        Select Row for Year: 11
-        Define Pi for Period from 1951 to 1962: 0.0493299706940006
-        Define Pi for Period from 1962 to 2011: 0.0168837249983057
-    '''
-    result_frame = get_data_local()
-    # =========================================================================
-    # Nominal Investment
-    # =========================================================================
-    result_frame['IRU'] = result_frame.iloc[:, 0].mul(
-        result_frame.iloc[:, 2]).div(result_frame.iloc[:, 1])
-    # =========================================================================
-    # Nominal Product
-    # =========================================================================
-    result_frame['PNU'] = result_frame.iloc[:, 1]
-    # =========================================================================
-    # Real Product
-    # =========================================================================
-    result_frame['PRU'] = result_frame.iloc[:, 2]
-    # =========================================================================
-    # Maximum Nominal Product
-    # =========================================================================
-    result_frame['PNM'] = result_frame.iloc[:, 1].div(
-        result_frame.iloc[:, 3]).mul(100)
-    # =========================================================================
-    # Maximum Real Product
-    # =========================================================================
-    result_frame['PRM'] = result_frame.iloc[:, 2].div(
-        result_frame.iloc[:, 3]).mul(100)
-    # =========================================================================
-    # Labor
-    # =========================================================================
-    result_frame.rename(columns={'Labor': 'LUU'}, inplace=True)
-    # =========================================================================
-    # Fixed Assets, End-Period
-    # =========================================================================
-    result_frame['CRU'] = result_frame.iloc[:, 4].mul(
-        result_frame.iloc[:, 2]).div(result_frame.iloc[:, 1])
-    result_frame_a = result_frame.iloc[:, [6, 7, 8, 10, 11, 5]].dropna()
-    result_frame_b = result_frame.iloc[:, [6, 7, 8, 11, 5]].dropna()
-    result_frame_c = result_frame.iloc[:, [6, 9, 10, 11, 5]].dropna()
-    result_frame_a.reset_index(level=0, inplace=True)
-    result_frame_b.reset_index(level=0, inplace=True)
-    result_frame_c.reset_index(level=0, inplace=True)
-    calculate_capital_acquisition(result_frame_a)
-    calculate_capital_retirement(result_frame_b)
-    calculate_capital_retirement(result_frame_c)
+    df_a, df_b, _a = get_data_archived()
+    df_c, df_d, _b = get_data_updated()
+    plot_capital_modelling(df_a, _a)
+    plot_capital_modelling(df_c, _b)
+    # =============================================================================
+    # '''Project: Discrete Fourier Transform based on Simpson's Rule Applied to Fixed Assets of the US'''
+    # =============================================================================
+    plot_fourier_discrete(df_b)
+    plot_fourier_discrete(df_d)
 
     # =========================================================================
     # Subproject IV. Cobb--Douglas
@@ -253,40 +157,39 @@ def main():
     # =========================================================================
     # On Original Dataset
     # =========================================================================
-    source_frame = get_data_cobb_douglas()
-    result_frame_a = source_frame.iloc[:, [0, 1, 2]]
-    result_frame_b = source_frame.iloc[:, [0, 1, 3]]
-    result_frame_c = source_frame.iloc[:, [0, 1, 4]]
+    _df = transform_cobb_douglas()
+    df_a = _df.iloc[:, [0, 1, 2]]
+    df_b = _df.iloc[:, [0, 1, 3]]
+    df_c = _df.iloc[:, [0, 1, 4]]
     # =========================================================================
     # On Expanded Dataset
     # =========================================================================
-    result_frame_d, result_frame_e = get_data_version_a()
-    result_frame_f, result_frame_g, result_frame_h = get_data_version_b()
-    result_frame_i = dataset_version_c()
-    plot_cobb_douglas_complex(result_frame_a)
-    plot_cobb_douglas_complex(result_frame_b)
-    plot_cobb_douglas_complex(result_frame_c)
+    df_d, df_e = get_data_version_a()
+    df_f, df_g, df_h = get_data_version_b()
+    plot_cobb_douglas_complex(df_a)
+    plot_cobb_douglas_complex(df_b)
+    plot_cobb_douglas_complex(df_c)
     # =========================================================================
     # No Capacity Utilization Adjustment
     # =========================================================================
-    plot_cobb_douglas_complex(result_frame_d)
+    plot_cobb_douglas_complex(df_d)
     # =========================================================================
     # Capacity Utilization Adjustment
     # =========================================================================
-    plot_cobb_douglas_complex(result_frame_e)
+    plot_cobb_douglas_complex(df_e)
     # =========================================================================
     # Option: 1929--2013, No Capacity Utilization Adjustment
     # =========================================================================
-    plot_cobb_douglas_complex(result_frame_f)
+    plot_cobb_douglas_complex(df_f)
     # =========================================================================
     # Option: 1967--2013, No Capacity Utilization Adjustment
     # =========================================================================
-    plot_cobb_douglas_complex(result_frame_g)
+    plot_cobb_douglas_complex(df_g)
     # =========================================================================
     # Option: 1967--2012, Capacity Utilization Adjustment
     # =========================================================================
-    plot_cobb_douglas_complex(result_frame_h)
-    plot_cobb_douglas_complex(result_frame_i)
+    plot_cobb_douglas_complex(df_h)
+    plot_cobb_douglas_complex(dataset_version_c())
 
     # =========================================================================
     # Subproject V. Cobb--Douglas CAN
@@ -294,23 +197,19 @@ def main():
     # =========================================================================
     # First Figure: Exact Correspondence with `Note INTH05 2014-07-10.docx`
     # =========================================================================
-    source_frame = get_data_can()
-    source_frame = source_frame.div(source_frame.iloc[0, :])
-    plot_cobb_douglas_canada(source_frame)
-    plot_cobb_douglas_3d(source_frame)
+    _df = get_data_can()
+    _df = _df.div(_df.iloc[0, :])
+    plot_cobb_douglas_canada(_df)
+    plot_cobb_douglas_3d(_df)
 
     # =========================================================================
     # Subproject VI. Elasticity
     # =========================================================================
-    source_frame = get_data_combined_archived()
-    result_frame_a = source_frame.iloc[:, [7, 6, 4]]
-    result_frame_b = source_frame.iloc[:, [4]]
-    result_frame_a = result_frame_a.dropna()
-    result_frame_b = result_frame_b.dropna()
-    result_frame_a.reset_index(level=0, inplace=True)
-    result_frame_b.reset_index(level=0, inplace=True)
-    plot_elasticity(result_frame_a)
-    plot_growth_elasticity(result_frame_b)
+    _df = get_data_combined_archived()
+    df_a = _df.iloc[:, [7, 6, 4]].dropna()
+    df_b = _df.iloc[:, [4]].dropna()
+    plot_elasticity(df_a)
+    plot_growth_elasticity(df_b)
 
     # =========================================================================
     # Subproject VII. MSpline
@@ -318,65 +217,49 @@ def main():
     # =========================================================================
     # Makeshift Splines
     # =========================================================================
-    result_frame = get_data_cobb_douglas()
     # =========================================================================
-    #     Fixed Assets Turnover
+    # Fixed Assets Turnover
     # =========================================================================
-    result_frame['turnover'] = result_frame.iloc[:, 2].div(
-        result_frame.iloc[:, 0])
-    result_frame = result_frame.iloc[:, [5]]
-    result_frame.reset_index(level=0, inplace=True)
+    df = data_preprocessing_cobb_douglas(
+        transform_cobb_douglas())[0].iloc[:, [6]]
     # =========================================================================
     # Option 1
     # =========================================================================
-    m_spline_manager(result_frame, m_spline_lls, results_delivery_a)
+    m_spline_manager(df, m_spline_lls)
     # =========================================================================
     # Option 2.1.1
     # =========================================================================
-    m_spline_manager(result_frame, m_spline_ea, results_delivery_k)
+    m_spline_manager(df, m_spline_ea)
     # =========================================================================
     # Option 2.1.2
     # =========================================================================
-    m_spline_manager(result_frame, m_spline_eb, results_delivery_k)
+    m_spline_manager(df, m_spline_eb)
     # =========================================================================
     # Option 2.2.1
     # =========================================================================
-    m_spline_manager(result_frame, m_spline_la, results_delivery_k)
+    m_spline_manager(df, m_spline_la)
     # =========================================================================
     # Option 2.2.2
     # =========================================================================
-    m_spline_manager(result_frame, m_spline_lb, results_delivery_k)
+    m_spline_manager(df, m_spline_lb)
 
     # =========================================================================
     # Subproject VIII. Multiple
     # =========================================================================
-    source_frame = get_data_cobb_douglas()
-    source_frame['lab_cap_int'] = source_frame.iloc[:, 0].div(
-        source_frame.iloc[:, 1])
-    source_frame['lab_product'] = source_frame.iloc[:, 2].div(
-        source_frame.iloc[:, 1])
-    result_frame_a = source_frame.iloc[:, [0]]
-    result_frame_b = source_frame.iloc[:, [1]]
-    result_frame_c = source_frame.iloc[:, [2]]
-    result_frame_d = source_frame.iloc[:, [5]]
-    result_frame_e = source_frame.iloc[:, [6]]
-    plot_census_complex(result_frame_a)
-    plot_census_complex(result_frame_b)
-    plot_census_complex(result_frame_c)
-    plot_census_complex(result_frame_d)
-    plot_census_complex(result_frame_e)
+    df = transform_cobb_douglas()
 
-    SERIES_IDS = ('D0004', 'D0130', 'F0003', 'F0004', 'P0110',
-                  'U0001', 'U0008', 'X0414', 'X0415',)
+    for col in df.columns:
+        plot_census_complex(df.loc[:, col])
+
+    SERIES_IDS = (
+        'D0004', 'D0130', 'F0003', 'F0004', 'P0110', 'U0001', 'U0008', 'X0414', 'X0415',
+    )
     for series_id in SERIES_IDS:
-        print('Processing {}'.format(series_id))
-        source_frame = fetch_census('dataset_usa_census1975.zip', series_id)
-        plot_pearson_r_test(source_frame)
-
-        source_frame = fetch_census(
-            'dataset_usa_census1975.zip', series_id, False)
-        plot_kzf(source_frame)
-        plot_ses(source_frame, 5, 0.1)
+        print(f'Processing {series_id}')
+        _df = extract_usa_census('dataset_usa_census1975.zip', series_id)
+        plot_pearson_r_test(_df)
+        plot_kol_zur_filter(_df)
+        plot_ewm(_df, 5, 0.1)
 
     # =========================================================================
     # Subproject IX. USA BEA
@@ -386,42 +269,42 @@ def main():
     # =========================================================================
     # Project: Initial Version Dated: 05 October 2012
     # =========================================================================
-    result_frame_a_b = preprocessing_a(source_frame_a)
-    result_frame_a_c = preprocessing_a(source_frame_b)
-    plot_a(result_frame_a_b)
-    plot_a(result_frame_a_c)
+    df_a_b = preprocessing_a(source_frame_a)
+    df_a_c = preprocessing_a(source_frame_b)
+    plot_a(df_a_b)
+    plot_a(df_a_c)
     # =========================================================================
     # Project: Initial Version Dated: 23 November 2012
     # =========================================================================
-    result_frame_b_b = preprocessing_b(source_frame_a)
-    result_frame_b_c = preprocessing_b(source_frame_b)
-    plot_b(result_frame_b_b)
-    plot_b(result_frame_b_c)
+    df_b_b = preprocessing_b(source_frame_a)
+    df_b_c = preprocessing_b(source_frame_b)
+    plot_b(df_b_b)
+    plot_b(df_b_c)
     # =========================================================================
     # Project: Initial Version Dated: 16 June 2013
     # =========================================================================
-    result_frame_c_b = preprocessing_c(source_frame_a)
-    result_frame_c_c = preprocessing_c(source_frame_b)
-    plot_c(result_frame_c_b)
-    plot_c(result_frame_c_c)
+    df_c_b = preprocessing_c(source_frame_a)
+    df_c_c = preprocessing_c(source_frame_b)
+    plot_c(df_c_b)
+    plot_c(df_c_c)
     # =========================================================================
     # Project: Initial Version Dated: 15 June 2015
     # =========================================================================
-    result_frame_d = preprocessing_d(source_frame_b)
-    plot_d(result_frame_d)
+    df_d = preprocessing_d(source_frame_b)
+    plot_d(df_d)
     # =========================================================================
     # Project: Initial Version Dated: 17 February 2013
     # =========================================================================
-    result_frame_e_a, result_frame_e_b = preprocessing_e(source_frame_a)
-    plot_e(result_frame_e_a)
-    plot_e(result_frame_e_b)
+    df_e_a, df_e_b = preprocessing_e(source_frame_a)
+    plot_e(df_e_a)
+    plot_e(df_e_b)
     # =========================================================================
     # Project: BEA Data Compared with Kurenkov Yu.V. Data
     # =========================================================================
-    result_frame_f_a, result_frame_f_b, result_frame_f_c, result_frame_f_d = transform_kurenkov(
+    df_f_a, df_f_b, df_f_c, df_f_d = transform_kurenkov(
         source_frame_a)
-    plot_kurenkov(result_frame_f_a, result_frame_f_b,
-                  result_frame_f_c, result_frame_f_d)
+    plot_kurenkov(df_f_a, df_f_b,
+                  df_f_c, df_f_d)
 
     # =========================================================================
     # Subproject X. USA Census
@@ -437,7 +320,7 @@ def main():
         'P0265', 'P0266', 'P0267', 'P0268', 'P0269',
         'P0293', 'P0294', 'P0295',
     )
-    alternative = (
+    SEIRES_IDS_ALT = (
         'P0231', 'P0232', 'P0233', 'P0234', 'P0235',
         'P0236', 'P0237', 'P0238', 'P0239', 'P0240',
         'P0241', 'P0244', 'P0247', 'P0248', 'P0249',
@@ -452,9 +335,9 @@ def main():
     )
     plot_census_d(SERIES_IDS)
     plot_census_e(get_data_census_e())
-    result_frame = get_data_census_f()
-    plot_census_f_a(result_frame)
-    plot_census_f_b(result_frame)
+    df = get_data_census_f()
+    plot_census_f_a(df)
+    plot_census_f_b(df)
     plot_census_g(get_data_census_g())
     plot_census_h()
     plot_census_i(*get_data_census_i())
@@ -465,9 +348,11 @@ def main():
     # Subproject XI. USA Census J14
     # =========================================================================
     ARCHIVE_NAME = 'dataset_usa_census1949.zip'
-    plot_growth_elasticity(fetch_census(ARCHIVE_NAME, 'J0014', False))
-    ARCHIVE_NAME = 'dataset_usa_census1949.zip'
-    plot_rmf(fetch_census(ARCHIVE_NAME, 'J0014', False))
+    SERIES_ID = 'J0014'
+
+    df = extract_usa_census(ARCHIVE_NAME, SERIES_ID)
+    plot_growth_elasticity(df)
+    plot_rolling_mean_filter(df)
     # =========================================================================
     # Subproject XII. USA Douglas Kendrick
     # =========================================================================
