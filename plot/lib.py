@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame
 from toolkit.lib import rolling_mean_filter
+from toolkit.lib import calculate_capital
 from extract.lib import extract_usa_census_description
 from extract.lib import extract_usa_census
 
@@ -710,10 +711,20 @@ def plot_approx_log_linear(df: DataFrame) -> None:
 
 def plot_block_zer(df: DataFrame) -> None:
     '''
-    df.index: Period,
-    df.iloc[:, 0]: Capital,
-    df.iloc[:, 1]: Labor,
-    df.iloc[:, 2]: Product
+    Plotting
+
+    Parameters
+    ----------
+    df : DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Capital
+    df.iloc[:, 1]      Labor
+    df.iloc[:, 2]      Product
+    ================== =================================
+    Returns
+    -------
+    None
     '''
     # =========================================================================
     # Labor Capital Intensity
@@ -735,10 +746,20 @@ def plot_block_zer(df: DataFrame) -> None:
 
 def plot_block_one(df: DataFrame) -> None:
     '''
-    df.index: Period,
-    df.iloc[:, 0]: Capital,
-    df.iloc[:, 1]: Labor,
-    df.iloc[:, 2]: Product
+    Plotting
+
+    Parameters
+    ----------
+    df : DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Capital
+    df.iloc[:, 1]      Labor
+    df.iloc[:, 2]      Product
+    ================== =================================
+    Returns
+    -------
+    None
     '''
     # =========================================================================
     # TODO: Increase Cohesion
@@ -811,10 +832,20 @@ def plot_block_one(df: DataFrame) -> None:
 
 def plot_block_two(df: DataFrame) -> None:
     '''
-    df.index: Period,
-    df.iloc[:, 0]: Capital,
-    df.iloc[:, 1]: Labor,
-    df.iloc[:, 2]: Product
+    Plotting
+
+    Parameters
+    ----------
+    df : DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Capital
+    df.iloc[:, 1]      Labor
+    df.iloc[:, 2]      Product
+    ================== =================================
+    Returns
+    -------
+    None
     '''
     # =========================================================================
     # TODO: Increase Cohesion
@@ -900,19 +931,20 @@ def plot_built_in(module: callable) -> None:
     # =========================================================================
     FILE_NAMES = (
         'datasetAutocorrelation.txt',
-        'CHN_TUR_GDP.zip',
     )
-    data = pd.read_csv(FILE_NAMES[0])
-    for _, series_id in enumerate(sorted(set(data.iloc[:, 1])), start=1):
+    _df = pd.read_csv(FILE_NAMES[0])
+    for _, series_id in enumerate(sorted(set(_df.iloc[:, 1])), start=1):
         plt.figure(_)
-        module(extract_world_bank(data, series_id))
+        module(extract_worldbank(_df, series_id))
         plt.grid(True)
 
-    data = pd.read_csv(FILE_NAMES[1])
-    for _, series_id in enumerate(sorted(set(data.iloc[:, 1])), start=1):
-        plt.figure(_)
-        module(extract_world_bank(data, series_id))
-        plt.grid(True)
+    _df = extract_worldbank()
+    for _, country in enumerate(_df.columns, start=1):
+        chunk = _df.loc[:, [country]].dropna()
+        if not chunk.shape[0] == 0:
+            plt.figure(_)
+            module(chunk)
+            plt.grid(True)
 
     plt.show()
 
@@ -1120,6 +1152,19 @@ def plot_cobb_douglas(df: DataFrame, params: tuple[float], mapping: dict) -> Non
 def plot_cobb_douglas_3d(df: DataFrame) -> None:
     '''
     Cobb--Douglas 3D-Plotting
+
+    Parameters
+    ----------
+    df : DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Capital
+    df.iloc[:, 1]      Labor
+    df.iloc[:, 2]      Product
+    ================== =================================
+    Returns
+    -------
+    None
     '''
     assert df.shape[1] == 3
 
@@ -1306,9 +1351,9 @@ def plot_douglas(source, dictionary, num, start, stop, step, title, measure, lab
     # TODO: Revise
     # =========================================================================
     plt.figure(num)
-    for i in range(start, stop, step):
+    for _ in range(start, stop, step):
         plt.plot(extract_usa_classic(
-            source, dictionary.iloc[i, 0]), label=dictionary.iloc[i, 1])
+            source, dictionary.iloc[_, 0]), label=dictionary.iloc[_, 1])
     plt.title(title)
     plt.xlabel('Period')
     plt.ylabel(measure)
@@ -1321,12 +1366,18 @@ def plot_douglas(source, dictionary, num, start, stop, step, title, measure, lab
 
 def plot_elasticity(df: DataFrame) -> None:
     '''
+    Parameters
+    ----------
+    df : DataFrame
     ================== =================================
     df.index           Period
     df.iloc[:, 0]      Real Values for Price Deflator
     df.iloc[:, 1]      Nominal Values for Price Deflator
-    df.iloc[:, 2]      Focused Series
+    df.iloc[:, 2]      Target Series
     ================== =================================
+    Returns
+    -------
+    None
     '''
     df.iloc[:, -1] = pd.to_numeric(df.iloc[:, -1], errors='coerce')
     df.dropna(inplace=True)
@@ -1534,7 +1585,7 @@ def plot_growth_elasticity(df: DataFrame) -> None:
     '''Growth Elasticity Plotting
     ================== =================================
     df.index           Period
-    df.iloc[:, 0]      Series
+    df.iloc[:, 0]      Target Series
     ================== =================================
     '''
     # =========================================================================
@@ -1630,9 +1681,19 @@ def plot_is_lm() -> None:
 
 
 def plot_kol_zur_filter(df: DataFrame) -> None:
-    '''Kolmogorov--Zurbenko Filter
-        df.index: Period,
-        df.iloc[:, 0]: Series
+    '''
+    Kolmogorov--Zurbenko Filter
+
+    Parameters
+    ----------
+    df : DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Target Series
+    ================== =================================
+    Returns
+    -------
+    None
     '''
     data_frame_o, data_frame_e, residuals_o, residuals_e = kol_zur_filter(
         df)
@@ -1748,11 +1809,21 @@ def plot_kurenkov(data_frames: tuple[DataFrame]) -> None:
 
 
 def plot_lab_prod_polynomial(df: DataFrame) -> None:
-    '''Static Labor Productivity Approximation
-    df.index: Period,
-    df.iloc[:, 0]: Capital,
-    df.iloc[:, 1]: Labor,
-    df.iloc[:, 2]: Product
+    '''
+    Static Labor Productivity Approximation
+
+    Parameters
+    ----------
+    df : DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Capital
+    df.iloc[:, 1]      Labor
+    df.iloc[:, 2]      Product
+    ================== =================================
+    Yields
+    ------
+    None
     '''
     # =========================================================================
     # TODO: Increase Cohesion
@@ -1940,9 +2011,19 @@ def plot_pearson_r_test(df: DataFrame) -> None:
 
 
 def plot_rolling_mean_filter(df: DataFrame) -> None:
-    '''Rolling Mean Filter
-        df.index: Period;
-        df.iloc[:, 0]: Series
+    '''
+    Rolling Mean Filter
+
+    Parameters
+    ----------
+    df : DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Target Series
+    ================== =================================
+    Returns
+    -------
+    None
     '''
     data_frame_o, data_frame_e, residuals_o, residuals_e = rolling_mean_filter(
         df)
