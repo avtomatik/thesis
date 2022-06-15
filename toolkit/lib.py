@@ -8,9 +8,11 @@ Created on Sun Jun 12 12:25:52 2022
 
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 from pandas import DataFrame
 from scipy.interpolate import UnivariateSpline
+from sklearn.metrics import mean_squared_error
 
 
 def calculate_capital_acquisition(df: DataFrame) -> None:
