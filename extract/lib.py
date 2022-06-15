@@ -447,10 +447,26 @@ def extract_usa_nber(file_name: str, agg: str) -> DataFrame:
         return _df.groupby(_df.columns[0]).sum()
 
 
-def extract_world_bank(df: DataFrame, series_id: str) -> DataFrame:
+def _extract_worldbank(df: DataFrame, series_id: str) -> DataFrame:
     chunk = df[df.iloc[:, 1] == series_id].iloc[:, [0, 2]]
     chunk.columns = [chunk.columns[0], series_id]
     return chunk.set_index(df.columns[0])
+
+def extract_worldbank() -> DataFrame:
+    URL = 'https://api.worldbank.org/v2/en/indicator/NY.GDP.MKTP.CD?downloadformat=csv'
+    r = requests.get(URL)
+    with ZipFile(io.BytesIO(r.content)) as z:
+        _map = {_.file_size: _.filename for _ in z.filelist}
+        # =====================================================================
+        # Select Largest File
+        # =====================================================================
+        with z.open(_map[max(_map.keys())]) as f:
+            df = pd.read_csv(f, skiprows=4)
+            df.dropna(axis=1, how='all', inplace=True)
+            df.set_index(df.columns[0], inplace=True)
+            df = df.transpose()
+            df = df.drop(df.index[:3])
+            return df.rename_axis('period')
 
 
 def extract_series_ids(archive_name: str) -> dict[str]:
