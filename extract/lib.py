@@ -51,11 +51,14 @@ def extract_can_annual(file_id: int, series_id: str) -> DataFrame:
 
 def extract_can_capital_series_ids_archived() -> list[str]:
     '''
-    Fetch <SERIES_IDS> from CANSIM Table 031-0004: Flows and stocks of fixed
+    Fetch <series_ids> from CANSIM Table 031-0004: Flows and stocks of fixed
     non-residential capital, total all industries, by asset, provinces and
     territories, annual (dollars x 1,000,000)
     '''
+<<<<<<< HEAD
     ARCHIVE_NAME = "dataset_can_00310004-eng.zip"
+=======
+>>>>>>> 5f82c2ac21de2da1436c27f20e90ba8787846fd8
     df = pd.read_csv(
         ARCHIVE_NAME,
         usecols=["PRICES", "CATEGORY", "COMPONENT", "Vector", ]
@@ -76,7 +79,11 @@ def extract_can_capital_series_ids_archived() -> list[str]:
         return sorted(set(_[0] for _ in rows))
 
 
+<<<<<<< HEAD
 def extract_can_capital_series_ids(df: DataFrame) -> list[str]:
+=======
+def extract_can_capital_query(df: DataFrame) -> list[str]:
+>>>>>>> 5f82c2ac21de2da1436c27f20e90ba8787846fd8
     '''
     Fetch <SERIES_IDS> from Statistics Canada. Table: 36-10-0238-01\
     (formerly CANSIM 031-0004): Flows and stocks of fixed non-residential\

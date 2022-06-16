@@ -941,7 +941,7 @@ def plot_built_in(module: callable) -> None:
     _df = extract_worldbank()
     for _, country in enumerate(_df.columns, start=1):
         chunk = _df.loc[:, [country]].dropna()
-        if not chunk.shape[0] == 0:
+        if not chunk.empty:
             plt.figure(_)
             module(chunk)
             plt.grid(True)
