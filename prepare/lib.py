@@ -120,8 +120,7 @@ def get_data_archived() -> DataFrame:
     # Deflator, 2005=100
     # =========================================================================
     _df['def'] = _df.iloc[:, 0].add(1).cumprod()
-    _df.iloc[:, -1] = _df.iloc[:, -
-                               1].rdiv(_df.iloc[_df.index.get_loc(2005), -1])
+    _df.iloc[:, -1] = _df.iloc[:, -1].rdiv(_df.iloc[_df.index.get_loc(2005), -1])
     # =========================================================================
     # Investment, 2005=100
     # =========================================================================
@@ -614,7 +613,7 @@ def get_data_capital_combined_archived():
         axis=1, sort=True)
 
 
-def get_data_capital_purchases():
+def get_data_capital_purchases() -> DataFrame:
     ARCHIVE_NAMES = (
         # =====================================================================
         # CDT2S1: Nominal; CDT2S3: 1880=100;
@@ -625,8 +624,10 @@ def get_data_capital_purchases():
         # =====================================================================
         'dataset_douglas.zip',)
     SERIES_IDS = ('CDT2S1', 'CDT2S3', 'DT63AS01', 'DT63AS02', 'DT63AS03',)
-    _args = [tuple(((ARCHIVE_NAMES[0], ARCHIVE_NAMES[1])[series_id.startswith(
-        'DT')], series_id,)) for series_id in SERIES_IDS]
+    _args = [
+        tuple(((ARCHIVE_NAMES[0], ARCHIVE_NAMES[1])[series_id.startswith(
+            'DT')], series_id,)) for series_id in SERIES_IDS
+    ]
     _data_frame = pd.concat(
         [extract_usa_classic(*arg) for arg in _args],
         axis=1,
@@ -647,16 +648,23 @@ def get_data_capital_purchases():
         'P0111', 'P0112', 'P0113', 'P0114', 'P0115', 'P0116', 'P0117',
         'P0118', 'P0119', 'P0120', 'P0121', 'P0122',
     )
-    _args = [(tuple((ARCHIVE_NAMES[0], series_id, 1,)), tuple((ARCHIVE_NAMES[1], series_id, 1000,)))[
-        series_id.startswith('P')] for series_id in SERIES_IDS]
+    _args = [
+        (
+            tuple((ARCHIVE_NAMES[0], series_id, 1,)),
+            tuple((ARCHIVE_NAMES[1], series_id, 1000,))
+        )[series_id.startswith('P')] for series_id in SERIES_IDS
+    ]
     data_frame_ = pd.concat(
         [extract_usa_census(*_[:2]).mul(_[-1]) for _ in _args],
         axis=1,
-        sort=True)
-    df = pd.concat([_data_frame, data_frame_], axis=1, sort=True)
-    df = df[df.index.get_loc(1875):]
-    df['total'] = df.loc[:, [
-        'CDT2S1', 'J0149', 'P0107']].mean(axis=1)
+        sort=True
+    )
+    df = pd.concat(
+        [_data_frame, data_frame_],
+        axis=1,
+        sort=True
+    ).truncate(before=1875)
+    df['total'] = df.loc[:, ['CDT2S1', 'J0149', 'P0107']].mean(axis=1)
     df['struc'] = df.loc[:, ['J0150', 'P0108']].mean(axis=1)
     df['equip'] = df.loc[:, ['J0151', 'P0109']].mean(axis=1)
     df.iloc[:, -3] = signal.wiener(df.iloc[:, -3]).round()
@@ -685,9 +693,8 @@ def get_data_census_a():
     _args = [tuple((ARCHIVE_NAMES[1], series_id,)) if series_id.startswith(
         'P') else tuple((ARCHIVE_NAMES[0], series_id,)) for series_id in SERIES_IDS]
     df = pd.concat([extract_usa_census(*_)
-                           for _ in _args], axis=1, sort=True)
-    df = df.div(
-        df.iloc[df.index.get_loc(1899), :]).mul(100)
+                    for _ in _args], axis=1, sort=True)
+    df = df.div(df.iloc[df.index.get_loc(1899), :]).mul(100)
     return df, df.index.get_loc(1899)
 
 
@@ -714,11 +721,8 @@ def get_data_census_b_a():
     df = pd.concat(
         [extract_usa_census(*_[:2]).mul(_[-1]) for _ in _args],
         axis=1,
-        sort=True)
-    # =========================================================================
-    # TODO: Use .truncate
-    # =========================================================================
-    df = df[df.index.get_loc(1875):]
+        sort=True
+    ).truncate(before=1875)
     df['total'] = df.loc[:, ['J0149', 'P0107']].mean(axis=1)
     df['struc'] = df.loc[:, ['J0150', 'P0108']].mean(axis=1)
     df['equip'] = df.loc[:, ['J0151', 'P0109']].mean(axis=1)
@@ -749,8 +753,8 @@ def get_data_census_b_b():
         [extract_usa_census(ARCHIVE_NAME, series_id)
          for series_id in SERIES_IDS],
         axis=1,
-        sort=True)
-    _data_frame = _data_frame[_data_frame.index.get_loc(1879):]
+        sort=True
+    ).truncate(before=1879)
     _data_frame['purchases_total'] = _data_frame.iloc[:, 0].div(
         _data_frame.iloc[:, 3])
     _data_frame['purchases_struc'] = _data_frame.iloc[:, 1].div(
@@ -850,8 +854,8 @@ def get_data_census_g() -> DataFrame:
             for series_id in SERIES_IDS
         ],
         axis=1,
-        sort=True)
-    df = df[df.index.get_loc(1889):]
+        sort=True
+    ).truncate(before=1889)
     return df.div(df.iloc[0, :]).mul(100)
 
 
@@ -1352,15 +1356,11 @@ def get_data_cobb_douglas_extension_product():
         axis=1,
         sort=True
     )
-    df.iloc[:, 1] = df.iloc[:, 1].div(
-        df.iloc[df.index.get_loc(1899), 1]).mul(100)
-    df.iloc[:, 4] = df.iloc[:, 4].div(
-        df.iloc[df.index.get_loc(1899), 4]).mul(100)
-    df.iloc[:, 5] = df.iloc[:, 5].div(
-        df.iloc[df.index.get_loc(1939), 5]).mul(100)
+    df.iloc[:, 1] = df.iloc[:, 1].div(df.iloc[df.index.get_loc(1899), 1]).mul(100)
+    df.iloc[:, 4] = df.iloc[:, 4].div(df.iloc[df.index.get_loc(1899), 4]).mul(100)
+    df.iloc[:, 5] = df.iloc[:, 5].div(df.iloc[df.index.get_loc(1939), 5]).mul(100)
     df['fused_classic'] = df.iloc[:, range(5)].mean(axis=1)
-    df.iloc[:, -1] = df.iloc[:, -1].div(
-        df.iloc[df.index.get_loc(1939), -1]).mul(100)
+    df.iloc[:, -1] = df.iloc[:, -1].div(df.iloc[df.index.get_loc(1939), -1]).mul(100)
     df['fused'] = df.iloc[:, -2:].mean(axis=1)
     return df.iloc[:, [-1]]
 
@@ -2232,8 +2232,8 @@ def get_data_usa_frb_cu():
     df = pd.read_csv(FILE_NAME, skiprows=1, usecols=range(5, 100))
     df.columns = ['period', *df.columns[1:]]
     df.iloc[:, 0] = df.iloc[:, 0].str.replace(r"[,@\'?\.$%_]",
-                                                              '',
-                                                              regex=True)
+                                              '',
+                                              regex=True)
     df = df.set_index(df.columns[0]).transpose()
     df.index = pd.to_numeric(df.index, downcast='integer')
     return df.loc[:, [SERIES_ID]].dropna(axis=0)
@@ -2246,7 +2246,7 @@ def get_data_usa_frb_fa():
     '''
     FILE_NAME = 'dataset_usa_frb_invest_capital.csv'
     df = pd.read_csv(FILE_NAME,
-                             skiprows=4, skipfooter=688, engine='python')
+                     skiprows=4, skipfooter=688, engine='python')
     df.columns = ['period', *df.columns[1:]]
     df = df.set_index(df.columns[0]).transpose()
     df.index = df.index.astype(int)
@@ -2262,7 +2262,7 @@ def get_data_usa_frb_fa_def():
     '''
     FILE_NAME = 'dataset_usa_frb_invest_capital.csv'
     df = pd.read_csv(FILE_NAME,
-                             skiprows=4, skipfooter=688, engine='python')
+                     skiprows=4, skipfooter=688, engine='python')
     df.columns = ['period', *df.columns[1:]]
     df = df.set_index(df.columns[0]).transpose()
     df.index = df.index.astype(int)
@@ -2305,8 +2305,7 @@ def get_data_usa_frb_ms() -> DataFrame:
 
 def get_data_usa_mcconnel_a():
     SERIES_ID = 'Валовой внутренний продукт, млрд долл. США'
-    df = extract_usa_mcconnel(SERIES_ID)
-    return df[df.index.get_loc(1980):]
+    return extract_usa_mcconnel(SERIES_ID).truncate(before=1980)
 
 
 def get_data_usa_mcconnel_b():
@@ -2314,12 +2313,13 @@ def get_data_usa_mcconnel_b():
         'Ставка прайм-рейт, %': 'prime_rate',
         'Национальный доход, млрд долл. США': 'A032RC1',
     }
-    df = pd.concat([extract_usa_mcconnel(series_id)
-                           for series_id in SERIES_IDS.keys()],
-                           axis=1,
-                           sort=True)
+    df = pd.concat(
+        [extract_usa_mcconnel(series_id) for series_id in SERIES_IDS.keys()],
+        axis=1,
+        sort=True
+    )
     df.columns = SERIES_IDS.values()
-    return df[df.index.get_loc(1980):]
+    return df.truncate(before=1980)
 
 
 def get_data_usa_mcconnel_c():
@@ -2327,12 +2327,13 @@ def get_data_usa_mcconnel_c():
         'Ставка прайм-рейт, %': 'prime_rate',
         'Валовой объем внутренних частных инвестиций, млрд долл. США': 'A006RC1',
     }
-    df = pd.concat([extract_usa_mcconnel(series_id)
-                           for series_id in SERIES_IDS.keys()],
-                           axis=1,
-                           sort=True)
+    df = pd.concat(
+        [extract_usa_mcconnel(series_id) for series_id in SERIES_IDS.keys()],
+        axis=1,
+        sort=True
+    )
     df.columns = SERIES_IDS.values()
-    return df[df.index.get_loc(1980):]
+    return df.truncate(before=1980)
 
 
 def get_data_usa_sahr_infcf():
@@ -2483,7 +2484,7 @@ def get_data_version_a():
     return _data_a.div(_data_a.iloc[0, :]), _data_b.div(_data_b.iloc[0, :]).iloc[:, range(3)]
 
 
-def get_data_version_b():
+def get_data_version_b() -> tuple[DataFrame]:
     '''
     Returns
         data_frame_a: Capital, Labor, Product;
@@ -2515,7 +2516,7 @@ def get_data_version_b():
         axis=1,
         sort=True
     ).dropna(axis=0)
-    data_frame_b = data_frame_a[data_frame_a.index.get_loc(1967):]
+    data_frame_b = data_frame_a.truncate(before=1967)
     data_frame_c = pd.concat(
         [
             # =================================================================
