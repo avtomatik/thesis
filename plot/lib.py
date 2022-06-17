@@ -2168,9 +2168,11 @@ def plot_simple_log(df: DataFrame, params: tuple[float]) -> None:
 
 def plot_turnover(df: DataFrame) -> None:
     '''Static Fixed Assets Turnover Approximation
-    df.index: Period,
-    df.iloc[:, 0]: Capital,
-    df.iloc[:, 1]: Product
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Capital
+    df.iloc[:, 1]      Product
+    ================== =================================
     '''
     # =========================================================================
     # Fixed Assets Turnover
