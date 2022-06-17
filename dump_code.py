@@ -126,3 +126,167 @@ semi_frame_d = pd.concat(
         sub_frame_b,
     ],
     sort=True).drop_duplicates()
+
+# =============================================================================
+# Separate Block
+# =============================================================================
+def test_data_capital_combined_archived():
+    '''Data Test'''
+    KEYS = (
+        'archive_name',
+        'wb_name',
+        'sh_name',
+        'series_id',
+    )
+    # =============================================================================
+    # ONE ARCHIVE NAME
+    # =============================================================================
+    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip'
+    WB_NAME = 'Section1ALL_Hist.xls'
+    # =========================================================================
+    # ONE SHEET NAME
+    # =========================================================================
+    SH_NAME = '10105 Ann'
+    SERIES_IDS = (
+        # =====================================================================
+        # Nominal Investment Series: A006RC1
+        # =====================================================================
+        'A006RC1',
+        # =====================================================================
+        # Nominal Gross Domestic Product Series: A191RC1
+        # =====================================================================
+        'A191RC1',
+    )
+    KWARGS = [
+        {key: value for key, value in zip(
+            KEYS,
+            (
+                ARCHIVE_NAME,
+                WB_NAME,
+                SH_NAME,
+                series_id,
+            )
+        )
+        } for series_id in SERIES_IDS
+    ]
+    _control = pd.concat(
+        [extract_usa_bea(**kwargs) for kwargs in KWARGS],
+        axis=1,
+        sort=True
+    )
+    # =========================================================================
+    # OTHER SHEET NAME
+    # =========================================================================
+    SH_NAME = '10505 Ann'
+    KWARGS = [
+        {key: value for key, value in zip(
+            KEYS,
+            (
+                ARCHIVE_NAME,
+                WB_NAME,
+                SH_NAME,
+                series_id,
+            )
+        )
+        } for series_id in SERIES_IDS
+    ]
+    _test = pd.concat(
+        [extract_usa_bea(**kwargs) for kwargs in KWARGS],
+        axis=1,
+        sort=True
+    )
+
+    if _control.equals(_test):
+        print('Series `A006RC1` & `A191RC1` @ Worksheet `10105 Ann` Equals Series `A006RC1` & `A191RC1` @ Worksheet `10505 Ann` for Period 1929--1969')
+    else:
+        print('Data Varies from Worksheet `10105 Ann` to Worksheet `10505 Ann`')
+
+    # =========================================================================
+    # Nominal Investment Series: A006RC1, 1969--2012
+    # =========================================================================
+    ARCHIVE_NAME = 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip'
+    WB_NAME = 'Section1all_xls.xls'
+    # =========================================================================
+    # ONE SHEET NAME
+    # =========================================================================
+    SH_NAME = '10105 Ann'
+    KWARGS = [
+        {key: value for key, value in zip(
+            KEYS,
+            (
+                ARCHIVE_NAME,
+                WB_NAME,
+                SH_NAME,
+                series_id,
+            )
+        )
+        } for series_id in SERIES_IDS
+    ]
+    _control = pd.concat(
+        [extract_usa_bea(**kwargs) for kwargs in KWARGS],
+        axis=1,
+        sort=True
+    )
+    # =========================================================================
+    # OTHER SHEET NAME
+    # =========================================================================
+    SH_NAME = '10505 Ann'
+    KWARGS = [
+        {key: value for key, value in zip(
+            KEYS,
+            (
+                ARCHIVE_NAME,
+                WB_NAME,
+                SH_NAME,
+                series_id,
+            )
+        )
+        } for series_id in SERIES_IDS
+    ]
+    _test = pd.concat(
+        [extract_usa_bea(**kwargs) for kwargs in KWARGS],
+        axis=1,
+        sort=True
+    )
+
+    if _control.equals(_test):
+        print('Series `A006RC1` & `A191RC1` @ Worksheet `10105 Ann` Equals Series `A006RC1` & `A191RC1` @ Worksheet `10505 Ann` for Period 1969--2012')
+    else:
+        print('Data Varies from Worksheet `10105 Ann` to Worksheet `10505 Ann`')
+
+
+def extract_usa_bea_sfat_test():
+    ARCHIVE_NAME = 'dataset_usa_bea-nipa-selected.zip'
+    SERIES_ID = 'k3n31gd1es000'
+    _df = pd.read_csv(ARCHIVE_NAME, usecols=[0, *range(8, 11)])
+    _df = _df[_df.iloc[:, 1] == SERIES_ID]
+    _control = pd.DataFrame()
+    for source_id in sorted(set(_df.iloc[:, 0])):
+        chunk = _df[_df.iloc[:, 0] == source_id].iloc[:, [2, 3]]
+        chunk.columns = [
+            chunk.columns[0],
+            '{}{}'.format(source_id.split()[1].replace('.', '_'), SERIES_ID)
+        ]
+        chunk.set_index(chunk.columns[0], inplace=True, verify_integrity=True)
+        _control = pd.concat([_control, chunk], axis=1, sort=True)
+
+    ARCHIVE_NAME = 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip'
+    WB_NAME = 'Section4ALL_xls.xls'
+    SH_NAME = '403 Ann'
+    # =========================================================================
+    # Fixed Assets Series, 1925--2016
+    # =========================================================================
+    SERIES_IDS = (
+        'k3n31gd1es000', 'k3n31gd1eq000',
+        'k3n31gd1ip000', 'k3n31gd1st000',
+    )
+    _test = pd.concat(
+        [
+            extract_usa_bea(ARCHIVE_NAME, WB_NAME, SH_NAME, series_id)
+            for series_id in SERIES_IDS
+        ],
+        axis=1,
+        sort=True
+    )
+
+    return pd.concat([_test, _control], axis=1, sort=True)
