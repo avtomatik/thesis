@@ -15,6 +15,7 @@ from toolkit.lib import rolling_mean_filter
 from toolkit.lib import calculate_capital
 from extract.lib import extract_usa_census_description
 from extract.lib import extract_usa_census
+from prepare.lib import transform_cobb_douglas
 
 
 ARCHIVE_NAMES_UTILISED = (
@@ -60,7 +61,8 @@ def plot_a(df: DataFrame) -> None:
     plt.plot(_df.iloc[:, -4:-2], label=[
         'Gross Private Domestic Investment',
         'National Income',
-    ])
+    ]
+    )
     plt.xlabel('Period')
     plt.ylabel('Index')
     _df.index = _df.index.to_series().rolling(2).mean()
@@ -120,7 +122,8 @@ def plot_c(df: DataFrame) -> None:
         'Real Gross Domestic Product',
         'Money Supply',
         '`Real` Gross Domestic Investment',
-    ])
+    ]
+    )
     plt.title('Indexes, {}$-${}'.format(*df.index[[0, -1]]))
     plt.xlabel('Period')
     plt.ylabel('Index')
@@ -255,12 +258,14 @@ def plot_census_a(df: DataFrame, base: int) -> None:
     plt.plot(df.iloc[:, [0, 2]], label=[
         'Fabricant S., Shiskin J., NBER',
         'E. Frickey',
-    ])
+    ]
+    )
     plt.plot(df.iloc[:, 1], color='red', linewidth=4, label='W.M. Persons')
     plt.axvline(x=df.index[base], linestyle=':')
     plt.title(
         'US Manufacturing Indexes Of Physical Production Of Manufacturing, {}=100, {}$-${}'.format(
-            df.index[base], *df.index[[0, -1]])
+            df.index[base], *df.index[[0, -1]]
+        )
     )
     plt.xlabel('Period')
     plt.ylabel('Percentage')
@@ -275,7 +280,8 @@ def plot_census_b_capital(df: DataFrame) -> None:
     plt.semilogy(df, label=['Total', 'Structures', 'Equipment'])
     plt.title('Census Manufacturing Fixed Assets, {}$-${}'.format(
         *df.index[[0, -1]]
-    ))
+    )
+    )
     plt.xlabel('Period')
     plt.ylabel('Millions of Dollars')
     plt.grid(True)
@@ -288,7 +294,8 @@ def plot_census_b_deflator(df: DataFrame) -> None:
     plt.figure()
     plt.plot(df)
     plt.title('Census Fused Fixed Assets Deflator, {}$-${}'.format(
-        *df.index[[0, -1]])
+        *df.index[[0, -1]]
+    )
     )
     plt.xlabel('Period')
     plt.ylabel('Index')
@@ -422,11 +429,13 @@ def plot_census_g(df: DataFrame) -> None:
     plt.plot(df, label=[
         'Gross National Product',
         'Gross National Product Per Capita',
-    ])
+    ]
+    )
     plt.title(
         'Gross National Product, Prices {}=100, {}=100'.format(
             1958, df.index[0]
-        ))
+        )
+    )
     plt.xlabel('Period')
     plt.ylabel('Percentage')
     plt.grid(True)
@@ -455,7 +464,8 @@ def plot_census_i_a(df: DataFrame) -> None:
         'Exports, U1',
         'Imports, U8',
         'Net Exports, U15',
-    ])
+    ]
+    )
     plt.title(
         'Exports & Imports of Goods and Services, {}$-${}'.format(
             *df.index[[0, -1]]
@@ -474,7 +484,8 @@ def plot_census_i_b(df: DataFrame) -> None:
         'Exports, U187',
         'Imports, U188',
         'Net Exports, U189',
-    ])
+    ]
+    )
     plt.title(
         'Total Merchandise, Gold and Silver, {}$-${}'.format(
             *df.index[[0, -1]]
@@ -959,7 +970,7 @@ def plot_can_test(df: DataFrame) -> None:
     plt.show()
 
 
-def plot_capital_modelling(df: DataFrame, base) -> None:
+def plot_capital_modelling(df: DataFrame, base: int) -> None:
     '''
     ================== =================================
     df.index           Period
@@ -970,12 +981,12 @@ def plot_capital_modelling(df: DataFrame, base) -> None:
     ================== =================================
     '''
     _params_i = np.polyfit(
-        df.index.to_series(),
+        df.index.to_series().astype(int),
         df.iloc[:, 0].div(df.iloc[:, 1]).astype(float),
         deg=1
     )
     _params_t = np.polyfit(
-        df.index.to_series(),
+        df.index.to_series().astype(int),
         df.iloc[:, 1].div(df.iloc[:, 2]).astype(float),
         deg=1
     )
@@ -1035,7 +1046,7 @@ def plot_capital_modelling(df: DataFrame, base) -> None:
     plt.figure(4)
     plt.title('$K$ for the US, {}$-${}'.format(*_df.index[[0, -2]]))
     plt.xlabel('Period')
-    plt.ylabel('Billions of Dollars, {}=100'.format(_df.index[base]))
+    plt.ylabel('Billions of Dollars, {}=100'.format(base))
     plt.semilogy(
         _df.iloc[:, -3:],
         label=['$K\\left(\\pi = \\frac{7}{8}\\right)$',
@@ -1056,7 +1067,8 @@ def plot_capital_purchases(df: DataFrame) -> None:
             '$s^{2;1}_{Cobb-Douglas}$',
             'Total',
             'Structures',
-            'Equipment', ]
+            'Equipment',
+        ]
     )
     plt.title('Fixed Assets Purchases, {}$-${}'.format(*df.index[[0, -1]]))
     plt.xlabel('Period')
@@ -1066,13 +1078,13 @@ def plot_capital_purchases(df: DataFrame) -> None:
     plt.show()
 
 
-def plot_census_complex(source_frame) -> None:
+def plot_census_complex(df: DataFrame) -> None:
     # =========================================================================
     # TODO: Eliminate This Function
     # =========================================================================
-    plot_pearson_r_test(source_frame)
-    plot_kol_zur_filter(source_frame)
-    plot_ewm(source_frame)
+    plot_pearson_r_test(df)
+    plot_kol_zur_filter(df)
+    plot_ewm(df)
 
 
 def plot_cobb_douglas(df: DataFrame, params: tuple[float], mapping: dict) -> None:
@@ -1092,7 +1104,8 @@ def plot_cobb_douglas(df: DataFrame, params: tuple[float], mapping: dict) -> Non
         'Fixed Capital',
         'Labor Force',
         'Physical Product',
-    ])
+    ]
+    )
     plt.xlabel('Period')
     plt.ylabel('Indexes')
     plt.title(mapping['fg_a'].format(*df.index[[0, -1]],
@@ -1107,7 +1120,8 @@ def plot_cobb_douglas(df: DataFrame, params: tuple[float], mapping: dict) -> Non
             1-params[0],
             params[0],
         ),
-    ])
+    ]
+    )
     plt.xlabel('Period')
     plt.ylabel('Production')
     plt.title(mapping['fg_b'].format(*df.index[[0, -1]],
@@ -1121,7 +1135,8 @@ def plot_cobb_douglas(df: DataFrame, params: tuple[float], mapping: dict) -> Non
         # =========================================================================
         #      TODO: ls=['solid','dashed',]
         # =========================================================================
-    ])
+    ]
+    )
     plt.xlabel('Period')
     plt.ylabel('Percentage Deviation')
     plt.title(mapping['fg_c'])
@@ -1196,7 +1211,8 @@ def plot_cobb_douglas_alt(df: DataFrame, params: tuple[float], mapping: dict) ->
         'Labor Force',
         'Physical Product',
         'Physical Product, Alternative',
-    ])
+    ]
+    )
     plt.xlabel('Period')
     plt.ylabel('Indexes')
     plt.title(mapping['fg_a'].format(*df.index[[0, -1]],
@@ -1211,7 +1227,8 @@ def plot_cobb_douglas_alt(df: DataFrame, params: tuple[float], mapping: dict) ->
             1-params[0],
             params[0],
         ),
-    ])
+    ]
+    )
     plt.xlabel('Period')
     plt.ylabel('Production')
     plt.title(mapping['fg_b'].format(*df.index[[0, -1]],
@@ -1225,7 +1242,8 @@ def plot_cobb_douglas_alt(df: DataFrame, params: tuple[float], mapping: dict) ->
         # =========================================================================
         #      TODO: ls=['solid','dashed',]
         # =========================================================================
-    ])
+    ]
+    )
     plt.xlabel('Period')
     plt.ylabel('Percentage Deviation')
     plt.title(mapping['fg_c'])
@@ -1253,17 +1271,25 @@ def plot_cobb_douglas_alt(df: DataFrame, params: tuple[float], mapping: dict) ->
     plt.show()
 
 
-def plot_cobb_douglas_complex(source_frame) -> None:
-    modified_frame_a = source_frame.reset_index(level=0)
-    modified_frame_b = source_frame.iloc[:, [0, 2]]
-    modified_frame_b = modified_frame_b.reset_index(level=0)
-    plot_cobb_douglas(source_frame)
-    plot_cobb_douglas_3d(source_frame)
-    plot_lab_prod_polynomial(source_frame)
-    plot_block_zer(source_frame)
-    plot_block_one(modified_frame_a)
-    plot_block_two(modified_frame_a)
-    plot_turnover(modified_frame_b)
+def plot_cobb_douglas_complex(df: DataFrame) -> None:
+    FIG_MAP = {
+        'fg_a': 'Chart I Progress in Manufacturing {}$-${} ({}=100)',
+        'fg_b': 'Chart II Theoretical and Actual Curves of Production {}$-${} ({}=100)',
+        'fg_c': 'Chart III Percentage Deviations of $P$ and $P\'$ from Their Trend Lines\nTrend Lines=3 Year Moving Average',
+        'fg_d': 'Chart IV Percentage Deviations of Computed from Actual Product {}$-${}',
+        'fg_e': 'Chart V Relative Final Productivities of Labor and Capital',
+        'year_price': 1899,
+    }
+    plot_cobb_douglas(
+        *transform_cobb_douglas(df),
+        FIG_MAP
+    )
+    plot_cobb_douglas_3d(df.iloc[:, range(3)])
+    plot_lab_prod_polynomial(df)
+    plot_block_zer(df)
+    plot_block_one(df)
+    plot_block_two(df)
+    plot_turnover(df.iloc[:, [0, 2]])
 
 
 def plot_cobb_douglas_tight_layout(df: DataFrame, params: tuple[float], mapping: dict) -> None:
@@ -1283,7 +1309,8 @@ def plot_cobb_douglas_tight_layout(df: DataFrame, params: tuple[float], mapping:
         'Fixed Capital',
         'Labor Force',
         'Physical Product',
-    ])
+    ]
+    )
     axs[0].set_xlabel('Period')
     axs[0].set_ylabel('Indexes')
     axs[0].set_title(mapping['fg_a'].format(*df.index[[0, -1]],
@@ -1294,7 +1321,8 @@ def plot_cobb_douglas_tight_layout(df: DataFrame, params: tuple[float], mapping:
         'Actual Product',
         'Computed Product, $P\' = {:,.4f}L^{{{:,.4f}}}C^{{{:,.4f}}}$'.format(
             params[1], 1-params[0], params[0]),
-    ])
+    ]
+    )
     axs[1].set_xlabel('Period')
     axs[1].set_ylabel('Production')
     axs[1].set_title(mapping['fg_b'].format(*df.index[[0, -1]],
@@ -1533,12 +1561,12 @@ def plot_fourier_discrete(df: DataFrame, precision: int = 10) -> None:
     _df = df.copy()
     precision += 1
     _p = np.polyfit(
-        _df.index,
+        _df.index.to_series().astype(int),
         _df.iloc[:, 0].astype(float),
         deg=1
     )
     _df['period_calibrated'] = _df.index.to_series().sub(
-        _df.index[0]).div(_df.shape[0]).mul(2).mul(np.pi)
+        _df.index[0]).div(_df.shape[0]).mul(2).mul(np.pi).astype(float)
     _df[f'{_df.columns[0]}_line'] = _df.index.to_series().mul(_p[0]).add(_p[1])
     _df[f'{_df.columns[0]}_wave'] = _df.iloc[:, 0].sub(_df.iloc[:, 2])
     # =========================================================================
@@ -1695,8 +1723,7 @@ def plot_kol_zur_filter(df: DataFrame) -> None:
     -------
     None
     '''
-    data_frame_o, data_frame_e, residuals_o, residuals_e = kol_zur_filter(
-        df)
+    data_frame_o, data_frame_e, residuals_o, residuals_e = kol_zur_filter(df)
 
     plt.figure(1)
     plt.title('Kolmogorov$-$Zurbenko Filter')
@@ -1844,14 +1871,34 @@ def plot_lab_prod_polynomial(df: DataFrame) -> None:
     # =========================================================================
     # Power Function: Labor Productivity
     # =========================================================================
-    k, b = np.polyfit(np.log(df.iloc[:, -2]), np.log(df.iloc[:, -1]), deg=1)
+    k, b = np.polyfit(
+        np.log(df.iloc[:, -2].astype(float)),
+        np.log(df.iloc[:, -1].astype(float)),
+        deg=1
+    )
     # =========================================================================
     # Polynomials 1, 2, 3 & 4: Labor Productivity
     # =========================================================================
-    _p1 = np.polyfit(df.iloc[:, -2], df.iloc[:, -1], deg=1)
-    _p2 = np.polyfit(df.iloc[:, -2], df.iloc[:, -1], deg=2)
-    _p3 = np.polyfit(df.iloc[:, -2], df.iloc[:, -1], deg=3)
-    _p4 = np.polyfit(df.iloc[:, -2], df.iloc[:, -1], deg=4)
+    _p1 = np.polyfit(
+        df.iloc[:, -2].astype(float),
+        df.iloc[:, -1].astype(float),
+        deg=1
+    )
+    _p2 = np.polyfit(
+        df.iloc[:, -2].astype(float),
+        df.iloc[:, -1].astype(float),
+        deg=2
+    )
+    _p3 = np.polyfit(
+        df.iloc[:, -2].astype(float),
+        df.iloc[:, -1].astype(float),
+        deg=3
+    )
+    _p4 = np.polyfit(
+        df.iloc[:, -2].astype(float),
+        df.iloc[:, -1].astype(float),
+        deg=4
+    )
     # =========================================================================
     # DataFrame for Approximation Results
     # =========================================================================
@@ -2061,7 +2108,6 @@ def plot_rolling_mean_filter(df: DataFrame) -> None:
         residuals_o.iloc[:, [0]],
         label='Residuals'
     )
-
     plt.plot(
         residuals_o.iloc[:, 1:],
         label=['$\\delta(\\hat Y_{{m = {}}})$'.format(int(_.split('_')[-1], 16))
