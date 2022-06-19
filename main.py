@@ -9,9 +9,6 @@ Thesis Project
 
 
 import os
-from extract.lib import extract_series_ids
-from extract.lib import extract_can_fixed_assets
-from extract.lib import extract_can_capital_series_ids_archived
 from prepare.lib import get_data_combined_archived
 from prepare.lib import get_data_archived
 from prepare.lib import get_data_usa_mcconnel_a
@@ -20,11 +17,12 @@ from prepare.lib import get_data_usa_mcconnel_c
 from prepare.lib import get_data_census_b_a
 from prepare.lib import get_data_census_b_b
 from prepare.lib import get_data_can
-from prepare.lib import get_data_usa_frb_ms
-from prepare.lib import get_data_local
+from prepare.lib import get_data_version_a
+from prepare.lib import get_data_version_b
+from prepare.lib import get_data_version_c
 from prepare.lib import transform_kurenkov
+from prepare.lib import get_data_cobb_douglas
 from prepare.lib import get_data_updated
-from toolkit.lib import calculate_capital
 from toolkit.lib import m_spline_ea
 from toolkit.lib import m_spline_eb
 from toolkit.lib import m_spline_la
@@ -33,17 +31,12 @@ from toolkit.lib import m_spline_lls
 from toolkit.lib import calculate_power_function_fit_params_a
 from toolkit.lib import calculate_power_function_fit_params_b
 from toolkit.lib import calculate_power_function_fit_params_c
-from toolkit.lib import _m_spline_error_metrics
-from toolkit.lib import _m_spline_print_params
-from toolkit.lib import calculate_capital_acquisition
-from toolkit.lib import calculate_capital_retirement
 from plot.lib import plot_a
 from plot.lib import plot_b
 from plot.lib import plot_c
 from plot.lib import plot_d
 from plot.lib import plot_approx_linear
 from plot.lib import plot_approx_log_linear
-from plot.lib import plot_built_in
 from plot.lib import plot_capital_modelling
 from plot.lib import plot_fourier_discrete
 from plot.lib import plot_elasticity
@@ -54,6 +47,7 @@ from plot.lib import plot_ewm
 from plot.lib import plot_e
 from plot.lib import plot_kurenkov
 from plot.lib import plot_census_complex
+from plot.lib import plot_cobb_douglas_complex
 from toolkit.lib import m_spline_manager
 
 
@@ -108,13 +102,13 @@ def main():
     # =========================================================================
     # Subproject I. Approximation
     # =========================================================================
-    '''
-    `plot_approx_linear`: Linear Approximation,
-    `plot_approx_log_linear`: Log-Linear Approximation,
-    `calculate_power_function_fit_params_a`: Power Function Approximation,
-    `calculate_power_function_fit_params_b`: Power Function Approximation,
-    `calculate_power_function_fit_params_c`: Power Function Approximation
-    '''
+    # =============================================================================
+    # `plot_approx_linear`: Linear Approximation,
+    # `plot_approx_log_linear`: Log-Linear Approximation,
+    # `calculate_power_function_fit_params_a`: Power Function Approximation,
+    # `calculate_power_function_fit_params_b`: Power Function Approximation,
+    # `calculate_power_function_fit_params_c`: Power Function Approximation
+    # =============================================================================
     _df = get_data_combined_archived()
     plot_approx_linear(_df.iloc[:, [7, 6, 0, 6]].dropna())
     plot_approx_log_linear(_df.iloc[:, [7, 6, 20, 4]].dropna())
@@ -133,20 +127,29 @@ def main():
     # =========================================================================
     # Subproject II. Capital
     # =========================================================================
-    '''
-    Project: Fixed Assets Dynamics Modelling:
-    Fixed Assets Turnover Linear Approximation
-    Gross Fixed Investment to Gross Domestic Product Ratio Linear Approximation
-    Alpha: Investment to Capital Conversion Ratio Dynamics
-    Original Result on Archived Data: {s_1;s_2} = {-7.28110931679034e-05;0.302917968959722}
-    Original Result on Archived Data: {λ1;λ2} = {-0.000413347827690062;1.18883834418742}
-    '''
-    df_a, df_b, _a = get_data_archived()
-    df_c, df_d, _b = get_data_updated()
-    plot_capital_modelling(df_a, _a)
-    plot_capital_modelling(df_c, _b)
     # =============================================================================
-    # '''Project: Discrete Fourier Transform based on Simpson's Rule Applied to Fixed Assets of the US'''
+    # Project: Fixed Assets Dynamics Modelling:
+    # Fixed Assets Turnover Linear Approximation
+    # Gross Fixed Investment to Gross Domestic Product Ratio Linear Approximation
+    # Alpha: Investment to Capital Conversion Ratio Dynamics
+    # Original Result on Archived Data:
+    # {
+    #     's_1': -7.28110931679034e-05,
+    #     's_2': 0.302917968959722,
+    # }
+    # Original Result on Archived Data:
+    # {
+    #     'λ1': -0.000413347827690062,
+    #     'λ2': 1.18883834418742,
+    #
+    # }
+    # =============================================================================
+    df_a, df_b = get_data_archived()
+    df_c, df_d = get_data_updated()
+    plot_capital_modelling(df_a, 2005)
+    plot_capital_modelling(df_c, 2012)
+    # =============================================================================
+    # Project: Discrete Fourier Transform based on Simpson's Rule Applied to Fixed Assets of the US
     # =============================================================================
     plot_fourier_discrete(df_b)
     plot_fourier_discrete(df_d)
@@ -157,8 +160,8 @@ def main():
     # =========================================================================
     # On Original Dataset
     # =========================================================================
-    _df = transform_cobb_douglas()
-    df_a = _df.iloc[:, [0, 1, 2]]
+    _df = get_data_cobb_douglas(5)
+    df_a = _df.iloc[:, range(3)]
     df_b = _df.iloc[:, [0, 1, 3]]
     df_c = _df.iloc[:, [0, 1, 4]]
     # =========================================================================
@@ -246,7 +249,7 @@ def main():
     # =========================================================================
     # Subproject VIII. Multiple
     # =========================================================================
-    df = transform_cobb_douglas()
+    df = get_data_cobb_douglas()
 
     for col in df.columns:
         plot_census_complex(df.loc[:, col])
@@ -264,47 +267,45 @@ def main():
     # =========================================================================
     # Subproject IX. USA BEA
     # =========================================================================
-    source_frame_a = get_data_combined_archived()
-    source_frame_b = get_data_combined()
+    _df_a = get_data_combined_archived()
+    _df_b = get_data_combined()
     # =========================================================================
     # Project: Initial Version Dated: 05 October 2012
     # =========================================================================
-    df_a_b = preprocessing_a(source_frame_a)
-    df_a_c = preprocessing_a(source_frame_b)
+    df_a_b = preprocessing_a(_df_a)
+    df_a_c = preprocessing_a(_df_b)
     plot_a(df_a_b)
     plot_a(df_a_c)
     # =========================================================================
     # Project: Initial Version Dated: 23 November 2012
     # =========================================================================
-    df_b_b = preprocessing_b(source_frame_a)
-    df_b_c = preprocessing_b(source_frame_b)
+    df_b_b = preprocessing_b(_df_a)
+    df_b_c = preprocessing_b(_df_b)
     plot_b(df_b_b)
     plot_b(df_b_c)
     # =========================================================================
     # Project: Initial Version Dated: 16 June 2013
     # =========================================================================
-    df_c_b = preprocessing_c(source_frame_a)
-    df_c_c = preprocessing_c(source_frame_b)
+    df_c_b = preprocessing_c(_df_a)
+    df_c_c = preprocessing_c(_df_b)
     plot_c(df_c_b)
     plot_c(df_c_c)
     # =========================================================================
     # Project: Initial Version Dated: 15 June 2015
     # =========================================================================
-    df_d = preprocessing_d(source_frame_b)
+    df_d = preprocessing_d(_df_b)
     plot_d(df_d)
     # =========================================================================
     # Project: Initial Version Dated: 17 February 2013
     # =========================================================================
-    df_e_a, df_e_b = preprocessing_e(source_frame_a)
+    df_e_a, df_e_b = preprocessing_e(_df_a)
     plot_e(df_e_a)
     plot_e(df_e_b)
     # =========================================================================
     # Project: BEA Data Compared with Kurenkov Yu.V. Data
     # =========================================================================
-    df_f_a, df_f_b, df_f_c, df_f_d = transform_kurenkov(
-        source_frame_a)
-    plot_kurenkov(df_f_a, df_f_b,
-                  df_f_c, df_f_d)
+    df_f_a, df_f_b, df_f_c, df_f_d = transform_kurenkov(_df_a)
+    plot_kurenkov(df_f_a, df_f_b, df_f_c, df_f_d)
 
     # =========================================================================
     # Subproject X. USA Census
