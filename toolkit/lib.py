@@ -1256,22 +1256,48 @@ def price_direct(df: DataFrame, base: int) -> DataFrame:
     return df.iloc[:, [-1]]
 
 
-def price_inverse(data_frame):
-    '''Intent: Returns Growth Rate from Cumulative Price Index for Some Base Year;
-    data_frame.iloc[:, 0]: Cumulative Price Index for Some Base Year'''
-    data_frame['gri'] = data_frame.iloc[:, [-1]].div(
-        data_frame.iloc[:, [-1]].shift(1)).sub(1)
-    return data_frame.iloc[:, [-1]].dropna(axis=0)
+def price_inverse(df: DataFrame) -> DataFrame:
+    '''
+    Returns Growth Rate from Cumulative Price Index for Some Base Year
+
+    Parameters
+    ----------
+    df : DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Cumulative Price Index for Some Base Year
+    ================== =================================
+    Returns
+    -------
+    DataFrame
+        DESCRIPTION.
+
+    '''
+    df['gri'] = df.iloc[:, [-1]].div(df.iloc[:, [-1]].shift(1)).sub(1)
+    return df.iloc[:, [-1]].dropna(axis=0)
 
 
-def price_inverse_double(data_frame):
-    '''Intent: Returns Growth Rate from Nominal & Real Prices Series;
-    data_frame.iloc[:, 0]: Nominal Prices;
-    data_frame.iloc[:, 1]: Real Prices'''
-    data_frame['cpi'] = data_frame.iloc[:, 0].div(data_frame.iloc[:, 1])
-    data_frame['gri'] = data_frame.iloc[:, [-1]].div(
-        data_frame.iloc[:, [-1]].shift(1)).sub(1)
-    return data_frame.iloc[:, [-1]].dropna(axis=0)
+def price_inverse_double(df: DataFrame) -> DataFrame:
+    '''
+    Returns Growth Rate from Nominal & Real Prices Series
+
+    Parameters
+    ----------
+    df : DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Nominal Prices
+    df.iloc[:, 1]      Real Prices
+    ================== =================================
+    Returns
+    -------
+    DataFrame
+        DESCRIPTION.
+
+    '''
+    df['cpi'] = df.iloc[:, 0].div(df.iloc[:, 1])
+    df['gri'] = df.iloc[:, [-1]].div(df.iloc[:, [-1]].shift(1)).sub(1)
+    return df.iloc[:, [-1]].dropna(axis=0)
 
 
 def price_inverse_single(data_series):
@@ -1307,9 +1333,24 @@ def procedure(output_name, criteria):
 
 
 def rolling_mean_filter(data_frame: DataFrame, k: int = None) -> tuple[DataFrame]:
-    '''Rolling Mean Filter
-        data_frame.index: Period,
-        data_frame.iloc[:, 0]: Series
+    '''
+    Rolling Mean Filter
+
+    Parameters
+    ----------
+    data_frame : DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Target Series
+    ================== =================================
+    k : int, optional
+        DESCRIPTION. The default is None.
+
+    Returns
+    -------
+    tuple[DataFrame]
+        DESCRIPTION.
+
     '''
     if k is None:
         k = data_frame.shape[0] // 2
@@ -1422,11 +1463,23 @@ def rolling_mean_filter(data_frame: DataFrame, k: int = None) -> tuple[DataFrame
     return data_frame_o, data_frame_e, residuals_o, residuals_e
 
 
-def simple_linear_regression(df: DataFrame):
-    '''Determining of Coefficients of Regression
-    df.index: Period,
-    df.iloc[:, 0]: Regressor,
-    df.iloc[:, 1]: Regressand
+def simple_linear_regression(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
+    '''
+    Determining of Coefficients of Regression
+
+    Parameters
+    ----------
+    df : DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Regressor
+    df.iloc[:, 1]      Regressand
+    ================== =================================
+    Returns
+    -------
+    tuple[DataFrame, tuple[float]]
+        DESCRIPTION.
+
     '''
     # =========================================================================
     # TODO: Eliminate This Function
