@@ -1,24 +1,36 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Jun 18 11:29:40 2022
 
+@author: alexander
+"""
 
-from plot.lib import plot_cobb_douglas_3d
-from extract.lib import extract_can_capital_query
+from prepare.lib import get_data_can
+from prepare.lib import transform_cobb_douglas
 from plot.lib import plot_cobb_douglas
-# =============================================================================
-# Canada
-# =============================================================================
-FIG_MAP = {
-    'fg_a': 'Chart I Progress in Manufacturing {}$-${} ({}=100)',
-    'fg_b': 'Chart II Theoretical and Actual Curves of Production {}$-${} ({}=100)',
-    'fg_c': 'Chart III Percentage Deviations of $P$ and $P\'$ from Their Trend Lines\nTrend Lines=3 Year Moving Average',
-    'fg_d': 'Chart IV Percentage Deviations of Computed from Actual Product {}$-${}',
-    'fg_e': 'Chart V Relative Final Productivities of Labor and Capital',
-    'year_price': 2007,
-}
+from plot.lib import plot_cobb_douglas_3d
 
 
-print(__doc__)
-# result_frame = get_dataset_can()
-# # plot_cobb_douglas_canada(result_frame)
-# # plot_cobb_douglas_3d(result_frame)
-# df = fetch_from_url('https://www150.statcan.gc.ca/n1/en/tbl/csv/36100210-eng.zip')
-df = fetch_from_url('https://www150.statcan.gc.ca/n1/tbl/csv/18100081-eng.zip')
+def main():
+    # =============================================================================
+    # Canada
+    # =============================================================================
+    FIG_MAP = {
+        'fg_a': 'Chart I Progress in Manufacturing {}$-${} ({}=100)',
+        'fg_b': 'Chart II Theoretical and Actual Curves of Production {}$-${} ({}=100)',
+        'fg_c': 'Chart III Percentage Deviations of $P$ and $P\'$ from Their Trend Lines\nTrend Lines=3 Year Moving Average',
+        'fg_d': 'Chart IV Percentage Deviations of Computed from Actual Product {}$-${}',
+        'fg_e': 'Chart V Relative Final Productivities of Labor and Capital',
+        'year_price': 2007,
+    }
+    _df = get_data_can()
+    plot_cobb_douglas(
+        *transform_cobb_douglas(_df),
+        FIG_MAP
+    )
+    plot_cobb_douglas_3d(_df)
+
+
+if __name__ == '__main__':
+    main()
