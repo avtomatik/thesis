@@ -20,18 +20,22 @@ from prepare.lib import get_data
 from plot.lib import plot_cobb_douglas
 
 
-FIG_MAP = {
-    'fg_a': 'Chart I Progress in Manufacturing {}$-${} ({}=100)',
-    'fg_b': 'Chart II Theoretical and Actual Curves of Production {}$-${} ({}=100)',
-    'fg_c': 'Chart III Percentage Deviations of $P$ and $P\'$ from Their Trend Lines\nTrend Lines=3 Year Moving Average',
-    'fg_d': 'Chart IV Percentage Deviations of Computed from Actual Product {}$-${}',
-    'fg_e': 'Chart V Relative Final Productivities of Labor and Capital',
-    # =========================================================================
-    # TODO: Update
-    # =========================================================================
-    'year_price': 1899,
-}
+def main():
+    FIG_MAP = {
+        'fg_a': 'Chart I Progress in Manufacturing {}$-${} ({}=100)',
+        'fg_b': 'Chart II Theoretical and Actual Curves of Production {}$-${} ({}=100)',
+        'fg_c': 'Chart III Percentage Deviations of $P$ and $P\'$ from Their Trend Lines\nTrend Lines=3 Year Moving Average',
+        'fg_d': 'Chart IV Percentage Deviations of Computed from Actual Product {}$-${}',
+        'fg_e': 'Chart V Relative Final Productivities of Labor and Capital',
+        # =========================================================================
+        # TODO: Update
+        # =========================================================================
+        'year_price': 1899,
+    }
+
+    result_frame = get_dataset()
+    plot_cobb_douglas(result_frame)
 
 
-result_frame = get_dataset()
-plot_cobb_douglas(result_frame)
+if __name__ == '__main__':
+    main()
