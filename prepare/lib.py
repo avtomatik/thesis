@@ -18,6 +18,7 @@ from extract.lib import extract_usa_bea
 from extract.lib import extract_usa_bea_from_url
 from extract.lib import extract_usa_bea_from_loaded
 from extract.lib import extract_usa_mcconnel
+from extract.lib import extract_can_annual
 from toolkit.lib import price_inverse_single
 
 
@@ -137,7 +138,6 @@ def get_data_archived() -> DataFrame:
     return (
         _df.loc[:, ['inv', 'A191RX1', 'cap', 'ratio_mu']].dropna(axis=0),
         _df.loc[:, ['ratio_mu']].dropna(axis=0),
-        _df.index.get_loc(2005)
     )
 
 
@@ -320,7 +320,7 @@ def get_data_can():
     result_frame = pd.concat([capital, labor, product], axis=1, sort=True)
     # result_frame = result_frame.dropna(axis=0)
     result_frame.columns = ['capital', 'labor', 'product']
-    # result_frame = result_frame.div(result_frame.iloc[0, :])
+    result_frame = result_frame.div(result_frame.iloc[0, :])
     return result_frame
 
 
@@ -2013,7 +2013,6 @@ def get_data_updated():
     return (
         _data.loc[:, ['_inv', 'A191RX', '_cap', '_ratio_mu']].dropna(axis=0),
         _data.loc[:, ['_ratio_mu']].dropna(axis=0),
-        _data.index.get_loc(2012)
     )
 
 
@@ -2685,10 +2684,12 @@ def transform_e(df: DataFrame) -> tuple[DataFrame]:
 
 def transform_cobb_douglas(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
     '''
-    df.index: Period,
-    df.iloc[:, 0]: Capital,
-    df.iloc[:, 1]: Labor,
-    df.iloc[:, 2]: Product
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Capital
+    df.iloc[:, 1]      Labor
+    df.iloc[:, 2]      Product
+    ================== =================================
     '''
     # =========================================================================
     # Labor Capital Intensity
@@ -2748,11 +2749,13 @@ def transform_cobb_douglas(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
 
 def transform_cobb_douglas_alt(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
     '''
-    df.index: Period,
-    df.iloc[:, 0]: Capital,
-    df.iloc[:, 1]: Labor,
-    df.iloc[:, 2]: Product,
-    df.iloc[:, 3]: Product Alternative,
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Capital
+    df.iloc[:, 1]      Labor
+    df.iloc[:, 2]      Product
+    df.iloc[:, 3]      Product Alternative
+    ================== =================================
     '''
     # =========================================================================
     # Labor Capital Intensity
