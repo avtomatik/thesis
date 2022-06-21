@@ -126,9 +126,7 @@ def extract_can_capital(series_ids: list[str]) -> DataFrame:
     for series_id in series_ids:
         chunk = _df[_df.iloc[:, 1] == series_id].iloc[:, [0, 2]]
         chunk.columns = [chunk.columns[0], series_id]
-        chunk.set_index(chunk.columns[0],
-                        inplace=True,
-                        verify_integrity=True)
+        chunk.set_index(chunk.columns[0], inplace=True, verify_integrity=True)
         df = pd.concat([df, chunk], axis=1, sort=True)
     df['sum'] = df.sum(axis=1)
     return df.iloc[:, [-1]]
@@ -154,15 +152,12 @@ def extract_can_fixed_assets(series_ids: list[str]) -> DataFrame:
     ARCHIVE_NAME = 'dataset_can_00310004-eng.zip'
     _df = pd.read_csv(ARCHIVE_NAME, usecols=[0, 6, 8])
     _df = _df[_df.iloc[:, 1].isin(series_ids)]
-    _df.iloc[:, 2] = pd.to_numeric(
-        _df.iloc[:, 2], errors='coerce')
+    _df.iloc[:, 2] = pd.to_numeric(_df.iloc[:, 2], errors='coerce')
     df = DataFrame()
     for series_id in series_ids:
         chunk = _df[_df.iloc[:, 1] == series_id].iloc[:, [0, 2]]
         chunk.columns = [chunk.columns[0].upper(), series_id]
-        chunk.set_index(chunk.columns[0],
-                        inplace=True,
-                        verify_integrity=True)
+        chunk.set_index(chunk.columns[0], inplace=True, verify_integrity=True)
         df = pd.concat([df, chunk], axis=1, sort=True)
     df['sum'] = df.sum(axis=1)
     return df.iloc[:, [-1]]
@@ -268,11 +263,12 @@ def extract_usa_bea(archive_name: str, wb_name: str, sh_name: str, series_id: st
         # =====================================================================
         # Re-Load
         # =====================================================================
-        df = pd.read_excel(xl_file,
-                           sh_name,
-                           usecols=range(2, df.shape[1]),
-                           skiprows=7)
-    df.dropna(axis=0, inplace=True)
+        df = pd.read_excel(
+            xl_file,
+            sh_name,
+            usecols=range(2, df.shape[1]),
+            skiprows=7
+        ).dropna(axis=0)
     df.columns = ['period', *df.columns[1:]]
     df = df.set_index(df.columns[0]).transpose()
     return df.loc[:, [series_id]]
@@ -291,7 +287,7 @@ def extract_usa_bea_filter(series_id: str) -> DataFrame:
     for source_id in sorted(set(_df.iloc[:, 0])):
         chunk = _df[_df.iloc[:, 0] == source_id].iloc[:, [2, 4]]
         chunk.columns = [chunk.columns[0],
-                         '{}{}'.format(source_id.split()[1].replace('.', '_'), series_id)]
+                         ''.join((source_id.split()[1].replace('.', '_'), series_id))]
         chunk.drop_duplicates(inplace=True)
         chunk.set_index(chunk.columns[0], inplace=True, verify_integrity=True)
         df = pd.concat([df, chunk], axis=1, sort=True)
@@ -319,7 +315,7 @@ def extract_usa_bea_sfat_series() -> DataFrame:
     for source_id in sorted(set(_df.iloc[:, 0])):
         chunk = _df[_df.iloc[:, 0] == source_id].iloc[:, [2, 3]]
         chunk.columns = [chunk.columns[0],
-                         '{}{}'.format(source_id.split()[1].replace('.', '_'), SERIES_ID)]
+                         ''.join((source_id.split()[1].replace('.', '_'), SERIES_ID))]
         chunk.set_index(chunk.columns[0], inplace=True, verify_integrity=True)
         control_frame = pd.concat([control_frame, chunk], axis=1, sort=True)
 
@@ -346,10 +342,7 @@ def extract_usa_bls(file_name, series_id: str) -> DataFrame:
     '''
     Bureau of Labor Statistics Data Fetch
     '''
-    df = pd.read_csv(file_name,
-                     sep='\t',
-                     usecols=range(4),
-                     low_memory=False)
+    df = pd.read_csv(file_name, sep='\t', usecols=range(4), low_memory=False)
     query = (df.iloc[:, 0].str.contains(series_id)) & \
             (df.iloc[:, 2] == 'M13')
     df = df[query].iloc[:, [1, 3]]
@@ -367,9 +360,7 @@ def extract_usa_census(archive_name: str, series_id: str) -> DataFrame:
     U.S. Bureau of the Census. Historical Statistics of the United States,
     Colonial Times to 1970, Bicentennial Edition. Washington, D.C., 1975.
     '''
-    df = pd.read_csv(archive_name,
-                     usecols=range(8, 11),
-                     dtype=str)
+    df = pd.read_csv(archive_name, usecols=range(8, 11), dtype=str)
     df = df[df.iloc[:, 0] == series_id].iloc[:, [1, 2]]
     df.iloc[:, 0] = df.iloc[:, 0].str[:4].astype(int)
     df.iloc[:, 1] = df.iloc[:, 1].astype(float)
@@ -383,10 +374,10 @@ def extract_usa_census_description(archive_name: str, series_id: str) -> str:
     FLAG = 'no_details'
     _df = pd.read_csv(
         archive_name,
-        usecols=[0, 1, 3, 4, 5, 6, 8],
+        usecols=[_ for _ in range(9) if _ not in range(2, 9, 5)],
         low_memory=False
     )
-    _df = _df[_df.iloc[:, 6] == series_id]
+    _df = _df[_df.iloc[:, -1] == series_id]
     _df.drop_duplicates(inplace=True)
     if _df.iloc[0, 2] == FLAG:
         if _df.iloc[0, 5] == FLAG:
@@ -451,6 +442,7 @@ def _extract_worldbank(df: DataFrame, series_id: str) -> DataFrame:
     chunk = df[df.iloc[:, 1] == series_id].iloc[:, [0, 2]]
     chunk.columns = [chunk.columns[0], series_id]
     return chunk.set_index(df.columns[0])
+
 
 def extract_worldbank() -> DataFrame:
     URL = 'https://api.worldbank.org/v2/en/indicator/NY.GDP.MKTP.CD?downloadformat=csv'
