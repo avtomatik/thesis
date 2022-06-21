@@ -45,11 +45,11 @@ def plot_a(df: DataFrame) -> None:
     # =========================================================================
     # `Real` Investment
     # =========================================================================
-    _df['inv'] = _df.iloc[:, 0].mul(_df.iloc[:, 3]).div(_df.iloc[:, 2])
+    _df['investment'] = _df.iloc[:, 0].mul(_df.iloc[:, 3]).div(_df.iloc[:, 2])
     # =========================================================================
     # `Real` Production
     # =========================================================================
-    _df['prd'] = _df.iloc[:, 1].mul(_df.iloc[:, 3]).div(_df.iloc[:, 2])
+    _df['production'] = _df.iloc[:, 1].mul(_df.iloc[:, 3]).div(_df.iloc[:, 2])
     _df['inv_roll_mean'] = _df.iloc[:, -2].rolling(2).mean()
     _df['prd_roll_mean'] = _df.iloc[:, -2].rolling(2).mean()
     plt.figure()
@@ -89,7 +89,7 @@ def plot_b(df: DataFrame) -> None:
     # =========================================================================
     # `Real` Investment
     # =========================================================================
-    _df['inv'] = _df.iloc[:, 0].mul(_df.iloc[:, 2]).div(_df.iloc[:, 1])
+    _df['investment'] = _df.iloc[:, 0].mul(_df.iloc[:, 2]).div(_df.iloc[:, 1])
     plt.figure()
     plt.plot(_df.iloc[:, 3], _df.iloc[:, -1])
     plt.title(
@@ -116,7 +116,7 @@ def plot_c(df: DataFrame) -> None:
     # =========================================================================
     # `Real` Investment
     # =========================================================================
-    df['inv'] = df.iloc[:, 0].mul(df.iloc[:, 2]).div(df.iloc[:, 1])
+    df['investment'] = df.iloc[:, 0].mul(df.iloc[:, 2]).div(df.iloc[:, 1])
     plt.figure()
     plt.plot(df.iloc[:, range(2, 5)], label=[
         'Real Gross Domestic Product',
@@ -156,11 +156,11 @@ def plot_d(df: DataFrame) -> None:
     # =========================================================================
     # Real Investment, Billions
     # =========================================================================
-    df['invmnt'] = df.iloc[:, 1].mul(df.iloc[_b, 0]).div(100).div(1000)
+    df['investment'] = df.iloc[:, 1].mul(df.iloc[_b, 0]).div(100).div(1000)
     # =========================================================================
     # Real Fixed Investment, Billions
     # =========================================================================
-    df['fxd_invmnt'] = df.iloc[:, 3].mul(df.iloc[_b, 2]).div(100).div(1000)
+    df['investment_f'] = df.iloc[:, 3].mul(df.iloc[_b, 2]).div(100).div(1000)
     plt.figure(1)
     plt.semilogy(
         df.iloc[:, -2],
@@ -1656,6 +1656,7 @@ def plot_growth_elasticity(df: DataFrame) -> None:
 def plot_increment(df: DataFrame) -> None:
     FLAG = False
     FOLDER = '/home/alexander/science'
+    FILE_NAME = 'fig_file_name.pdf'
     fig, axs = plt.subplots(2, 1)
     axs[0].plot(df.iloc[:, 0], df.iloc[:, 1], label='Curve')
     axs[0].set_xlabel('Labor Capital Intensity')
@@ -1677,7 +1678,7 @@ def plot_increment(df: DataFrame) -> None:
     fig.tight_layout()
     if FLAG:
         fig.savefig(
-            os.path.join(FOLDER, 'fig_file_name.pdf'),
+            os.path.join(FOLDER, FILE_NAME),
             format='pdf', dpi=900
         )
     else:

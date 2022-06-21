@@ -399,7 +399,8 @@ def calculate_capital_retirement(df: DataFrame) -> None:
             DataFrame(_value, columns=['_value']),
             DataFrame(_ratio, columns=['_ratio'])
         ],
-        axis=1)
+        axis=1
+    )
     _df.set_index(_df.columns[0], inplace=True)
     _df['_ratio_deviation_abs'] = _df.iloc[:, 10].sub(
         _df.iloc[:, 10].mean()).abs()
@@ -428,8 +429,9 @@ def calculate_capital_retirement(df: DataFrame) -> None:
     plt.grid(True)
     plt.figure(3)
     plt.title(
-        'Fixed Assets Turnover ($\\lambda$), {}=100, {}$-${}'.format(*
-                                                                     df.index[[_b, 0, -1]])
+        'Fixed Assets Turnover ($\\lambda$), {}=100, {}$-${}'.format(
+            *df.index[[_b, 0, -1]]
+        )
     )
     plt.xlabel('Period')
     plt.ylabel(f'Fixed Assets Turnover ($\\lambda$), {_df.index[_b]}=100')
@@ -438,7 +440,8 @@ def calculate_capital_retirement(df: DataFrame) -> None:
     plt.figure(4)
     plt.title(
         'Investment to Gross Domestic Product Ratio, {}=100, {}$-${}'.format(
-            *df.index[[_b, 0, -1]])
+            *df.index[[_b, 0, -1]]
+        )
     )
     plt.xlabel('Period')
     plt.ylabel(
@@ -448,8 +451,9 @@ def calculate_capital_retirement(df: DataFrame) -> None:
     plt.grid(True)
     plt.figure(5)
     plt.title(
-        '$\\alpha(t)$, Fixed Assets Retirement Ratio, {}=100, {}$-${}'.format(*
-                                                                              df.index[[_b, 0, -1]])
+        '$\\alpha(t)$, Fixed Assets Retirement Ratio, {}=100, {}$-${}'.format(
+            *df.index[[_b, 0, -1]]
+        )
     )
     plt.xlabel('Period')
     plt.ylabel(f'$\\alpha(t)$, {_df.index[_b]}=100')
@@ -458,7 +462,8 @@ def calculate_capital_retirement(df: DataFrame) -> None:
     plt.figure(6)
     plt.title(
         'Fixed Assets Retirement Ratio to Fixed Assets Retirement Value, {}=100, {}$-${}'.format(
-            *df.index[[_b, 0, -1]])
+            *df.index[[_b, 0, -1]]
+        )
     )
     plt.xlabel(f'$\\alpha(t)$, {_df.index[_b]}=100')
     plt.ylabel(f'Fixed Assets Retirement Value, {_df.index[_b]}=100')
@@ -492,7 +497,7 @@ def calculate_capital(df: DataFrame, p_i: tuple[float], p_t: tuple[float], ratio
     return df.index.to_series().shift(1).mul(p_i[0]).add(p_i[1]).mul(df.index.to_series().shift(1).mul(p_t[0]).add(p_t[1])).mul(ratio).add(1).sub(df.iloc[:, 3].shift(1)).mul(df.iloc[:, 2].shift(1))
 
 
-def calculate_curve_fit_params(data_frame: DataFrame) -> None:
+def calculate_curve_fit_params(df: DataFrame) -> None:
     '''
     ================== =================================
     df.index           Period
@@ -507,17 +512,17 @@ def calculate_curve_fit_params(data_frame: DataFrame) -> None:
     # =========================================================================
     # Labor Capital Intensity
     # =========================================================================
-    data_frame['lab_cap_int'] = data_frame.iloc[:, 0].div(
-        data_frame.iloc[:, 1])
+    df['lab_cap_int'] = df.iloc[:, 0].div(
+        df.iloc[:, 1])
     # =========================================================================
     # Labor Productivity
     # =========================================================================
-    data_frame['lab_product'] = data_frame.iloc[:, 2].div(
-        data_frame.iloc[:, 1])
+    df['lab_product'] = df.iloc[:, 2].div(
+        df.iloc[:, 1])
     params, matrix = optimization.curve_fit(
         _curve,
-        data_frame.iloc[:, -2],
-        data_frame.iloc[:, -1],
+        df.iloc[:, -2],
+        df.iloc[:, -1],
         np.array([1.0, 0.5])
     )
     print('Factor, b: {:,.4f}; Index, k: {:,.4f}'.format(*params))
@@ -616,9 +621,13 @@ def calculate_power_function_fit_params_a(df: DataFrame, params: tuple[float]):
     print(f'Model Parameter: Alpha = {params[2]:.4f};')
     print(f'Estimator Result: Mean Value: {df.iloc[:, 2].mean():,.4f};')
     print('Estimator Result: Mean Squared Deviation, MSD: {:,.4f};'.format(
-        mean_squared_error(df.iloc[:, 1], df.iloc[:, 2])))
+        mean_squared_error(df.iloc[:, 1], df.iloc[:, 2])
+    )
+    )
     print('Estimator Result: Root-Mean-Square Deviation, RMSD: {:,.4f}.'.format(
-        np.sqrt(mean_squared_error(df.iloc[:, 1], df.iloc[:, 2]))))
+        np.sqrt(mean_squared_error(df.iloc[:, 1], df.iloc[:, 2]))
+    )
+    )
 
 
 def calculate_power_function_fit_params_b(df: DataFrame, params: tuple[float]):
@@ -651,12 +660,17 @@ def calculate_power_function_fit_params_b(df: DataFrame, params: tuple[float]):
     print(f'Model Parameter: U_2 = {params[3]};')
     print(f'Model Parameter: Alpha = {params[4]:.4f};')
     print(
-        f'Model Parameter: A: = (U_2-U_1)/(TAU_2-TAU_1)**Alpha = {_param:,.4f};')
+        f'Model Parameter: A: = (U_2-U_1)/(TAU_2-TAU_1)**Alpha = {_param:,.4f};'
+    )
     print(f'Estimator Result: Mean Value: {df.iloc[:, 1].mean():,.4f};')
     print('Estimator Result: Mean Squared Deviation, MSD: {:,.4f};'.format(
-        mean_squared_error(df.iloc[:, 1], df.iloc[:, 2])))
+        mean_squared_error(df.iloc[:, 1], df.iloc[:, 2])
+    )
+    )
     print('Estimator Result: Root-Mean-Square Deviation, RMSD: {:,.4f}.'.format(
-        np.sqrt(mean_squared_error(df.iloc[:, 1], df.iloc[:, 2]))))
+        np.sqrt(mean_squared_error(df.iloc[:, 1], df.iloc[:, 2]))
+    )
+    )
 
 
 def calculate_power_function_fit_params_c(df: DataFrame, params: tuple[float]):
@@ -691,9 +705,13 @@ def calculate_power_function_fit_params_c(df: DataFrame, params: tuple[float]):
     print(f'Model Parameter: Alpha: = LN(Y_2/Y_1)/LN(X_1/X_2) = {_alpha:.4f};')
     print(f'Estimator Result: Mean Value: {df.iloc[:, 1].mean():,.4f};')
     print('Estimator Result: Mean Squared Deviation, MSD: {:,.4f};'.format(
-        mean_squared_error(df.iloc[:, 1], df.iloc[:, 2])))
+        mean_squared_error(df.iloc[:, 1], df.iloc[:, 2])
+    )
+    )
     print('Estimator Result: Root-Mean-Square Deviation, RMSD: {:,.4f}.'.format(
-        np.sqrt(mean_squared_error(df.iloc[:, 1], df.iloc[:, 2]))))
+        np.sqrt(mean_squared_error(df.iloc[:, 1], df.iloc[:, 2]))
+    )
+    )
 
 
 def kol_zur_filter(df: DataFrame, k: int = None) -> tuple[DataFrame]:
@@ -1300,45 +1318,70 @@ def price_inverse_double(df: DataFrame) -> DataFrame:
     return df.iloc[:, [-1]].dropna(axis=0)
 
 
-def price_inverse_single(data_series):
-    '''Intent: Returns Prices Icrement Series from Cumulative Deflator Series;
-    source: pandas DataFrame'''
-    return data_series.div(data_series.shift(1)).sub(1)
+def price_inverse_single(df: DataFrame) -> DataFrame:
+    '''
+    Returns Prices Icrement Series from Cumulative Deflator Series
+
+    Parameters
+    ----------
+    df : DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      TODO: Prices
+    ================== =================================
+    Returns
+    -------
+    DataFrame
+        TODO: DESCRIPTION.
+
+    '''
+    return df.div(df.shift(1)).sub(1)
 
 
-def strip_cumulated_deflator(data_frame):
+def strip_cumulated_deflator(df: DataFrame):
     # =========================================================================
     # TODO: Eliminate This Function
     # =========================================================================
-    return price_inverse_single(data_frame.dropna()).dropna()
+    return price_inverse_single(df.dropna()).dropna()
 
 
-def procedure(output_name, criteria):
-    # =========================================================================
-    # TODO: Add Description
-    # =========================================================================
-    result = DataFrame()
-    for item in criteria:
-        data = extract_can_from_url(string_to_url(item['file_name']))
-        data = data[data['VECTOR'].isin(item['series_ids'])]
-        data = data[['REF_DATE', 'VECTOR', 'VALUE']]
-        for series_id in item['series_ids']:
-            chunk = data[data['VECTOR'] == series_id]
+def build_load_data_frame(file_name: str, criteria: dict) -> None:
+    '''
+    Builds DataFrame & Loads It To Excel
+
+    Parameters
+    ----------
+    file_name : str
+        Excel File Name.
+    criteria : dict
+        DESCRIPTION.
+
+    Returns
+    -------
+    None
+    '''
+    df = DataFrame()
+    for criterion in criteria:
+        _df = extract_can_from_url(string_to_url(criterion['file_name']))
+        _df = _df[_df['VECTOR'].isin(criterion['series_ids'])]
+        _df = _df[['REF_DATE', 'VECTOR', 'VALUE']]
+        for series_id in criterion['series_ids']:
+            chunk = _df[_df['VECTOR'] == series_id]
             chunk.set_index(chunk.columns[0], inplace=True)
             chunk = chunk.iloc[:, [1]]
             chunk = mean_by_year(chunk)
             chunk.rename(columns={'VALUE': series_id}, inplace=True)
-            result = pd.concat([result, chunk], axis=1, sort=True)
-    result.to_excel(output_name)
+            df = pd.concat([df, chunk], axis=1, sort=True)
+    df.to_excel(file_name)
 
 
-def rolling_mean_filter(data_frame: DataFrame, k: int = None) -> tuple[DataFrame]:
+def rolling_mean_filter(df: DataFrame, k: int = None) -> tuple[DataFrame]:
     '''
     Rolling Mean Filter
 
     Parameters
     ----------
-    data_frame : DataFrame
+    df : DataFrame
     ================== =================================
     df.index           Period
     df.iloc[:, 0]      Target Series
@@ -1353,29 +1396,29 @@ def rolling_mean_filter(data_frame: DataFrame, k: int = None) -> tuple[DataFrame
 
     '''
     if k is None:
-        k = data_frame.shape[0] // 2
-    data_frame.reset_index(level=0, inplace=True)
+        k = df.shape[0] // 2
+    df.reset_index(level=0, inplace=True)
     # =========================================================================
     # DataFrame for Rolling Mean Filter Results: Odd
     # =========================================================================
-    data_frame_o = pd.concat(
+    df_o = pd.concat(
         [
             # =================================================================
             # No Period Shift
             # =================================================================
-            data_frame,
+            df,
         ],
         axis=1,
     )
     # =========================================================================
     # DataFrame for Rolling Mean Filter Results: Even
     # =========================================================================
-    data_frame_e = pd.concat(
+    df_e = pd.concat(
         [
             # =================================================================
             # Period Shift
             # =================================================================
-            data_frame.iloc[:, [0]].rolling(2, center=True).mean(),
+            df.iloc[:, [0]].rolling(2, center=True).mean(),
         ],
         axis=1,
     )
@@ -1387,7 +1430,7 @@ def rolling_mean_filter(data_frame: DataFrame, k: int = None) -> tuple[DataFrame
             # =================================================================
             # Period Shift
             # =================================================================
-            data_frame.iloc[:, [0]].rolling(2).mean(),
+            df.iloc[:, [0]].rolling(2).mean(),
         ],
         axis=1,
     )
@@ -1399,7 +1442,7 @@ def rolling_mean_filter(data_frame: DataFrame, k: int = None) -> tuple[DataFrame
             # =================================================================
             # No Period Shift
             # =================================================================
-            data_frame.iloc[:, [0]],
+            df.iloc[:, [0]],
         ],
         axis=1,
     )
@@ -1408,23 +1451,23 @@ def rolling_mean_filter(data_frame: DataFrame, k: int = None) -> tuple[DataFrame
             # =================================================================
             # DataFrame for Rolling Mean Filter Results: Odd
             # =================================================================
-            data_frame_o = pd.concat(
+            df_o = pd.concat(
                 [
-                    data_frame_o,
-                    data_frame.iloc[:, [1]].rolling(2 + _, center=True).mean(),
+                    df_o,
+                    df.iloc[:, [1]].rolling(2 + _, center=True).mean(),
                 ],
                 axis=1,
             )
-            data_frame_o.columns = [*data_frame_o.columns[:-1],
-                                    f'{data_frame.columns[1]}_{hex(2 + _)}', ]
+            df_o.columns = [*df_o.columns[:-1],
+                            f'{df.columns[1]}_{hex(2 + _)}', ]
             # =================================================================
             # DataFrame for Rolling Mean Filter Residuals: Odd
             # =================================================================
             residuals_o = pd.concat(
                 [
                     residuals_o,
-                    data_frame_o.iloc[:, [-2]
-                                      ].div(data_frame_o.iloc[:, [-2]].shift(1)).sub(1),
+                    df_o.iloc[:, [-2]
+                              ].div(df_o.iloc[:, [-2]].shift(1)).sub(1),
                 ],
                 axis=1,
             )
@@ -1432,35 +1475,35 @@ def rolling_mean_filter(data_frame: DataFrame, k: int = None) -> tuple[DataFrame
             # =================================================================
             # DataFrame for Rolling Mean Filter Results: Even
             # =================================================================
-            data_frame_e = pd.concat(
+            df_e = pd.concat(
                 [
-                    data_frame_e,
-                    data_frame.iloc[:, [1]].rolling(2 + _, center=True).mean(),
+                    df_e,
+                    df.iloc[:, [1]].rolling(2 + _, center=True).mean(),
                 ],
                 axis=1,
             )
-            data_frame_e.columns = [*data_frame_e.columns[:-1],
-                                    f'{data_frame.columns[1]}_{hex(2 + _)}', ]
+            df_e.columns = [*df_e.columns[:-1],
+                            f'{df.columns[1]}_{hex(2 + _)}', ]
             # =================================================================
             # DataFrame for Rolling Mean Filter Residuals: Even
             # =================================================================
             residuals_e = pd.concat(
                 [
                     residuals_e,
-                    data_frame_e.iloc[:, [-1]
-                                      ].shift(-1).div(data_frame_e.iloc[:, [-1]]).sub(1),
+                    df_e.iloc[:, [-1]
+                              ].shift(-1).div(df_e.iloc[:, [-1]]).sub(1),
                 ],
                 axis=1,
             )
-    data_frame_o.set_index(data_frame_o.columns[0], inplace=True)
-    data_frame_e.set_index(data_frame_e.columns[0], inplace=True)
+    df_o.set_index(df_o.columns[0], inplace=True)
+    df_e.set_index(df_e.columns[0], inplace=True)
     residuals_o.set_index(residuals_o.columns[0], inplace=True)
     residuals_e.set_index(residuals_e.columns[0], inplace=True)
-    data_frame_o.dropna(how='all', inplace=True)
-    data_frame_e.dropna(how='all', inplace=True)
+    df_o.dropna(how='all', inplace=True)
+    df_e.dropna(how='all', inplace=True)
     residuals_o.dropna(how='all', inplace=True)
     residuals_e.dropna(how='all', inplace=True)
-    return data_frame_o, data_frame_e, residuals_o, residuals_e
+    return df_o, df_e, residuals_o, residuals_e
 
 
 def simple_linear_regression(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
