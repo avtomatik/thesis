@@ -6,207 +6,189 @@ Created on Tue Nov  2 21:10:29 2021
 """
 
 
-# =============================================================================
-# Labor
-# =============================================================================
-# =============================================================================
-# v41707595 # Not Useful: Labour input
-# v41712954 # Not Useful: Labour input
-# v42189231 # Not Useful: Labour input
-# v65522120 # Not Useful
-# v65522415 # Not Useful
-# =============================================================================
+import os
+import pandas as pd
+from pandas import DataFrame
+from prepare.lib import get_data_cobb_douglas_price
+from prepare.lib import get_data_census_price
+from prepare.lib import get_data_can_price_a
+from prepare.lib import get_data_can_price_b
 
-def append_series_ids_sum(df, chunk, series_ids):
+
+def append_series_ids(df: DataFrame, chunk: DataFrame, series_ids: tuple[str]) -> DataFrame:
     for series_id in series_ids:
-        _chunk = pd.concat(
+        chunk = pd.concat(
             [
-                _chunk,
+                chunk,
                 df.loc[:, [series_id]].dropna(axis=0)
             ],
-            axis=1, sort=False)
-    series_ids.extend(['sum'])
-    _chunk['_'.join(series_ids)] = _chunk.sum(1)
-    return pd.concat(
-        [
-            chunk,
-            _chunk.iloc[:, [-1]]
-        ],
-        axis=1, sort=False)
+            axis=1)
+    return chunk
 
 
-def get_mean_for_min_std():
-    # =============================================================================
-    # Determine Year & Mean Value for Base Vectors for Year with Minimum StandardError
-    # =============================================================================
-    # =============================================================================
-    # Base Vector v123355112
-    # Base Vector v1235071986
-    # Base Vector v2057609
-    # Base Vector v2057818
-    # Base Vector v2523013
-    # =============================================================================
-    result = pd.DataFrame()
-    file_name = '/home/alexander/projects/stat_can_lab.xlsx'
-    _ = pd.read_excel(file_name)
-    _.set_index(_.columns[0], inplace=True)
-    SERIES_IDS = [
-        'v123355112',
-        'v1235071986',
-        'v2057609',
-        'v2057818',
-        'v2523013',
-    ]
-    for series_id in SERIES_IDS:
-        chunk = _.loc[:, [series_id]]
-        chunk.dropna(inplace=True)
-        result = pd.concat([result, chunk], axis=1, sort=False)
-    result.dropna(inplace=True)
-    result['std'] = result.std(axis=1)
-    return (result.iloc[:, [-1]].idxmin()[0],
-            result.loc[result.iloc[:, [-1]].idxmin()[0], :][:-1].mean())
+DIR = '/home/alexander/science'
+# # data = pd.DataFrame()
+# # CALLS = {
+# #     # 'cobb_douglas':price_cobb_douglas(),
+# #     # 'census':price_census(),
+# #     'canada_a': price_canada_a(),
+# #     'canada_b': price_canada_b(),
+# # }
+# # for key, chunk in CALLS.items():
+# #     data = pd.concat([data, chunk], axis=1)
+# # data['mean'] = data.mean(1)
+# # data['cum_mean'] = np.cumprod(1 + data.iloc[:, -1])
+# # data = data.div(data.loc[2012])
 
 
-result = pd.DataFrame()
+# # =============================================================================
+# # Product
+# # =============================================================================
+# # =============================================================================
+# # v21573668 # Not Useful: Real Gross Domestic Product
+# # v142817 # Not Useful: Capacity Utilization
+# # v37482 # Not Useful: Capacity Utilization
+# # v4331088 # Not Useful: Capacity Utilization
+# # v41713056 # Not Useful: Capital Input
+# # v41713073 # Not Useful: Capital Input
+# # v41707775 # Not Useful: Capital Input
+# # v42189387 # Not Useful: Capital Input
+# # =============================================================================
+# result = pd.DataFrame()
+# combined = pd.DataFrame()
+FILE_NAME = 'stat_can_prd.xlsx'
+# data = pd.read_excel(os.path.join(DIR, FILE_NAME), index_col=0)
+# # =============================================================================
+# # Capital cost
+# # =============================================================================
+# SERIES_IDS = (
+#     'v41713243',
+#     'v41708375',
+#     'v42189907',
+# )
+# combined = append_series_ids(data, combined, SERIES_IDS)
+# combined = combined.div(combined.loc[1997]).mul(100)
+# combined['mean_comb'] = combined.mean(1)
+# combined = combined.iloc[:, [-1]]
+# result = pd.concat([result, combined], axis=1)
+# # combined.plot(grid=True).get_figure().savefig('view.pdf', format='pdf', dpi=900)
+# # combined.to_excel('/media/alexander/321B-6A94/result.xlsx')
 
 
-combined = pd.DataFrame()
-file_name = '/home/alexander/projects/stat_can_prd.xlsx'
-data = pd.read_excel(file_name)
-data.set_index(data.columns[0], inplace=True)
-SERIES_IDS = [
-    'v716397',  # Total number of jobs
-    'v718173',
-    'v719421',  # Total number of jobs
-]
-combined = append_series_ids(data, combined, series_ids=SERIES_IDS)
-SERIES_IDS = [
-    'v535579',
-    'v535593',
-    'v535663',
-    'v535677',
-]
-combined = append_series_ids_sum(data, combined, series_ids=SERIES_IDS)
-file_name = '/home/alexander/projects/stat_can_lab.xlsx'
-data = pd.read_excel(file_name)
-data.set_index(data.columns[0], inplace=True)
-SERIES_IDS = [
-    'v74989',
-    'v2057609',
-    'v123355112',
-    'v2057818',
-]
-combined = append_series_ids(data, combined, series_ids=SERIES_IDS)
-combined = combined.div(combined.loc[1982]).mul(100)
-combined['mean'] = combined.mean(1)
-result = pd.concat([result, combined.iloc[:, [-1]]], axis=1, sort=False)
+FILE_NAME = 'stat_can_cap.xlsx'
+# data = pd.read_excel(os.path.join(DIR, FILE_NAME), index_col=0)
+# data = data.div(data.loc[1997]).mul(100)
+# combined = pd.concat([data, combined], axis=1)
+# combined.plot(grid=True).get_figure().savefig('view.pdf', format='pdf', dpi=900)
 
 
-combined = pd.DataFrame()
-file_name = '/home/alexander/projects/stat_can_prd.xlsx'
-data = pd.read_excel(file_name)
-data.set_index(data.columns[0], inplace=True)
-SERIES_IDS = [
-    'v21573686',  # Total number of jobs
-    'v111382232',  # Total number of jobs
-]
-combined = append_series_ids(data, combined, series_ids=SERIES_IDS)
-SERIES_IDS = [
-    'v761808',
-    'v761927',
-]
-combined = append_series_ids_sum(data, combined, series_ids=SERIES_IDS)
-file_name = '/home/alexander/projects/stat_can_lab.xlsx'
-data = pd.read_excel(file_name)
-data.set_index(data.columns[0], inplace=True)
-SERIES_IDS = [
-    'v249139',
-    'v2523013',
-    'v1596771',
-    'v78931172',
-    'v65521825',
-]
-combined = append_series_ids(data, combined, series_ids=SERIES_IDS)
-SERIES_IDS = [
-    'v249703',
-    'v250265',
-]
-combined = append_series_ids_sum(data, combined, series_ids=SERIES_IDS)
-SERIES_IDS = [
-    'v78931174',
-    'v78931173',
-]
-combined = append_series_ids_sum(data, combined, series_ids=SERIES_IDS)
-combined = combined.div(combined.loc[2000]).mul(100)
-combined['mean'] = combined.mean(1)
-result = pd.concat([result, combined.iloc[:, [-1]]], axis=1, sort=False)
+# # data = combined
+FILE_NAME = 'stat_can_cap.xlsx'
+# data = pd.read_excel(os.path.join(DIR, FILE_NAME), index_col=0)
+#
+#
+# result = pd.DataFrame(columns=['series_id_1', 'series_id_2', 'r_2'])
+# for pair in combinations(data.columns, 2):
+#     chunk = data.loc[:, list(pair)].dropna(axis=0)
+#     if not chunk.empty:
+#         result = result.append({'series_id_1': pair[0],
+#                                 'series_id_2': pair[1],
+#                                 'r_2': r2_score(chunk.iloc[:, 0], chunk.iloc[:, 1])},
+#                                 ignore_index=True)
+# result.to_excel('result.xlsx', index=False)
 
 
-combined = pd.DataFrame()
-file_name = '/home/alexander/projects/stat_can_lab.xlsx'
-data = pd.read_excel(file_name)
-data.set_index(data.columns[0], inplace=True)
-SERIES_IDS = [
-    'v1235071986',
-]
-combined = append_series_ids(data, combined, series_ids=SERIES_IDS)
-SERIES_IDS = [
-    'v54027148',
-    'v54027152',
-]
-combined = append_series_ids_sum(data, combined, series_ids=SERIES_IDS)
-combined = combined.div(combined.loc[2006]).mul(100)
-combined['mean'] = combined.mean(1)
-result = pd.concat([result, combined.iloc[:, [-1]]], axis=1, sort=False)
+# # combined = pd.DataFrame()
+FILE_NAME = 'stat_can_prd.xlsx'
+# # data = pd.read_excel(os.path.join(DIR, FILE_NAME), index_col=0)
+# # # =============================================================================
+# # # Production Indexes
+# # # =============================================================================
+# # # =============================================================================
+# # # v11567 # Production Indexes
+# # # v41707475 # Production Indexes
+# # # v41708195 # Gross Output
+# # # v42189127 # Production Indexes
+# # # v42189751 # Gross Output
+# # # v64602050 # Gross Output
+# # # v86718697 # Production Indexes
+# # # v86719219 # Gross Output
+# # # =============================================================================
+# # # SERIES_IDS = (
+# # #     'v86718697',
+# # #     'v41707475',
+# # #     'v42189127',
+# # #     'v11567',
+# # # )
+# # # combined = append_series_ids(data, combined, SERIES_IDS)
+# # # combined = combined.div(combined.loc[1961]).mul(100)
+
+# # # # =============================================================================
+# # # # Gross Output
+# # # # =============================================================================
+# # # SERIES_IDS = (
+# # #     'v86719219',
+# # #     'v41708195',
+# # #     'v42189751',
+# # #     'v64602050',
+# # # )
+# # # combined = append_series_ids(data, combined, SERIES_IDS)
+# # # combined = combined.div(combined.loc[1997]).mul(100)
+# # # combined.plot(grid=True).get_figure().savefig(
+# # #     'view.pdf', format='pdf', dpi=900)
+# # # combined.to_excel('/media/alexander/321B-6A94/result.xlsx')
 
 
-result = result.div(result.iloc[result.index.get_loc(2001), :]).mul(100)
-result['mean_comb'] = result.mean(1)
-result = result.iloc[:, [-1]]
-year, value = get_mean_for_min_std()
-result['workers'] = result.div(result.loc[year, :]).mul(value)
-result = result.iloc[:, [-1]].round(1)
-result.plot(grid=True).get_figure().savefig(
-    'view_canada.pdf', format='pdf', dpi=900)
-# result.to_excel('/media/alexander/321B-6A94/result.xlsx')
-# print(result)
-
-file_name = '/home/alexander/projects/series_ids.xlsx'
-data = pd.read_excel(file_name)
-data.dropna(axis=0, how='all', inplace=True)
-data.dropna(axis=1, how='all', inplace=True)
-# data.to_excel('/home/alexander/projects/series_ids.xlsx', index=False)
-
-data.fillna('None', inplace=True)
-version = sorted(data.iloc[:, 0].unique())[0]
-chunk = data[data.iloc[:, 0] == version].iloc[:, 1:]
-chunk = chunk[chunk.iloc[:, 0] == "# Labor"].iloc[:, 1:]
-initial = set(chunk.iloc[:, 0])
-version = sorted(data.iloc[:, 0].unique())[2]
-chunk = data[data.iloc[:, 0] == version].iloc[:, 1:]
-chunk = chunk[chunk.iloc[:, 0] == "# Labor"].iloc[:, 1:]
-refactd = set(chunk.iloc[:, 0])
-# for item in sorted(initial and refactd):
-#     print(item)
+FILE_NAME = 'stat_can_cap.xlsx'
+# data = pd.read_excel(os.path.join(DIR, FILE_NAME), index_col=0)
+# combined = pd.DataFrame()
+# for _ in range(30, 35):
+#     chunk = data.iloc[:, [_]].dropna()
+#     combined = pd.concat([combined, chunk],
+#                           axis=1,
+#                           sort=False)
+# combined = combined.div(combined.loc[1997]).mul(100)
+# combined['mean'] = combined.sum(1)
+# combined = combined.iloc[:, [-1]]
+# result = pd.concat([result, combined], axis=1)
+# result.plot(grid=True).get_figure().savefig('view.pdf', format='pdf', dpi=900)
 
 
-file_name = '/home/alexander/projects/stat_can_cap.xlsx'
-data = pd.read_excel(file_name)
-a = set(data.T.index)
-a.remove('REF_DATE')
-file_name = '/home/alexander/projects/stat_can_lab.xlsx'
-data = pd.read_excel(file_name)
-b = set(data.T.index)
-b.remove('REF_DATE')
-file_name = '/home/alexander/projects/stat_can_prd.xlsx'
-data = pd.read_excel(file_name)
-c = set(data.T.index)
-c.remove('REF_DATE')
+FILE_NAME = 'stat_can_cap_matching.xlsx'
+# data = pd.read_excel(os.path.join(DIR, FILE_NAME), index_col=0)
+# data = data[data.iloc[:, 5] != 'Information and communication technologies machinery and equipment']
+# data = data[data.iloc[:, 5] != 'Land']
+# data = data[data.iloc[:, 6] != 'Intellectual property products']
+# # data.dropna(axis = 0, how='all', inplace=True)
+# data.to_excel('DIR/stat_can_cap_matching_alpha.xlsx', index=True)
 
-
-a -= refactd
-b -= refactd
-c -= refactd
-print(a)
-print(b)
-print(c)
+FILE_NAME = 'stat_can_cap.xlsx'
+data = pd.read_excel(os.path.join(DIR, FILE_NAME), index_col=0)
+SERIES_IDS = (
+    'v46444624',
+    'v46444685',
+    'v46444746',
+    'v46444990',
+    'v46445051',
+    'v46445112',
+    'v46445356',
+    'v46445417',
+    'v46445478',
+    'v46445722',
+    'v46445783',
+    'v46445844',
+)
+for series_id in SERIES_IDS[::3]:
+    chunk = data.loc[:, [series_id]]
+    chunk.dropna(axis=0, how='all', inplace=True)
+    chunk.plot(grid=True)
+    # chunk.plot(grid=True).get_figure().savefig(
+    #     'temporary.pdf', format='pdf', dpi=900)
+# for series_id in SERIES_IDS[1::3]:
+#     chunk = data.loc[:, [series_id]]
+#     chunk.dropna(axis = 0, how='all', inplace=True)
+#     chunk.plot(grid=True)
+# for series_id in SERIES_IDS[2::3]:
+#     chunk = data.loc[:, [series_id]]
+#     chunk.dropna(axis = 0, how='all', inplace=True)
+#     chunk.plot(grid=True)
