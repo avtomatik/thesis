@@ -51,7 +51,7 @@ def extract_can_annual(file_id: int, series_id: str) -> DataFrame:
 
 def extract_can_capital_series_ids_archived() -> list[str]:
     '''
-    Fetch <series_ids> from CANSIM Table 031-0004: Flows and stocks of fixed
+    Fetch <SERIES_IDS> from CANSIM Table 031-0004: Flows and stocks of fixed
     non-residential capital, total all industries, by asset, provinces and
     territories, annual (dollars x 1,000,000)
     '''
@@ -306,38 +306,6 @@ def extract_usa_bea_from_url(url: str) -> DataFrame:
     return pd.read_csv(io.BytesIO(requests.get(url).content), thousands=',')
 
 
-def extract_usa_bea_sfat_series() -> DataFrame:
-    ARCHIVE_NAME = 'dataset_usa_bea-nipa-selected.zip'
-    SERIES_ID = 'k3n31gd1es000'
-    _df = pd.read_csv(ARCHIVE_NAME, usecols=[0, *range(8, 11)])
-    _df = _df[_df.iloc[:, 1] == SERIES_ID]
-    control_frame = DataFrame()
-    for source_id in sorted(set(_df.iloc[:, 0])):
-        chunk = _df[_df.iloc[:, 0] == source_id].iloc[:, [2, 3]]
-        chunk.columns = [chunk.columns[0],
-                         ''.join((source_id.split()[1].replace('.', '_'), SERIES_ID))]
-        chunk.set_index(chunk.columns[0], inplace=True, verify_integrity=True)
-        control_frame = pd.concat([control_frame, chunk], axis=1, sort=True)
-
-    ARCHIVE_NAME = 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip'
-    WB_NAME = 'Section4ALL_xls.xls'
-    SH_NAME = '403 Ann'
-    # =========================================================================
-    # Fixed Assets Series, 1925--2016
-    # =========================================================================
-    SERIES_IDS = ('k3n31gd1es000', 'k3n31gd1eq000',
-                  'k3n31gd1ip000', 'k3n31gd1st000',)
-    test_frame = pd.concat(
-        [
-            extract_usa_bea(ARCHIVE_NAME, WB_NAME, SH_NAME, series_id)
-            for series_id in SERIES_IDS
-        ],
-        axis=1,
-        sort=True
-    )
-    return pd.concat([test_frame, control_frame], axis=1, sort=True)
-
-
 def extract_usa_bls(file_name, series_id: str) -> DataFrame:
     '''
     Bureau of Labor Statistics Data Fetch
@@ -465,3 +433,18 @@ def extract_series_ids(archive_name: str) -> dict[str]:
     '''Returns Dictionary for Series from Douglas's & Kendrick's Databases'''
     df = pd.read_csv(archive_name, usecols=[3, 4, ])
     return dict(zip(df.iloc[:, 1], df.iloc[:, 0]))
+
+
+def extract_usa_frb_ms() -> DataFrame:
+    ''''Indexed Money Stock Measures (H.6) Series'''
+    URL = 'https://www.federalreserve.gov/datadownload/Output.aspx?rel=H6&series=5398d8d1734b19f731aba3105eb36d47&lastobs=&from=01/01/1959&to=12/31/2018&filetype=csv&label=include&layout=seriescolumn'
+    df = pd.read_csv(
+        io.BytesIO(requests.get(URL).content),
+        names=['period', 'm1_m'],
+        index_col=0,
+        usecols=range(2),
+        skiprows=6,
+        parse_dates=True,
+        thousands=','
+    )
+    return df.groupby(df.index.year).mean()

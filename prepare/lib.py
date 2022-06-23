@@ -6,10 +6,8 @@ Created on Sun Jun 12 11:52:01 2022
 @author: alexander
 """
 
-import io
 import numpy as np
 import pandas as pd
-import requests
 from functools import partial
 from pandas import DataFrame
 from extract.lib import extract_usa_classic
@@ -120,9 +118,8 @@ def get_data_archived() -> DataFrame:
     # =========================================================================
     # Deflator, 2005=100
     # =========================================================================
-    _df['def'] = _df.iloc[:, 0].add(1).cumprod()
-    _df.iloc[:, -1] = _df.iloc[:, -
-                               1].rdiv(_df.iloc[_df.index.get_loc(2005), -1])
+    _df['deflator'] = _df.iloc[:, 0].add(1).cumprod()
+    _df.iloc[:, -1] = _df.iloc[:, -1].rdiv(_df.loc[2005, _df.columns[-1]])
     # =========================================================================
     # Investment, 2005=100
     # =========================================================================
@@ -130,7 +127,7 @@ def get_data_archived() -> DataFrame:
     # =========================================================================
     # Capital, 2005=100
     # =========================================================================
-    _df['cap'] = _df.iloc[:, 3].mul(_df.iloc[:, -1])
+    _df['capital'] = _df.iloc[:, 3].mul(_df.iloc[:, -1])
     # =========================================================================
     # Capital Retirement Ratio
     # =========================================================================
@@ -138,7 +135,7 @@ def get_data_archived() -> DataFrame:
         _df.iloc[:, -1]).add(1)
     return (
         _df.loc[:, ['investment', 'A191RX1',
-                    'cap', 'ratio_mu']].dropna(axis=0),
+                    'capital', 'ratio_mu']].dropna(axis=0),
         _df.loc[:, ['ratio_mu']].dropna(axis=0),
     )
 
@@ -487,30 +484,30 @@ def get_data_can_price_a():
               [[_, 5 + _] for _ in range(35, 39)],
               # [[_, 10 + _] for _ in range(35, 40)],
               ]
-    combined = DataFrame()
+    df = DataFrame()
     for pairs in groups:
         for pair in pairs:
             chunk = _df.iloc[:, pair].dropna(axis=0)
-            chunk['def'] = chunk.iloc[:, 0].div(chunk.iloc[:, 1])
+            chunk['deflator'] = chunk.iloc[:, 0].div(chunk.iloc[:, 1])
             chunk['prc'] = chunk.iloc[:, 2].div(
                 chunk.iloc[:, 2].shift(1)).sub(1)
             chunk.dropna(axis=0, inplace=True)
-            combined = pd.concat([combined, chunk.iloc[:, [3]]], axis=1)
-            combined.plot(grid=True)
-    # return combined
+            df = pd.concat([df, chunk.iloc[:, [3]]], axis=1)
+            df.plot(grid=True)
+    # return df
 
 
 def get_data_can_price_b():
     FILE_NAME = '/home/alexander/projects/stat_can_cap.xlsx'
     _df = pd.read_excel(FILE_NAME, index_col=0)
-    combined = DataFrame()
+    df = DataFrame()
     for _ in range(21, 24):
         chunk = _df.iloc[:, [_]].dropna(axis=0)
         chunk[f'{_df.columns[_]}_prc'] = chunk.iloc[:, 0].div(
             chunk.iloc[:, 0].shift(1)).sub(1)
         chunk.dropna(axis=0, inplace=True)
-        combined = pd.concat([combined, chunk.iloc[:, [1]]], axis=1)
-    return combined
+        df = pd.concat([df, chunk.iloc[:, [1]]], axis=1)
+    return df
 
 
 def get_data_capital_combined_archived():
@@ -692,7 +689,7 @@ def get_data_census_a():
     _args = [tuple((ARCHIVE_NAMES[1], series_id,)) if series_id.startswith(
         'P') else tuple((ARCHIVE_NAMES[0], series_id,)) for series_id in SERIES_IDS]
     df = pd.concat([extract_usa_census(*_) for _ in _args], axis=1, sort=True)
-    df = df.div(df.iloc[df.index.get_loc(1899), :]).mul(100)
+    df = df.div(df.loc[1899, :]).mul(100)
     return df, df.index.get_loc(1899)
 
 
@@ -833,10 +830,8 @@ def get_data_census_f() -> DataFrame:
         sort=True
     )
     df['workers'] = df.iloc[:, 0].div(df.iloc[:, 1]).mul(100)
-    df.iloc[:, 4].fillna(
-        df.iloc[:df.index.get_loc(1906), 4].mean(), inplace=True)
-    df.iloc[:, 5].fillna(
-        df.iloc[:df.index.get_loc(1906), 5].mean(), inplace=True)
+    df.iloc[:, 4].fillna(df.loc[:1906, df.columns[4]].mean(), inplace=True)
+    df.iloc[:, 5].fillna(df.loc[:1906, df.columns[5]].mean(), inplace=True)
     return df
 
 
@@ -929,7 +924,7 @@ def get_data_census_j() -> DataFrame:
         axis=1,
         sort=True
     )
-    return df.div(df.iloc[df.index.get_loc(YEAR_BASE), :]).mul(100)
+    return df.div(df.loc[YEAR_BASE, :]).mul(100)
 
 
 def get_data_census_price() -> DataFrame:
@@ -941,7 +936,7 @@ def get_data_census_price() -> DataFrame:
         ],
         axis=1
     )
-    df['def'] = df.iloc[:, 0].div(df.iloc[:, 1])
+    df['deflator'] = df.iloc[:, 0].div(df.iloc[:, 1])
     df['prc'] = df.iloc[:, -1].div(df.iloc[:, -1].shift(1)).sub(1)
     return df.iloc[:, [-1]].dropna(axis=0)
 
@@ -1290,10 +1285,9 @@ def get_data_cobb_douglas_extension_labor():
             pd.read_csv(FILE_NAME, index_col=0, usecols=[0, 2]),
         ],
         axis=1, sort=True
-    )
-    df.drop(df[df.index < 1889].index, inplace=True)
-    df.iloc[:, 6] = df.iloc[:, 6].mul(df.iloc[df.index.get_loc(
-        1899), 0]).div(df.iloc[df.index.get_loc(1899), 6])
+    ).truncate(before=1889)
+    df.iloc[:, 6] = df.iloc[:, 6].mul(
+        df.loc[1899, df.columns[0]]).div(df.loc[1899, df.columns[6]])
     df['labor'] = df.iloc[:, [0, 1, 3, 6, 7, 8]].mean(axis=1)
     return df.iloc[:, [-1]]
 
@@ -1356,14 +1350,11 @@ def get_data_cobb_douglas_extension_product():
         sort=True
     )
     df.iloc[:, 1] = df.iloc[:, 1].div(
-        df.iloc[df.index.get_loc(1899), 1]).mul(100)
-    df.iloc[:, 4] = df.iloc[:, 4].div(
-        df.iloc[df.index.get_loc(1899), 4]).mul(100)
-    df.iloc[:, 5] = df.iloc[:, 5].div(
-        df.iloc[df.index.get_loc(1939), 5]).mul(100)
+        df.loc[1899, df.columns[1]]).mul(100)
+    df.iloc[:, 4] = df.iloc[:, 4].div(df.loc[1899, df.columns[4]]).mul(100)
+    df.iloc[:, 5] = df.iloc[:, 5].div(df.loc[1939, df.columns[5]]).mul(100)
     df['fused_classic'] = df.iloc[:, range(5)].mean(axis=1)
-    df.iloc[:, -1] = df.iloc[:, -
-                             1].div(df.iloc[df.index.get_loc(1939), -1]).mul(100)
+    df.iloc[:, -1] = df.iloc[:, -1].div(df.loc[1939, df.columns[-1]]).mul(100)
     df['fused'] = df.iloc[:, -2:].mean(axis=1)
     return df.iloc[:, [-1]]
 
@@ -1376,7 +1367,7 @@ def get_data_cobb_douglas_price() -> DataFrame:
             extract_usa_classic(ARCHIVE_NAME, series_id) for series_id in SERIES_IDS
         ],
         axis=1)
-    df['def'] = df.iloc[:, 0].div(df.iloc[:, 1])
+    df['deflator'] = df.iloc[:, 0].div(df.iloc[:, 1])
     df['prc'] = df.iloc[:, -1].div(df.iloc[:, -1].shift(1)).sub(1)
     return df.iloc[:, [-1]].dropna(axis=0)
 
@@ -1849,7 +1840,7 @@ def get_data_douglas():
         axis=1,
         sort=True
     )
-    return df.div(df.iloc[df.index.get_loc(1899), :])
+    return df.div(df.loc[1899, :])
 
 
 def get_data_local():
@@ -1992,7 +1983,7 @@ def get_data_updated():
         axis=1,
         sort=True
     )
-    _data = pd.concat(
+    df = pd.concat(
         [
             _data_nipa,
             _data_sfat,
@@ -2003,21 +1994,22 @@ def get_data_updated():
     # =========================================================================
     # Investment, 2012=100
     # =========================================================================
-    _data['_inv'] = _data.loc[:, 'A006RD'].mul(
-        _data.loc[2012, 'A006RC']).div(100)
+    df['_investment'] = df.loc[:, 'A006RD'].mul(
+        df.loc[2012, 'A006RC']).div(100)
     # =========================================================================
     # Capital, 2012=100
     # =========================================================================
-    _data['_cap'] = _data.loc[:, 'kcn31gd1es000'].mul(
-        _data.loc[2009, 'k3n31gd1es000']).mul(1000).div(100)
+    df['_capital'] = df.loc[:, 'kcn31gd1es000'].mul(
+        df.loc[2009, 'k3n31gd1es000']).mul(1000).div(100)
     # =========================================================================
     # Capital Retirement Ratio
     # =========================================================================
-    _data['_ratio_mu'] = _data.iloc[:, -
-                                    2].mul(1).sub(_data.iloc[:, -1].shift(-1)).div(_data.iloc[:, -1]).add(1)
+    df['_ratio_mu'] = df.iloc[:, -
+                              2].mul(1).sub(df.iloc[:, -1].shift(-1)).div(df.iloc[:, -1]).add(1)
     return (
-        _data.loc[:, ['_inv', 'A191RX', '_cap', '_ratio_mu']].dropna(axis=0),
-        _data.loc[:, ['_ratio_mu']].dropna(axis=0),
+        df.loc[:, ['_investment', 'A191RX',
+                   '_capital', '_ratio_mu']].dropna(axis=0),
+        df.loc[:, ['_ratio_mu']].dropna(axis=0),
     )
 
 
@@ -2245,10 +2237,18 @@ def get_data_usa_frb_cu():
     return df.loc[:, [SERIES_ID]].dropna(axis=0)
 
 
-def get_data_usa_frb_fa():
-    '''Returns Frame of Manufacturing Fixed Assets Series, Billion USD:
-    df.iloc[:,0]: Nominal;
-    df.iloc[:,1]: Real
+def get_data_usa_frb_fa() -> DataFrame():
+    '''
+    Returns Frame of Manufacturing Fixed Assets Series, Billion USD
+
+    Returns
+    -------
+    DataFrame()
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Nominal
+    df.iloc[:, 1]      Real
+    ================== =================================
     '''
     FILE_NAME = 'dataset_usa_frb_invest_capital.csv'
     df = pd.read_csv(FILE_NAME,
@@ -2262,9 +2262,17 @@ def get_data_usa_frb_fa():
     return df.iloc[:, -2:]
 
 
-def get_data_usa_frb_fa_def():
-    '''Returns Frame of Deflator for Manufacturing Fixed Assets Series, Index:
-    df.iloc[:,0]: Deflator
+def get_data_usa_frb_fa_def() -> DataFrame():
+    '''
+    Returns Frame of Deflator for Manufacturing Fixed Assets Series
+
+    Returns
+    -------
+    DataFrame()
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Deflator
+    ================== =================================
     '''
     FILE_NAME = 'dataset_usa_frb_invest_capital.csv'
     df = pd.read_csv(FILE_NAME, skiprows=4, skipfooter=688, engine='python')
@@ -2291,21 +2299,6 @@ def get_data_usa_frb_ip():
     df = df.loc[:, [df.columns[0], SERIES_ID]]
     df['period'] = df.iloc[:, 0].dt.year
     return df.groupby(df.columns[-1]).mean()
-
-
-def get_data_usa_frb_ms() -> DataFrame:
-    ''''Indexed Money Stock Measures (H.6) Series'''
-    URL = 'https://www.federalreserve.gov/datadownload/Output.aspx?rel=H6&series=5398d8d1734b19f731aba3105eb36d47&lastobs=&from=01/01/1959&to=12/31/2018&filetype=csv&label=include&layout=seriescolumn'
-    df = pd.read_csv(
-        io.BytesIO(requests.get(URL).content),
-        names=['period', 'm1_m'],
-        index_col=0,
-        usecols=range(2),
-        skiprows=6,
-        parse_dates=True,
-        thousands=','
-    )
-    return df.groupby(df.index.year).mean()
 
 
 def collect_usa_mcconnel(series_ids: tuple[str]) -> DataFrame:
@@ -2574,7 +2567,7 @@ def get_mean_for_min_std():
     # Base Vector v2057818
     # Base Vector v2523013
     # =========================================================================
-    result = DataFrame()
+    df = DataFrame()
     FILE_NAME = '/home/alexander/projects/stat_can_lab.xlsx'
     _ = pd.read_excel(FILE_NAME, index_col=0)
     SERIES_IDS = (
@@ -2585,14 +2578,13 @@ def get_mean_for_min_std():
         'v2523013',
     )
     for series_id in SERIES_IDS:
-        chunk = _.loc[:, [series_id]]
-        chunk.dropna(axis=0, inplace=True)
-        result = pd.concat([result, chunk], axis=1)
-    result.dropna(axis=0, inplace=True)
-    result['std'] = result.std(axis=1)
+        chunk = _.loc[:, [series_id]].dropna(axis=0)
+        df = pd.concat([df, chunk], axis=1)
+    df.dropna(axis=0, inplace=True)
+    df['std'] = df.std(axis=1)
     return (
-        result.iloc[:, [-1]].idxmin()[0],
-        result.loc[result.iloc[:, [-1]].idxmin()[0], :][:-1].mean()
+        df.iloc[:, [-1]].idxmin()[0],
+        df.loc[df.iloc[:, [-1]].idxmin()[0], :][:-1].mean()
     )
 
 
@@ -2661,7 +2653,7 @@ def transform_e(df: DataFrame) -> tuple[DataFrame]:
     # =========================================================================
     # `Real` Capital
     # =========================================================================
-    df['cap'] = df.iloc[:, 11].mul(df.iloc[:, 7]).div(df.iloc[:, 6])
+    df['capital'] = df.iloc[:, 11].mul(df.iloc[:, 7]).div(df.iloc[:, 6])
     return (
         # =====================================================================
         # DataFrame Nominal

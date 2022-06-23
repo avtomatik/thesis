@@ -242,15 +242,15 @@ def test_data_consistency_d():
     # =========================================================================
     # Fixed Assets Data Tests
     # =========================================================================
-    result_frame = extract_usa_bea_sfat_series()
+    df = test_usa_bea_sfat_series()
     # =========================================================================
     # Tested: `k3n31gd1es000` = `k3n31gd1eq000` + `k3n31gd1ip000` + `k3n31gd1st000`
     # =========================================================================
-    test_sub_a(result_frame)
+    test_sub_a(df)
     # =========================================================================
     # Comparison of `k3n31gd1es000` out of control_frame with `k3n31gd1es000` out of test_frame
     # =========================================================================
-    test_sub_b(result_frame)
+    test_sub_b(df)
     # =========================================================================
     # Future Project: Test Ratio of Manufacturing Fixed Assets to Overall Fixed Assets
     # =========================================================================
@@ -337,3 +337,35 @@ def test_sub_b(df: DataFrame):
         df.iloc[:, 0].add(df.iloc[:, -1])).sub(2)
     df.dropna(axis=0, inplace=True)
     df.iloc[:, [-1]].plot(grid=True)
+
+
+def test_usa_bea_sfat_series() -> DataFrame:
+    ARCHIVE_NAME = 'dataset_usa_bea-nipa-selected.zip'
+    SERIES_ID = 'k3n31gd1es000'
+    _df = pd.read_csv(ARCHIVE_NAME, usecols=[0, *range(8, 11)])
+    _df = _df[_df.iloc[:, 1] == SERIES_ID]
+    control_frame = DataFrame()
+    for source_id in sorted(set(_df.iloc[:, 0])):
+        chunk = _df[_df.iloc[:, 0] == source_id].iloc[:, [2, 3]]
+        chunk.columns = [chunk.columns[0],
+                         ''.join((source_id.split()[1].replace('.', '_'), SERIES_ID))]
+        chunk.set_index(chunk.columns[0], inplace=True, verify_integrity=True)
+        control_frame = pd.concat([control_frame, chunk], axis=1, sort=True)
+
+    ARCHIVE_NAME = 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip'
+    WB_NAME = 'Section4ALL_xls.xls'
+    SH_NAME = '403 Ann'
+    # =========================================================================
+    # Fixed Assets Series, 1925--2016
+    # =========================================================================
+    SERIES_IDS = ('k3n31gd1es000', 'k3n31gd1eq000',
+                  'k3n31gd1ip000', 'k3n31gd1st000',)
+    test_frame = pd.concat(
+        [
+            extract_usa_bea(ARCHIVE_NAME, WB_NAME, SH_NAME, series_id)
+            for series_id in SERIES_IDS
+        ],
+        axis=1,
+        sort=True
+    )
+    return pd.concat([test_frame, control_frame], axis=1, sort=True)
