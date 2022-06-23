@@ -137,7 +137,8 @@ def get_data_archived() -> DataFrame:
     _df['ratio_mu'] = _df.iloc[:, -2].mul(1).sub(_df.iloc[:, -1].shift(-1)).div(
         _df.iloc[:, -1]).add(1)
     return (
-        _df.loc[:, ['investment', 'A191RX1', 'cap', 'ratio_mu']].dropna(axis=0),
+        _df.loc[:, ['investment', 'A191RX1',
+                    'cap', 'ratio_mu']].dropna(axis=0),
         _df.loc[:, ['ratio_mu']].dropna(axis=0),
     )
 
@@ -1144,9 +1145,7 @@ def get_data_cobb_douglas_deflator():
     # Strip Deflators
     # =========================================================================
     for _ in range(df.shape[1]):
-        df.iloc[:, _] = strip_cumulated_deflator(
-            df.iloc[:, [_]]
-        )
+        df.iloc[:, _] = strip_cumulated_deflator(df.iloc[:, [_]])
     df['def_mean'] = df.mean(axis=1)
     return df.iloc[:, [-1]].dropna()
 
@@ -1184,7 +1183,8 @@ def get_data_cobb_douglas_extension_capital() -> DataFrame:
     # Filling the Gaps within Capital Structure Series
     # =========================================================================
     df.loc[1899:, df.columns[-1]].fillna(0.275, inplace=True)
-    df.loc[:, df.columns[-1]].fillna(df.loc[1899, df.columns[-1]], inplace=True)
+    df.loc[:, df.columns[-1]
+           ].fillna(df.loc[1899, df.columns[-1]], inplace=True)
     # =========================================================================
     # Patch Series `Douglas P.H. -- Kendrick J.W. (Blended) Series` Multiplied by `Capital Structure Series`
     # =========================================================================
@@ -2308,36 +2308,19 @@ def get_data_usa_frb_ms() -> DataFrame:
     return df.groupby(df.index.year).mean()
 
 
-def get_data_usa_mcconnel_a():
-    SERIES_ID = 'Валовой внутренний продукт, млрд долл. США'
-    return extract_usa_mcconnel(SERIES_ID).truncate(before=1980)
-
-
-def get_data_usa_mcconnel_b():
-    SERIES_IDS = {
-        'Ставка прайм-рейт, %': 'prime_rate',
-        'Национальный доход, млрд долл. США': 'A032RC1',
+def collect_usa_mcconnel(series_ids: tuple[str]) -> DataFrame:
+    MAP = {
+        'prime_rate': 'Ставка прайм-рейт, %',
+        'A006RC1': 'Валовой объем внутренних частных инвестиций, млрд долл. США',
+        'A032RC1': 'Национальный доход, млрд долл. США',
+        'A191RC1': 'Валовой внутренний продукт, млрд долл. США',
     }
+    SERIES_IDS = {series_id: MAP[series_id] for series_id in series_ids}
     df = pd.concat(
-        [extract_usa_mcconnel(series_id) for series_id in SERIES_IDS.keys()],
-        axis=1,
-        sort=True
+        [extract_usa_mcconnel(SERIES_IDS[key]) for key in SERIES_IDS.keys()],
+        axis=1
     )
-    df.columns = SERIES_IDS.values()
-    return df.truncate(before=1980)
-
-
-def get_data_usa_mcconnel_c():
-    SERIES_IDS = {
-        'Ставка прайм-рейт, %': 'prime_rate',
-        'Валовой объем внутренних частных инвестиций, млрд долл. США': 'A006RC1',
-    }
-    df = pd.concat(
-        [extract_usa_mcconnel(series_id) for series_id in SERIES_IDS.keys()],
-        axis=1,
-        sort=True
-    )
-    df.columns = SERIES_IDS.values()
+    df.columns = SERIES_IDS.keys()
     return df.truncate(before=1980)
 
 
@@ -2609,8 +2592,8 @@ def get_mean_for_min_std():
     result['std'] = result.std(axis=1)
     return (
         result.iloc[:, [-1]].idxmin()[0],
-            result.loc[result.iloc[:, [-1]].idxmin()[0], :][:-1].mean()
-            )
+        result.loc[result.iloc[:, [-1]].idxmin()[0], :][:-1].mean()
+    )
 
 
 def get_price_base(df: DataFrame) -> int:

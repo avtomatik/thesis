@@ -11,9 +11,7 @@ Thesis Project
 import os
 from prepare.lib import get_data_combined_archived
 from prepare.lib import get_data_archived
-from prepare.lib import get_data_usa_mcconnel_a
-from prepare.lib import get_data_usa_mcconnel_b
-from prepare.lib import get_data_usa_mcconnel_c
+from prepare.lib import collect_usa_mcconnel
 from prepare.lib import get_data_census_b_a
 from prepare.lib import get_data_census_b_b
 from prepare.lib import get_data_can
@@ -114,14 +112,17 @@ def main():
     plot_approx_log_linear(_df.iloc[:, [7, 6, 20, 4]].dropna())
     plot_approx_log_linear(_df.iloc[:, [7, 6, 20, 6]].dropna())
 
+    SERIES_IDS = ('A191RC1',)
     calculate_power_function_fit_params_a(
-        get_data_usa_mcconnel_a(), (2800, 0.01, 0.5,)
+        collect_usa_mcconnel(SERIES_IDS), (2800, 0.01, 0.5,)
     )
+    SERIES_IDS = ('prime_rate', 'A032RC1',)
     calculate_power_function_fit_params_b(
-        get_data_usa_mcconnel_b(), (4, 12, 9000, 3000, 0.87,)
+        collect_usa_mcconnel(SERIES_IDS), (4, 12, 9000, 3000, 0.87,)
     )
+    SERIES_IDS = ('prime_rate', 'A006RC1',)
     calculate_power_function_fit_params_c(
-        get_data_usa_mcconnel_c(), (1.5, 19, 1.7, 1760,)
+        collect_usa_mcconnel(SERIES_IDS), (1.5, 19, 1.7, 1760,)
     )
 
     # =========================================================================
