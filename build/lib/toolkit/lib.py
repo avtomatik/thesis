@@ -7,466 +7,15 @@ Created on Sun Jun 12 12:25:52 2022
 """
 
 
-def calculate_capital_acquisition(df: pd.DataFrame) -> None:
-    '''
-    Interactive Shell for Processing Capital Acquisitions
-
-    Parameters
-    ----------
-    df : pd.DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Nominal Investment
-    df.iloc[:, 1]      Nominal Production
-    df.iloc[:, 2]      Real Production
-    df.iloc[:, 3]      Maximum Real Production
-    df.iloc[:, 4]      Nominal Capital
-    df.iloc[:, 5]      Labor
-    ================== =================================
-
-    Returns
-    -------
-    None
-        Draws matplotlib.pyplot Plots.
-
-    '''
-    _df = df.copy()
-    _df.reset_index(level=0, inplace=True)
-    _df.columns = ['period', *_df.columns[1:]]
-    # =========================================================================
-    # TODO: Separate Basic Year Function
-    # =========================================================================
-    _df['__deflator'] = _df.iloc[:, 2].div(_df.iloc[:, 3]).sub(1).abs()
-    _b = _df.iloc[:, -1].astype(float).argmin()
-    _df.drop(_df.columns[-1], axis=1, inplace=True)
-    # =========================================================================
-    # Calculate Static Values
-    # =========================================================================
-    # =========================================================================
-    # Fixed Assets Turnover Ratio
-    # =========================================================================
-    _df['c_turnover'] = _df.iloc[:, 3].div(_df.iloc[:, 5])
-    # =========================================================================
-    # Investment to Gross Domestic Product Ratio, (I/Y)/(I_0/Y_0)
-    # =========================================================================
-    _df['inv_to_gdp'] = _df.iloc[:, 1].div(_df.iloc[:, 3])
-    # =========================================================================
-    # Labor Capital Intensity
-    # =========================================================================
-    _df['lab_cap_int'] = _df.iloc[:, 5].div(_df.iloc[:, 6])
-    # =========================================================================
-    # Labor Productivity
-    # =========================================================================
-    _df['lab_product'] = _df.iloc[:, 3].div(_df.iloc[:, 6])
-    _df.iloc[:, -3:] = _df.iloc[:, -3:].div(_df.iloc[0, -3:])
-    # =========================================================================
-    # Log Labor Capital Intensity, LN((K/L)/(K_0/L_0))
-    # =========================================================================
-    _df[f'{_df.columns[-2]}_log_bas'] = np.log(_df.iloc[:, -2].astype(float))
-    # =========================================================================
-    # Log Labor Productivity, LN((Y/L)/(Y_0/L_0))
-    # =========================================================================
-    _df[f'{_df.columns[-2]}_log_bas'] = np.log(_df.iloc[:, -2].astype(float))
-    # =========================================================================
-    # Max: Fixed Assets Turnover Ratio
-    # =========================================================================
-    _df[f'{_df.columns[-6]}_max'] = _df.iloc[:, 4].div(_df.iloc[:, 5])
-    # =========================================================================
-    # Max: Investment to Gross Domestic Product Ratio
-    # =========================================================================
-    _df[f'{_df.columns[-6]}_max'] = _df.iloc[:, 1].div(_df.iloc[:, 4])
-    # =========================================================================
-    # Max: Labor Productivity
-    # =========================================================================
-    _df[f'{_df.columns[-5]}_max'] = _df.iloc[:, 4].div(_df.iloc[:, 6])
-    _df.iloc[:, -2:] = _df.iloc[:, -2:].div(_df.iloc[0, -2:])
-    # =========================================================================
-    # Max: Log Labor Productivity
-    # =========================================================================
-    _df[f'{_df.columns[-1]}_log_bas'] = np.log(_df.iloc[:, -1].astype(float))
-    # =========================================================================
-    # Calculate Dynamic Values
-    # =========================================================================
-    # =========================================================================
-    # Number of Periods
-    # =========================================================================
-    N = int(input('Define Number of Line Spans for Pi (N, N >= 1): '))
-    print(f'Number of Spans Provided: {N}')
-    assert N >= 1, f'N >= 1 is Required, N = {N} Was Provided'
-    # =========================================================================
-    # Pi & Pi Switch Points
-    # =========================================================================
-    pi, _knots = [], [0, ]
-    _ = 0
-    if N == 1:
-        _knots.append(_df.index[-1])
-        pi.append(float(input('Define Pi for Period from {} to {}: '.format(
-            _df.iloc[_knots[_], 0], _df.iloc[_knots[1 + _] - 1, 0]))))
-    elif N >= 2:
-        while _ < N:
-            if 1 + _ == N:
-                _knots.append(_df.index[-1])
-                pi.append(float(input('Define Pi for Period from {} to {}: '.format(
-                    _df.iloc[_knots[_], 0], _df.iloc[_knots[1 + _] - 1, 0]))))
-            else:
-                _knot = int(input('Select Row for Year, Should Be More Than {}: = {}: '.format(
-                    0, _df.iloc[0, 0])))
-                if _knot > _knots[_]:
-                    _knots.append(_knot)
-                    pi.append(float(input('Define Pi for Period from {} to {}: '.format(
-                        _df.iloc[_knots[_], 0], _df.iloc[_knots[1 + _], 0]))))
-            _ += 1
-    else:
-        print('Error')
-    # =========================================================================
-    # Calculate Dynamic Values
-    # =========================================================================
-    _calculated = [np.nan, ]
-    if N == 1:
-        j = 0
-        for i in range(_knots[j], _knots[1 + j]):
-            # =================================================================
-            # Estimate: GCF[-] or CA[+]
-            # =================================================================
-            _calculated.append(
-                _df.iloc[1 + i, 5] - _df.iloc[i, 5] + pi[j]*_df.iloc[1 + i, 1]
-            )
-    else:
-        for j in range(N):
-            if 1 + j == N:
-                for i in range(_knots[j], _knots[1 + j]):
-                    # =========================================================
-                    # Estimate: GCF[-] or CA[+]
-                    # =========================================================
-                    _calculated.append(
-                        _df.iloc[1 + i, 5] - _df.iloc[i, 5] +
-                        pi[j]*_df.iloc[1 + i, 1]
-                    )
-            else:
-                for i in range(_knots[j], _knots[1 + j]):
-                    # =========================================================
-                    # Estimate: GCF[-] or CA[+]
-                    # =========================================================
-                    _calculated.append(
-                        _df.iloc[1 + i, 5] - _df.iloc[i, 5] +
-                        pi[j]*_df.iloc[1 + i, 1]
-                    )
-    _df = pd.concat(
-        [
-            _df,
-            pd.DataFrame(_calculated, columns=['_calculated'])
-        ],
-        axis=1)
-    _df.set_index(_df.columns[0], inplace=True)
-    # =========================================================================
-    # `-` Gross Capital Formation
-    # `+` Capital Acquisitions
-    # =========================================================================
-    for _ in range(N):
-        if 1 + _ == N:
-            print(
-                f'Model Parameter: Pi for Period from {_df.index[_knots[_]]} to {_df.index[_knots[1 + _] - 1]}: {pi[_]:.6f}'
-            )
-            continue
-        print(
-            f'Model Parameter: Pi for Period from {_df.index[_knots[_]]} to {_df.index[_knots[1 + _]]}: {pi[_]:.6f}'
-        )
-    plt.figure(1)
-    plt.plot(_df.iloc[:, 8], _df.iloc[:, 9])
-    plt.plot(_df.iloc[:, 8], _df.iloc[:, 14])
-    plt.title(
-        'Labor Productivity, Observed & Max, {}=100, {}$-${}'.format(
-            *df.index[[_b, 0, -1]]
-        )
-    )
-    plt.xlabel('Labor Capital Intensity')
-    plt.ylabel(f'Labor Productivity, {_df.index[_b]}=100')
-    plt.grid(True)
-    plt.figure(2)
-    plt.plot(_df.iloc[:, 10], _df.iloc[:, 11])
-    plt.plot(_df.iloc[:, 10], _df.iloc[:, 15])
-    plt.title(
-        'Log Labor Productivity, Observed & Max, {}=100, {}$-${}'.format(
-            *df.index[[_b, 0, -1]]
-        )
-    )
-    plt.xlabel('Log Labor Capital Intensity')
-    plt.ylabel(f'Log Labor Productivity, {_df.index[_b]}=100')
-    plt.grid(True)
-    plt.figure(3)
-    plt.plot(_df.iloc[:, 6])
-    plt.plot(_df.iloc[:, 12])
-    plt.title(
-        'Fixed Assets Turnover ($\\lambda$), Observed & Max, {}=100, {}$-${}'.format(
-            *df.index[[_b, 0, -1]]
-        )
-    )
-    plt.xlabel('Period')
-    plt.ylabel(f'Fixed Assets Turnover ($\\lambda$), {_df.index[_b]}=100')
-    plt.grid(True)
-    plt.figure(4)
-    plt.plot(_df.iloc[:, 7])
-    plt.plot(_df.iloc[:, 13])
-    plt.title(
-        'Investment to Gross Domestic Product Ratio, \nObserved & Max, {}=100, {}$-${}'.format(
-            *df.index[[_b, 0, -1]]
-        )
-    )
-    plt.xlabel('Period')
-    plt.ylabel(
-        f'Investment to Gross Domestic Product Ratio, {_df.index[_b]}=100')
-    plt.grid(True)
-    plt.figure(5)
-    plt.plot(_df.iloc[:, 16])
-    plt.title(
-        'Gross Capital Formation (GCF) or\nCapital Acquisitions (CA), {}=100, {}$-${}'.format(
-            *df.index[[_b, 0, -1]]
-        )
-    )
-    plt.xlabel('Period')
-    plt.ylabel(f'GCF or CA, {_df.index[_b]}=100')
-    plt.grid(True)
-    plt.show()
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from pandas import DataFrame
+from scipy.interpolate import UnivariateSpline
+from sklearn.metrics import mean_squared_error
 
 
-def calculate_capital_retirement(df: pd.DataFrame) -> None:
-    '''
-    Interactive Shell for Processing Capital Retirement
-
-    Parameters
-    ----------
-    df : pd.DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Nominal Investment
-    df.iloc[:, 1]      Nominal Production
-    df.iloc[:, 2]      Real Production
-    df.iloc[:, 3]      Nominal Capital
-    df.iloc[:, 4]      Labor
-    ================== =================================
-
-    Returns
-    -------
-    None
-        Draws matplotlib.pyplot Plots.
-
-    '''
-    _df = df.copy()
-    _df.reset_index(level=0, inplace=True)
-    _df.columns = ['period', *_df.columns[1:]]
-    # =========================================================================
-    # Define Basic Year for Deflator
-    # =========================================================================
-    # =========================================================================
-    # TODO: Separate Basic Year Function
-    # =========================================================================
-    _df['__deflator'] = _df.iloc[:, 2].div(_df.iloc[:, 3]).sub(1).abs()
-    _b = _df.iloc[:, -1].astype(float).argmin()
-    _df.drop(_df.columns[-1], axis=1, inplace=True)
-    # =========================================================================
-    # Calculate Static Values
-    # =========================================================================
-    # =========================================================================
-    # Labor Capital Intensity
-    # =========================================================================
-    _df['lab_cap_int_log_bas'] = _df.iloc[:, 4].div(_df.iloc[:, 5])
-    # =========================================================================
-    # Labor Productivity
-    # =========================================================================
-    _df['lab_product_log_bas'] = _df.iloc[:, 3].div(_df.iloc[:, 5])
-    # =========================================================================
-    # Investment to Gross Domestic Product Ratio
-    # =========================================================================
-    _df['inv_to_gdp'] = _df.iloc[:, 1].div(_df.iloc[:, 3])
-    # =========================================================================
-    # Basing
-    # =========================================================================
-    _df.iloc[:, -3:] = _df.iloc[:, -3:].div(_df.iloc[0, -3:])
-    # =========================================================================
-    # Log Labor Capital Intensity, LN((K/L)/(K_0/L_0))
-    # =========================================================================
-    _df.iloc[:, -3] = np.log(_df.iloc[:, -3].astype(float))
-    # =========================================================================
-    # Log Labor Productivity, LN((Y/L)/(Y_0/L_0))
-    # =========================================================================
-    _df.iloc[:, -2] = np.log(_df.iloc[:, -2].astype(float))
-    # =========================================================================
-    # Fixed Assets Turnover Ratio
-    # =========================================================================
-    _df['c_turnover'] = _df.iloc[:, 3].div(_df.iloc[:, 4])
-    # =========================================================================
-    # Number of Periods
-    # =========================================================================
-    N = int(input('Define Number of Line Segments for Pi: '))
-    print(f'Number of Periods Provided: {N}')
-    assert N >= 1, f'N >= 1 is Required, N = {N} Was Provided'
-    # =========================================================================
-    # Pi & Pi Switch Points
-    # =========================================================================
-    pi, _knots = [], [0, ]
-    _ = 0
-    if N == 1:
-        _knots.append(_df.index[-1])
-        pi.append(float(input('Define Pi for Period from {} to {}: '.format(
-            _df.iloc[_knots[_], 0], _df.iloc[_knots[1 + _], 0]))))
-    elif N >= 2:
-        while _ < N:
-            if 1 + _ == N:
-                _knots.append(_df.index[-1])
-                pi.append(float(input('Define Pi for Period from {} to {}: '.format(
-                    _df.iloc[_knots[_], 0], _df.iloc[_knots[1 + _], 0]))))
-            else:
-                _knot = int(input('Select Row for Year: '))
-                if _knot > _knots[_]:
-                    _knots.append(_knot)
-                    pi.append(float(input('Define Pi for Period from {} to {}: '.format(
-                        _df.iloc[_knots[_], 0], _df.iloc[_knots[1 + _], 0]))))
-            _ += 1
-    else:
-        print('Error')
-    # =========================================================================
-    # Calculate Dynamic Values
-    # =========================================================================
-    # =========================================================================
-    # Fixed Assets Retirement Value
-    # =========================================================================
-    _value = [np.nan, ]
-    # =========================================================================
-    # Fixed Assets Retirement Ratio
-    # =========================================================================
-    _ratio = [np.nan, ]
-    if N == 1:
-        j = 0
-        for i in range(_knots[j], _knots[1 + j]):
-            # =================================================================
-            # Fixed Assets Retirement Value
-            # =================================================================
-            _value.append(
-                _df.iloc[i, 4] - _df.iloc[1 + i, 4] + pi[j]*_df.iloc[i, 1]
-            )
-            # =================================================================
-            # Fixed Assets Retirement Ratio
-            # =================================================================
-            _ratio.append(
-                (_df.iloc[i, 4] - _df.iloc[1 + i, 4] + pi[j]
-                 * _df.iloc[i, 1]) / _df.iloc[1 + i, 4]
-            )
-    else:
-        for j in range(N):
-            if 1 + j == N:
-                for i in range(_knots[j], _knots[1 + j]):
-                    # =========================================================
-                    # Fixed Assets Retirement Value
-                    # =========================================================
-                    _value.append(
-                        _df.iloc[i, 4] - _df.iloc[1 + i, 4] +
-                        pi[j]*_df.iloc[i, 1]
-                    )
-                    # =========================================================
-                    # Fixed Assets Retirement Ratio
-                    # =========================================================
-                    _ratio.append(
-                        (_df.iloc[i, 4] - _df.iloc[1 + i, 4] +
-                         pi[j]*_df.iloc[i, 1]) / _df.iloc[1 + i, 4]
-                    )
-            else:
-                for i in range(_knots[j], _knots[1 + j]):
-                    # =========================================================
-                    # Fixed Assets Retirement Value
-                    # =========================================================
-                    _value.append(
-                        _df.iloc[i, 4] - _df.iloc[1 + i, 4] +
-                        pi[j]*_df.iloc[i, 1]
-                    )
-                    # =========================================================
-                    # Fixed Assets Retirement Ratio
-                    # =========================================================
-                    _ratio.append(
-                        (_df.iloc[i, 4] - _df.iloc[1 + i, 4] +
-                         pi[j]*_df.iloc[i, 1]) / _df.iloc[1 + i, 4]
-                    )
-    _df = pd.concat(
-        [
-            _df,
-            pd.DataFrame(_value, columns=['_value']),
-            pd.DataFrame(_ratio, columns=['_ratio'])
-        ],
-        axis=1)
-    _df.set_index(_df.columns[0], inplace=True)
-    _df['_ratio_deviation_abs'] = _df.iloc[:, 10].sub(
-        _df.iloc[:, 10].mean()).abs()
-    _df['_ratio_increment_abs'] = _df.iloc[:, 10].sub(
-        _df.iloc[:, 10].shift(1)).abs()
-    for _ in range(N):
-        if 1 + _ == N:
-            print(
-                f'Model Parameter: Pi for Period from {_df.index[_knots[_]]} to {_df.index[_knots[1 + _] - 1]}: {pi[_]:.6f}'
-            )
-            continue
-        print(
-            f'Model Parameter: Pi for Period from {_df.index[_knots[_]]} to {_df.index[_knots[1 + _]]}: {pi[_]:.6f}'
-        )
-    plt.figure(1)
-    plt.title('Product, {}=100, {}$-${}'.format(*df.index[[_b, 0, -1]]))
-    plt.xlabel('Period')
-    plt.ylabel(f'Product, {_df.index[_b]}=100')
-    plt.plot(_df.iloc[:, 2])
-    plt.grid(True)
-    plt.figure(2)
-    plt.title('Capital, {}=100, {}$-${}'.format(*df.index[[_b, 0, -1]]))
-    plt.xlabel('Period')
-    plt.ylabel(f'Capital, {_df.index[_b]}=100')
-    plt.plot(_df.iloc[:, 3])
-    plt.grid(True)
-    plt.figure(3)
-    plt.title(
-        'Fixed Assets Turnover ($\\lambda$), {}=100, {}$-${}'.format(*
-                                                                     df.index[[_b, 0, -1]])
-    )
-    plt.xlabel('Period')
-    plt.ylabel(f'Fixed Assets Turnover ($\\lambda$), {_df.index[_b]}=100')
-    plt.plot(_df.iloc[:, 2].div(_df.iloc[:, 3]))
-    plt.grid(True)
-    plt.figure(4)
-    plt.title(
-        'Investment to Gross Domestic Product Ratio, {}=100, {}$-${}'.format(
-            *df.index[[_b, 0, -1]])
-    )
-    plt.xlabel('Period')
-    plt.ylabel(
-        f'Investment to Gross Domestic Product Ratio, {_df.index[_b]}=100'
-    )
-    plt.plot(_df.iloc[:, 7])
-    plt.grid(True)
-    plt.figure(5)
-    plt.title(
-        '$\\alpha(t)$, Fixed Assets Retirement Ratio, {}=100, {}$-${}'.format(*
-                                                                              df.index[[_b, 0, -1]])
-    )
-    plt.xlabel('Period')
-    plt.ylabel(f'$\\alpha(t)$, {_df.index[_b]}=100')
-    plt.plot(_df.iloc[:, 9])
-    plt.grid(True)
-    plt.figure(6)
-    plt.title(
-        'Fixed Assets Retirement Ratio to Fixed Assets Retirement Value, {}=100, {}$-${}'.format(
-            *df.index[[_b, 0, -1]])
-    )
-    plt.xlabel(f'$\\alpha(t)$, {_df.index[_b]}=100')
-    plt.ylabel(f'Fixed Assets Retirement Value, {_df.index[_b]}=100')
-    plt.plot(_df.iloc[:, 9], _df.iloc[:, 8])
-    plt.grid(True)
-    plt.figure(7)
-    plt.title(
-        'Labor Capital Intensity, {}=100, {}$-${}'.format(*df.index[[_b, 0, -1]]))
-    plt.xlabel(f'Labor Capital Intensity, {_df.index[_b]}=100')
-    plt.ylabel(f'Labor Productivity, {_df.index[_b]}=100')
-    plt.plot(np.exp(_df.iloc[:, 5]), np.exp(_df.iloc[:, 6]))
-    plt.grid(True)
-    plt.show()
-
-
-def calculate_capital(df: pd.DataFrame, p_i: tuple[float], p_t: tuple[float], ratio: float):
+def calculate_capital(df: DataFrame, p_i: tuple[float], p_t: tuple[float], ratio: float):
     '''
     ================== =================================
     df.index           Period
@@ -484,44 +33,55 @@ def calculate_capital(df: pd.DataFrame, p_i: tuple[float], p_t: tuple[float], ra
     return df.index.to_series().shift(1).mul(p_i[0]).add(p_i[1]).mul(df.index.to_series().shift(1).mul(p_t[0]).add(p_t[1])).mul(ratio).add(1).sub(df.iloc[:, 3].shift(1)).mul(df.iloc[:, 2].shift(1))
 
 
-def calculate_curve_fit_params(data_frame: pd.DataFrame) -> None:
+def calculate_curve_fit_params(df: DataFrame) -> None:
     '''
-    data_frame.index: Period,
-    data_frame.iloc[:, 0]: Capital,
-    data_frame.iloc[:, 1]: Labor,
-    data_frame.iloc[:, 2]: Product
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Capital
+    df.iloc[:, 1]      Labor
+    df.iloc[:, 2]      Product
+    ================== =================================
     '''
+    # =========================================================================
+    # TODO: Use Feed from transform_cobb_douglas()
+    # =========================================================================
+
     def _curve(regressor: pd.Series, b: float, k: float) -> pd.Series:
         return regressor.pow(k).mul(b)
 
     # =========================================================================
     # Labor Capital Intensity
     # =========================================================================
-    data_frame['lab_cap_int'] = data_frame.iloc[:, 0].div(
-        data_frame.iloc[:, 1])
+    df['lab_cap_int'] = df.iloc[:, 0].div(
+        df.iloc[:, 1])
     # =========================================================================
     # Labor Productivity
     # =========================================================================
-    data_frame['lab_product'] = data_frame.iloc[:, 2].div(
-        data_frame.iloc[:, 1])
+    df['lab_product'] = df.iloc[:, 2].div(
+        df.iloc[:, 1])
     params, matrix = optimization.curve_fit(
         _curve,
-        data_frame.iloc[:, -2],
-        data_frame.iloc[:, -1],
+        df.iloc[:, -2],
+        df.iloc[:, -1],
         np.array([1.0, 0.5])
     )
     print('Factor, b: {:,.4f}; Index, k: {:,.4f}'.format(*params))
 
 
-def calculate_plot_uspline(df: pd.DataFrame):
+def calculate_plot_uspline(df: DataFrame):
     '''
-    df.index: Period,
-    df.iloc[:, 0]: Capital,
-    df.iloc[:, 1]: Labor,
-    df.iloc[:, 2]: Product
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Capital
+    df.iloc[:, 1]      Labor
+    df.iloc[:, 2]      Product
+    ================== =================================
     '''
     # =========================================================================
     # TODO: Increase Cohesion
+    # =========================================================================
+    # =========================================================================
+    # TODO: Use Feed from transform_cobb_douglas()
     # =========================================================================
     # =========================================================================
     # Labor Capital Intensity
@@ -574,11 +134,22 @@ def calculate_plot_uspline(df: pd.DataFrame):
     plt.show()
 
 
-def calculate_power_function_fit_params_a(df: pd.DataFrame, params: tuple[float]):
+def calculate_power_function_fit_params_a(df: DataFrame, params: tuple[float]):
     '''
-    df.index: Regressor: = Period,
-    df.iloc[:, 0]: Regressand,
-    params: Parameters
+    Parameters
+    ----------
+    df : DataFrame
+    ================== =================================
+    df.index           Regressor: = Period
+    df.iloc[:, 0]      Regressand
+    ================== =================================
+    params : tuple[float]
+        Parameters.
+
+    Returns
+    -------
+    None.
+
     '''
     df.reset_index(level=0, inplace=True)
     _t_0 = df.iloc[:, 0].min() - 1
@@ -593,17 +164,32 @@ def calculate_power_function_fit_params_a(df: pd.DataFrame, params: tuple[float]
     print(f'Model Parameter: Alpha = {params[2]:.4f};')
     print(f'Estimator Result: Mean Value: {df.iloc[:, 2].mean():,.4f};')
     print('Estimator Result: Mean Squared Deviation, MSD: {:,.4f};'.format(
-        mean_squared_error(df.iloc[:, 1], df.iloc[:, 2])))
+        mean_squared_error(df.iloc[:, 1], df.iloc[:, 2])
+    )
+    )
     print('Estimator Result: Root-Mean-Square Deviation, RMSD: {:,.4f}.'.format(
-        np.sqrt(mean_squared_error(df.iloc[:, 1], df.iloc[:, 2]))))
+        np.sqrt(mean_squared_error(df.iloc[:, 1], df.iloc[:, 2]))
+    )
+    )
 
 
-def calculate_power_function_fit_params_b(df: pd.DataFrame, params: tuple[float]):
+def calculate_power_function_fit_params_b(df: DataFrame, params: tuple[float]):
     '''
-    df.index: Period,
-    df.iloc[:, 0]: Regressor,
-    df.iloc[:, 1]: Regressand,
-    params: Model Parameters
+    Parameters
+    ----------
+    df : DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Regressor
+    df.iloc[:, 1]      Regressand
+    ================== =================================
+    params : tuple[float]
+        Model Parameters.
+
+    Returns
+    -------
+    None.
+
     '''
     _param = (params[3]-params[2])/(params[1]-params[0])**params[4]
     # =========================================================================
@@ -617,20 +203,36 @@ def calculate_power_function_fit_params_b(df: pd.DataFrame, params: tuple[float]
     print(f'Model Parameter: U_2 = {params[3]};')
     print(f'Model Parameter: Alpha = {params[4]:.4f};')
     print(
-        f'Model Parameter: A: = (U_2-U_1)/(TAU_2-TAU_1)**Alpha = {_param:,.4f};')
+        f'Model Parameter: A: = (U_2-U_1)/(TAU_2-TAU_1)**Alpha = {_param:,.4f};'
+    )
     print(f'Estimator Result: Mean Value: {df.iloc[:, 1].mean():,.4f};')
     print('Estimator Result: Mean Squared Deviation, MSD: {:,.4f};'.format(
-        mean_squared_error(df.iloc[:, 1], df.iloc[:, 2])))
+        mean_squared_error(df.iloc[:, 1], df.iloc[:, 2])
+    )
+    )
     print('Estimator Result: Root-Mean-Square Deviation, RMSD: {:,.4f}.'.format(
-        np.sqrt(mean_squared_error(df.iloc[:, 1], df.iloc[:, 2]))))
+        np.sqrt(mean_squared_error(df.iloc[:, 1], df.iloc[:, 2]))
+    )
+    )
 
 
-def calculate_power_function_fit_params_c(df: pd.DataFrame, params: tuple[float]):
+def calculate_power_function_fit_params_c(df: DataFrame, params: tuple[float]):
     '''
-    df.index: Period,
-    df.iloc[:, 0]: Regressor,
-    df.iloc[:, 1]: Regressand,
-    params: Model Parameters
+    Parameters
+    ----------
+    df : DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Regressor
+    df.iloc[:, 1]      Regressand
+    ================== =================================
+    params : tuple[float]
+        Model Parameters.
+
+    Returns
+    -------
+    None.
+
     '''
     _alpha = (np.log(params[3])-np.log(params[2])) / \
         (np.log(params[0])-np.log(params[1]))
@@ -646,12 +248,16 @@ def calculate_power_function_fit_params_c(df: pd.DataFrame, params: tuple[float]
     print(f'Model Parameter: Alpha: = LN(Y_2/Y_1)/LN(X_1/X_2) = {_alpha:.4f};')
     print(f'Estimator Result: Mean Value: {df.iloc[:, 1].mean():,.4f};')
     print('Estimator Result: Mean Squared Deviation, MSD: {:,.4f};'.format(
-        mean_squared_error(df.iloc[:, 1], df.iloc[:, 2])))
+        mean_squared_error(df.iloc[:, 1], df.iloc[:, 2])
+    )
+    )
     print('Estimator Result: Root-Mean-Square Deviation, RMSD: {:,.4f}.'.format(
-        np.sqrt(mean_squared_error(df.iloc[:, 1], df.iloc[:, 2]))))
+        np.sqrt(mean_squared_error(df.iloc[:, 1], df.iloc[:, 2]))
+    )
+    )
 
 
-def kol_zur_filter(df: pd.DataFrame, k: int = None) -> tuple[pd.DataFrame]:
+def kol_zur_filter(df: DataFrame, k: int = None) -> tuple[DataFrame]:
     '''Kolmogorov--Zurbenko Filter
     ================== =================================
     df.index           Period
@@ -771,26 +377,32 @@ def kol_zur_filter(df: pd.DataFrame, k: int = None) -> tuple[pd.DataFrame]:
     return df_o, df_e, residuals_o, residuals_e
 
 
-def mean_by_year(data):
-    # =========================================================================
-    # Process Non-Indexed Flat DataFrame
-    # =========================================================================
+def mean_by_year(df: DataFrame) -> DataFrame:
+    '''
+    Process Non-Indexed Flat DataFrame
+    Parameters
+    ----------
+    df : DataFrame
+    Returns
+    -------
+    DataFrame
+    '''
     # =========================================================================
     # Index Width Check
     # =========================================================================
     width = 0
-    for item in data.index:
+    for item in df.index:
         width = max(len(f'{item}'), width)
     if width > 4:
-        data[['YEAR', 'Q']] = data.index.to_series().str.split('-', expand=True)
-        data = data.iloc[:, [1, 0]]
-        data = data.apply(pd.to_numeric)
-        data = data.groupby('YEAR').mean()
-        data.index.rename('REF_DATE', inplace=True)
-    return data
+        df[['YEAR', 'Q']] = df.index.to_series().str.split('-', expand=True)
+        df = df.iloc[:, [1, 0]]
+        df = df.apply(pd.to_numeric)
+        df = df.groupby('YEAR').mean()
+        df.index.rename('REF_DATE', inplace=True)
+    return df
 
 
-def m_spline_ea(df: pd.DataFrame, n_spans: int, knots: tuple[int]) -> tuple[pd.DataFrame, tuple[float]]:
+def m_spline_ea(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFrame, tuple[float]]:
     '''Exponential Spline, Type A
     ================== =================================
     df.iloc[:, 0]      Period
@@ -843,14 +455,14 @@ def m_spline_ea(df: pd.DataFrame, n_spans: int, knots: tuple[int]) -> tuple[pd.D
         pd.concat(
             [
                 df,
-                pd.DataFrame(_splined, columns=['Splined']),
+                DataFrame(_splined, columns=['Splined']),
             ],
             axis=1, sort=True),
         tuple(_params_k)
     )
 
 
-def m_spline_eb(df: pd.DataFrame, n_spans: int, knots: tuple[int]) -> tuple[pd.DataFrame, tuple[float]]:
+def m_spline_eb(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFrame, tuple[float]]:
     '''Exponential Spline, Type B
     ================== =================================
     df.iloc[:, 0]      Period
@@ -891,20 +503,20 @@ def m_spline_eb(df: pd.DataFrame, n_spans: int, knots: tuple[int]) -> tuple[pd.D
         pd.concat(
             [
                 df,
-                pd.DataFrame(_splined, columns=['Spline'])
+                DataFrame(_splined, columns=['Spline'])
             ],
             axis=1, sort=True),
         tuple(_params_k)
     )
 
 
-def _m_spline_error_metrics(df: pd.DataFrame) -> None:
+def _m_spline_error_metrics(df: DataFrame) -> None:
     '''Error Metrics Function'''
     print('Criterion, C: {:.6f}'.format(
         df.iloc[:, 2].div(df.iloc[:, 1]).sub(1).abs().mean()))
 
 
-def m_spline_la(df: pd.DataFrame, n_spans: int, knots: tuple[int]) -> tuple[pd.DataFrame, tuple[float]]:
+def m_spline_la(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFrame, tuple[float]]:
     '''Linear Spline, Type A
     ================== =================================
     df.iloc[:, 0]      Period
@@ -949,14 +561,14 @@ def m_spline_la(df: pd.DataFrame, n_spans: int, knots: tuple[int]) -> tuple[pd.D
         pd.concat(
             [
                 df,
-                pd.DataFrame(_splined, columns=['Spline'])
+                DataFrame(_splined, columns=['Spline'])
             ],
             axis=1, sort=True),
         tuple(_params_k)
     )
 
 
-def m_spline_lb(df: pd.DataFrame, n_spans: int, knots: tuple[int]) -> tuple[pd.DataFrame, tuple[float]]:
+def m_spline_lb(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFrame, tuple[float]]:
     '''Linear Spline, Type B
     ================== =================================
     df.iloc[:, 0]      Period
@@ -991,14 +603,14 @@ def m_spline_lb(df: pd.DataFrame, n_spans: int, knots: tuple[int]) -> tuple[pd.D
         pd.concat(
             [
                 df,
-                pd.DataFrame(_splined, columns=['Spline'])
+                DataFrame(_splined, columns=['Spline'])
             ],
             axis=1, sort=True),
         tuple(_params_k)
     )
 
 
-def m_spline_lls(df: pd.DataFrame, n_spans: int, knots: tuple[int]) -> tuple[pd.DataFrame, tuple[float]]:
+def m_spline_lls(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFrame, tuple[float]]:
     '''Linear Spline, Linear Regression Kernel
     ================== =================================
     df.iloc[:, 0]      Period
@@ -1055,7 +667,7 @@ def m_spline_lls(df: pd.DataFrame, n_spans: int, knots: tuple[int]) -> tuple[pd.
         pd.concat(
             [
                 df,
-                pd.DataFrame(_splined, columns=['Splined']),
+                DataFrame(_splined, columns=['Splined']),
             ],
             axis=1, sort=True),
         tuple(_params_a)
@@ -1081,13 +693,13 @@ def _m_spline_print_params(n_spans: int, params: tuple[float]) -> None:
             print(f'Model Parameter: A{_:02n} = {_param:.6f}')
 
 
-def m_spline_manager(df: pd.DataFrame, kernel: callable) -> None:
+def m_spline_manager(df: DataFrame, kernel: callable) -> None:
     '''
     Interactive Shell for Processing Make Shift Spline Functions
 
     Parameters
     ----------
-    df : pd.DataFrame
+    df : DataFrame
     ================== =================================
     df.index           Period
     df.iloc[:, 0]      Target Series
@@ -1177,97 +789,179 @@ def m_spline_manager(df: pd.DataFrame, kernel: callable) -> None:
     plt.show()
 
 
-def price_direct(data_frame, base):
-    '''Intent: Returns Cumulative Price Index for Base Year;
-    data_frame.iloc[:, 0]: Growth Rate;
-    base: Base Year'''
-    '''Cumulative Price Index'''
-    data_frame['p_i'] = data_frame.iloc[:, 0].add(1).cumprod()
-    '''Cumulative Price Index for the Base Year'''
-    data_frame['cpi'] = data_frame.iloc[:, 1].div(
-        data_frame.iloc[base-data_frame.index[0], 1])
-    return data_frame.iloc[:, [2]]
+def price_direct(df: DataFrame, base: int) -> DataFrame:
+    '''
+    Returns Cumulative Price Index for Base Year
+    Parameters
+    ----------
+    df : DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Growth Rate
+    ================== =================================
+    base : int
+        Base Year.
+
+    Returns
+    -------
+    DataFrame
+    '''
+    # =========================================================================
+    # Cumulative Price Index
+    # =========================================================================
+    df['p_i'] = df.iloc[:, 0].add(1).cumprod()
+    # =========================================================================
+    # Cumulative Price Index for the Base Year
+    # =========================================================================
+    df['cpi'] = df.iloc[:, 1].div(df.iloc[base-df.index[0], 1])
+    return df.iloc[:, [-1]]
 
 
-def price_inverse(data_frame):
-    '''Intent: Returns Growth Rate from Cumulative Price Index for Some Base Year;
-    data_frame.iloc[:, 0]: Cumulative Price Index for Some Base Year'''
-    data_frame['gri'] = data_frame.iloc[:, [-1]].div(
-        data_frame.iloc[:, [-1]].shift(1)).sub(1)
-    return data_frame.iloc[:, [-1]].dropna(axis=0)
+def price_inverse(df: DataFrame) -> DataFrame:
+    '''
+    Returns Growth Rate from Cumulative Price Index for Some Base Year
+
+    Parameters
+    ----------
+    df : DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Cumulative Price Index for Some Base Year
+    ================== =================================
+    Returns
+    -------
+    DataFrame
+        DESCRIPTION.
+
+    '''
+    df['gri'] = df.iloc[:, [-1]].div(df.iloc[:, [-1]].shift(1)).sub(1)
+    return df.iloc[:, [-1]].dropna(axis=0)
 
 
-def price_inverse_double(data_frame):
-    '''Intent: Returns Growth Rate from Nominal & Real Prices Series;
-    data_frame.iloc[:, 0]: Nominal Prices;
-    data_frame.iloc[:, 1]: Real Prices'''
-    data_frame['cpi'] = data_frame.iloc[:, 0].div(data_frame.iloc[:, 1])
-    data_frame['gri'] = data_frame.iloc[:, [-1]].div(
-        data_frame.iloc[:, [-1]].shift(1)).sub(1)
-    return data_frame.iloc[:, [-1]].dropna(axis=0)
+def price_inverse_double(df: DataFrame) -> DataFrame:
+    '''
+    Returns Growth Rate from Nominal & Real Prices Series
+
+    Parameters
+    ----------
+    df : DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Nominal Prices
+    df.iloc[:, 1]      Real Prices
+    ================== =================================
+    Returns
+    -------
+    DataFrame
+        DESCRIPTION.
+
+    '''
+    df['cpi'] = df.iloc[:, 0].div(df.iloc[:, 1])
+    df['gri'] = df.iloc[:, [-1]].div(df.iloc[:, [-1]].shift(1)).sub(1)
+    return df.iloc[:, [-1]].dropna(axis=0)
 
 
-def price_inverse_single(data_series):
-    '''Intent: Returns Prices Icrement Series from Cumulative Deflator Series;
-    source: pandas DataFrame'''
-    return data_series.div(data_series.shift(1)).sub(1)
+def price_inverse_single(df: DataFrame) -> DataFrame:
+    '''
+    Returns Prices Icrement Series from Cumulative Deflator Series
+
+    Parameters
+    ----------
+    df : DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      TODO: Prices
+    ================== =================================
+    Returns
+    -------
+    DataFrame
+        TODO: DESCRIPTION.
+
+    '''
+    return df.div(df.shift(1)).sub(1)
 
 
-def strip_cumulated_deflator(data_frame):
+def strip_cumulated_deflator(df: DataFrame):
     # =========================================================================
     # TODO: Eliminate This Function
     # =========================================================================
-    return price_inverse_single(data_frame.dropna()).dropna()
+    return price_inverse_single(df.dropna()).dropna()
 
 
-def procedure(output_name, criteria):
-    # =========================================================================
-    # TODO: Add Description
-    # =========================================================================
-    result = pd.DataFrame()
-    for item in criteria:
-        data = extract_can_from_url(string_to_url(item['file_name']))
-        data = data[data['VECTOR'].isin(item['series_ids'])]
-        data = data[['REF_DATE', 'VECTOR', 'VALUE']]
-        for series_id in item['series_ids']:
-            chunk = data[data['VECTOR'] == series_id]
+def build_load_data_frame(file_name: str, criteria: dict) -> None:
+    '''
+    Builds DataFrame & Loads It To Excel
+
+    Parameters
+    ----------
+    file_name : str
+        Excel File Name.
+    criteria : dict
+        DESCRIPTION.
+
+    Returns
+    -------
+    None
+    '''
+    df = DataFrame()
+    for criterion in criteria:
+        _df = extract_can_from_url(string_to_url(criterion['file_name']))
+        _df = _df[_df['VECTOR'].isin(criterion['series_ids'])]
+        _df = _df[['REF_DATE', 'VECTOR', 'VALUE']]
+        for series_id in criterion['series_ids']:
+            chunk = _df[_df['VECTOR'] == series_id]
             chunk.set_index(chunk.columns[0], inplace=True)
             chunk = chunk.iloc[:, [1]]
             chunk = mean_by_year(chunk)
             chunk.rename(columns={'VALUE': series_id}, inplace=True)
-            result = pd.concat([result, chunk], axis=1, sort=True)
-    result.to_excel(output_name)
+            df = pd.concat([df, chunk], axis=1, sort=True)
+    df.to_excel(file_name)
 
 
-def rolling_mean_filter(data_frame: pd.DataFrame, k: int = None) -> tuple[pd.DataFrame]:
-    '''Rolling Mean Filter
-        data_frame.index: Period,
-        data_frame.iloc[:, 0]: Series
+def rolling_mean_filter(df: DataFrame, k: int = None) -> tuple[DataFrame]:
+    '''
+    Rolling Mean Filter
+
+    Parameters
+    ----------
+    df : DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Target Series
+    ================== =================================
+    k : int, optional
+        DESCRIPTION. The default is None.
+
+    Returns
+    -------
+    tuple[DataFrame]
+        DESCRIPTION.
+
     '''
     if k is None:
-        k = data_frame.shape[0] // 2
-    data_frame.reset_index(level=0, inplace=True)
+        k = df.shape[0] // 2
+    df.reset_index(level=0, inplace=True)
     # =========================================================================
     # DataFrame for Rolling Mean Filter Results: Odd
     # =========================================================================
-    data_frame_o = pd.concat(
+    df_o = pd.concat(
         [
             # =================================================================
             # No Period Shift
             # =================================================================
-            data_frame,
+            df,
         ],
         axis=1,
     )
     # =========================================================================
     # DataFrame for Rolling Mean Filter Results: Even
     # =========================================================================
-    data_frame_e = pd.concat(
+    df_e = pd.concat(
         [
             # =================================================================
             # Period Shift
             # =================================================================
-            data_frame.iloc[:, [0]].rolling(2, center=True).mean(),
+            df.iloc[:, [0]].rolling(2, center=True).mean(),
         ],
         axis=1,
     )
@@ -1279,7 +973,7 @@ def rolling_mean_filter(data_frame: pd.DataFrame, k: int = None) -> tuple[pd.Dat
             # =================================================================
             # Period Shift
             # =================================================================
-            data_frame.iloc[:, [0]].rolling(2).mean(),
+            df.iloc[:, [0]].rolling(2).mean(),
         ],
         axis=1,
     )
@@ -1291,7 +985,7 @@ def rolling_mean_filter(data_frame: pd.DataFrame, k: int = None) -> tuple[pd.Dat
             # =================================================================
             # No Period Shift
             # =================================================================
-            data_frame.iloc[:, [0]],
+            df.iloc[:, [0]],
         ],
         axis=1,
     )
@@ -1300,23 +994,23 @@ def rolling_mean_filter(data_frame: pd.DataFrame, k: int = None) -> tuple[pd.Dat
             # =================================================================
             # DataFrame for Rolling Mean Filter Results: Odd
             # =================================================================
-            data_frame_o = pd.concat(
+            df_o = pd.concat(
                 [
-                    data_frame_o,
-                    data_frame.iloc[:, [1]].rolling(2 + _, center=True).mean(),
+                    df_o,
+                    df.iloc[:, [1]].rolling(2 + _, center=True).mean(),
                 ],
                 axis=1,
             )
-            data_frame_o.columns = [*data_frame_o.columns[:-1],
-                                    f'{data_frame.columns[1]}_{hex(2 + _)}', ]
+            df_o.columns = [*df_o.columns[:-1],
+                            f'{df.columns[1]}_{hex(2 + _)}', ]
             # =================================================================
             # DataFrame for Rolling Mean Filter Residuals: Odd
             # =================================================================
             residuals_o = pd.concat(
                 [
                     residuals_o,
-                    data_frame_o.iloc[:, [-2]
-                                      ].div(data_frame_o.iloc[:, [-2]].shift(1)).sub(1),
+                    df_o.iloc[:, [-2]
+                              ].div(df_o.iloc[:, [-2]].shift(1)).sub(1),
                 ],
                 axis=1,
             )
@@ -1324,42 +1018,54 @@ def rolling_mean_filter(data_frame: pd.DataFrame, k: int = None) -> tuple[pd.Dat
             # =================================================================
             # DataFrame for Rolling Mean Filter Results: Even
             # =================================================================
-            data_frame_e = pd.concat(
+            df_e = pd.concat(
                 [
-                    data_frame_e,
-                    data_frame.iloc[:, [1]].rolling(2 + _, center=True).mean(),
+                    df_e,
+                    df.iloc[:, [1]].rolling(2 + _, center=True).mean(),
                 ],
                 axis=1,
             )
-            data_frame_e.columns = [*data_frame_e.columns[:-1],
-                                    f'{data_frame.columns[1]}_{hex(2 + _)}', ]
+            df_e.columns = [*df_e.columns[:-1],
+                            f'{df.columns[1]}_{hex(2 + _)}', ]
             # =================================================================
             # DataFrame for Rolling Mean Filter Residuals: Even
             # =================================================================
             residuals_e = pd.concat(
                 [
                     residuals_e,
-                    data_frame_e.iloc[:, [-1]
-                                      ].shift(-1).div(data_frame_e.iloc[:, [-1]]).sub(1),
+                    df_e.iloc[:, [-1]
+                              ].shift(-1).div(df_e.iloc[:, [-1]]).sub(1),
                 ],
                 axis=1,
             )
-    data_frame_o.set_index(data_frame_o.columns[0], inplace=True)
-    data_frame_e.set_index(data_frame_e.columns[0], inplace=True)
+    df_o.set_index(df_o.columns[0], inplace=True)
+    df_e.set_index(df_e.columns[0], inplace=True)
     residuals_o.set_index(residuals_o.columns[0], inplace=True)
     residuals_e.set_index(residuals_e.columns[0], inplace=True)
-    data_frame_o.dropna(how='all', inplace=True)
-    data_frame_e.dropna(how='all', inplace=True)
+    df_o.dropna(how='all', inplace=True)
+    df_e.dropna(how='all', inplace=True)
     residuals_o.dropna(how='all', inplace=True)
     residuals_e.dropna(how='all', inplace=True)
-    return data_frame_o, data_frame_e, residuals_o, residuals_e
+    return df_o, df_e, residuals_o, residuals_e
 
 
-def simple_linear_regression(df: pd.DataFrame):
-    '''Determining of Coefficients of Regression
-    df.index: Period,
-    df.iloc[:, 0]: Regressor,
-    df.iloc[:, 1]: Regressand
+def simple_linear_regression(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
+    '''
+    Determine Regression Coefficients
+
+    Parameters
+    ----------
+    df : DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Regressor
+    df.iloc[:, 1]      Regressand
+    ================== =================================
+    Returns
+    -------
+    tuple[DataFrame, tuple[float]]
+        DESCRIPTION.
+
     '''
     # =========================================================================
     # TODO: Eliminate This Function

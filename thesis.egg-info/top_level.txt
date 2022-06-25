@@ -1,6 +1,6 @@
+collect
 extract
-load
 plot
-prepare
+push
 test
 toolkit

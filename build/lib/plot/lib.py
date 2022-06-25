@@ -7,9 +7,29 @@ Created on Sun Jun 12 08:59:10 2022
 """
 
 
+import itertools
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 from pandas import DataFrame
+from toolkit.lib import rolling_mean_filter
+from toolkit.lib import calculate_capital
+from extract.lib import extract_usa_census_description
+from extract.lib import extract_usa_census
+from collect.lib import transform_cobb_douglas
+
+
+ARCHIVE_NAMES_UTILISED = (
+    'CHN_TUR_GDP.zip',
+    'dataset_rus_m1.zip',
+    'dataset_usa_census1975.zip',
+)
+FILE_NAMES_UTILISED = (
+    'datasetAutocorrelation.txt',
+    'dataset_rus_grigoriev_v.csv',
+    'dataset_usa_nber_ces_mid_naics5811.csv',
+    'dataset_usa_nber_ces_mid_sic5811.csv',
+)
 
 
 def plot_a(df: DataFrame) -> None:
@@ -26,11 +46,11 @@ def plot_a(df: DataFrame) -> None:
     # =========================================================================
     # `Real` Investment
     # =========================================================================
-    _df['inv'] = _df.iloc[:, 0].mul(_df.iloc[:, 3]).div(_df.iloc[:, 2])
+    _df['investment'] = _df.iloc[:, 0].mul(_df.iloc[:, 3]).div(_df.iloc[:, 2])
     # =========================================================================
     # `Real` Production
     # =========================================================================
-    _df['prd'] = _df.iloc[:, 1].mul(_df.iloc[:, 3]).div(_df.iloc[:, 2])
+    _df['production'] = _df.iloc[:, 1].mul(_df.iloc[:, 3]).div(_df.iloc[:, 2])
     _df['inv_roll_mean'] = _df.iloc[:, -2].rolling(2).mean()
     _df['prd_roll_mean'] = _df.iloc[:, -2].rolling(2).mean()
     plt.figure()
@@ -42,7 +62,8 @@ def plot_a(df: DataFrame) -> None:
     plt.plot(_df.iloc[:, -4:-2], label=[
         'Gross Private Domestic Investment',
         'National Income',
-    ])
+    ]
+    )
     plt.xlabel('Period')
     plt.ylabel('Index')
     _df.index = _df.index.to_series().rolling(2).mean()
@@ -69,7 +90,7 @@ def plot_b(df: DataFrame) -> None:
     # =========================================================================
     # `Real` Investment
     # =========================================================================
-    _df['inv'] = _df.iloc[:, 0].mul(_df.iloc[:, 2]).div(_df.iloc[:, 1])
+    _df['investment'] = _df.iloc[:, 0].mul(_df.iloc[:, 2]).div(_df.iloc[:, 1])
     plt.figure()
     plt.plot(_df.iloc[:, 3], _df.iloc[:, -1])
     plt.title(
@@ -96,13 +117,14 @@ def plot_c(df: DataFrame) -> None:
     # =========================================================================
     # `Real` Investment
     # =========================================================================
-    df['inv'] = df.iloc[:, 0].mul(df.iloc[:, 2]).div(df.iloc[:, 1])
+    df['investment'] = df.iloc[:, 0].mul(df.iloc[:, 2]).div(df.iloc[:, 1])
     plt.figure()
     plt.plot(df.iloc[:, range(2, 5)], label=[
         'Real Gross Domestic Product',
         'Money Supply',
         '`Real` Gross Domestic Investment',
-    ])
+    ]
+    )
     plt.title('Indexes, {}$-${}'.format(*df.index[[0, -1]]))
     plt.xlabel('Period')
     plt.ylabel('Index')
@@ -135,11 +157,11 @@ def plot_d(df: DataFrame) -> None:
     # =========================================================================
     # Real Investment, Billions
     # =========================================================================
-    df['invmnt'] = df.iloc[:, 1].mul(df.iloc[_b, 0]).div(100).div(1000)
+    df['investment'] = df.iloc[:, 1].mul(df.iloc[_b, 0]).div(100).div(1000)
     # =========================================================================
     # Real Fixed Investment, Billions
     # =========================================================================
-    df['fxd_invmnt'] = df.iloc[:, 3].mul(df.iloc[_b, 2]).div(100).div(1000)
+    df['investment_f'] = df.iloc[:, 3].mul(df.iloc[_b, 2]).div(100).div(1000)
     plt.figure(1)
     plt.semilogy(
         df.iloc[:, -2],
@@ -237,12 +259,14 @@ def plot_census_a(df: DataFrame, base: int) -> None:
     plt.plot(df.iloc[:, [0, 2]], label=[
         'Fabricant S., Shiskin J., NBER',
         'E. Frickey',
-    ])
+    ]
+    )
     plt.plot(df.iloc[:, 1], color='red', linewidth=4, label='W.M. Persons')
     plt.axvline(x=df.index[base], linestyle=':')
     plt.title(
         'US Manufacturing Indexes Of Physical Production Of Manufacturing, {}=100, {}$-${}'.format(
-            df.index[base], *df.index[[0, -1]])
+            df.index[base], *df.index[[0, -1]]
+        )
     )
     plt.xlabel('Period')
     plt.ylabel('Percentage')
@@ -257,7 +281,8 @@ def plot_census_b_capital(df: DataFrame) -> None:
     plt.semilogy(df, label=['Total', 'Structures', 'Equipment'])
     plt.title('Census Manufacturing Fixed Assets, {}$-${}'.format(
         *df.index[[0, -1]]
-    ))
+    )
+    )
     plt.xlabel('Period')
     plt.ylabel('Millions of Dollars')
     plt.grid(True)
@@ -270,7 +295,8 @@ def plot_census_b_deflator(df: DataFrame) -> None:
     plt.figure()
     plt.plot(df)
     plt.title('Census Fused Fixed Assets Deflator, {}$-${}'.format(
-        *df.index[[0, -1]])
+        *df.index[[0, -1]]
+    )
     )
     plt.xlabel('Period')
     plt.ylabel('Index')
@@ -324,9 +350,9 @@ def plot_census_d(series_ids: tuple[str]) -> None:
     ARCHIVE_NAME = 'dataset_usa_census1975.zip'
     df = DataFrame()
     for series_id in series_ids:
-        title = extract_usa_census_description(ARCHIVE_NAME, series_id)
-        print(f'<{series_id}> {title}')
         chunk = extract_usa_census(ARCHIVE_NAME, series_id)
+        descr = extract_usa_census_description(ARCHIVE_NAME, series_id)
+        print(f'<{series_id}> {descr}')
         df = pd.concat(
             [
                 df,
@@ -404,11 +430,13 @@ def plot_census_g(df: DataFrame) -> None:
     plt.plot(df, label=[
         'Gross National Product',
         'Gross National Product Per Capita',
-    ])
+    ]
+    )
     plt.title(
         'Gross National Product, Prices {}=100, {}=100'.format(
             1958, df.index[0]
-        ))
+        )
+    )
     plt.xlabel('Period')
     plt.ylabel('Percentage')
     plt.grid(True)
@@ -437,7 +465,8 @@ def plot_census_i_a(df: DataFrame) -> None:
         'Exports, U1',
         'Imports, U8',
         'Net Exports, U15',
-    ])
+    ]
+    )
     plt.title(
         'Exports & Imports of Goods and Services, {}$-${}'.format(
             *df.index[[0, -1]]
@@ -456,7 +485,8 @@ def plot_census_i_b(df: DataFrame) -> None:
         'Exports, U187',
         'Imports, U188',
         'Net Exports, U189',
-    ])
+    ]
+    )
     plt.title(
         'Total Merchandise, Gold and Silver, {}$-${}'.format(
             *df.index[[0, -1]]
@@ -527,33 +557,22 @@ def plot_census_j(df: DataFrame) -> None:
 def plot_census_k() -> None:
     '''Census Financial Markets & Institutions Series'''
     ARCHIVE_NAME = 'dataset_usa_census1975.zip'
-    SERIES_IDS = (
-        'X0410', 'X0411', 'X0412', 'X0413', 'X0414', 'X0415', 'X0416',
-        'X0417', 'X0418', 'X0419', 'X0420', 'X0421', 'X0422', 'X0423',
-        'X0580', 'X0581', 'X0582', 'X0583', 'X0584', 'X0585', 'X0586',
-        'X0587', 'X0610', 'X0611', 'X0612', 'X0613', 'X0614', 'X0615',
-        'X0616', 'X0617', 'X0618', 'X0619', 'X0620', 'X0621', 'X0622',
-        'X0623', 'X0624', 'X0625', 'X0626', 'X0627', 'X0628', 'X0629',
-        'X0630', 'X0631', 'X0632', 'X0633', 'X0741', 'X0742', 'X0743',
-        'X0744', 'X0745', 'X0746', 'X0747', 'X0748', 'X0749', 'X0750',
-        'X0751', 'X0752', 'X0753', 'X0754', 'X0755', 'X0879', 'X0880',
-        'X0881', 'X0882', 'X0883', 'X0884', 'X0885', 'X0886', 'X0887',
-        'X0888', 'X0889', 'X0890', 'X0891', 'X0892', 'X0893', 'X0894',
-        'X0895', 'X0896', 'X0897', 'X0898', 'X0899', 'X0900', 'X0901',
-        'X0902', 'X0903', 'X0904', 'X0905', 'X0906', 'X0907', 'X0908',
-        'X0909', 'X0910', 'X0911', 'X0912', 'X0913', 'X0914', 'X0915',
-        'X0916', 'X0917', 'X0918', 'X0919', 'X0920', 'X0921', 'X0922',
-        'X0923', 'X0924', 'X0925', 'X0926', 'X0927', 'X0928', 'X0929',
-        'X0930', 'X0931', 'X0932', 'X0947', 'X0948', 'X0949', 'X0950',
-        'X0951', 'X0952', 'X0953', 'X0954', 'X0955', 'X0956',
+    ids = itertools.chain(
+        range(410, 424),
+        range(580, 588),
+        range(610, 634),
+        range(741, 756),
+        range(879, 933),
+        range(947, 957),
     )
+    SERIES_IDS = tuple(f'X{_id:04n}' for id in ids)
     for _, series_id in enumerate(SERIES_IDS, start=1):
         df = extract_usa_census(ARCHIVE_NAME, series_id)
         df = df.div(df.iloc[0, :]).mul(100)
-        _title = extract_usa_census_description(ARCHIVE_NAME, series_id)
+        descr = extract_usa_census_description(ARCHIVE_NAME, series_id)
         plt.figure(_)
         plt.plot(df, label=series_id)
-        plt.title('{}, {}$-${}'.format(_title, *df.index[[0, -1]]))
+        plt.title('{}, {}$-${}'.format(descr, *df.index[[0, -1]]))
         plt.xlabel('Period')
         plt.ylabel('Percentage')
         plt.grid(True)
@@ -693,11 +712,24 @@ def plot_approx_log_linear(df: DataFrame) -> None:
 
 def plot_block_zer(df: DataFrame) -> None:
     '''
-    df.index: Period,
-    df.iloc[:, 0]: Capital,
-    df.iloc[:, 1]: Labor,
-    df.iloc[:, 2]: Product
+    Plotting
+
+    Parameters
+    ----------
+    df : DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Capital
+    df.iloc[:, 1]      Labor
+    df.iloc[:, 2]      Product
+    ================== =================================
+    Returns
+    -------
+    None
     '''
+    # =========================================================================
+    # TODO: Use Feed from transform_cobb_douglas()
+    # =========================================================================
     # =========================================================================
     # Labor Capital Intensity
     # =========================================================================
@@ -706,25 +738,36 @@ def plot_block_zer(df: DataFrame) -> None:
     # Labor Productivity
     # =========================================================================
     df['lab_product'] = df.iloc[:, 2].div(df.iloc[:, 1])
-    df['log_lab_c'] = np.log(df.iloc[:, 0].div(df.iloc[:, 1]))
-    df['log_lab_p'] = np.log(df.iloc[:, 2].div(df.iloc[:, 1]))
     plot_simple_linear(
-        *simple_linear_regression(df.iloc[:, [3, 4]])
+        *simple_linear_regression(df.iloc[:, -2:])
     )
     plot_simple_log(
-        *simple_linear_regression(df.iloc[:, [5, 6]])
+        *simple_linear_regression(np.log(df.iloc[:, -2:]))
     )
 
 
 def plot_block_one(df: DataFrame) -> None:
     '''
-    df.index: Period,
-    df.iloc[:, 0]: Capital,
-    df.iloc[:, 1]: Labor,
-    df.iloc[:, 2]: Product
+    Plotting
+
+    Parameters
+    ----------
+    df : DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Capital
+    df.iloc[:, 1]      Labor
+    df.iloc[:, 2]      Product
+    ================== =================================
+    Returns
+    -------
+    None
     '''
     # =========================================================================
     # TODO: Increase Cohesion
+    # =========================================================================
+    # =========================================================================
+    # TODO: Use Feed from transform_cobb_douglas()
     # =========================================================================
     # =========================================================================
     # Labor Capital Intensity
@@ -794,13 +837,26 @@ def plot_block_one(df: DataFrame) -> None:
 
 def plot_block_two(df: DataFrame) -> None:
     '''
-    df.index: Period,
-    df.iloc[:, 0]: Capital,
-    df.iloc[:, 1]: Labor,
-    df.iloc[:, 2]: Product
+    Plotting
+
+    Parameters
+    ----------
+    df : DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Capital
+    df.iloc[:, 1]      Labor
+    df.iloc[:, 2]      Product
+    ================== =================================
+    Returns
+    -------
+    None
     '''
     # =========================================================================
     # TODO: Increase Cohesion
+    # =========================================================================
+    # =========================================================================
+    # TODO: Use Feed from transform_cobb_douglas()
     # =========================================================================
     # =========================================================================
     # Labor Productivity
@@ -883,19 +939,20 @@ def plot_built_in(module: callable) -> None:
     # =========================================================================
     FILE_NAMES = (
         'datasetAutocorrelation.txt',
-        'CHN_TUR_GDP.zip',
     )
-    data = pd.read_csv(FILE_NAMES[0])
-    for _, series_id in enumerate(sorted(set(data.iloc[:, 1])), start=1):
+    _df = pd.read_csv(FILE_NAMES[0])
+    for _, series_id in enumerate(sorted(set(_df.iloc[:, 1])), start=1):
         plt.figure(_)
-        module(extract_world_bank(data, series_id))
+        module(extract_worldbank(_df, series_id))
         plt.grid(True)
 
-    data = pd.read_csv(FILE_NAMES[1])
-    for _, series_id in enumerate(sorted(set(data.iloc[:, 1])), start=1):
-        plt.figure(_)
-        module(extract_world_bank(data, series_id))
-        plt.grid(True)
+    _df = extract_worldbank()
+    for _, country in enumerate(_df.columns, start=1):
+        chunk = _df.loc[:, [country]].dropna()
+        if not chunk.empty:
+            plt.figure(_)
+            module(chunk)
+            plt.grid(True)
 
     plt.show()
 
@@ -910,7 +967,7 @@ def plot_can_test(df: DataFrame) -> None:
     plt.show()
 
 
-def plot_capital_modelling(df: DataFrame, base) -> None:
+def plot_capital_modelling(df: DataFrame, base: int) -> None:
     '''
     ================== =================================
     df.index           Period
@@ -921,12 +978,12 @@ def plot_capital_modelling(df: DataFrame, base) -> None:
     ================== =================================
     '''
     _params_i = np.polyfit(
-        df.index.to_series(),
+        df.index.to_series().astype(int),
         df.iloc[:, 0].div(df.iloc[:, 1]).astype(float),
         deg=1
     )
     _params_t = np.polyfit(
-        df.index.to_series(),
+        df.index.to_series().astype(int),
         df.iloc[:, 1].div(df.iloc[:, 2]).astype(float),
         deg=1
     )
@@ -986,7 +1043,7 @@ def plot_capital_modelling(df: DataFrame, base) -> None:
     plt.figure(4)
     plt.title('$K$ for the US, {}$-${}'.format(*_df.index[[0, -2]]))
     plt.xlabel('Period')
-    plt.ylabel('Billions of Dollars, {}=100'.format(_df.index[base]))
+    plt.ylabel('Billions of Dollars, {}=100'.format(base))
     plt.semilogy(
         _df.iloc[:, -3:],
         label=['$K\\left(\\pi = \\frac{7}{8}\\right)$',
@@ -1007,7 +1064,8 @@ def plot_capital_purchases(df: DataFrame) -> None:
             '$s^{2;1}_{Cobb-Douglas}$',
             'Total',
             'Structures',
-            'Equipment', ]
+            'Equipment',
+        ]
     )
     plt.title('Fixed Assets Purchases, {}$-${}'.format(*df.index[[0, -1]]))
     plt.xlabel('Period')
@@ -1017,13 +1075,13 @@ def plot_capital_purchases(df: DataFrame) -> None:
     plt.show()
 
 
-def plot_census_complex(source_frame) -> None:
+def plot_census_complex(df: DataFrame) -> None:
     # =========================================================================
     # TODO: Eliminate This Function
     # =========================================================================
-    plot_pearson_r_test(source_frame)
-    plot_kol_zur_filter(source_frame)
-    plot_ewm(source_frame)
+    plot_pearson_r_test(df)
+    plot_kol_zur_filter(df)
+    plot_ewm(df)
 
 
 def plot_cobb_douglas(df: DataFrame, params: tuple[float], mapping: dict) -> None:
@@ -1043,7 +1101,8 @@ def plot_cobb_douglas(df: DataFrame, params: tuple[float], mapping: dict) -> Non
         'Fixed Capital',
         'Labor Force',
         'Physical Product',
-    ])
+    ]
+    )
     plt.xlabel('Period')
     plt.ylabel('Indexes')
     plt.title(mapping['fg_a'].format(*df.index[[0, -1]],
@@ -1058,7 +1117,8 @@ def plot_cobb_douglas(df: DataFrame, params: tuple[float], mapping: dict) -> Non
             1-params[0],
             params[0],
         ),
-    ])
+    ]
+    )
     plt.xlabel('Period')
     plt.ylabel('Production')
     plt.title(mapping['fg_b'].format(*df.index[[0, -1]],
@@ -1072,7 +1132,8 @@ def plot_cobb_douglas(df: DataFrame, params: tuple[float], mapping: dict) -> Non
         # =========================================================================
         #      TODO: ls=['solid','dashed',]
         # =========================================================================
-    ])
+    ]
+    )
     plt.xlabel('Period')
     plt.ylabel('Percentage Deviation')
     plt.title(mapping['fg_c'])
@@ -1103,6 +1164,19 @@ def plot_cobb_douglas(df: DataFrame, params: tuple[float], mapping: dict) -> Non
 def plot_cobb_douglas_3d(df: DataFrame) -> None:
     '''
     Cobb--Douglas 3D-Plotting
+
+    Parameters
+    ----------
+    df : DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Capital
+    df.iloc[:, 1]      Labor
+    df.iloc[:, 2]      Product
+    ================== =================================
+    Returns
+    -------
+    None
     '''
     assert df.shape[1] == 3
 
@@ -1134,7 +1208,8 @@ def plot_cobb_douglas_alt(df: DataFrame, params: tuple[float], mapping: dict) ->
         'Labor Force',
         'Physical Product',
         'Physical Product, Alternative',
-    ])
+    ]
+    )
     plt.xlabel('Period')
     plt.ylabel('Indexes')
     plt.title(mapping['fg_a'].format(*df.index[[0, -1]],
@@ -1149,7 +1224,8 @@ def plot_cobb_douglas_alt(df: DataFrame, params: tuple[float], mapping: dict) ->
             1-params[0],
             params[0],
         ),
-    ])
+    ]
+    )
     plt.xlabel('Period')
     plt.ylabel('Production')
     plt.title(mapping['fg_b'].format(*df.index[[0, -1]],
@@ -1163,7 +1239,8 @@ def plot_cobb_douglas_alt(df: DataFrame, params: tuple[float], mapping: dict) ->
         # =========================================================================
         #      TODO: ls=['solid','dashed',]
         # =========================================================================
-    ])
+    ]
+    )
     plt.xlabel('Period')
     plt.ylabel('Percentage Deviation')
     plt.title(mapping['fg_c'])
@@ -1191,17 +1268,25 @@ def plot_cobb_douglas_alt(df: DataFrame, params: tuple[float], mapping: dict) ->
     plt.show()
 
 
-def plot_cobb_douglas_complex(source_frame) -> None:
-    modified_frame_a = source_frame.reset_index(level=0)
-    modified_frame_b = source_frame.iloc[:, [0, 2]]
-    modified_frame_b = modified_frame_b.reset_index(level=0)
-    plot_cobb_douglas(source_frame)
-    plot_cobb_douglas_3d(source_frame)
-    plot_lab_prod_polynomial(source_frame)
-    plot_block_zer(source_frame)
-    plot_block_one(modified_frame_a)
-    plot_block_two(modified_frame_a)
-    plot_turnover(modified_frame_b)
+def plot_cobb_douglas_complex(df: DataFrame) -> None:
+    FIG_MAP = {
+        'fg_a': 'Chart I Progress in Manufacturing {}$-${} ({}=100)',
+        'fg_b': 'Chart II Theoretical and Actual Curves of Production {}$-${} ({}=100)',
+        'fg_c': 'Chart III Percentage Deviations of $P$ and $P\'$ from Their Trend Lines\nTrend Lines=3 Year Moving Average',
+        'fg_d': 'Chart IV Percentage Deviations of Computed from Actual Product {}$-${}',
+        'fg_e': 'Chart V Relative Final Productivities of Labor and Capital',
+        'year_price': 1899,
+    }
+    plot_cobb_douglas(
+        *transform_cobb_douglas(df),
+        FIG_MAP
+    )
+    plot_cobb_douglas_3d(df.iloc[:, range(3)])
+    plot_lab_prod_polynomial(df)
+    plot_block_zer(df)
+    plot_block_one(df)
+    plot_block_two(df)
+    plot_turnover(df.iloc[:, [0, 2]])
 
 
 def plot_cobb_douglas_tight_layout(df: DataFrame, params: tuple[float], mapping: dict) -> None:
@@ -1221,7 +1306,8 @@ def plot_cobb_douglas_tight_layout(df: DataFrame, params: tuple[float], mapping:
         'Fixed Capital',
         'Labor Force',
         'Physical Product',
-    ])
+    ]
+    )
     axs[0].set_xlabel('Period')
     axs[0].set_ylabel('Indexes')
     axs[0].set_title(mapping['fg_a'].format(*df.index[[0, -1]],
@@ -1232,7 +1318,8 @@ def plot_cobb_douglas_tight_layout(df: DataFrame, params: tuple[float], mapping:
         'Actual Product',
         'Computed Product, $P\' = {:,.4f}L^{{{:,.4f}}}C^{{{:,.4f}}}$'.format(
             params[1], 1-params[0], params[0]),
-    ])
+    ]
+    )
     axs[1].set_xlabel('Period')
     axs[1].set_ylabel('Production')
     axs[1].set_title(mapping['fg_b'].format(*df.index[[0, -1]],
@@ -1274,10 +1361,10 @@ def plot_cobb_douglas_tight_layout(df: DataFrame, params: tuple[float], mapping:
     plt.show()
 
 
-def plot_douglas(source, dictionary, num, start, stop, step, title, measure, label=None) -> None:
+def plot_douglas(source, mapping, num, start, stop, step, title, measure, label=None) -> None:
     '''
     source: Source Database,
-    dictionary: Dictionary of Series IDs to Series Titles from Source Database,
+    mapping: Dictionary of Series IDs to Series Titles from Source Database,
     num: Plot Number,
     start: Start Series Code,
     stop: Stop Series Code,
@@ -1285,10 +1372,13 @@ def plot_douglas(source, dictionary, num, start, stop, step, title, measure, lab
     title: Plot Title,
     measure: Dimenstion for Series,
     label: Additional Sublabels'''
+    # =========================================================================
+    # TODO: Revise
+    # =========================================================================
     plt.figure(num)
-    for i in range(start, stop, step):
+    for _ in range(start, stop, step):
         plt.plot(extract_usa_classic(
-            source, dictionary.iloc[i, 0]), label=dictionary.iloc[i, 1])
+            source, mapping.iloc[_, 0]), label=mapping.iloc[_, 1])
     plt.title(title)
     plt.xlabel('Period')
     plt.ylabel(measure)
@@ -1301,12 +1391,18 @@ def plot_douglas(source, dictionary, num, start, stop, step, title, measure, lab
 
 def plot_elasticity(df: DataFrame) -> None:
     '''
+    Parameters
+    ----------
+    df : DataFrame
     ================== =================================
     df.index           Period
     df.iloc[:, 0]      Real Values for Price Deflator
     df.iloc[:, 1]      Nominal Values for Price Deflator
-    df.iloc[:, 2]      Focused Series
+    df.iloc[:, 2]      Target Series
     ================== =================================
+    Returns
+    -------
+    None
     '''
     df.iloc[:, -1] = pd.to_numeric(df.iloc[:, -1], errors='coerce')
     df.dropna(inplace=True)
@@ -1462,12 +1558,12 @@ def plot_fourier_discrete(df: DataFrame, precision: int = 10) -> None:
     _df = df.copy()
     precision += 1
     _p = np.polyfit(
-        _df.index,
+        _df.index.to_series().astype(int),
         _df.iloc[:, 0].astype(float),
         deg=1
     )
     _df['period_calibrated'] = _df.index.to_series().sub(
-        _df.index[0]).div(_df.shape[0]).mul(2).mul(np.pi)
+        _df.index[0]).div(_df.shape[0]).mul(2).mul(np.pi).astype(float)
     _df[f'{_df.columns[0]}_line'] = _df.index.to_series().mul(_p[0]).add(_p[1])
     _df[f'{_df.columns[0]}_wave'] = _df.iloc[:, 0].sub(_df.iloc[:, 2])
     # =========================================================================
@@ -1514,7 +1610,7 @@ def plot_growth_elasticity(df: DataFrame) -> None:
     '''Growth Elasticity Plotting
     ================== =================================
     df.index           Period
-    df.iloc[:, 0]      Series
+    df.iloc[:, 0]      Target Series
     ================== =================================
     '''
     # =========================================================================
@@ -1557,6 +1653,7 @@ def plot_growth_elasticity(df: DataFrame) -> None:
 def plot_increment(df: DataFrame) -> None:
     FLAG = False
     FOLDER = '/home/alexander/science'
+    FILE_NAME = 'fig_file_name.pdf'
     fig, axs = plt.subplots(2, 1)
     axs[0].plot(df.iloc[:, 0], df.iloc[:, 1], label='Curve')
     axs[0].set_xlabel('Labor Capital Intensity')
@@ -1578,7 +1675,7 @@ def plot_increment(df: DataFrame) -> None:
     fig.tight_layout()
     if FLAG:
         fig.savefig(
-            os.path.join(FOLDER, 'fig_file_name.pdf'),
+            os.path.join(FOLDER, FILE_NAME),
             format='pdf', dpi=900
         )
     else:
@@ -1610,12 +1707,21 @@ def plot_is_lm() -> None:
 
 
 def plot_kol_zur_filter(df: DataFrame) -> None:
-    '''Kolmogorov--Zurbenko Filter
-        df.index: Period,
-        df.iloc[:, 0]: Series
     '''
-    data_frame_o, data_frame_e, residuals_o, residuals_e = kol_zur_filter(
-        df)
+    Kolmogorov--Zurbenko Filter
+
+    Parameters
+    ----------
+    df : DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Target Series
+    ================== =================================
+    Returns
+    -------
+    None
+    '''
+    data_frame_o, data_frame_e, residuals_o, residuals_e = kol_zur_filter(df)
 
     plt.figure(1)
     plt.title('Kolmogorov$-$Zurbenko Filter')
@@ -1728,14 +1834,27 @@ def plot_kurenkov(data_frames: tuple[DataFrame]) -> None:
 
 
 def plot_lab_prod_polynomial(df: DataFrame) -> None:
-    '''Static Labor Productivity Approximation
-    df.index: Period,
-    df.iloc[:, 0]: Capital,
-    df.iloc[:, 1]: Labor,
-    df.iloc[:, 2]: Product
+    '''
+    Static Labor Productivity Approximation
+
+    Parameters
+    ----------
+    df : DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Capital
+    df.iloc[:, 1]      Labor
+    df.iloc[:, 2]      Product
+    ================== =================================
+    Yields
+    ------
+    None
     '''
     # =========================================================================
     # TODO: Increase Cohesion
+    # =========================================================================
+    # =========================================================================
+    # TODO: Use Feed from transform_cobb_douglas()
     # =========================================================================
 
     def _r2_scores():
@@ -1753,14 +1872,34 @@ def plot_lab_prod_polynomial(df: DataFrame) -> None:
     # =========================================================================
     # Power Function: Labor Productivity
     # =========================================================================
-    k, b = np.polyfit(np.log(df.iloc[:, -2]), np.log(df.iloc[:, -1]), deg=1)
+    k, b = np.polyfit(
+        np.log(df.iloc[:, -2].astype(float)),
+        np.log(df.iloc[:, -1].astype(float)),
+        deg=1
+    )
     # =========================================================================
     # Polynomials 1, 2, 3 & 4: Labor Productivity
     # =========================================================================
-    _p1 = np.polyfit(df.iloc[:, -2], df.iloc[:, -1], deg=1)
-    _p2 = np.polyfit(df.iloc[:, -2], df.iloc[:, -1], deg=2)
-    _p3 = np.polyfit(df.iloc[:, -2], df.iloc[:, -1], deg=3)
-    _p4 = np.polyfit(df.iloc[:, -2], df.iloc[:, -1], deg=4)
+    _p1 = np.polyfit(
+        df.iloc[:, -2].astype(float),
+        df.iloc[:, -1].astype(float),
+        deg=1
+    )
+    _p2 = np.polyfit(
+        df.iloc[:, -2].astype(float),
+        df.iloc[:, -1].astype(float),
+        deg=2
+    )
+    _p3 = np.polyfit(
+        df.iloc[:, -2].astype(float),
+        df.iloc[:, -1].astype(float),
+        deg=3
+    )
+    _p4 = np.polyfit(
+        df.iloc[:, -2].astype(float),
+        df.iloc[:, -1].astype(float),
+        deg=4
+    )
     # =========================================================================
     # DataFrame for Approximation Results
     # =========================================================================
@@ -1920,9 +2059,19 @@ def plot_pearson_r_test(df: DataFrame) -> None:
 
 
 def plot_rolling_mean_filter(df: DataFrame) -> None:
-    '''Rolling Mean Filter
-        df.index: Period;
-        df.iloc[:, 0]: Series
+    '''
+    Rolling Mean Filter
+
+    Parameters
+    ----------
+    df : DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Target Series
+    ================== =================================
+    Returns
+    -------
+    None
     '''
     data_frame_o, data_frame_e, residuals_o, residuals_e = rolling_mean_filter(
         df)
@@ -1960,7 +2109,6 @@ def plot_rolling_mean_filter(df: DataFrame) -> None:
         residuals_o.iloc[:, [0]],
         label='Residuals'
     )
-
     plt.plot(
         residuals_o.iloc[:, 1:],
         label=['$\\delta(\\hat Y_{{m = {}}})$'.format(int(_.split('_')[-1], 16))
@@ -2067,10 +2215,15 @@ def plot_simple_log(df: DataFrame, params: tuple[float]) -> None:
 
 def plot_turnover(df: DataFrame) -> None:
     '''Static Fixed Assets Turnover Approximation
-    df.index: Period,
-    df.iloc[:, 0]: Capital,
-    df.iloc[:, 1]: Product
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Capital
+    df.iloc[:, 1]      Product
+    ================== =================================
     '''
+    # =========================================================================
+    # TODO: Use Feed from transform_cobb_douglas()
+    # =========================================================================
     # =========================================================================
     # Fixed Assets Turnover
     # =========================================================================
@@ -2184,3 +2337,467 @@ def plot_usa_nber_manager() -> None:
         sic = extract_usa_nber(FILE_NAMES[0], _agg)
         naics = extract_usa_nber(FILE_NAMES[1], _agg)
         plot_usa_nber(sic, naics, _agg)
+
+
+def plot_capital_acquisition(df: DataFrame) -> None:
+    '''
+    Interactive Shell for Processing Capital Acquisitions
+
+    Parameters
+    ----------
+    df : DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Nominal Investment
+    df.iloc[:, 1]      Nominal Production
+    df.iloc[:, 2]      Real Production
+    df.iloc[:, 3]      Maximum Real Production
+    df.iloc[:, 4]      Nominal Capital
+    df.iloc[:, 5]      Labor
+    ================== =================================
+
+    Returns
+    -------
+    None
+        Draws matplotlib.pyplot Plots.
+
+    '''
+    _df = df.copy()
+    _df.reset_index(level=0, inplace=True)
+    _df.columns = ['period', *_df.columns[1:]]
+    # =========================================================================
+    # TODO: Separate Basic Year Function
+    # =========================================================================
+    _df['__deflator'] = _df.iloc[:, 2].div(_df.iloc[:, 3]).sub(1).abs()
+    _b = _df.iloc[:, -1].astype(float).argmin()
+    _df.drop(_df.columns[-1], axis=1, inplace=True)
+    # =========================================================================
+    # Calculate Static Values
+    # =========================================================================
+    # =========================================================================
+    # Fixed Assets Turnover Ratio
+    # =========================================================================
+    _df['c_turnover'] = _df.iloc[:, 3].div(_df.iloc[:, 5])
+    # =========================================================================
+    # Investment to Gross Domestic Product Ratio, (I/Y)/(I_0/Y_0)
+    # =========================================================================
+    _df['inv_to_gdp'] = _df.iloc[:, 1].div(_df.iloc[:, 3])
+    # =========================================================================
+    # Labor Capital Intensity
+    # =========================================================================
+    _df['lab_cap_int'] = _df.iloc[:, 5].div(_df.iloc[:, 6])
+    # =========================================================================
+    # Labor Productivity
+    # =========================================================================
+    _df['lab_product'] = _df.iloc[:, 3].div(_df.iloc[:, 6])
+    _df.iloc[:, -3:] = _df.iloc[:, -3:].div(_df.iloc[0, -3:])
+    # =========================================================================
+    # Log Labor Capital Intensity, LN((K/L)/(K_0/L_0))
+    # =========================================================================
+    _df[f'{_df.columns[-2]}_log_bas'] = np.log(_df.iloc[:, -2].astype(float))
+    # =========================================================================
+    # Log Labor Productivity, LN((Y/L)/(Y_0/L_0))
+    # =========================================================================
+    _df[f'{_df.columns[-2]}_log_bas'] = np.log(_df.iloc[:, -2].astype(float))
+    # =========================================================================
+    # Max: Fixed Assets Turnover Ratio
+    # =========================================================================
+    _df[f'{_df.columns[-6]}_max'] = _df.iloc[:, 4].div(_df.iloc[:, 5])
+    # =========================================================================
+    # Max: Investment to Gross Domestic Product Ratio
+    # =========================================================================
+    _df[f'{_df.columns[-6]}_max'] = _df.iloc[:, 1].div(_df.iloc[:, 4])
+    # =========================================================================
+    # Max: Labor Productivity
+    # =========================================================================
+    _df[f'{_df.columns[-5]}_max'] = _df.iloc[:, 4].div(_df.iloc[:, 6])
+    _df.iloc[:, -2:] = _df.iloc[:, -2:].div(_df.iloc[0, -2:])
+    # =========================================================================
+    # Max: Log Labor Productivity
+    # =========================================================================
+    _df[f'{_df.columns[-1]}_log_bas'] = np.log(_df.iloc[:, -1].astype(float))
+    # =========================================================================
+    # Calculate Dynamic Values
+    # =========================================================================
+    # =========================================================================
+    # Number of Periods
+    # =========================================================================
+    N = int(input('Define Number of Line Spans for Pi (N, N >= 1): '))
+    print(f'Number of Spans Provided: {N}')
+    assert N >= 1, f'N >= 1 is Required, N = {N} Was Provided'
+    # =========================================================================
+    # Pi & Pi Switch Points
+    # =========================================================================
+    pi, _knots = [], [0, ]
+    _ = 0
+    if N == 1:
+        _knots.append(_df.index[-1])
+        pi.append(float(input('Define Pi for Period from {} to {}: '.format(
+            _df.iloc[_knots[_], 0], _df.iloc[_knots[1 + _] - 1, 0]))))
+    elif N >= 2:
+        while _ < N:
+            if 1 + _ == N:
+                _knots.append(_df.index[-1])
+                pi.append(float(input('Define Pi for Period from {} to {}: '.format(
+                    _df.iloc[_knots[_], 0], _df.iloc[_knots[1 + _] - 1, 0]))))
+            else:
+                _knot = int(input('Select Row for Year, Should Be More Than {}: = {}: '.format(
+                    0, _df.iloc[0, 0])))
+                if _knot > _knots[_]:
+                    _knots.append(_knot)
+                    pi.append(float(input('Define Pi for Period from {} to {}: '.format(
+                        _df.iloc[_knots[_], 0], _df.iloc[_knots[1 + _], 0]))))
+            _ += 1
+    else:
+        print('Error')
+    # =========================================================================
+    # Calculate Dynamic Values
+    # =========================================================================
+    _calculated = [np.nan, ]
+    if N == 1:
+        j = 0
+        for i in range(_knots[j], _knots[1 + j]):
+            # =================================================================
+            # Estimate: GCF[-] or CA[+]
+            # =================================================================
+            _calculated.append(
+                _df.iloc[1 + i, 5] - _df.iloc[i, 5] + pi[j]*_df.iloc[1 + i, 1]
+            )
+    else:
+        for j in range(N):
+            if 1 + j == N:
+                for i in range(_knots[j], _knots[1 + j]):
+                    # =========================================================
+                    # Estimate: GCF[-] or CA[+]
+                    # =========================================================
+                    _calculated.append(
+                        _df.iloc[1 + i, 5] - _df.iloc[i, 5] +
+                        pi[j]*_df.iloc[1 + i, 1]
+                    )
+            else:
+                for i in range(_knots[j], _knots[1 + j]):
+                    # =========================================================
+                    # Estimate: GCF[-] or CA[+]
+                    # =========================================================
+                    _calculated.append(
+                        _df.iloc[1 + i, 5] - _df.iloc[i, 5] +
+                        pi[j]*_df.iloc[1 + i, 1]
+                    )
+    _df = pd.concat(
+        [
+            _df,
+            DataFrame(_calculated, columns=['_calculated'])
+        ],
+        axis=1)
+    _df.set_index(_df.columns[0], inplace=True)
+    # =========================================================================
+    # `-` Gross Capital Formation
+    # `+` Capital Acquisitions
+    # =========================================================================
+    for _ in range(N):
+        if 1 + _ == N:
+            print(
+                f'Model Parameter: Pi for Period from {_df.index[_knots[_]]} to {_df.index[_knots[1 + _] - 1]}: {pi[_]:.6f}'
+            )
+            continue
+        print(
+            f'Model Parameter: Pi for Period from {_df.index[_knots[_]]} to {_df.index[_knots[1 + _]]}: {pi[_]:.6f}'
+        )
+    plt.figure(1)
+    plt.plot(_df.iloc[:, 8], _df.iloc[:, 9])
+    plt.plot(_df.iloc[:, 8], _df.iloc[:, 14])
+    plt.title(
+        'Labor Productivity, Observed & Max, {}=100, {}$-${}'.format(
+            *df.index[[_b, 0, -1]]
+        )
+    )
+    plt.xlabel('Labor Capital Intensity')
+    plt.ylabel(f'Labor Productivity, {_df.index[_b]}=100')
+    plt.grid(True)
+    plt.figure(2)
+    plt.plot(_df.iloc[:, 10], _df.iloc[:, 11])
+    plt.plot(_df.iloc[:, 10], _df.iloc[:, 15])
+    plt.title(
+        'Log Labor Productivity, Observed & Max, {}=100, {}$-${}'.format(
+            *df.index[[_b, 0, -1]]
+        )
+    )
+    plt.xlabel('Log Labor Capital Intensity')
+    plt.ylabel(f'Log Labor Productivity, {_df.index[_b]}=100')
+    plt.grid(True)
+    plt.figure(3)
+    plt.plot(_df.iloc[:, 6])
+    plt.plot(_df.iloc[:, 12])
+    plt.title(
+        'Fixed Assets Turnover ($\\lambda$), Observed & Max, {}=100, {}$-${}'.format(
+            *df.index[[_b, 0, -1]]
+        )
+    )
+    plt.xlabel('Period')
+    plt.ylabel(f'Fixed Assets Turnover ($\\lambda$), {_df.index[_b]}=100')
+    plt.grid(True)
+    plt.figure(4)
+    plt.plot(_df.iloc[:, 7])
+    plt.plot(_df.iloc[:, 13])
+    plt.title(
+        'Investment to Gross Domestic Product Ratio, \nObserved & Max, {}=100, {}$-${}'.format(
+            *df.index[[_b, 0, -1]]
+        )
+    )
+    plt.xlabel('Period')
+    plt.ylabel(
+        f'Investment to Gross Domestic Product Ratio, {_df.index[_b]}=100')
+    plt.grid(True)
+    plt.figure(5)
+    plt.plot(_df.iloc[:, 16])
+    plt.title(
+        'Gross Capital Formation (GCF) or\nCapital Acquisitions (CA), {}=100, {}$-${}'.format(
+            *df.index[[_b, 0, -1]]
+        )
+    )
+    plt.xlabel('Period')
+    plt.ylabel(f'GCF or CA, {_df.index[_b]}=100')
+    plt.grid(True)
+    plt.show()
+
+
+def plot_capital_retirement(df: DataFrame) -> None:
+    '''
+    Interactive Shell for Processing Capital Retirement
+
+    Parameters
+    ----------
+    df : DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Nominal Investment
+    df.iloc[:, 1]      Nominal Production
+    df.iloc[:, 2]      Real Production
+    df.iloc[:, 3]      Nominal Capital
+    df.iloc[:, 4]      Labor
+    ================== =================================
+
+    Returns
+    -------
+    None
+        Draws matplotlib.pyplot Plots.
+
+    '''
+    _df = df.copy()
+    _df.reset_index(level=0, inplace=True)
+    _df.columns = ['period', *_df.columns[1:]]
+    # =========================================================================
+    # Define Basic Year for Deflator
+    # =========================================================================
+    # =========================================================================
+    # TODO: Separate Basic Year Function
+    # =========================================================================
+    _df['__deflator'] = _df.iloc[:, 2].div(_df.iloc[:, 3]).sub(1).abs()
+    _b = _df.iloc[:, -1].astype(float).argmin()
+    _df.drop(_df.columns[-1], axis=1, inplace=True)
+    # =========================================================================
+    # Calculate Static Values
+    # =========================================================================
+    # =========================================================================
+    # Labor Capital Intensity
+    # =========================================================================
+    _df['lab_cap_int_log_bas'] = _df.iloc[:, 4].div(_df.iloc[:, 5])
+    # =========================================================================
+    # Labor Productivity
+    # =========================================================================
+    _df['lab_product_log_bas'] = _df.iloc[:, 3].div(_df.iloc[:, 5])
+    # =========================================================================
+    # Investment to Gross Domestic Product Ratio
+    # =========================================================================
+    _df['inv_to_gdp'] = _df.iloc[:, 1].div(_df.iloc[:, 3])
+    # =========================================================================
+    # Basing
+    # =========================================================================
+    _df.iloc[:, -3:] = _df.iloc[:, -3:].div(_df.iloc[0, -3:])
+    # =========================================================================
+    # Log Labor Capital Intensity, LN((K/L)/(K_0/L_0))
+    # =========================================================================
+    _df.iloc[:, -3] = np.log(_df.iloc[:, -3].astype(float))
+    # =========================================================================
+    # Log Labor Productivity, LN((Y/L)/(Y_0/L_0))
+    # =========================================================================
+    _df.iloc[:, -2] = np.log(_df.iloc[:, -2].astype(float))
+    # =========================================================================
+    # Fixed Assets Turnover Ratio
+    # =========================================================================
+    _df['c_turnover'] = _df.iloc[:, 3].div(_df.iloc[:, 4])
+    # =========================================================================
+    # Number of Periods
+    # =========================================================================
+    N = int(input('Define Number of Line Segments for Pi: '))
+    print(f'Number of Periods Provided: {N}')
+    assert N >= 1, f'N >= 1 is Required, N = {N} Was Provided'
+    # =========================================================================
+    # Pi & Pi Switch Points
+    # =========================================================================
+    pi, _knots = [], [0, ]
+    _ = 0
+    if N == 1:
+        _knots.append(_df.index[-1])
+        pi.append(float(input('Define Pi for Period from {} to {}: '.format(
+            _df.iloc[_knots[_], 0], _df.iloc[_knots[1 + _], 0]))))
+    elif N >= 2:
+        while _ < N:
+            if 1 + _ == N:
+                _knots.append(_df.index[-1])
+                pi.append(float(input('Define Pi for Period from {} to {}: '.format(
+                    _df.iloc[_knots[_], 0], _df.iloc[_knots[1 + _], 0]))))
+            else:
+                _knot = int(input('Select Row for Year: '))
+                if _knot > _knots[_]:
+                    _knots.append(_knot)
+                    pi.append(float(input('Define Pi for Period from {} to {}: '.format(
+                        _df.iloc[_knots[_], 0], _df.iloc[_knots[1 + _], 0]))))
+            _ += 1
+    else:
+        print('Error')
+    # =========================================================================
+    # Calculate Dynamic Values
+    # =========================================================================
+    # =========================================================================
+    # Fixed Assets Retirement Value
+    # =========================================================================
+    _value = [np.nan, ]
+    # =========================================================================
+    # Fixed Assets Retirement Ratio
+    # =========================================================================
+    _ratio = [np.nan, ]
+    if N == 1:
+        j = 0
+        for i in range(_knots[j], _knots[1 + j]):
+            # =================================================================
+            # Fixed Assets Retirement Value
+            # =================================================================
+            _value.append(
+                _df.iloc[i, 4] - _df.iloc[1 + i, 4] + pi[j]*_df.iloc[i, 1]
+            )
+            # =================================================================
+            # Fixed Assets Retirement Ratio
+            # =================================================================
+            _ratio.append(
+                (_df.iloc[i, 4] - _df.iloc[1 + i, 4] + pi[j]
+                 * _df.iloc[i, 1]) / _df.iloc[1 + i, 4]
+            )
+    else:
+        for j in range(N):
+            if 1 + j == N:
+                for i in range(_knots[j], _knots[1 + j]):
+                    # =========================================================
+                    # Fixed Assets Retirement Value
+                    # =========================================================
+                    _value.append(
+                        _df.iloc[i, 4] - _df.iloc[1 + i, 4] +
+                        pi[j]*_df.iloc[i, 1]
+                    )
+                    # =========================================================
+                    # Fixed Assets Retirement Ratio
+                    # =========================================================
+                    _ratio.append(
+                        (_df.iloc[i, 4] - _df.iloc[1 + i, 4] +
+                         pi[j]*_df.iloc[i, 1]) / _df.iloc[1 + i, 4]
+                    )
+            else:
+                for i in range(_knots[j], _knots[1 + j]):
+                    # =========================================================
+                    # Fixed Assets Retirement Value
+                    # =========================================================
+                    _value.append(
+                        _df.iloc[i, 4] - _df.iloc[1 + i, 4] +
+                        pi[j]*_df.iloc[i, 1]
+                    )
+                    # =========================================================
+                    # Fixed Assets Retirement Ratio
+                    # =========================================================
+                    _ratio.append(
+                        (_df.iloc[i, 4] - _df.iloc[1 + i, 4] +
+                         pi[j]*_df.iloc[i, 1]) / _df.iloc[1 + i, 4]
+                    )
+    _df = pd.concat(
+        [
+            _df,
+            DataFrame(_value, columns=['_value']),
+            DataFrame(_ratio, columns=['_ratio'])
+        ],
+        axis=1
+    )
+    _df.set_index(_df.columns[0], inplace=True)
+    _df['_ratio_deviation_abs'] = _df.iloc[:, 10].sub(
+        _df.iloc[:, 10].mean()).abs()
+    _df['_ratio_increment_abs'] = _df.iloc[:, 10].sub(
+        _df.iloc[:, 10].shift(1)).abs()
+    for _ in range(N):
+        if 1 + _ == N:
+            print(
+                f'Model Parameter: Pi for Period from {_df.index[_knots[_]]} to {_df.index[_knots[1 + _] - 1]}: {pi[_]:.6f}'
+            )
+            continue
+        print(
+            f'Model Parameter: Pi for Period from {_df.index[_knots[_]]} to {_df.index[_knots[1 + _]]}: {pi[_]:.6f}'
+        )
+    plt.figure(1)
+    plt.title('Product, {}=100, {}$-${}'.format(*df.index[[_b, 0, -1]]))
+    plt.xlabel('Period')
+    plt.ylabel(f'Product, {_df.index[_b]}=100')
+    plt.plot(_df.iloc[:, 2])
+    plt.grid(True)
+    plt.figure(2)
+    plt.title('Capital, {}=100, {}$-${}'.format(*df.index[[_b, 0, -1]]))
+    plt.xlabel('Period')
+    plt.ylabel(f'Capital, {_df.index[_b]}=100')
+    plt.plot(_df.iloc[:, 3])
+    plt.grid(True)
+    plt.figure(3)
+    plt.title(
+        'Fixed Assets Turnover ($\\lambda$), {}=100, {}$-${}'.format(
+            *df.index[[_b, 0, -1]]
+        )
+    )
+    plt.xlabel('Period')
+    plt.ylabel(f'Fixed Assets Turnover ($\\lambda$), {_df.index[_b]}=100')
+    plt.plot(_df.iloc[:, 2].div(_df.iloc[:, 3]))
+    plt.grid(True)
+    plt.figure(4)
+    plt.title(
+        'Investment to Gross Domestic Product Ratio, {}=100, {}$-${}'.format(
+            *df.index[[_b, 0, -1]]
+        )
+    )
+    plt.xlabel('Period')
+    plt.ylabel(
+        f'Investment to Gross Domestic Product Ratio, {_df.index[_b]}=100'
+    )
+    plt.plot(_df.iloc[:, 7])
+    plt.grid(True)
+    plt.figure(5)
+    plt.title(
+        '$\\alpha(t)$, Fixed Assets Retirement Ratio, {}=100, {}$-${}'.format(
+            *df.index[[_b, 0, -1]]
+        )
+    )
+    plt.xlabel('Period')
+    plt.ylabel(f'$\\alpha(t)$, {_df.index[_b]}=100')
+    plt.plot(_df.iloc[:, 9])
+    plt.grid(True)
+    plt.figure(6)
+    plt.title(
+        'Fixed Assets Retirement Ratio to Fixed Assets Retirement Value, {}=100, {}$-${}'.format(
+            *df.index[[_b, 0, -1]]
+        )
+    )
+    plt.xlabel(f'$\\alpha(t)$, {_df.index[_b]}=100')
+    plt.ylabel(f'Fixed Assets Retirement Value, {_df.index[_b]}=100')
+    plt.plot(_df.iloc[:, 9], _df.iloc[:, 8])
+    plt.grid(True)
+    plt.figure(7)
+    plt.title(
+        'Labor Capital Intensity, {}=100, {}$-${}'.format(*df.index[[_b, 0, -1]]))
+    plt.xlabel(f'Labor Capital Intensity, {_df.index[_b]}=100')
+    plt.ylabel(f'Labor Productivity, {_df.index[_b]}=100')
+    plt.plot(np.exp(_df.iloc[:, 5]), np.exp(_df.iloc[:, 6]))
+    plt.grid(True)
+    plt.show()
