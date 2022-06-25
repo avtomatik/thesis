@@ -38,7 +38,6 @@ from collect.lib import transform_cobb_douglas
 from collect.lib import transform_d
 from collect.lib import transform_e
 from collect.lib import transform_kurenkov
-from extract.lib import extract_series_ids
 from extract.lib import extract_usa_census
 from plot.lib import plot_a
 from plot.lib import plot_approx_linear

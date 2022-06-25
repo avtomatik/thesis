@@ -7,15 +7,22 @@ Created on Sun Jun 12 08:59:10 2022
 """
 
 
+import itertools
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from pandas import DataFrame
-from toolkit.lib import rolling_mean_filter
-from toolkit.lib import calculate_capital
-from extract.lib import extract_usa_census_description
+from scipy import stats
+from sklearn.metrics import r2_score
+from collect.lib import transform_cobb_douglas
+from extract.lib import extract_series_ids
 from extract.lib import extract_usa_census
-from prepare.lib import transform_cobb_douglas
+from extract.lib import extract_usa_census_description
+from extract.lib import extract_usa_classic
+from toolkit.lib import calculate_capital
+from toolkit.lib import kol_zur_filter
+from toolkit.lib import rolling_mean_filter
+from toolkit.lib import simple_linear_regression
 
 
 ARCHIVE_NAMES_UTILISED = (
@@ -218,8 +225,8 @@ def plot_e(df: DataFrame) -> None:
     # =========================================================================
     df['c_turnover'] = df.iloc[:, 1].div(df.iloc[:, 2])
     _params_i = np.polyfit(
-        df.iloc[:, 0],
-        df.iloc[:, 1],
+        df.iloc[:, 0].astype(float),
+        df.iloc[:, 1].astype(float),
         deg=1
     )
     _params_t = np.polyfit(
@@ -349,9 +356,9 @@ def plot_census_d(series_ids: tuple[str]) -> None:
     ARCHIVE_NAME = 'dataset_usa_census1975.zip'
     df = DataFrame()
     for series_id in series_ids:
-        title = extract_usa_census_description(ARCHIVE_NAME, series_id)
-        print(f'<{series_id}> {title}')
         chunk = extract_usa_census(ARCHIVE_NAME, series_id)
+        descr = extract_usa_census_description(ARCHIVE_NAME, series_id)
+        print(f'<{series_id}> {descr}')
         df = pd.concat(
             [
                 df,
@@ -556,33 +563,22 @@ def plot_census_j(df: DataFrame) -> None:
 def plot_census_k() -> None:
     '''Census Financial Markets & Institutions Series'''
     ARCHIVE_NAME = 'dataset_usa_census1975.zip'
-    SERIES_IDS = (
-        'X0410', 'X0411', 'X0412', 'X0413', 'X0414', 'X0415', 'X0416',
-        'X0417', 'X0418', 'X0419', 'X0420', 'X0421', 'X0422', 'X0423',
-        'X0580', 'X0581', 'X0582', 'X0583', 'X0584', 'X0585', 'X0586',
-        'X0587', 'X0610', 'X0611', 'X0612', 'X0613', 'X0614', 'X0615',
-        'X0616', 'X0617', 'X0618', 'X0619', 'X0620', 'X0621', 'X0622',
-        'X0623', 'X0624', 'X0625', 'X0626', 'X0627', 'X0628', 'X0629',
-        'X0630', 'X0631', 'X0632', 'X0633', 'X0741', 'X0742', 'X0743',
-        'X0744', 'X0745', 'X0746', 'X0747', 'X0748', 'X0749', 'X0750',
-        'X0751', 'X0752', 'X0753', 'X0754', 'X0755', 'X0879', 'X0880',
-        'X0881', 'X0882', 'X0883', 'X0884', 'X0885', 'X0886', 'X0887',
-        'X0888', 'X0889', 'X0890', 'X0891', 'X0892', 'X0893', 'X0894',
-        'X0895', 'X0896', 'X0897', 'X0898', 'X0899', 'X0900', 'X0901',
-        'X0902', 'X0903', 'X0904', 'X0905', 'X0906', 'X0907', 'X0908',
-        'X0909', 'X0910', 'X0911', 'X0912', 'X0913', 'X0914', 'X0915',
-        'X0916', 'X0917', 'X0918', 'X0919', 'X0920', 'X0921', 'X0922',
-        'X0923', 'X0924', 'X0925', 'X0926', 'X0927', 'X0928', 'X0929',
-        'X0930', 'X0931', 'X0932', 'X0947', 'X0948', 'X0949', 'X0950',
-        'X0951', 'X0952', 'X0953', 'X0954', 'X0955', 'X0956',
+    ids = itertools.chain(
+        range(410, 424),
+        range(580, 588),
+        range(610, 634),
+        range(741, 756),
+        range(879, 933),
+        range(947, 957),
     )
+    SERIES_IDS = tuple(f'X{_id:04n}' for _id in ids)
     for _, series_id in enumerate(SERIES_IDS, start=1):
         df = extract_usa_census(ARCHIVE_NAME, series_id)
         df = df.div(df.iloc[0, :]).mul(100)
-        _title = extract_usa_census_description(ARCHIVE_NAME, series_id)
+        descr = extract_usa_census_description(ARCHIVE_NAME, series_id)
         plt.figure(_)
         plt.plot(df, label=series_id)
-        plt.title('{}, {}$-${}'.format(_title, *df.index[[0, -1]]))
+        plt.title('{}, {}$-${}'.format(descr, *df.index[[0, -1]]))
         plt.xlabel('Period')
         plt.ylabel('Percentage')
         plt.grid(True)
@@ -729,30 +725,18 @@ def plot_block_zer(df: DataFrame) -> None:
     df : DataFrame
     ================== =================================
     df.index           Period
-    df.iloc[:, 0]      Capital
-    df.iloc[:, 1]      Labor
-    df.iloc[:, 2]      Product
+    df.iloc[:, 0]      Labor Capital Intensity
+    df.iloc[:, 1]      Labor Productivity
     ================== =================================
     Returns
     -------
     None
     '''
-    # =========================================================================
-    # TODO: Use Feed from transform_cobb_douglas()
-    # =========================================================================
-    # =========================================================================
-    # Labor Capital Intensity
-    # =========================================================================
-    df['lab_cap_int'] = df.iloc[:, 0].div(df.iloc[:, 1])
-    # =========================================================================
-    # Labor Productivity
-    # =========================================================================
-    df['lab_product'] = df.iloc[:, 2].div(df.iloc[:, 1])
     plot_simple_linear(
         *simple_linear_regression(df.iloc[:, -2:])
     )
     plot_simple_log(
-        *simple_linear_regression(np.log(df.iloc[:, -2:]))
+        *simple_linear_regression(np.log(df.iloc[:, -2:].astype(float)))
     )
 
 
@@ -765,24 +749,12 @@ def plot_block_one(df: DataFrame) -> None:
     df : DataFrame
     ================== =================================
     df.index           Period
-    df.iloc[:, 0]      Capital
-    df.iloc[:, 1]      Labor
-    df.iloc[:, 2]      Product
+    df.iloc[:, 0]      Labor Capital Intensity
     ================== =================================
     Returns
     -------
     None
     '''
-    # =========================================================================
-    # TODO: Increase Cohesion
-    # =========================================================================
-    # =========================================================================
-    # TODO: Use Feed from transform_cobb_douglas()
-    # =========================================================================
-    # =========================================================================
-    # Labor Capital Intensity
-    # =========================================================================
-    df['lab_cap_int'] = df.iloc[:, 0].div(df.iloc[:, 1])
     # =========================================================================
     # Valid Only for _k = 2
     # =========================================================================
@@ -854,24 +826,12 @@ def plot_block_two(df: DataFrame) -> None:
     df : DataFrame
     ================== =================================
     df.index           Period
-    df.iloc[:, 0]      Capital
-    df.iloc[:, 1]      Labor
-    df.iloc[:, 2]      Product
+    df.iloc[:, 0]      Labor Productivity
     ================== =================================
     Returns
     -------
     None
     '''
-    # =========================================================================
-    # TODO: Increase Cohesion
-    # =========================================================================
-    # =========================================================================
-    # TODO: Use Feed from transform_cobb_douglas()
-    # =========================================================================
-    # =========================================================================
-    # Labor Productivity
-    # =========================================================================
-    df['lab_product'] = df.iloc[:, 2].div(df.iloc[:, 1])
     _k = 3
     # =========================================================================
     # Odd Frame
@@ -1089,9 +1049,12 @@ def plot_census_complex(df: DataFrame) -> None:
     # =========================================================================
     # TODO: Eliminate This Function
     # =========================================================================
-    plot_pearson_r_test(df)
-    plot_kol_zur_filter(df)
-    plot_ewm(df)
+    _df = df.copy(deep=True)
+    plot_pearson_r_test(_df)
+    _df = df.copy(deep=True)
+    plot_kol_zur_filter(_df)
+    _df = df.copy(deep=True)
+    plot_ewm(_df)
 
 
 def plot_cobb_douglas(df: DataFrame, params: tuple[float], mapping: dict) -> None:
@@ -1279,7 +1242,23 @@ def plot_cobb_douglas_alt(df: DataFrame, params: tuple[float], mapping: dict) ->
 
 
 def plot_cobb_douglas_complex(df: DataFrame) -> None:
-    FIG_MAP = {
+    '''
+
+
+    Parameters
+    ----------
+    df : DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Capital
+    df.iloc[:, 1]      Labor
+    df.iloc[:, 2]      Product
+    ================== =================================
+    Returns
+    -------
+    None
+    '''
+    MAP_FIG = {
         'fg_a': 'Chart I Progress in Manufacturing {}$-${} ({}=100)',
         'fg_b': 'Chart II Theoretical and Actual Curves of Production {}$-${} ({}=100)',
         'fg_c': 'Chart III Percentage Deviations of $P$ and $P\'$ from Their Trend Lines\nTrend Lines=3 Year Moving Average',
@@ -1287,16 +1266,18 @@ def plot_cobb_douglas_complex(df: DataFrame) -> None:
         'fg_e': 'Chart V Relative Final Productivities of Labor and Capital',
         'year_price': 1899,
     }
+    _df, _params = transform_cobb_douglas(df)
     plot_cobb_douglas(
-        *transform_cobb_douglas(df),
-        FIG_MAP
+        _df,
+        _params,
+        MAP_FIG
     )
     plot_cobb_douglas_3d(df.iloc[:, range(3)])
-    plot_lab_prod_polynomial(df)
-    plot_block_zer(df)
-    plot_block_one(df)
-    plot_block_two(df)
-    plot_turnover(df.iloc[:, [0, 2]])
+    plot_lab_prod_polynomial(_df.iloc[:, [3, 4]])
+    plot_block_zer(_df.iloc[:, [3, 4]])
+    plot_block_one(_df.iloc[:, [3]])
+    plot_block_two(_df.iloc[:, [4]])
+    plot_turnover(_df.iloc[:, [6]])
 
 
 def plot_cobb_douglas_tight_layout(df: DataFrame, params: tuple[float], mapping: dict) -> None:
@@ -1372,13 +1353,13 @@ def plot_cobb_douglas_tight_layout(df: DataFrame, params: tuple[float], mapping:
 
 
 def plot_douglas(
-        archive_name: str,
-        group_iters: tuple[int],
-        titles: tuple[str],
-        measures: tuple[str],
-        legends: tuple[str] = None,
-        start_at: int = 1,
-        skip: int = 1
+    archive_name: str,
+    group_iters: tuple[int],
+    titles: tuple[str],
+    measures: tuple[str],
+    legends: tuple[str] = None,
+    start_at: int = 1,
+    skip: int = 1
 ) -> None:
     '''
     Specialised Plotting
@@ -1394,11 +1375,11 @@ def plot_douglas(
     measures : tuple[str]
         Series Dimenstion.
     legends : tuple[str], optional
-        DESCRIPTION. The default is None.
+        Additional Sublabels. The default is None.
     start_at : int, optional
-        DESCRIPTION. The default is 1.
+        Number of the First Plot. The default is 1.
     skip : int, optional
-        DESCRIPTION. The default is 1.
+        Step over Iteration. The default is 1.
 
     Returns
     -------
@@ -1906,36 +1887,18 @@ def plot_lab_prod_polynomial(df: DataFrame) -> None:
     df : DataFrame
     ================== =================================
     df.index           Period
-    df.iloc[:, 0]      Capital
-    df.iloc[:, 1]      Labor
-    df.iloc[:, 2]      Product
+    df.iloc[:, 0]      Labor Capital Intensity
+    df.iloc[:, 1]      Labor Productivity
     ================== =================================
-    Yields
+    Returns
     ------
     None
     '''
-    # =========================================================================
-    # TODO: Increase Cohesion
-    # =========================================================================
-    # =========================================================================
-    # TODO: Use Feed from transform_cobb_douglas()
-    # =========================================================================
 
     def _r2_scores():
         for _ in range(5):
             yield r2_score(df.iloc[:, -1], _df.iloc[:, _])
 
-    # =========================================================================
-    # Labor Capital Intensity
-    # =========================================================================
-    df['lab_cap_int'] = df.iloc[:, 0].div(df.iloc[:, 1])
-    # =========================================================================
-    # Labor Productivity
-    # =========================================================================
-    df['lab_product'] = df.iloc[:, 2].div(df.iloc[:, 1])
-    # =========================================================================
-    # Power Function: Labor Productivity
-    # =========================================================================
     k, b = np.polyfit(
         np.log(df.iloc[:, -2].astype(float)),
         np.log(df.iloc[:, -1].astype(float)),
@@ -2281,28 +2244,28 @@ def plot_turnover(df: DataFrame) -> None:
     '''Static Fixed Assets Turnover Approximation
     ================== =================================
     df.index           Period
-    df.iloc[:, 0]      Capital
-    df.iloc[:, 1]      Product
+    df.iloc[:, 0]      Fixed Assets Turnover
     ================== =================================
     '''
     # =========================================================================
-    # TODO: Use Feed from transform_cobb_douglas()
-    # =========================================================================
-    # =========================================================================
-    # Fixed Assets Turnover
-    # =========================================================================
-    df['c_turnover'] = df.iloc[:, 1].div(df.iloc[:, 0])
-    # =========================================================================
     # Linear: Fixed Assets Turnover
     # =========================================================================
-    _lin = np.polyfit(df.index, df.iloc[:, -1], deg=1)
+    _lin = np.polyfit(
+        df.index.to_series().astype(float),
+        df.iloc[:, -1].astype(float),
+        deg=1
+    )
     # =========================================================================
     # Exponential: Fixed Assets Turnover
     # =========================================================================
-    _exp = np.polyfit(df.index, np.log(df.iloc[:, -1]), deg=1)
+    _exp = np.polyfit(
+        df.index.to_series().astype(float),
+        np.log(df.iloc[:, -1].astype(float)),
+        deg=1
+    )
     df['c_turnover_lin'] = df.index.to_series().mul(_lin[0]).add(_lin[1])
     df['c_turnover_exp'] = np.exp(
-        df.index.to_series().mul(_exp[0]).add(_exp[1]))
+        df.index.to_series().astype(float).mul(_exp[0]).add(_exp[1]))
     # =========================================================================
     # Deltas
     # =========================================================================
