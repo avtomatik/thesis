@@ -1371,32 +1371,86 @@ def plot_cobb_douglas_tight_layout(df: DataFrame, params: tuple[float], mapping:
     plt.show()
 
 
-def plot_douglas(source, dictionary, num, start, stop, step, title, measure, label=None) -> None:
+def plot_douglas(
+        archive_name: str,
+        group_iters: tuple[int],
+        titles: tuple[str],
+        measures: tuple[str],
+        legends: tuple[str] = None,
+        start_at: int = 1,
+        skip: int = 1
+) -> None:
     '''
-    source: Source Database,
-    dictionary: Dictionary of Series IDs to Series Titles from Source Database,
-    num: Plot Number,
-    start: Start Series Code,
-    stop: Stop Series Code,
-    step: Step for Series IDs,
-    title: Plot Title,
-    measure: Dimenstion for Series,
-    label: Additional Sublabels'''
-    # =========================================================================
-    # TODO: Revise
-    # =========================================================================
-    plt.figure(num)
-    for _ in range(start, stop, step):
-        plt.plot(extract_usa_classic(
-            source, dictionary.iloc[_, 0]), label=dictionary.iloc[_, 1])
-    plt.title(title)
-    plt.xlabel('Period')
-    plt.ylabel(measure)
-    plt.grid(True)
-    if label is None:
-        plt.legend()
+    Specialised Plotting
+
+    Parameters
+    ----------
+    archive_name : str
+        File Name of Archive for Dataset.
+    group_iters : tuple[int]
+        Iteration Groups.
+    titles : tuple[str]
+        Plot Titles.
+    measures : tuple[str]
+        Series Dimenstion.
+    legends : tuple[str], optional
+        DESCRIPTION. The default is None.
+    start_at : int, optional
+        DESCRIPTION. The default is 1.
+    skip : int, optional
+        DESCRIPTION. The default is 1.
+
+    Returns
+    -------
+    None
+    '''
+    _MAP_SERIES = extract_series_ids(archive_name)
+    _SERIES_IDS = tuple(_MAP_SERIES.keys())
+    if not legends is None:
+        for _n, (_lw, _up, _tt, _mr, _lb) in enumerate(
+                zip(
+                    group_iters[:-1],
+                    group_iters[1:],
+                    titles,
+                    measures,
+                    legends
+                ),
+                start=start_at
+        ):
+            plt.figure(_n)
+            for _ in range(_lw, _up, skip):
+                plt.plot(
+                    extract_usa_classic(archive_name, _SERIES_IDS[_]),
+                    label=_MAP_SERIES[_SERIES_IDS[_]]
+                )
+            plt.title(_tt)
+            plt.xlabel('Period')
+            plt.ylabel(_mr)
+            plt.grid(True)
+            if not _lb is None:
+                plt.legend(_lb)
+            plt.show()
     else:
-        plt.legend(label)
+        for _n, (_lw, _up, _tt, _mr) in enumerate(
+                zip(
+                    group_iters[:-1],
+                    group_iters[1:],
+                    titles,
+                    measures,
+                ),
+                start=start_at
+        ):
+            plt.figure(_n)
+            for _ in range(_lw, _up, skip):
+                plt.plot(
+                    extract_usa_classic(archive_name, _SERIES_IDS[_]),
+                    label=_MAP_SERIES[_SERIES_IDS[_]]
+                )
+            plt.title(_tt)
+            plt.xlabel('Period')
+            plt.ylabel(_mr)
+            plt.grid(True)
+            plt.show()
 
 
 def plot_elasticity(df: DataFrame) -> None:
