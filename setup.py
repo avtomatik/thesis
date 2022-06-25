@@ -11,21 +11,21 @@ from setuptools import setup, find_packages
 
 setup(
     name='thesis',
-    version='0.9',
+    version='0.9.1',
     packages=[
+        'collect',
         'extract',
-        'load',
         'plot',
-        'prepare',
+        'push',
         'test',
         'toolkit',
     ],
     package_dir={
         '': '.',
+        'collect': './collect',
         'extract': './extract',
-        'load': './load',
         'plot': './plot',
-        'prepare': './prepare',
+        'push': './push',
         'test': './test',
         'toolkit': './toolkit',
     },
