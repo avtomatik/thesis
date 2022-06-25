@@ -9,43 +9,81 @@ Thesis Project
 
 
 import os
-from prepare.lib import get_data_combined_archived
-from prepare.lib import get_data_archived
-from prepare.lib import collect_usa_mcconnel
-from prepare.lib import get_data_census_b_a
-from prepare.lib import get_data_census_b_b
-from prepare.lib import get_data_can
-from prepare.lib import get_data_version_a
-from prepare.lib import get_data_version_b
-from prepare.lib import get_data_version_c
-from prepare.lib import transform_kurenkov
-from prepare.lib import get_data_cobb_douglas
-from prepare.lib import get_data_updated
+from collect.lib import collect_archived
+from collect.lib import collect_can
+from collect.lib import collect_census_a
+from collect.lib import collect_census_b_a
+from collect.lib import collect_census_b_b
+from collect.lib import collect_census_c
+from collect.lib import collect_census_e
+from collect.lib import collect_census_f
+from collect.lib import collect_census_g
+from collect.lib import collect_census_i_a
+from collect.lib import collect_census_i_b
+from collect.lib import collect_census_i_c
+from collect.lib import collect_census_j
+from collect.lib import collect_cobb_douglas
+from collect.lib import collect_combined
+from collect.lib import collect_combined_archived
+from collect.lib import collect_douglas
+from collect.lib import collect_updated
+from collect.lib import collect_usa_mcconnel
+from collect.lib import collect_version_a
+from collect.lib import collect_version_b
+from collect.lib import collect_version_c
+from collect.lib import transform_a
+from collect.lib import transform_b
+from collect.lib import transform_c
+from collect.lib import transform_cobb_douglas
+from collect.lib import transform_d
+from collect.lib import transform_e
+from collect.lib import transform_kurenkov
+from extract.lib import extract_series_ids
+from extract.lib import extract_usa_census
+from plot.lib import plot_a
+from plot.lib import plot_approx_linear
+from plot.lib import plot_approx_log_linear
+from plot.lib import plot_b
+from plot.lib import plot_c
+from plot.lib import plot_capital_modelling
+from plot.lib import plot_census_a
+from plot.lib import plot_census_b_capital
+from plot.lib import plot_census_b_deflator
+from plot.lib import plot_census_c
+from plot.lib import plot_census_complex
+from plot.lib import plot_census_d
+from plot.lib import plot_census_e
+from plot.lib import plot_census_f_a
+from plot.lib import plot_census_f_b
+from plot.lib import plot_census_g
+from plot.lib import plot_census_h
+from plot.lib import plot_census_i_a
+from plot.lib import plot_census_i_b
+from plot.lib import plot_census_i_c
+from plot.lib import plot_census_j
+from plot.lib import plot_census_k
+from plot.lib import plot_cobb_douglas
+from plot.lib import plot_cobb_douglas_3d
+from plot.lib import plot_cobb_douglas_complex
+from plot.lib import plot_d
+from plot.lib import plot_douglas
+from plot.lib import plot_e
+from plot.lib import plot_elasticity
+from plot.lib import plot_ewm
+from plot.lib import plot_fourier_discrete
+from plot.lib import plot_growth_elasticity
+from plot.lib import plot_kol_zur_filter
+from plot.lib import plot_kurenkov
+from plot.lib import plot_pearson_r_test
+from plot.lib import plot_rolling_mean_filter
+from toolkit.lib import calculate_power_function_fit_params_a
+from toolkit.lib import calculate_power_function_fit_params_b
+from toolkit.lib import calculate_power_function_fit_params_c
 from toolkit.lib import m_spline_ea
 from toolkit.lib import m_spline_eb
 from toolkit.lib import m_spline_la
 from toolkit.lib import m_spline_lb
 from toolkit.lib import m_spline_lls
-from toolkit.lib import calculate_power_function_fit_params_a
-from toolkit.lib import calculate_power_function_fit_params_b
-from toolkit.lib import calculate_power_function_fit_params_c
-from plot.lib import plot_a
-from plot.lib import plot_b
-from plot.lib import plot_c
-from plot.lib import plot_d
-from plot.lib import plot_approx_linear
-from plot.lib import plot_approx_log_linear
-from plot.lib import plot_capital_modelling
-from plot.lib import plot_fourier_discrete
-from plot.lib import plot_elasticity
-from plot.lib import plot_kol_zur_filter
-from plot.lib import plot_pearson_r_test
-from plot.lib import plot_rolling_mean_filter
-from plot.lib import plot_ewm
-from plot.lib import plot_e
-from plot.lib import plot_kurenkov
-from plot.lib import plot_census_complex
-from plot.lib import plot_cobb_douglas_complex
 from toolkit.lib import m_spline_manager
 
 
@@ -107,7 +145,7 @@ def main():
     # `calculate_power_function_fit_params_b`: Power Function Approximation,
     # `calculate_power_function_fit_params_c`: Power Function Approximation
     # =============================================================================
-    _df = get_data_combined_archived()
+    _df = collect_combined_archived()
     plot_approx_linear(_df.iloc[:, [7, 6, 0, 6]].dropna())
     plot_approx_log_linear(_df.iloc[:, [7, 6, 20, 4]].dropna())
     plot_approx_log_linear(_df.iloc[:, [7, 6, 20, 6]].dropna())
@@ -145,8 +183,8 @@ def main():
     #
     # }
     # =============================================================================
-    df_a, df_b = get_data_archived()
-    df_c, df_d = get_data_updated()
+    df_a, df_b = collect_archived()
+    df_c, df_d = collect_updated()
     plot_capital_modelling(df_a, 2005)
     plot_capital_modelling(df_c, 2012)
     # =============================================================================
@@ -161,15 +199,15 @@ def main():
     # =========================================================================
     # On Original Dataset
     # =========================================================================
-    _df = get_data_cobb_douglas(5)
+    _df = collect_cobb_douglas(5)
     df_a = _df.iloc[:, range(3)]
     df_b = _df.iloc[:, [0, 1, 3]]
     df_c = _df.iloc[:, [0, 1, 4]]
     # =========================================================================
     # On Expanded Dataset
     # =========================================================================
-    df_d, df_e = get_data_version_a()
-    df_f, df_g, df_h = get_data_version_b()
+    df_d, df_e = collect_version_a()
+    df_f, df_g, df_h = collect_version_b()
     plot_cobb_douglas_complex(df_a)
     plot_cobb_douglas_complex(df_b)
     plot_cobb_douglas_complex(df_c)
@@ -193,7 +231,7 @@ def main():
     # Option: 1967--2012, Capacity Utilization Adjustment
     # =========================================================================
     plot_cobb_douglas_complex(df_h)
-    plot_cobb_douglas_complex(dataset_version_c())
+    # plot_cobb_douglas_complex(collect_version_c())
 
     # =========================================================================
     # Subproject V. Cobb--Douglas CAN
@@ -201,19 +239,30 @@ def main():
     # =========================================================================
     # First Figure: Exact Correspondence with `Note INTH05 2014-07-10.docx`
     # =========================================================================
-    _df = get_data_can()
+    MAP_FIG = {
+        'fg_a': 'Chart I Progress in Manufacturing {}$-${} ({}=100)',
+        'fg_b': 'Chart II Theoretical and Actual Curves of Production {}$-${} ({}=100)',
+        'fg_c': 'Chart III Percentage Deviations of $P$ and $P\'$ from Their Trend Lines\nTrend Lines=3 Year Moving Average',
+        'fg_d': 'Chart IV Percentage Deviations of Computed from Actual Product {}$-${}',
+        'fg_e': 'Chart V Relative Final Productivities of Labor and Capital',
+        'year_price': 2007,
+    }
+    _df = collect_can()
     _df = _df.div(_df.iloc[0, :])
-    plot_cobb_douglas_canada(_df)
-    plot_cobb_douglas_3d(_df)
+    plot_cobb_douglas(
+        *transform_cobb_douglas(_df),
+        MAP_FIG
+    )
+    plot_cobb_douglas_3d(_df.iloc[:, range(3)])
 
     # =========================================================================
     # Subproject VI. Elasticity
     # =========================================================================
-    _df = get_data_combined_archived()
+    _df = collect_combined_archived()
     df_a = _df.iloc[:, [7, 6, 4]].dropna()
     df_b = _df.iloc[:, [4]].dropna()
     plot_elasticity(df_a)
-    plot_growth_elasticity(df_b)
+    # plot_growth_elasticity(df_b)
 
     # =========================================================================
     # Subproject VII. MSpline
@@ -224,8 +273,7 @@ def main():
     # =========================================================================
     # Fixed Assets Turnover
     # =========================================================================
-    df = data_preprocessing_cobb_douglas(
-        transform_cobb_douglas())[0].iloc[:, [6]]
+    df = transform_cobb_douglas(collect_cobb_douglas())[0].iloc[:, [6]]
     # =========================================================================
     # Option 1
     # =========================================================================
@@ -250,70 +298,72 @@ def main():
     # =========================================================================
     # Subproject VIII. Multiple
     # =========================================================================
-    df = get_data_cobb_douglas()
+    df = collect_cobb_douglas()
 
-    for col in df.columns:
-        plot_census_complex(df.loc[:, col])
+    for _, column in enumerate(df.columns):
+        plot_census_complex(df.iloc[:, [_]])
 
     SERIES_IDS = (
         'D0004', 'D0130', 'F0003', 'F0004', 'P0110', 'U0001', 'U0008', 'X0414', 'X0415',
     )
     for series_id in SERIES_IDS:
         print(f'Processing {series_id}')
-        _df = extract_usa_census('dataset_usa_census1975.zip', series_id)
+        df = extract_usa_census('dataset_usa_census1975.zip', series_id)
+        _df = df.copy(deep=True)
         plot_pearson_r_test(_df)
+        _df = df.copy(deep=True)
         plot_kol_zur_filter(_df)
-        plot_ewm(_df, 5, 0.1)
+        _df = df.copy(deep=True)
+        plot_ewm(_df)
 
     # =========================================================================
     # Subproject IX. USA BEA
     # =========================================================================
-    _df_a = get_data_combined_archived()
-    _df_b = get_data_combined()
+    _df_a = collect_combined_archived()
+    _df_b = collect_combined()
     # =========================================================================
     # Project: Initial Version Dated: 05 October 2012
     # =========================================================================
-    df_a_b = preprocessing_a(_df_a)
-    df_a_c = preprocessing_a(_df_b)
+    df_a_a = transform_a(_df_a)
+    df_a_b = transform_a(_df_b)
+    plot_a(df_a_a)
     plot_a(df_a_b)
-    plot_a(df_a_c)
     # =========================================================================
     # Project: Initial Version Dated: 23 November 2012
     # =========================================================================
-    df_b_b = preprocessing_b(_df_a)
-    df_b_c = preprocessing_b(_df_b)
+    df_b_a = transform_b(_df_a)
+    df_b_b = transform_b(_df_b)
+    plot_b(df_b_a)
     plot_b(df_b_b)
-    plot_b(df_b_c)
     # =========================================================================
     # Project: Initial Version Dated: 16 June 2013
     # =========================================================================
-    df_c_b = preprocessing_c(_df_a)
-    df_c_c = preprocessing_c(_df_b)
+    df_c_a = transform_c(_df_a)
+    df_c_b = transform_c(_df_b)
+    plot_c(df_c_a)
     plot_c(df_c_b)
-    plot_c(df_c_c)
     # =========================================================================
     # Project: Initial Version Dated: 15 June 2015
     # =========================================================================
-    df_d = preprocessing_d(_df_b)
-    plot_d(df_d)
+    plot_d(transform_d(_df_b))
     # =========================================================================
     # Project: Initial Version Dated: 17 February 2013
     # =========================================================================
-    df_e_a, df_e_b = preprocessing_e(_df_a)
+    df_e_a, df_e_b = transform_e(_df_a)
     plot_e(df_e_a)
     plot_e(df_e_b)
     # =========================================================================
     # Project: BEA Data Compared with Kurenkov Yu.V. Data
     # =========================================================================
-    df_f_a, df_f_b, df_f_c, df_f_d = transform_kurenkov(_df_a)
-    plot_kurenkov(df_f_a, df_f_b, df_f_c, df_f_d)
+    plot_kurenkov(transform_kurenkov(_df_a))
 
     # =========================================================================
     # Subproject X. USA Census
     # =========================================================================
-    plot_census_a(*get_data_census_a())
-    plot_census_b(get_data_census_b_a(), get_data_census_b_b())
-    plot_census_c(*get_data_census_c())
+    plot_census_a(*collect_census_a())
+    plot_census_b_capital(collect_census_b_a())
+    plot_census_b_deflator(collect_census_b_b())
+    plot_census_c(*collect_census_c())
     # =========================================================================
     # Census Production Series
     # =========================================================================
@@ -322,28 +372,31 @@ def main():
         'P0265', 'P0266', 'P0267', 'P0268', 'P0269',
         'P0293', 'P0294', 'P0295',
     )
-    SEIRES_IDS_ALT = (
-        'P0231', 'P0232', 'P0233', 'P0234', 'P0235',
-        'P0236', 'P0237', 'P0238', 'P0239', 'P0240',
-        'P0241', 'P0244', 'P0247', 'P0248', 'P0249',
-        'P0250', 'P0251', 'P0252', 'P0253', 'P0254',
-        'P0255', 'P0256', 'P0257', 'P0258', 'P0259',
-        'P0260', 'P0261', 'P0262', 'P0263', 'P0264',
-        'P0265', 'P0266', 'P0267', 'P0268', 'P0269',
-        'P0270', 'P0271', 'P0277', 'P0279', 'P0281',
-        'P0282', 'P0283', 'P0284', 'P0286', 'P0288',
-        'P0290', 'P0293', 'P0294', 'P0295', 'P0296',
-        'P0297', 'P0298', 'P0299', 'P0300',
+    ids = itertools.chain(
+        range(231, 242),
+        range(244, 245),
+        range(247, 272),
+        range(277, 278),
+        range(279, 280),
+        range(281, 285),
+        range(286, 287),
+        range(288, 289),
+        range(290, 291),
+        range(293, 301),
     )
+    SERIES_IDS_ALT = tuple(f'P{_id:04n}' for _id in ids)
+
     plot_census_d(SERIES_IDS)
-    plot_census_e(get_data_census_e())
-    df = get_data_census_f()
+    plot_census_e(collect_census_e())
+    df = collect_census_f()
     plot_census_f_a(df)
     plot_census_f_b(df)
-    plot_census_g(get_data_census_g())
+    plot_census_g(collect_census_g())
     plot_census_h()
-    plot_census_i(*get_data_census_i())
-    plot_census_j(*get_data_census_j())
+    plot_census_i_a(collect_census_i_a())
+    plot_census_i_b(collect_census_i_b())
+    plot_census_i_c(collect_census_i_c())
+    plot_census_j(collect_census_j())
     plot_census_k()
 
     # =========================================================================
@@ -353,17 +406,61 @@ def main():
     SERIES_ID = 'J0014'
 
     df = extract_usa_census(ARCHIVE_NAME, SERIES_ID)
-    plot_growth_elasticity(df)
-    plot_rolling_mean_filter(df)
+    _df = df.copy(deep=True)
+    plot_growth_elasticity(_df)
+    _df = df.copy(deep=True)
+    plot_rolling_mean_filter(_df)
     # =========================================================================
-    # Subproject XII. USA Douglas Kendrick
+    # Subproject XII. USA Douglas & Kendrick
     # =========================================================================
     # =========================================================================
     # Douglas European Demographics & Growth of US Capital
     # =========================================================================
     ARCHIVE_NAME = 'dataset_douglas.zip'
-    MAP_SERIES = get_series_ids(ARCHIVE_NAME)
-    ITERS = (
+    # GROUP_ITERS = (
+    #     0,
+    #     12,
+    #     23,
+    #     34,
+    #     45,
+    #     55,
+    #     66,
+    #     76,
+    #     86,
+    #     89,
+    #     90,
+    #     93,
+    #     96,
+    #     99,
+    #     102,
+    #     105,
+    #     111,
+    #     114,
+    #     117,
+    #     121,
+    #     124,
+    #     90,
+    #     115,
+    # )
+    GROUP_ITERS = (
+        # =====================================================================
+        # TODO: Confirm
+        # Table XXVII Birth, Death And Net Fertility Rates For Denmark, 1800-1931, Source: Danmarks Statistik, Statistisk Aarbog.
+        # DT27BS01
+        # DT27BS02
+        # DT27BS03
+        #
+        # Table 62 Estimated Total British Capital In Terms Of The 1865 Price Level Invested Inside And Outside The United Kingdom By Years From 1865 To 1909, And Rate Of Growth Of This Capital
+        # DT62AS01
+        # DT62AS02
+        # DT62AS03
+        # DT62AS04
+        #
+        # Table 63 Growth Of Capital In The United States, 1880-1922
+        # DT63AS01
+        # DT63AS01
+        # DT63AS02
+        # =====================================================================
         0,
         12,
         23,
@@ -385,8 +482,8 @@ def main():
         117,
         121,
         124,
-        90,
-        115,
+        99,
+        124,
     )
     TITLES = (
         'Table I Indexes of Physical Production, 1899=100 [1899$-$1926]',
@@ -442,6 +539,7 @@ def main():
         'Millions of Dollars',
         'Births Rate Per 1000 People',
     )
+
     LABELS = (
         None,
         None,
@@ -466,11 +564,22 @@ def main():
         TITLES_EUR,
     )
 
-    for _, (_i, _j, _t, _m, _l) in enumerate(zip(ITERS[:-2][:-1], ITERS[:-2][1:], TITLES[:-1], MEASURES[:-1], LABELS[:-1]), start=1):
-        plot_douglas(ARCHIVE_NAME, MAP_SERIES, _, _i, _j, 1, _t, _m, _l)
-    plot_douglas(ARCHIVE_NAME, MAP_SERIES, len(TITLES),
-                 ITERS[-2], ITERS[-1], 3, TITLES[-1], MEASURES[-1], LABELS[-1])
-    plt.show()
+    plot_douglas(
+        ARCHIVE_NAME,
+        GROUP_ITERS[:-2],
+        TITLES[:-1],
+        MEASURES[:-1],
+        LABELS
+    )
+    plot_douglas(
+        ARCHIVE_NAME,
+        GROUP_ITERS[-2:],
+        (TITLES[-1],),
+        (MEASURES[-1],),
+        (LABELS[-1],),
+        len(TITLES),
+        3
+    )
 
     # =========================================================================
     # Douglas Production Function
@@ -478,7 +587,7 @@ def main():
     # =========================================================================
     # Cobb--Douglas Algorithm as per C.W. Cobb, P.H. Douglas. A Theory of Production, 1928 & P.H. Douglas. The Theory of Wages, 1934;
     # =========================================================================
-    FIG_MAP = {
+    MAP_FIG = {
         'fg_a': 'Chart 15 Relative Increase in Capital, Labor, and Physical Product in Manufacturing Industries of Massachussets, {}$-${} ({}=100',
         'fg_b': 'Chart 16 Theoretical and Actual Curves of Production, Massachusetts, {}$-${} ({}=100',
         'fg_c': 'Chart III Percentage Deviations of $P$ and $P\'$ from Their Trend Lines, Massachusetts\nTrend Lines = 3 Year Moving Average',
@@ -486,13 +595,12 @@ def main():
         'fg_e': 'Chart V Relative Final Productivities of Labor and Capital',
         'year_price': 1899,
     }
-    plot_cobb_douglas_modified(get_data_douglas())
+    plot_cobb_douglas(*transform_cobb_douglas(collect_douglas()), MAP_FIG)
     # =========================================================================
     # Kendrick Macroeconomic Series
     # =========================================================================
     ARCHIVE_NAME = 'dataset_usa_kendrick.zip'
-    MAP_SERIES = get_series_ids(ARCHIVE_NAME)
-    ITERS = (
+    GROUP_ITERS = (
         0,
         8,
         19,
@@ -539,9 +647,7 @@ def main():
         'Percentage',
     )
 
-    for _, (_i, _j, _t, _m) in enumerate(zip(ITERS[:-1], ITERS[1:], TITLES, MEASURES), start=1):
-        plot_douglas(ARCHIVE_NAME, MAP_SERIES, _, _i, _j, 1, _t, _m)
-    plt.show()
+    plot_douglas(ARCHIVE_NAME, GROUP_ITERS, TITLES, MEASURES)
 
 
 if __name__ == '__main__':
