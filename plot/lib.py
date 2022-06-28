@@ -7,22 +7,35 @@ Created on Sun Jun 12 08:59:10 2022
 """
 
 
+import os
+from functools import partial
 import itertools
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from pandas import DataFrame
 from scipy import stats
 from sklearn.metrics import r2_score
+from pandas.plotting import (
+    DataFrame,
+    autocorrelation_plot,
+    # bootstrap_plot,
+    lag_plot,
+)
 from collect.lib import transform_cobb_douglas
-from extract.lib import extract_series_ids
-from extract.lib import extract_usa_census
-from extract.lib import extract_usa_census_description
-from extract.lib import extract_usa_classic
-from toolkit.lib import calculate_capital
-from toolkit.lib import kol_zur_filter
-from toolkit.lib import rolling_mean_filter
-from toolkit.lib import simple_linear_regression
+from extract.lib import (
+    extract_series_ids,
+    extract_usa_census,
+    extract_usa_census_description,
+    extract_usa_classic,
+    extract_usa_nber,
+    extract_worldbank,
+)
+from toolkit.lib import (
+    calculate_capital,
+    kol_zur_filter,
+    rolling_mean_filter,
+    simple_linear_regression,
+)
 
 
 ARCHIVE_NAMES_UTILISED = (
@@ -903,28 +916,38 @@ def plot_block_two(df: DataFrame) -> None:
     plt.show()
 
 
-def plot_built_in(module: callable) -> None:
-    # =========================================================================
-    # TODO: Rework
-    # =========================================================================
-    FILE_NAMES = (
-        'datasetAutocorrelation.txt',
+def plot_built_in() -> None:
+    '''
+    Purpose: Draw:
+
+    Returns
+    -------
+    None
+    '''
+    FUNCTIONS = (
+        # =====================================================================
+        # Correlogram, Pandas;
+        # =====================================================================
+        autocorrelation_plot,
+        # =====================================================================
+        # Bootstrap Plot, Pandas;
+        # =====================================================================
+        # bootstrap_plot,
+        # =====================================================================
+        # Lag Plot, Pandas
+        # =====================================================================
+        lag_plot,
     )
-    _df = pd.read_csv(FILE_NAMES[0])
-    for _, series_id in enumerate(sorted(set(_df.iloc[:, 1])), start=1):
-        plt.figure(_)
-        module(extract_worldbank(_df, series_id))
-        plt.grid(True)
-
     _df = extract_worldbank()
-    for _, country in enumerate(_df.columns, start=1):
-        chunk = _df.loc[:, [country]].dropna()
-        if not chunk.empty:
-            plt.figure(_)
-            module(chunk)
-            plt.grid(True)
-
-    plt.show()
+    for func in FUNCTIONS:
+        for _, country in enumerate(_df.columns, start=1):
+            chunk = _df.loc[:, [country]].dropna()
+            if not chunk.empty:
+                plt.figure(_)
+                partial(func, chunk)()
+                plt.title(country)
+                plt.grid(True)
+        plt.show()
 
 
 def plot_can_test(df: DataFrame) -> None:
@@ -1971,21 +1994,24 @@ def plot_lab_prod_polynomial(df: DataFrame) -> None:
         )
     )
     plt.plot(
-        _df.iloc[:, 2], label='$\\hat P_{{{}}}(X) = {:.2f}+{:.2f}X {:.2f}X^2, R^2 = {:.4f}$'.format(
+        _df.iloc[:, 2],
+        label='$\\hat P_{{{}}}(X) = {:.2f}+{:.2f}X {:.2f}X^2, R^2 = {:.4f}$'.format(
             2,
             *_p2[::-1],
             next(r),
         )
     )
     plt.plot(
-        _df.iloc[:, 3], label='$\\hat P_{{{}}}(X) = {:.2f}+{:.2f}X {:.2f}X^2+{:.2f}X^3, R^2 = {:.4f}$'.format(
+        _df.iloc[:, 3],
+        label='$\\hat P_{{{}}}(X) = {:.2f}+{:.2f}X {:.2f}X^2+{:.2f}X^3, R^2 = {:.4f}$'.format(
             3,
             *_p3[::-1],
             next(r),
         )
     )
     plt.plot(
-        _df.iloc[:, 4], label='$\\hat P_{{{}}}(X) = {:.2f}+{:.2f}X {:.2f}X^2+{:.2f}X^3 {:.2f}X^4, R^2 = {:.4f}$'.format(
+        _df.iloc[:, 4],
+        label='$\\hat P_{{{}}}(X) = {:.2f}+{:.2f}X {:.2f}X^2+{:.2f}X^3 {:.2f}X^4, R^2 = {:.4f}$'.format(
             4,
             *_p4[::-1],
             next(r),
