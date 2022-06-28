@@ -7,9 +7,9 @@ Created on Sun Jun 12 11:52:01 2022
 """
 
 import itertools
+from functools import partial
 import numpy as np
 import pandas as pd
-from functools import partial
 from pandas import DataFrame
 from scipy import signal
 from extract.lib import extract_can
@@ -2487,7 +2487,9 @@ def collect_version_b() -> tuple[DataFrame]:
         data_frame_b: Capital, Labor, Product;
         data_frame_c: Capital, Labor, Product Adjusted to Capacity Utilisation
     '''
-    '''Data Fetch Revised'''
+    # =========================================================================
+    # Data Fetch Revised
+    # =========================================================================
     KWARGS = {
         'archive_name': 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip',
         'wb_name': 'Section4ALL_xls.xls',

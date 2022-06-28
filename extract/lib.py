@@ -8,10 +8,12 @@ Created on Sun Jun 12 00:44:36 2022
 
 
 import io
+import os
+import sqlite3
+from zipfile import ZipFile
 import pandas as pd
 import requests
 from pandas import DataFrame
-from zipfile import ZipFile
 
 
 ARCHIVE_NAMES_UTILISED = (
@@ -81,7 +83,7 @@ def extract_can_capital_series_ids(df: DataFrame) -> list[str]:
     Fetch <SERIES_IDS> from Statistics Canada. Table: 36-10-0238-01\
     (formerly CANSIM 031-0004): Flows and stocks of fixed non-residential\
     capital, total all industries, by asset, provinces and territories, annual\
-    (dollars x 1,000,000)    
+    (dollars x 1,000,000)
     '''
     # =========================================================================
     # ?: 36100096-eng.zip'
@@ -230,8 +232,7 @@ def extract_can_quarter(file_id, series_id: str) -> DataFrame:
     df.iloc[:, -2] = df.iloc[:, -2].astype(int)
     if (file_id, series_id,) in RESERVED_COMBINATIONS:
         return df.groupby(df.columns[-2]).sum()
-    else:
-        return df.groupby(df.columns[-2]).mean()
+    return df.groupby(df.columns[-2]).mean()
 
 
 def extract_usa_bea(archive_name: str, wb_name: str, sh_name: str, series_id: str) -> DataFrame:
@@ -402,8 +403,7 @@ def extract_usa_nber(file_name: str, agg: str) -> DataFrame:
     _df.drop(_df.columns[0], axis=1, inplace=True)
     if agg == 'mean':
         return _df.groupby(_df.columns[0]).mean()
-    elif agg == 'sum':
-        return _df.groupby(_df.columns[0]).sum()
+    return _df.groupby(_df.columns[0]).sum()
 
 
 def _extract_worldbank(df: DataFrame, series_id: str) -> DataFrame:

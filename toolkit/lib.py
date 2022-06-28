@@ -12,7 +12,10 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame
 from scipy.interpolate import UnivariateSpline
+import scipy.optimize as optimization
 from sklearn.metrics import mean_squared_error
+from sklearn.metrics import r2_score
+from extract.lib import extract_can_from_url
 
 
 def calculate_capital(df: DataFrame, p_i: tuple[float], p_t: tuple[float], ratio: float):
