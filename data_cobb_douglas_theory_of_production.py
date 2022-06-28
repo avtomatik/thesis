@@ -349,16 +349,13 @@ def page_0x96_table_0x5() -> pd.DataFrame:
     '''
     # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 150: Table V
     '''
-    FILE_NAME = 'data_cobb_douglas_theory_of_production_page_0x91_table_0x2.dat'
-    df_a = pd.read_csv(FILE_NAME, sep='\t', index_col=0)
-    FILE_NAME = 'data_cobb_douglas_theory_of_production_page_0x94_table_0x3.dat'
-    df_b = pd.read_csv(FILE_NAME, sep='\t', index_col=0)
     df = pd.concat(
         [
-            df_a.iloc[:, [-1]],
-            df_b.iloc[:, [-1]],
+            page_0x91_table_0x2().iloc[:, [-1]],
+            page_0x94_table_0x3().iloc[:, [-1]],
         ],
-        axis=1)
+        axis=1
+    )
     df['lab_to_cap'] = df.iloc[:, 1].div(
         df.iloc[:, 0]).mul(100).round().astype(int)
     return df.iloc[:, [-1]]
@@ -482,7 +479,8 @@ def page_0x98_table_0x6() -> pd.DataFrame:
             'ba': ba,
         }
     )
-    print(f'Page 153: The average percentage deviation of P` from P without regard to sign is {df.iloc[:, 2].abs().mean():,.6f} per cent.')
+    print(
+        f'Page 153: The average percentage deviation of P` from P without regard to sign is {df.iloc[:, 2].abs().mean():,.6f} per cent.')
     return df.set_index(df.columns[0], verify_integrity=True).iloc[:, range(4)]
 
 
@@ -490,8 +488,7 @@ def page_0x99_table_0x7() -> pd.DataFrame:
     '''
     # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 153: Table VII
     '''
-    FILE_NAME = 'data_cobb_douglas_theory_of_production_page_0x98_table_0x6.dat'
-    df = pd.read_csv(FILE_NAME, sep='\t', usecols=range(3), index_col=0)
+    df = page_0x98_table_0x6().iloc[:, range(2)]
     df['sub_pro'] = df.iloc[:, 1].sub(
         df.iloc[:, 1].rolling(window=3, center=True).mean())
     df['sub_pro_com'] = df.iloc[:, 0].sub(
@@ -675,10 +672,8 @@ def page_0xa2_table_0x9() -> pd.DataFrame:
     )
     df.set_index(df.columns[0], inplace=True, verify_integrity=True)
     df['ratio'] = df.iloc[:, 0].mul(100).div(df.iloc[:, 1]).round().astype(int)
-    FILE_NAME = 'data_cobb_douglas_theory_of_production_page_0x95_table_0x4.dat'
-    df_pro = pd.read_csv(FILE_NAME, sep='\t', index_col=0)
-    df['pro'] = df_pro.iloc[:, 0].mul(
-        df.iloc[:, 2]).div(100).round().astype(int)
+    df = pd.concat([df, page_0x95_table_0x4()], axis=1)
+    df['pro'] = df.iloc[:, -1].mul(df.iloc[:, -2]).div(100).round().astype(int)
     return df
 
 
@@ -757,7 +752,8 @@ def page_0xa3_table_0xa() -> pd.DataFrame:
             'value': value,
         }
     )
-    print(f'Pgae 163: They found that wages and salaries formed on the average {df.iloc[:, 0].mean():,.6f} per cent of the total value added by manufactures during these years.[37]')
+    print(
+        f'Page 163: They found that wages and salaries formed on the average {df.iloc[:, 0].mean():,.6f} per cent of the total value added by manufactures during these years.[37]')
     return df.set_index(df.columns[0], verify_integrity=True).sort_index()
 
 
@@ -861,8 +857,10 @@ def page_0xa4_table_0xb() -> pd.DataFrame:
     )
     df['pro_val_rm_7'] = df.iloc[:, 0].rolling(7, center=True).mean()
     df['wages_rm_7'] = df.iloc[:, 1].rolling(7, center=True).mean()
-    print(f'Page 164: (2) Average deviation = {df.iloc[:, 2].abs().mean():,.6f} per cent')
-    print(f'Page 164: (4) Average deviations with regard to sign = {df.iloc[:, 2].mean():,.6f} per cent')
+    print(
+        f'Page 164: (2) Average deviation = {df.iloc[:, 2].abs().mean():,.6f} per cent')
+    print(
+        f'Page 164: (4) Average deviations with regard to sign = {df.iloc[:, 2].mean():,.6f} per cent')
     print(df.corr())
     return df.iloc[:, range(4)]
 
