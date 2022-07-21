@@ -62,7 +62,7 @@ def extract_can_capital_series_ids_archived() -> list[str]:
         ARCHIVE_NAME,
         usecols=["PRICES", "CATEGORY", "COMPONENT", "Vector", ]
     )
-    with sqlite3.connect("capital.db") as con:
+    with sqlite3.connect("/home/alexander/science/capital.db") as con:
         cursor = con.cursor()
         df.to_sql("capital", con, if_exists="replace", index=False)
         stmt = """
@@ -223,8 +223,9 @@ def extract_can_quarter(file_id, series_id: str) -> DataFrame:
                              (3800084, 'v62306938',),)
     USECOLS = ((4, 6,), (5, 7,),)
     usecols = (USECOLS[0], USECOLS[1])[file_id in RESERVED_FILE_IDS]
-    df = pd.read_csv(f'dataset_can_{file_id:08n}-eng.zip',
-                     usecols=[0, *usecols])
+    df = pd.read_csv(
+        f'dataset_can_{file_id:08n}-eng.zip', usecols=[0, *usecols]
+    )
     df = df[df.iloc[:, 1] == series_id].iloc[:, [0, 2]]
     df.columns = [df.columns[0], series_id]
     df[['period', 'sub_period', ]] = df.iloc[:, 0].str.split('/', expand=True)
@@ -329,13 +330,21 @@ def extract_usa_census(archive_name: str, series_id: str) -> DataFrame:
     U.S. Bureau of the Census. Historical Statistics of the United States,
     Colonial Times to 1970, Bicentennial Edition. Washington, D.C., 1975.
     '''
-    df = pd.read_csv(archive_name, usecols=range(8, 11), dtype=str)
-    df = df[df.iloc[:, 0] == series_id].iloc[:, [1, 2]]
-    df.iloc[:, 0] = df.iloc[:, 0].str[:4].astype(int)
-    df.iloc[:, 1] = df.iloc[:, 1].astype(float)
-    df.columns = [df.columns[0], series_id]
-    df.sort_values(df.columns[0], inplace=True)
-    return df.groupby(df.columns[0]).mean()
+    df = pd.read_csv(
+        archive_name,
+        names=['period', 'series_id', series_id],
+        index_col=1,
+        usecols=range(8, 11),
+        skiprows=1,
+        dtype=str
+    )
+    df = df[df.iloc[:, 0] == series_id].iloc[:, [1]]
+    df.index = pd.to_numeric(
+        df.index.astype(str).to_series().str.slice(stop=4),
+        downcast='integer'
+    )
+    df.iloc[:, 0] = pd.to_numeric(df.iloc[:, 0], errors='coerce')
+    return df.groupby(df.index).mean()
 
 
 def extract_usa_census_description(archive_name: str, series_id: str) -> str:
@@ -380,14 +389,18 @@ def extract_usa_classic(archive_name: str, series_id: str) -> DataFrame:
     }
     df = pd.read_csv(
         archive_name,
-        skiprows=(None, 4)[archive_name == 'dataset_usa_brown.zip'],
+        names=['series_id', 'period', series_id],
+        index_col=1,
+        skiprows=(1, 5)[archive_name == 'dataset_usa_brown.zip'],
         usecols=range(*USECOLS[archive_name])
     )
-    df = df[df.iloc[:, 0] == series_id].iloc[:, [1, 2]]
-    df.iloc[:, 0] = df.iloc[:, 0].astype(int)
-    df.iloc[:, 1] = pd.to_numeric(df.iloc[:, 1], errors='coerce')
-    df.columns = [df.columns[0], series_id]
-    return df.set_index(df.columns[0])
+    df = df[df.iloc[:, 0] == series_id].iloc[:, [1]]
+    df.index = pd.to_numeric(
+        df.index.astype(str).to_series().str.slice(stop=4),
+        downcast='integer'
+    )
+    df.iloc[:, 0] = pd.to_numeric(df.iloc[:, 0], errors='coerce')
+    return df.sort_index()
 
 
 def extract_usa_mcconnel(series_id: str) -> DataFrame:

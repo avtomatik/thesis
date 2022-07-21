@@ -6,9 +6,9 @@ Created on Mon Mar  2 21:32:51 2020
 """
 
 
-source_frame = get_dataset_cobb_douglas()
-X = sp.log(source_frame.iloc[:, 0].div(source_frame.iloc[:, 1]))
-Y = sp.log(source_frame.iloc[:, 2].div(source_frame.iloc[:, 1]))
+df = get_dataset_cobb_douglas()
+X = np.log(df.iloc[:, 0].div(df.iloc[:, 1]))
+Y = np.log(df.iloc[:, 2].div(df.iloc[:, 1]))
 # =============================================================================
 # Discrete Fourier Transform
 # =============================================================================
@@ -21,32 +21,42 @@ Y = sp.log(source_frame.iloc[:, 2].div(source_frame.iloc[:, 1]))
 # =============================================================================
 # Discrete Laplace Transform
 # =============================================================================
-'''Spectrum Representations:
-    https://matplotlib.org/3.1.1/gallery/lines_bars_and_markers/spectrum_demo.html'''
+# =============================================================================
+# Spectrum Representations:
+# https://matplotlib.org/3.1.1/gallery/lines_bars_and_markers/spectrum_demo.html
+# =============================================================================
 # =============================================================================
 # Lasso
 # =============================================================================
 
 
-def plot_cobb_douglas_new_features(data_frame):
+def plot_cobb_douglas_new_features(df):
     '''Cobb--Douglas Algorithm as per C.W. Cobb, P.H. Douglas. A Theory of Production, 1928;
-    data_frame.index: Period,
-    data_frame.iloc[:, 0]: Capital,
-    data_frame.iloc[:, 1]: Labor,
-    data_frame.iloc[:, 2]: Product
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Capital
+    df.iloc[:, 1]      Labor
+    df.iloc[:, 2]      Product
+    ================== =================================
     '''
     from sklearn.linear_model import Lasso
     from sklearn.linear_model import LassoCV
     from sklearn.linear_model import LinearRegression
     from sklearn.linear_model import Ridge
-    FIGURES = {
+    MAP_FIG = {
         'fig_a': 'Chart I Progress in Manufacturing {}$-${} ({}=100)',
         'fig_b': 'Chart II Theoretical and Actual Curves of Production {}$-${} ({}=100)',
         'fig_c': 'Chart III Percentage Deviations of $P$ and $P\'$ from Their Trend Lines\nTrend Lines=3 Year Moving Average',
         'fig_d': 'Chart IV Percentage Deviations of Computed from Actual Product {}$-${}',
     }
-    x = sp.log(data_frame.iloc[:, 0].div(data_frame.iloc[:, 1]))
-    y = sp.log(data_frame.iloc[:, 2].div(data_frame.iloc[:, 1]))
+    # =========================================================================
+    # Log Labor Capital Intensity
+    # =========================================================================
+    x = np.log(df.iloc[:, 0].div(df.iloc[:, 1]))
+    # =========================================================================
+    # Log Labor Productivity
+    # =========================================================================
+    y = np.log(df.iloc[:, 2].div(df.iloc[:, 1]))
     X = np.vstack((np.zeros((len(x), 1)).T, x)).T
     las = Lasso(alpha=0.01).fit(X, y)
     reg = LinearRegression().fit(X, y)
@@ -55,52 +65,52 @@ def plot_cobb_douglas_new_features(data_frame):
 #    print('Lasso: a_0 = {0:.12f} & a_1 = {1:.12f}'.format(las.intercept_, las.coef_[1]))
 #    print('Linear Regression: a_0 = {0:.12f} & a_1 = {1:.12f}'.format(reg.intercept_, reg.coef_[1]))
 #    print('Ridge Regression: a_0 = {0:.12f} & a_1 = {1:.12f}'.format(tik.intercept_, tik.coef_[1]))
-    A = sp.exp(las.intercept_)
-    PP = A*(data_frame.iloc[:, 1]**(1-las.coef_[1])) * \
-        (data_frame.iloc[:, 0]**las.coef_[1])
-    PR = data_frame.iloc[:, 2].rolling(window=3, center=True).mean()
+    k = las.coef_[1]
+    A = np.exp(las.intercept_)
+    PP = df.iloc[:, 1].pow(1-k).mul(df.iloc[:, 0].pow(k)).mul(A)
+    PR = df.iloc[:, 2].rolling(window=3, center=True).mean()
     PPR = PP.rolling(window=3, center=True).mean()
     plt.figure(1)
-    plt.plot(data_frame.iloc[:, 0], label='Fixed Capital')
-    plt.plot(data_frame.iloc[:, 1], label='Labor Force')
-    plt.plot(data_frame.iloc[:, 2], label='Physical Product')
+    plt.plot(df.iloc[:, 0], label='Fixed Capital')
+    plt.plot(df.iloc[:, 1], label='Labor Force')
+    plt.plot(df.iloc[:, 2], label='Physical Product')
     plt.xlabel('Period')
     plt.ylabel('Indexes')
-    plt.title(FIGURES['fig_a'].format(data_frame.index[0],
-                                      data_frame.index[-1],
-                                      data_frame.index[0]))
+    plt.title(MAP_FIG['fig_a'].format(df.index[0],
+                                      df.index[-1],
+                                      df.index[0]))
     plt.legend()
     plt.grid(True)
     plt.figure(2)
-    plt.plot(data_frame.iloc[:, 2], label='Actual Product')
+    plt.plot(df.iloc[:, 2], label='Actual Product')
     plt.plot(PP, label='Computed Product, $P\' = %fL^{%f}C^{%f}$' % (
         A, 1-las.coef_[1], las.coef_[1]))
     plt.xlabel('Period')
     plt.ylabel('Production')
-    plt.title(FIGURES['fig_b'].format(data_frame.index[0],
-                                      data_frame.index[-1],
-                                      data_frame.index[0]))
+    plt.title(MAP_FIG['fig_b'].format(df.index[0],
+                                      df.index[-1],
+                                      df.index[0]))
     plt.legend()
     plt.grid(True)
     plt.figure(3)
-    plt.plot(data_frame.iloc[:, 2].sub(PR), label='Deviations of $P$')
+    plt.plot(df.iloc[:, 2].sub(PR), label='Deviations of $P$')
     plt.plot(PP.sub(PPR), '--', label='Deviations of $P\'$')
     plt.xlabel('Period')
     plt.ylabel('Percentage Deviation')
-    plt.title(FIGURES['fig_c'])
+    plt.title(MAP_FIG['fig_c'])
     plt.legend()
     plt.grid(True)
     plt.figure(4)
-    plt.plot(PP.div(data_frame.iloc[:, 2]).sub(1))
+    plt.plot(PP.div(df.iloc[:, 2]).sub(1))
     plt.xlabel('Period')
     plt.ylabel('Percentage Deviation')
-    plt.title(FIGURES['fig_d'].format(data_frame.index[0],
-                                      data_frame.index[-1]))
+    plt.title(MAP_FIG['fig_d'].format(df.index[0],
+                                      df.index[-1]))
     plt.grid(True)
     plt.show()
 
 
-plot_cobb_douglas_new_features(source_frame)
+plot_cobb_douglas_new_features(df)
 # from sklearn.linear_model import LassoCV
 # reg = LassoCV(cv = 4, random_state = 0).fit(X, y)
 # print(reg.score(X, y))
@@ -167,7 +177,7 @@ plt.show()
 #    k, b = np.polyfit(X[train], Y[train], 1)
 #    Z = b + k*X
 #    plt.plot(X, Z, label = 'Test {:02d}'.format(i))
-# # #    b = sp.exp(b)
+# # #    b = np.exp(b)
 #
 # k, b = np.polyfit(X, Y, 1)
 # Z = b + k*X
@@ -182,8 +192,8 @@ plt.show()
 # # # print(X)
 # # # from sklearn import cross_validation, linear_model
 # # #
-# # # # # X = sp.log(X)
-# # # Y = sp.log(Y)
+# # # # # X = np.log(X)
+# # # Y = np.log(Y)
 # # # loo = cross_validation.LeaveOneOut(len(Y))
 # # # regr = linear_model.LinearRegression()
 # # # scores = cross_validation.cross_val_score(regr, X, Y, scoring = 'mean_squared_error', cv = loo,)

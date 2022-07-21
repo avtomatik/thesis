@@ -23,8 +23,8 @@ from plot.lib import plot_e
 from plot.lib import plot_kurenkov
 
 
-FOLDER = '/media/alexander/321B-6A94'
-os.chdir(FOLDER)
+DIR = '/media/alexander/321B-6A94'
+os.chdir(DIR)
 _df_a = collect_combined_archived()
 _df_b = collect_combined()
 # =============================================================================

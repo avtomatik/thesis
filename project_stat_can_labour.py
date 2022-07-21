@@ -9,10 +9,10 @@ Created on Tue Nov  2 21:10:29 2021
 import os
 import pandas as pd
 from pandas import DataFrame
-from prepare.lib import get_data_cobb_douglas_price
-from prepare.lib import get_data_census_price
-from prepare.lib import get_data_can_price_a
-from prepare.lib import get_data_can_price_b
+from collect.lib import collect_cobb_douglas_price
+from collect.lib import collect_census_price
+from collect.lib import collect_can_price_a
+from collect.lib import collect_can_price_b
 
 
 def append_series_ids(df: DataFrame, chunk: DataFrame, series_ids: tuple[str]) -> DataFrame:

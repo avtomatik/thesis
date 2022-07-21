@@ -15,11 +15,11 @@ def convert_url(string):
     return '/'.join(('https://www150.statcan.gc.ca/n1/tbl/csv', '{}-eng.zip'.format(string.split('=')[1][:-2])))
 
 
-FOLDER = '/media/alexander/321B-6A94'
-FILE_NAME = '/home/alexander/projects/stat_can_selected.xlsx'
+DIR = '/home/alexander/science'
+FILE_NAME = 'stat_can_selected.xlsx'
 
 
-df = pd.read_excel(os.path.join(FOLDER, FILE_NAME))
+df = pd.read_excel(os.path.join(DIR, FILE_NAME))
 print(df)
 # urls = set()
 # for i in range(df.shape[0]):

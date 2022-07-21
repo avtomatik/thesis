@@ -21,8 +21,8 @@ from plot.lib import plot_simple_linear
 from plot.lib import plot_simple_log
 
 
-FOLDER = '/media/alexander/321B-6A94'
-os.chdir(FOLDER)
+DIR = '/media/alexander/321B-6A94'
+os.chdir(DIR)
 # =============================================================================
 # On Original Dataset
 # =============================================================================

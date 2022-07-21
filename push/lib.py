@@ -6,17 +6,28 @@ Created on Sun Jun 12 12:40:09 2022
 @author: alexander
 """
 
+import os
+import zipfile
+from zipfile import ZipFile
 from pandas import DataFrame
 
 
 def push_data_frame_listing(df: DataFrame) -> None:
-    # =========================================================================
-    # TODO: Re-Write to Text File
-    # =========================================================================
-    for _, series_id in enumerate(df.columns):
-        series = sorted(set(df.iloc[:, _]))
-        print(f'{series_id:*^50}')
-        print(series)
+    '''
+    Dumps Data Headers & Unique Data Samples
+
+    Parameters
+    ----------
+    df : DataFrame
+    Returns
+    -------
+    None
+    '''
+    FILE_NAME = 'data_frame_listing.txt'
+    with open(FILE_NAME, 'w') as f:
+        for _, series_id in enumerate(df.columns):
+            print(f'{series_id:*^50}', file=f)
+            print(sorted(set(df.iloc[:, _])), file=f)
 
 
 def push_data_frame_to_csv_zip(df: DataFrame, file_name: str) -> None:

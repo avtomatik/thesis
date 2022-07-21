@@ -35,10 +35,10 @@ from plot.lib import plot_census_j
 from plot.lib import plot_census_k
 
 
-FOLDER = '/media/alexander/321B-6A94'
+DIR = '/media/alexander/321B-6A94'
 
 
-os.chdir(FOLDER)
+os.chdir(DIR)
 plot_census_a(*collect_census_a())
 plot_census_b_capital(collect_census_b_a())
 plot_census_b_deflator(collect_census_b_b())

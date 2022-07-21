@@ -23,8 +23,8 @@ def main():
     None.
 
     '''
-    FOLDER = '/media/alexander/321B-6A94'
-    FIG_MAP = {
+    DIR = '/media/alexander/321B-6A94'
+    MAP_FIG = {
         'fg_a': 'Chart I Progress in Manufacturing {}$-${} ({}=100)',
         'fg_b': 'Chart II Theoretical and Actual Curves of Production {}$-${} ({}=100)',
         'fg_c': 'Chart III Percentage Deviations of $P$ and $P\'$ from Their Trend Lines\nTrend Lines=3 Year Moving Average',
@@ -32,10 +32,10 @@ def main():
         'fg_e': 'Chart V Relative Final Productivities of Labor and Capital',
         'year_price': 1899,
     }
-    os.chdir(FOLDER)
+    os.chdir(DIR)
     plot_cobb_douglas(
         *transform_cobb_douglas(get_data_cobb_douglas()),
-        FIG_MAP
+        MAP_FIG
     )
 
 

@@ -16,12 +16,12 @@ from extract.lib import extract_usa_census
 
 def main():
     FLAG = True
-    FOLDER = '/media/alexander/321B-6A94'
+    DIR = '/media/alexander/321B-6A94'
     _FOLDER = '/home/alexander/Downloads'
     ARCHIVE_NAME = 'dataset_usa_census1975.zip'
     FILE_NAME = 'dataset_usa_bls-2017-07-06-ln.data.1.AllData'
     _FILE_NAME = 'plot_usa_unemployment_autocorrelation.pdf'
-    os.chdir(FOLDER)
+    os.chdir(DIR)
     df = pd.concat(
         [
             extract_usa_census(ARCHIVE_NAME, 'D0086'),

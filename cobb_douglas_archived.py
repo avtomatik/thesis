@@ -23,8 +23,8 @@ print(__doc__)
 
 
 def main():
-    FOLDER = '/media/alexander/321B-6A94'
-    FIG_MAP = {
+    DIR = '/media/alexander/321B-6A94'
+    MAP_FIG = {
         'fg_a': 'Chart I Progress in Manufacturing {}$-${} ({}=100)',
         'fg_b': 'Chart II Theoretical and Actual Curves of Production {}$-${} ({}=100)',
         'fg_c': 'Chart III Percentage Deviations of $P$ and $P\'$ from Their Trend Lines\nTrend Lines=3 Year Moving Average',
@@ -32,20 +32,20 @@ def main():
         'fg_e': 'Chart V Relative Final Productivities of Labor and Capital',
         'year_price': 1899,
     }
-    os.chdir(FOLDER)
-    # =============================================================================
+    os.chdir(DIR)
+    # =========================================================================
     # Project I. Classified
-    # =============================================================================
+    # =========================================================================
     df = get_data_cobb_douglas(5)
     _df_b = df.iloc[:, [0, 1, 3]]
     plot_cobb_douglas_alt(
         *transform_cobb_douglas_alt(df),
-        FIG_MAP
+        MAP_FIG
     )
     plot_cobb_douglas_alt(
         *transform_cobb_douglas_alt(_df_b),
-        FIG_MAP
-        )
+        MAP_FIG
+    )
 
     _df_a = df.iloc[:, [0, 1, 2]]
     _df_b = df.iloc[:, [0, 1, 3]]
@@ -53,6 +53,12 @@ def main():
     _df_d, _df_e = get_data_version_a()
     _df_f, _df_g, _df_h = get_data_version_b()
     _df_i = dataset_version_c()
+
+# =============================================================================
+#     df = transform_cobb_douglas(collect_cobb_douglas())[0].iloc[:, [3, 4]]
+#     calculate_curve_fit_params(df)
+# =============================================================================
+
     calculate_curve_fit_params(_df_a)
     calculate_curve_fit_params(_df_b)
     calculate_curve_fit_params(_df_c)
@@ -65,30 +71,30 @@ def main():
     calculate_curve_fit_params(_df_a)
     calculate_curve_fit_params(_df_b)
     calculate_curve_fit_params(_df_c)
-    # =============================================================================
+    # =========================================================================
     # No Capacity Utilization Adjustment
-    # =============================================================================
+    # =========================================================================
     calculate_curve_fit_params(_df_d)
-    # =============================================================================
+    # =========================================================================
     # Capacity Utilization Adjustment
-    # =============================================================================
+    # =========================================================================
     calculate_curve_fit_params(_df_e)
-    # =============================================================================
+    # =========================================================================
     # Option: 1929--2013, No Capacity Utilization Adjustment
-    # =============================================================================
+    # =========================================================================
     calculate_curve_fit_params(_df_f)
-    # =============================================================================
+    # =========================================================================
     # Option: 1967--2013, No Capacity Utilization Adjustment
-    # =============================================================================
+    # =========================================================================
     calculate_curve_fit_params(_df_g)
-    # =============================================================================
+    # =========================================================================
     # Option: 1967--2012, Capacity Utilization Adjustment
-    # =============================================================================
+    # =========================================================================
     calculate_curve_fit_params(_df_h)
     calculate_curve_fit_params(_df_i)
-    # =============================================================================
+    # =========================================================================
     # Project II. Scipy Signal Median Filter, Non-Linear Low-Pass Filter
-    # =============================================================================
+    # =========================================================================
     procedure(_df_a)
     procedure(_df_b)
     procedure(_df_c)
@@ -101,11 +107,10 @@ def main():
     procedure(_df_a)
     procedure(_df_b)
     procedure(_df_c)
-    # =============================================================================
+    # =========================================================================
     # Project III. Scipy Signal Wiener Filter
-    # =============================================================================
-    purchases_frame = get_dataset_capital_purchases()
-    plot_capital_purchases(purchases_frame)
+    # =========================================================================
+    plot_capital_purchases(get_dataset_capital_purchases())
 
 
 if __name__ == '__main__':

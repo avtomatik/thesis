@@ -132,8 +132,8 @@ print(__doc__)
 
 
 def main():
-    FOLDER = '/media/alexander/321B-6A94'
-    os.chdir(FOLDER)
+    DIR = '/media/alexander/321B-6A94'
+    os.chdir(DIR)
     # =========================================================================
     # Subproject I. Approximation
     # =========================================================================
@@ -308,11 +308,11 @@ def main():
     for series_id in SERIES_IDS:
         print(f'Processing {series_id}')
         df = extract_usa_census('dataset_usa_census1975.zip', series_id)
-        _df = df.copy(deep=True)
+        _df = df.copy()
         plot_pearson_r_test(_df)
-        _df = df.copy(deep=True)
+        _df = df.copy()
         plot_kol_zur_filter(_df)
-        _df = df.copy(deep=True)
+        _df = df.copy()
         plot_ewm(_df)
 
     # =========================================================================
@@ -405,9 +405,9 @@ def main():
     SERIES_ID = 'J0014'
 
     df = extract_usa_census(ARCHIVE_NAME, SERIES_ID)
-    _df = df.copy(deep=True)
+    _df = df.copy()
     plot_growth_elasticity(_df)
-    _df = df.copy(deep=True)
+    _df = df.copy()
     plot_rolling_mean_filter(_df)
     # =========================================================================
     # Subproject XII. USA Douglas & Kendrick

@@ -6,6 +6,7 @@ Created on Sat Sep 18 22:20:54 2021
 """
 
 
+import pandas as pd
 # =============================================================================
 # Capital
 # # 16100077-eng.xlsx: NO;
@@ -263,15 +264,17 @@ for file_name in FILE_NAMES:
     data = pd.read_excel(file_name)
     data.rename(columns={'Unnamed: 0': 'REF_DATE'}, inplace=True)
     data.set_index(data.columns[0], inplace=True)
-    combined = pd.concat([combined, data],
-                         axis=1,
-                         sort=False)
+    combined = pd.concat(
+        [combined, data],
+        axis=1,
+    )
 combined.sort_index(inplace=True)
-file_name = '/home/alexander/projects/stat_can_desc.xlsx'
-titles = pd.read_excel(file_name)
-combined = pd.merge(titles.set_index(titles.columns[0]),
-                    combined.T,
-                    left_index=True,
-                    right_index=True,
-                    sort=False)
+FILE_NAME = '/home/alexander/projects/stat_can_desc.xlsx'
+titles = pd.read_excel(FILE_NAME)
+combined = pd.merge(
+    titles.set_index(titles.columns[0]),
+    combined.T,
+    left_index=True,
+    right_index=True,
+)
 combined.T.to_excel('/home/alexander/projects/stat_can_combined.xlsx')

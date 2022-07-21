@@ -13,10 +13,10 @@ from plot.lib import plot_cobb_douglas_3d
 
 
 def main():
-    # =============================================================================
+    # =========================================================================
     # Canada
-    # =============================================================================
-    FIG_MAP = {
+    # =========================================================================
+    MAP_FIG = {
         'fg_a': 'Chart I Progress in Manufacturing {}$-${} ({}=100)',
         'fg_b': 'Chart II Theoretical and Actual Curves of Production {}$-${} ({}=100)',
         'fg_c': 'Chart III Percentage Deviations of $P$ and $P\'$ from Their Trend Lines\nTrend Lines=3 Year Moving Average',
@@ -27,7 +27,7 @@ def main():
     _df = get_data_can()
     plot_cobb_douglas(
         *transform_cobb_douglas(_df),
-        FIG_MAP
+        MAP_FIG
     )
     plot_cobb_douglas_3d(_df)
 

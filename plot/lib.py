@@ -15,8 +15,8 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 from sklearn.metrics import r2_score
+from pandas import DataFrame
 from pandas.plotting import (
-    DataFrame,
     autocorrelation_plot,
     # bootstrap_plot,
     lag_plot,
@@ -775,7 +775,7 @@ def plot_block_one(df: DataFrame) -> None:
     # =========================================================================
     # Odd Frame
     # =========================================================================
-    data_frame_o = pd.concat(
+    df_o = pd.concat(
         [
             df.iloc[:, [-1]],
             rolling_mean_filter(df.iloc[:, [-1]], _k)[0].iloc[:, [-1]],
@@ -787,7 +787,7 @@ def plot_block_one(df: DataFrame) -> None:
     # =========================================================================
     # Even Frame
     # =========================================================================
-    data_frame_e = pd.concat(
+    df_e = pd.concat(
         [
             rolling_mean_filter(df.iloc[:, [-1]], _k)[1].iloc[:, [-1]],
             kol_zur_filter(df.iloc[:, [-1]], _k)[1].iloc[:, [-1]],
@@ -796,24 +796,24 @@ def plot_block_one(df: DataFrame) -> None:
     )
     plt.figure()
     plt.plot(
-        data_frame_o.iloc[:, 0],
+        df_o.iloc[:, 0],
         linewidth=3,
         label='Labor Capital Intensity'
     )
     plt.plot(
-        data_frame_o.iloc[:, 1],
+        df_o.iloc[:, 1],
         label=f'Rolling Mean, {1+_k}'
     )
     plt.plot(
-        data_frame_o.iloc[:, 2],
+        df_o.iloc[:, 2],
         label=f'Kolmogorov--Zurbenko Filter, {1+_k}'
     )
     plt.plot(
-        data_frame_o.iloc[:, 3],
+        df_o.iloc[:, 3],
         label='Single Exponential Smoothing, Alpha={:,.2f}'.format(0.25)
     )
     plt.plot(
-        data_frame_e,
+        df_e,
         label=[
             f'Rolling Mean, {_k}',
             f'Kolmogorov--Zurbenko Filter, {_k}',
@@ -849,7 +849,7 @@ def plot_block_two(df: DataFrame) -> None:
     # =========================================================================
     # Odd Frame
     # =========================================================================
-    data_frame_o = pd.concat(
+    df_o = pd.concat(
         [
             df.iloc[:, [-1]],
             rolling_mean_filter(df.iloc[:, [-1]], _k)[0].iloc[:, [-1]],
@@ -863,7 +863,7 @@ def plot_block_two(df: DataFrame) -> None:
     # =========================================================================
     # Even Frame
     # =========================================================================
-    data_frame_e = pd.concat(
+    df_e = pd.concat(
         [
             rolling_mean_filter(df.iloc[:, [-1]], _k)[1],
             kol_zur_filter(df.iloc[:, [-1]], _k)[1],
@@ -872,32 +872,32 @@ def plot_block_two(df: DataFrame) -> None:
     )
     plt.figure()
     plt.plot(
-        data_frame_o.iloc[:, 0],
+        df_o.iloc[:, 0],
         linewidth=3,
         label='Labor Productivity'
     )
     plt.plot(
-        data_frame_o.iloc[:, 1],
+        df_o.iloc[:, 1],
         label=f'Rolling Mean, {_k}'
     )
     plt.plot(
-        data_frame_o.iloc[:, 2],
+        df_o.iloc[:, 2],
         label=f'Kolmogorov--Zurbenko Filter, {_k}'
     )
     plt.plot(
-        data_frame_o.iloc[:, 3],
+        df_o.iloc[:, 3],
         label='Single Exponential Smoothing, Alpha={:,.2f}'.format(0.25)
     )
     plt.plot(
-        data_frame_o.iloc[:, 4],
+        df_o.iloc[:, 4],
         label='Single Exponential Smoothing, Alpha={:,.2f}'.format(0.35)
     )
     plt.plot(
-        data_frame_o.iloc[:, 5],
+        df_o.iloc[:, 5],
         label='Single Exponential Smoothing, Alpha={:,.2f}'.format(0.45)
     )
     plt.plot(
-        data_frame_e,
+        df_e,
         label=[
             f'Rolling Mean, {_k-1}',
             f'Rolling Mean, {_k+1}',
@@ -1072,11 +1072,11 @@ def plot_census_complex(df: DataFrame) -> None:
     # =========================================================================
     # TODO: Eliminate This Function
     # =========================================================================
-    _df = df.copy(deep=True)
+    _df = df.copy()
     plot_pearson_r_test(_df)
-    _df = df.copy(deep=True)
+    _df = df.copy()
     plot_kol_zur_filter(_df)
-    _df = df.copy(deep=True)
+    _df = df.copy()
     plot_ewm(_df)
 
 
@@ -1720,7 +1720,7 @@ def plot_growth_elasticity(df: DataFrame) -> None:
 
 def plot_increment(df: DataFrame) -> None:
     FLAG = False
-    FOLDER = '/home/alexander/science'
+    DIR = '/home/alexander/science'
     FILE_NAME = 'fig_file_name.pdf'
     fig, axs = plt.subplots(2, 1)
     axs[0].plot(df.iloc[:, 0], df.iloc[:, 1], label='Curve')
@@ -1743,7 +1743,7 @@ def plot_increment(df: DataFrame) -> None:
     fig.tight_layout()
     if FLAG:
         fig.savefig(
-            os.path.join(FOLDER, FILE_NAME),
+            os.path.join(DIR, FILE_NAME),
             format='pdf', dpi=900
         )
     else:
@@ -1789,26 +1789,26 @@ def plot_kol_zur_filter(df: DataFrame) -> None:
     -------
     None
     '''
-    data_frame_o, data_frame_e, residuals_o, residuals_e = kol_zur_filter(df)
+    df_o, df_e, residuals_o, residuals_e = kol_zur_filter(df)
 
     plt.figure(1)
     plt.title('Kolmogorov$-$Zurbenko Filter')
     plt.xlabel('Period')
     plt.ylabel('Measure')
     plt.scatter(
-        data_frame_o.iloc[:, [0]].index,
-        data_frame_o.iloc[:, [0]],
+        df_o.iloc[:, [0]].index,
+        df_o.iloc[:, [0]],
         label='Original Series'
     )
     plt.plot(
-        data_frame_o.iloc[:, 1:],
+        df_o.iloc[:, 1:],
         label=['$KZF(\\lambda = {})$'.format(int(_.split('_')[-1], 16))
-               for _ in data_frame_o.columns[1:]]
+               for _ in df_o.columns[1:]]
     )
     plt.plot(
-        data_frame_e,
+        df_e,
         label=['$KZF(\\lambda = {})$'.format(int(_.split('_')[-1], 16))
-               for _ in data_frame_e.columns]
+               for _ in df_e.columns]
     )
     plt.grid(True)
     plt.legend()
@@ -2126,34 +2126,33 @@ def plot_rolling_mean_filter(df: DataFrame) -> None:
     -------
     None
     '''
-    data_frame_o, data_frame_e, residuals_o, residuals_e = rolling_mean_filter(
-        df)
+    df_o, df_e, residuals_o, residuals_e = rolling_mean_filter(df)
     plt.figure(1)
     plt.title(
-        f'Rolling Mean {data_frame_o.index[0]}$-${data_frame_o.index[-1]}'
+        f'Rolling Mean {df_o.index[0]}$-${df_o.index[-1]}'
     )
     plt.xlabel('Period')
     plt.ylabel('Percentage')
     plt.scatter(
-        data_frame_o.iloc[:, [0]].index,
-        data_frame_o.iloc[:, [0]],
+        df_o.iloc[:, [0]].index,
+        df_o.iloc[:, [0]],
         label='Original Series'
     )
     plt.plot(
-        data_frame_o.iloc[:, 1:],
+        df_o.iloc[:, 1:],
         label=['$\\hat Y_{{m = {}}}$'.format(int(_.split('_')[-1], 16))
-               for _ in data_frame_o.columns[1:]]
+               for _ in df_o.columns[1:]]
     )
     plt.plot(
-        data_frame_e,
+        df_e,
         label=['$\\hat Y_{{m = {}}}$'.format(int(_.split('_')[-1], 16))
-               for _ in data_frame_e.columns]
+               for _ in df_e.columns]
     )
     plt.grid(True)
     plt.legend()
     plt.figure(2)
     plt.title(
-        f'Rolling Mean Residuals {data_frame_o.index[0]}$-${data_frame_o.index[-1]}'
+        f'Rolling Mean Residuals {df_o.index[0]}$-${df_o.index[-1]}'
     )
     plt.xlabel('Period')
     plt.ylabel('Residuals ($\\delta$), Percent')

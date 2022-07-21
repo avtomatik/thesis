@@ -12,12 +12,12 @@ from plot.lib import plot_rolling_mean_filter
 from plot.lib import plot_growth_elasticity
 
 
-FOLDER = '/media/alexander/321B-6A94'
+DIR = '/media/alexander/321B-6A94'
 ARCHIVE_NAME = 'dataset_usa_census1949.zip'
 SERIES_ID = 'J0014'
 
 
-os.chdir(FOLDER)
+os.chdir(DIR)
 df = extract_usa_census(ARCHIVE_NAME, SERIES_ID)
 plot_growth_elasticity(df)
 plot_rolling_mean_filter(df)

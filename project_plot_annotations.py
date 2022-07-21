@@ -65,7 +65,8 @@ def procedure_b(x, y, dx, dy):
 # =============================================================================
 # TODO: Revise Dataset
 # =============================================================================
-os.chdir('/media/alexander/321B-6A94')
+DIR = '/media/alexander/321B-6A94'
+os.chdir(DIR)
 data_frame = get_dataset_common_archived()
 T = data_frame.iloc[:, 0]
 # =============================================================================

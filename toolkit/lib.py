@@ -40,28 +40,14 @@ def calculate_curve_fit_params(df: DataFrame) -> None:
     '''
     ================== =================================
     df.index           Period
-    df.iloc[:, 0]      Capital
-    df.iloc[:, 1]      Labor
-    df.iloc[:, 2]      Product
+    df.iloc[:, 0]      Labor Capital Intensity
+    df.iloc[:, 1]      Labor Productivity
     ================== =================================
     '''
-    # =========================================================================
-    # TODO: Use Feed from transform_cobb_douglas()
-    # =========================================================================
 
     def _curve(regressor: pd.Series, b: float, k: float) -> pd.Series:
         return regressor.pow(k).mul(b)
 
-    # =========================================================================
-    # Labor Capital Intensity
-    # =========================================================================
-    df['lab_cap_int'] = df.iloc[:, 0].div(
-        df.iloc[:, 1])
-    # =========================================================================
-    # Labor Productivity
-    # =========================================================================
-    df['lab_product'] = df.iloc[:, 2].div(
-        df.iloc[:, 1])
     params, matrix = optimization.curve_fit(
         _curve,
         df.iloc[:, -2],
@@ -75,36 +61,20 @@ def calculate_plot_uspline(df: DataFrame):
     '''
     ================== =================================
     df.index           Period
-    df.iloc[:, 0]      Capital
-    df.iloc[:, 1]      Labor
-    df.iloc[:, 2]      Product
+    df.iloc[:, 0]      Labor Capital Intensity
+    df.iloc[:, 1]      Labor Productivity
     ================== =================================
     '''
+    df.sort_values(df.columns[0], inplace=True)
     # =========================================================================
-    # TODO: Increase Cohesion
+    # _new_axis = np.linspace(df.iloc[:, [0]].min(), df.iloc[:, [0]].max(), df.shape[0] - 1)
     # =========================================================================
-    # =========================================================================
-    # TODO: Use Feed from transform_cobb_douglas()
-    # =========================================================================
-    # =========================================================================
-    # Labor Capital Intensity
-    # =========================================================================
-    df['lab_cap_int'] = df.iloc[:, 0].div(df.iloc[:, 1])
-    # =========================================================================
-    # Labor Productivity
-    # =========================================================================
-    df['lab_product'] = df.iloc[:, 2].div(df.iloc[:, 1])
-    chunk = df.iloc[:, -2:]
-    chunk.sort_values(chunk.columns[0], inplace=True)
-    spl = UnivariateSpline(chunk.iloc[:, [0]], chunk.iloc[:, [1]])
-    # =========================================================================
-    # _new_axis = np.linspace(chunk.iloc[:, [0]].min(), chunk.iloc[:, [0]].max(), chunk.shape[0] - 1)
-    # =========================================================================
+    spl = UnivariateSpline(df.iloc[:, [0]], df.iloc[:, [1]])
     plt.figure()
-    plt.scatter(chunk.iloc[:, [0]], chunk.iloc[:, [1]], label='Original')
+    plt.scatter(df.iloc[:, [0]], df.iloc[:, [1]], label='Original')
     plt.plot(
-        chunk.iloc[:, 0],
-        spl(chunk.iloc[:, 0]),
+        df.iloc[:, 0],
+        spl(df.iloc[:, 0]),
         'g',
         lw=3,
         label='Spline'
@@ -460,7 +430,9 @@ def m_spline_ea(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFra
                 df,
                 DataFrame(_splined, columns=['Splined']),
             ],
-            axis=1, sort=True),
+            axis=1,
+            sort=True
+        ),
         tuple(_params_k)
     )
 
@@ -508,7 +480,9 @@ def m_spline_eb(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFra
                 df,
                 DataFrame(_splined, columns=['Spline'])
             ],
-            axis=1, sort=True),
+            axis=1,
+            sort=True
+        ),
         tuple(_params_k)
     )
 
@@ -566,7 +540,9 @@ def m_spline_la(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFra
                 df,
                 DataFrame(_splined, columns=['Spline'])
             ],
-            axis=1, sort=True),
+            axis=1,
+            sort=True
+        ),
         tuple(_params_k)
     )
 
@@ -608,7 +584,9 @@ def m_spline_lb(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFra
                 df,
                 DataFrame(_splined, columns=['Spline'])
             ],
-            axis=1, sort=True),
+            axis=1,
+            sort=True
+        ),
         tuple(_params_k)
     )
 
@@ -672,7 +650,9 @@ def m_spline_lls(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFr
                 df,
                 DataFrame(_splined, columns=['Splined']),
             ],
-            axis=1, sort=True),
+            axis=1,
+            sort=True
+        ),
         tuple(_params_a)
     )
 
