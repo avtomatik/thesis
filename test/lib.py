@@ -7,6 +7,17 @@ Created on Sun Jun 12 12:19:54 2022
 """
 
 
+from functools import partial
+from pandas import DataFrame
+import pandas as pd
+from extract.lib import extract_can_annual
+from extract.lib import extract_can_quarter
+from extract.lib import extract_usa_bea
+from extract.lib import extract_usa_bls
+from extract.lib import extract_usa_census
+from extract.lib import extract_usa_classic
+
+
 ARCHIVE_NAMES_UTILISED = (
     'dataset_douglas.zip',
     'dataset_usa_bea-release-2019-12-19-Survey.zip',
@@ -246,11 +257,11 @@ def test_data_consistency_d():
     # =========================================================================
     # Tested: `k3n31gd1es000` = `k3n31gd1eq000` + `k3n31gd1ip000` + `k3n31gd1st000`
     # =========================================================================
-    test_sub_a(df)
+    test_substitute_a(df)
     # =========================================================================
     # Comparison of `k3n31gd1es000` out of control_frame with `k3n31gd1es000` out of test_frame
     # =========================================================================
-    test_sub_b(df)
+    test_substitute_b(df)
     # =========================================================================
     # Future Project: Test Ratio of Manufacturing Fixed Assets to Overall Fixed Assets
     # =========================================================================
@@ -325,13 +336,13 @@ def test_procedure(kwargs_list: list[dict]) -> None:
     df.iloc[:, [-1]].dropna(axis=0).plot(grid=True)
 
 
-def test_sub_a(df: DataFrame):
+def test_substitute_a(df: DataFrame):
     df['delta_sm'] = df.iloc[:, 0].sub(df.iloc[:, [3, 4, 5]].sum(axis=1))
     df.dropna(axis=0, inplace=True)
     autocorrelation_plot(df.iloc[:, [-1]])
 
 
-def test_sub_b(df: DataFrame):
+def test_substitute_b(df: DataFrame):
     # df['delta_eq'] = df.iloc[:, 0].sub(df.iloc[:, -1])
     df['delta_eq'] = df.iloc[:, 0].mul(4).div(
         df.iloc[:, 0].add(df.iloc[:, -1])).sub(2)
@@ -358,8 +369,9 @@ def test_usa_bea_sfat_series() -> DataFrame:
     # =========================================================================
     # Fixed Assets Series, 1925--2016
     # =========================================================================
-    SERIES_IDS = ('k3n31gd1es000', 'k3n31gd1eq000',
-                  'k3n31gd1ip000', 'k3n31gd1st000',)
+    SERIES_IDS = (
+        'k3n31gd1es000', 'k3n31gd1eq000', 'k3n31gd1ip000', 'k3n31gd1st000',
+    )
     test_frame = pd.concat(
         [
             extract_usa_bea(ARCHIVE_NAME, WB_NAME, SH_NAME, series_id)
