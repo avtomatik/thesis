@@ -12,6 +12,10 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame
 from scipy import signal
+from sklearn.linear_model import Lasso
+from sklearn.linear_model import LassoCV
+from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import Ridge
 from extract.lib import extract_can
 from extract.lib import extract_can_annual
 from extract.lib import extract_can_capital
@@ -57,242 +61,6 @@ FILE_NAMES_UTILISED = (
     'dataset_usa_frb_us3_ip_2018_09_02.csv',
     'dataset_usa_reference_ru_kurenkov_yu_v.csv',
 )
-
-
-def data_select(df: DataFrame, query):
-    for column, value in query['filter'].items():
-        df = df[df.iloc[:, column] == value]
-    return df
-
-
-def collect_archived() -> DataFrame:
-    ARCHIVE_NAMES = (
-        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
-        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
-    )
-    WB_NAMES = (
-        'Section1ALL_Hist.xls',
-        'Section1all_xls.xls',
-        'Section5ALL_Hist.xls',
-        'Section5all_xls.xls',
-    )
-    SH_NAMES = (
-        '10105 Ann',
-        '10106 Ann',
-        '50900 Ann',
-    )
-    SERIES_IDS = (
-        # =====================================================================
-        # Nominal Investment Series: A006RC1, 1929--2012
-        # =====================================================================
-        'A006RC1',
-        # =====================================================================
-        # Real Gross Domestic Product Series, 2005=100: A191RX1, 1929--2012
-        # =====================================================================
-        'A191RX1',
-        # =====================================================================
-        # Fixed Assets Series: K160491, 1951--2011
-        # `K160491` Replaced with `K10070` in `collect_combined()`
-        # =====================================================================
-        'K160491',
-    )
-    _data_bea = pd.concat(
-        [
-            pd.concat(
-                [
-                    extract_usa_bea(ARCHIVE_NAMES[0], _wb, _sh, _id)
-                    for _wb, _sh, _id in zip(tuple(WB_NAMES[2*(_ // 2)] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
-                ],
-                axis=1,
-                sort=True
-            ),
-            pd.concat(
-                [
-                    extract_usa_bea(ARCHIVE_NAMES[1], _wb, _sh, _id)
-                    for _wb, _sh, _id in zip(tuple(WB_NAMES[1 + 2*(_ // 2)] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
-                ],
-                axis=1,
-                sort=True
-            ),
-        ],
-        sort=True
-    ).drop_duplicates()
-    _df = pd.concat(
-        [
-            # =====================================================================
-            # Do Not Use As It Is CPI-U Not PPI
-            # =====================================================================
-            collect_usa_bls_cpiu(),
-            _data_bea,
-        ],
-        axis=1,
-        sort=True
-    ).dropna(axis=0)
-    # =========================================================================
-    # Deflator, 2005=100
-    # =========================================================================
-    _df['deflator'] = _df.iloc[:, 0].add(1).cumprod()
-    _df.iloc[:, -1] = _df.iloc[:, -1].rdiv(_df.loc[2005, _df.columns[-1]])
-    # =========================================================================
-    # Investment, 2005=100
-    # =========================================================================
-    _df['investment'] = _df.iloc[:, 1].mul(_df.iloc[:, -1])
-    # =========================================================================
-    # Capital, 2005=100
-    # =========================================================================
-    _df['capital'] = _df.iloc[:, 3].mul(_df.iloc[:, -1])
-    # =========================================================================
-    # Capital Retirement Ratio
-    # =========================================================================
-    _df['ratio_mu'] = _df.iloc[:, -2].mul(1).sub(_df.iloc[:, -1].shift(-1)).div(
-        _df.iloc[:, -1]).add(1)
-    return (
-        _df.loc[:, ['investment', 'A191RX1',
-                    'capital', 'ratio_mu']].dropna(axis=0),
-        _df.loc[:, ['ratio_mu']].dropna(axis=0),
-    )
-
-
-def collect_bea_def() -> DataFrame:
-    '''Intent: Returns Cumulative Price Index for Some Base Year from Certain Type BEA Deflator File'''
-    FILE_NAME = 'dataset_usa_bea-GDPDEF.xls'
-    df = pd.read_excel(
-        FILE_NAME,
-        names=['period', 'value'],
-        index_col=0,
-        skiprows=15,
-        parse_dates=True
-    )
-    return df.groupby(df.index.year).prod().pow(1/4)
-
-
-def collect_bea_gdp():
-    ARCHIVE_NAMES = (
-        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
-        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
-    )
-    WB_NAMES = (
-        'Section1ALL_Hist.xls',
-        'Section1all_xls.xls',
-    )
-    SH_NAMES = (
-        '10105 Ann',
-        '10106 Ann',
-    )
-    SERIES_IDS = (
-        # =====================================================================
-        # Nominal Gross Domestic Product Series: A191RC1, 1929--2012
-        # =====================================================================
-        'A191RC1',
-        # =====================================================================
-        # Real Gross Domestic Product Series, 2005=100: A191RX1, 1929--2012
-        # =====================================================================
-        'A191RX1',
-    )
-    return pd.concat(
-        [
-            pd.concat(
-                [
-                    extract_usa_bea(ARCHIVE_NAMES[0], WB_NAMES[0], sh, _id)
-                    for sh, _id in zip(SH_NAMES, SERIES_IDS)
-                ],
-                axis=1,
-                sort=True
-            ),
-            pd.concat(
-                [
-                    extract_usa_bea(ARCHIVE_NAMES[1], WB_NAMES[1], sh, _id)
-                    for sh, _id in zip(SH_NAMES, SERIES_IDS)
-                ],
-                axis=1,
-                sort=True
-            ),
-        ],
-        sort=True
-    ).drop_duplicates()
-
-
-def collect_brown() -> DataFrame:
-    # =========================================================================
-    # Fetch Data from `Reference RU Brown M. 0597_088.pdf`, Page 193
-    # Dependent on `extract_usa_classic`
-    # Out of Kendrick J.W. Data & Table 2. of `Reference RU Brown M. 0597_088.pdf`
-    # =========================================================================
-    # =========================================================================
-    # FN:Murray Brown
-    # ORG:University at Buffalo;Economics
-    # TITLE:Professor Emeritus, Retired
-    # EMAIL;PREF;INTERNET:mbrown@buffalo.edu
-    # =========================================================================
-    ARCHIVE_NAMES = ('dataset_usa_brown.zip', 'dataset_usa_kendrick.zip',)
-    _df = pd.read_csv(ARCHIVE_NAMES[0], skiprows=4, usecols=(3,))
-    MAP_COLUMNS = {
-        f'series_{hex(_)}': col for _, col in enumerate(sorted(set(_df.iloc[:, 0])))
-    }
-    _b_frame = pd.concat(
-        [
-            extract_usa_classic('dataset_usa_brown.zip', series_id)
-            for series_id in MAP_COLUMNS.values()
-        ],
-        axis=1,
-        sort=True
-    )
-    _b_frame.columns = MAP_COLUMNS.keys()
-    # =========================================================================
-    # Валовой продукт (в млн. долл., 1929 г.)
-    # Чистый основной капитал (в млн. долл., 1929 г.)
-    # Используемый основной капитал (в млн. долл., 1929 г.)
-    # Отработанные человеко-часы
-    # Первая аппроксимация рядов загрузки мощностей, полученная с помощью метода Уортонской школы
-    # Вторая аппроксимация рядов загрузки мощностей, полученная с помощью итеративного процесса
-    # =========================================================================
-    # =========================================================================
-    # Gross Domestic Product, USD 1,000,000, 1929=100
-    # Net Fixed Assets, USD 1,000,000, 1929=100
-    # Utilized Fixed Assets, USD 1,000,000, 1929=100
-    # Actual Man-Hours Worked
-    # _
-    # _
-    # =========================================================================
-    SERIES_IDS = ('KTA03S07', 'KTA03S08', 'KTA10S08', 'KTA15S07', 'KTA15S08',)
-    _k_frame = pd.concat(
-        [
-            extract_usa_classic(ARCHIVE_NAMES[1], series_id)
-            for series_id in SERIES_IDS
-        ],
-        axis=1,
-        sort=True
-    ).truncate(before=1889)
-    df = pd.concat(
-        [
-            # =================================================================
-            # Omit Two Last Rows
-            # =================================================================
-            _k_frame[:-2],
-            # =================================================================
-            # Первая аппроксимация рядов загрузки мощностей, полученная с помощью метода Уортонской школы
-            # =================================================================
-            _b_frame.iloc[:, [-2]].truncate(after=1953)
-        ],
-        axis=1,
-        sort=True
-    )
-    df = df.assign(
-        series_0x0=df.iloc[:, 0].sub(df.iloc[:, 1]),
-        series_0x1=df.iloc[:, 3].add(df.iloc[:, 4]),
-        series_0x2=df.iloc[:, [3, 4]].sum(axis=1).rolling(
-            2).mean().mul(df.iloc[:, 5]).div(100),
-        series_0x3=df.iloc[:, 2],
-    )
-    return pd.concat(
-        [
-            df.iloc[:, -4:].dropna(axis=0),
-            # =================================================================
-            # Brown M. Numbers Not Found in Kendrick J.W. For Years Starting From 1954 Inclusive
-            # =================================================================
-            _b_frame.iloc[:, range(4)].truncate(before=1954)
-        ]
-    ).round()
 
 
 def collect_can():
@@ -500,8 +268,9 @@ def collect_can():
 
 
 def collect_can_price_a():
-    FILE_NAME = '/home/alexander/projects/stat_can_cap.xlsx'
-    _df = pd.read_excel(FILE_NAME, index_col=0)
+    DIR = '/home/alexander/science'
+    FILE_NAME = 'stat_can_cap.xlsx'
+    _df = pd.read_excel(os.path.join(DIR, FILE_NAME), index_col=0)
     groups = [
         [[_, 5 + _] for _ in range(5)],
         [[_, 5 + _] for _ in range(35, 39)],
@@ -524,8 +293,9 @@ def collect_can_price_a():
 
 
 def collect_can_price_b():
-    FILE_NAME = '/home/alexander/projects/stat_can_cap.xlsx'
-    _df = pd.read_excel(FILE_NAME, index_col=0)
+    DIR = '/home/alexander/science'
+    FILE_NAME = 'stat_can_cap.xlsx'
+    _df = pd.read_excel(os.path.join(DIR, FILE_NAME), index_col=0)
     df = DataFrame()
     for _ in range(21, 24):
         chunk = _df.iloc[:, [_]].dropna(axis=0)
@@ -536,7 +306,237 @@ def collect_can_price_b():
     return df
 
 
-def collect_capital_combined_archived():
+def collect_archived() -> DataFrame:
+    ARCHIVE_NAMES = (
+        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
+        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
+    )
+    WB_NAMES = (
+        'Section1ALL_Hist.xls',
+        'Section1all_xls.xls',
+        'Section5ALL_Hist.xls',
+        'Section5all_xls.xls',
+    )
+    SH_NAMES = (
+        '10105 Ann',
+        '10106 Ann',
+        '50900 Ann',
+    )
+    SERIES_IDS = (
+        # =====================================================================
+        # Nominal Investment Series: A006RC1, 1929--2012
+        # =====================================================================
+        'A006RC1',
+        # =====================================================================
+        # Real Gross Domestic Product Series, 2005=100: A191RX1, 1929--2012
+        # =====================================================================
+        'A191RX1',
+        # =====================================================================
+        # Fixed Assets Series: K160491, 1951--2011
+        # `K160491` Replaced with `K10070` in `collect_combined()`
+        # =====================================================================
+        'K160491',
+    )
+    _data_bea = pd.concat(
+        [
+            pd.concat(
+                [
+                    extract_usa_bea(ARCHIVE_NAMES[0], _wb, _sh, _id)
+                    for _wb, _sh, _id in zip(tuple(WB_NAMES[2*(_ // 2)] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
+                ],
+                axis=1,
+                sort=True
+            ),
+            pd.concat(
+                [
+                    extract_usa_bea(ARCHIVE_NAMES[1], _wb, _sh, _id)
+                    for _wb, _sh, _id in zip(tuple(WB_NAMES[1 + 2*(_ // 2)] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
+                ],
+                axis=1,
+                sort=True
+            ),
+        ],
+        sort=True
+    ).drop_duplicates()
+    _df = pd.concat(
+        [
+            # =====================================================================
+            # Do Not Use As It Is CPI-U Not PPI
+            # =====================================================================
+            collect_usa_bls_cpiu(),
+            _data_bea,
+        ],
+        axis=1,
+        sort=True
+    ).dropna(axis=0)
+    # =========================================================================
+    # Deflator, 2005=100
+    # =========================================================================
+    _df['deflator'] = _df.iloc[:, 0].add(1).cumprod()
+    _df.iloc[:, -1] = _df.iloc[:, -1].rdiv(_df.loc[2005, _df.columns[-1]])
+    # =========================================================================
+    # Investment, 2005=100
+    # =========================================================================
+    _df['investment'] = _df.iloc[:, 1].mul(_df.iloc[:, -1])
+    # =========================================================================
+    # Capital, 2005=100
+    # =========================================================================
+    _df['capital'] = _df.iloc[:, 3].mul(_df.iloc[:, -1])
+    # =========================================================================
+    # Capital Retirement Ratio
+    # =========================================================================
+    _df['ratio_mu'] = _df.iloc[:, -2].mul(1).sub(_df.iloc[:, -1].shift(-1)).div(
+        _df.iloc[:, -1]).add(1)
+    return (
+        _df.loc[:, ['investment', 'A191RX1',
+                    'capital', 'ratio_mu']].dropna(axis=0),
+        _df.loc[:, ['ratio_mu']].dropna(axis=0),
+    )
+
+
+def collect_bea_def() -> DataFrame:
+    '''Intent: Returns Cumulative Price Index for Some Base Year from Certain Type BEA Deflator File'''
+    FILE_NAME = 'dataset_usa_bea-GDPDEF.xls'
+    df = pd.read_excel(
+        FILE_NAME,
+        names=['period', 'value'],
+        index_col=0,
+        skiprows=15,
+        parse_dates=True
+    )
+    return df.groupby(df.index.year).prod().pow(1/4)
+
+
+def collect_bea_gdp() -> DataFrame:
+    ARCHIVE_NAMES = (
+        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
+        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
+    )
+    WB_NAMES = (
+        'Section1ALL_Hist.xls',
+        'Section1all_xls.xls',
+    )
+    SH_NAMES = (
+        '10105 Ann',
+        '10106 Ann',
+    )
+    SERIES_IDS = (
+        # =====================================================================
+        # Nominal Gross Domestic Product Series: A191RC1, 1929--2012
+        # =====================================================================
+        'A191RC1',
+        # =====================================================================
+        # Real Gross Domestic Product Series, 2005=100: A191RX1, 1929--2012
+        # =====================================================================
+        'A191RX1',
+    )
+    return pd.concat(
+        [
+            pd.concat(
+                [
+                    extract_usa_bea(ARCHIVE_NAMES[0], WB_NAMES[0], sh, _id)
+                    for sh, _id in zip(SH_NAMES, SERIES_IDS)
+                ],
+                axis=1,
+                sort=True
+            ),
+            pd.concat(
+                [
+                    extract_usa_bea(ARCHIVE_NAMES[1], WB_NAMES[1], sh, _id)
+                    for sh, _id in zip(SH_NAMES, SERIES_IDS)
+                ],
+                axis=1,
+                sort=True
+            ),
+        ],
+        sort=True
+    ).drop_duplicates()
+
+
+def collect_brown() -> DataFrame:
+    # =========================================================================
+    # Fetch Data from `Reference RU Brown M. 0597_088.pdf`, Page 193
+    # Dependent on `extract_usa_classic`
+    # Out of Kendrick J.W. Data & Table 2. of `Reference RU Brown M. 0597_088.pdf`
+    # =========================================================================
+    # =========================================================================
+    # FN:Murray Brown
+    # ORG:University at Buffalo;Economics
+    # TITLE:Professor Emeritus, Retired
+    # EMAIL;PREF;INTERNET:mbrown@buffalo.edu
+    # =========================================================================
+    ARCHIVE_NAMES = ('dataset_usa_brown.zip', 'dataset_usa_kendrick.zip',)
+    _df = pd.read_csv(ARCHIVE_NAMES[0], skiprows=4, usecols=(3,))
+    MAP_COLUMNS = {
+        f'series_{hex(_)}': col for _, col in enumerate(sorted(set(_df.iloc[:, 0])))
+    }
+    _b_frame = pd.concat(
+        [
+            extract_usa_classic('dataset_usa_brown.zip', series_id)
+            for series_id in MAP_COLUMNS.values()
+        ],
+        axis=1,
+        sort=True
+    )
+    _b_frame.columns = MAP_COLUMNS.keys()
+    # =========================================================================
+    # Валовой продукт (в млн. долл., 1929 г.)
+    # Чистый основной капитал (в млн. долл., 1929 г.)
+    # Используемый основной капитал (в млн. долл., 1929 г.)
+    # Отработанные человеко-часы
+    # Первая аппроксимация рядов загрузки мощностей, полученная с помощью метода Уортонской школы
+    # Вторая аппроксимация рядов загрузки мощностей, полученная с помощью итеративного процесса
+    # =========================================================================
+    # =========================================================================
+    # Gross Domestic Product, USD 1,000,000, 1929=100
+    # Net Fixed Assets, USD 1,000,000, 1929=100
+    # Utilized Fixed Assets, USD 1,000,000, 1929=100
+    # Actual Man-Hours Worked
+    # _
+    # _
+    # =========================================================================
+    SERIES_IDS = ('KTA03S07', 'KTA03S08', 'KTA10S08', 'KTA15S07', 'KTA15S08',)
+    _k_frame = pd.concat(
+        [
+            extract_usa_classic(ARCHIVE_NAMES[1], series_id)
+            for series_id in SERIES_IDS
+        ],
+        axis=1,
+        sort=True
+    ).truncate(before=1889)
+    df = pd.concat(
+        [
+            # =================================================================
+            # Omit Two Last Rows
+            # =================================================================
+            _k_frame[:-2],
+            # =================================================================
+            # Первая аппроксимация рядов загрузки мощностей, полученная с помощью метода Уортонской школы
+            # =================================================================
+            _b_frame.iloc[:, [-2]].truncate(after=1953)
+        ],
+        axis=1,
+        sort=True
+    )
+    df = df.assign(
+        series_0x0=df.iloc[:, 0].sub(df.iloc[:, 1]),
+        series_0x1=df.iloc[:, 3].add(df.iloc[:, 4]),
+        series_0x2=df.iloc[:, [3, 4]].sum(axis=1).rolling(
+            2).mean().mul(df.iloc[:, 5]).div(100),
+        series_0x3=df.iloc[:, 2],
+    )
+    return pd.concat(
+        [
+            df.iloc[:, -4:].dropna(axis=0),
+            # =================================================================
+            # Brown M. Numbers Not Found in Kendrick J.W. For Years Starting From 1954 Inclusive
+            # =================================================================
+            _b_frame.iloc[:, range(4)].truncate(before=1954)
+        ]
+    ).round()
+
+
+def collect_capital_combined_archived() -> DataFrame:
     ARCHIVE_NAMES = (
         'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
         'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
@@ -726,7 +726,7 @@ def collect_census_a():
     return df, df.index.get_loc(1899)
 
 
-def collect_census_b_a():
+def collect_census_b_a() -> DataFrame:
     '''Returns Nominal Million-Dollar Capital, Including Structures & Equipment, Series'''
     ARCHIVE_NAMES = (
         # =====================================================================
@@ -768,7 +768,7 @@ def collect_census_b_a():
     return df.iloc[:, -3:]
 
 
-def collect_census_b_b():
+def collect_census_b_b() -> DataFrame:
     '''Returns Census Fused Capital Deflator'''
     ARCHIVE_NAME = 'dataset_usa_census1975.zip'
     SERIES_IDS = (
@@ -826,13 +826,13 @@ def collect_census_c() -> tuple[DataFrame, tuple[int]]:
     df = pd.concat(
         [
             extract_usa_census(ARCHIVE_NAME, series_id)
-            for series_id in SERIES_IDS.keys()
+            for series_id in SERIES_IDS
         ],
         axis=1,
     )
-    for series_id in SERIES_IDS.keys():
+    for series_id, year in SERIES_IDS.items():
         df.loc[:, series_id] = df.loc[:, [series_id]].div(
-            df.loc[SERIES_IDS[series_id], series_id]
+            df.loc[year, series_id]
         ).mul(100)
     return df, tuple(SERIES_IDS.values())
 
@@ -2270,7 +2270,7 @@ def collect_usa_capital():
     )
 
 
-def collect_usa_frb_cu():
+def collect_usa_frb_cu() -> DataFrame:
     '''Indexed Capacity Utilization Series: CAPUTL.B50001.A, 1967--2012
     CAPUTL.B50001.A Fetching'''
     FILE_NAME = 'dataset_usa_frb_g17_all_annual_2013_06_23.csv'
@@ -2332,7 +2332,7 @@ def collect_usa_frb_fa_def() -> DataFrame:
     return df.iloc[:, [-1]]
 
 
-def collect_usa_frb_ip():
+def collect_usa_frb_ip() -> DataFrame:
     '''Indexed Manufacturing Series: FRB G17 IP, AIPMA_SA_IX, 1919--2018'''
     # =========================================================================
     # TODO: https://www.federalreserve.gov/datadownload/Output.aspx?rel=g17&filetype=zip
@@ -2365,25 +2365,34 @@ def collect_usa_mcconnel(series_ids: tuple[str]) -> DataFrame:
     return df.truncate(before=1980)
 
 
-def collect_usa_sahr_infcf():
-    '''Retrieve Yearly Price Rates from `dataset_usa_infcf16652007.zip`'''
+def collect_usa_sahr_infcf() -> DataFrame:
+    '''
+    Retrieve Yearly Price Rates from `dataset_usa_infcf16652007.zip`
+
+    Returns
+    -------
+    DataFrame
+    '''
     ARCHIVE_NAME = 'dataset_usa_infcf16652007.zip'
     _df = pd.read_csv(ARCHIVE_NAME, index_col=1, usecols=range(4, 7))
-    df = DataFrame()
     # =========================================================================
     # Retrieve First 14 Series
     # =========================================================================
-    for series_id in _df.iloc[:, 0].unique()[:14]:
-        chunk = _df[_df.iloc[:, 0] == series_id].iloc[:, [1]]
-        chunk.columns = [series_id.replace(' ', '_').lower()]
-        df = pd.concat(
-            [df, -price_inverse_single(chunk.rdiv(1))], axis=1, sort=True
-        )
+    df = pd.concat(
+        [
+            -price_inverse_single(
+                _df[_df.iloc[:, 0] == series_id].iloc[:, [1]].rdiv(1)
+            )
+            for series_id in _df.iloc[:, 0].unique()[:14]
+        ],
+        axis=1,
+        sort=True
+    )
     df['cpiu_fused'] = df.mean(axis=1)
     return df.iloc[:, [-1]].dropna(axis=0)
 
 
-def collect_usa_xlsm():
+def collect_usa_xlsm() -> DataFrame:
     ARCHIVE_NAMES = (
         'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
         'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
@@ -2584,7 +2593,7 @@ def collect_version_b() -> tuple[DataFrame]:
     )
 
 
-def collect_version_c():
+def collect_version_c() -> DataFrame:
     '''Data Fetch'''
     capital_frame = pd.concat(
         [
@@ -2630,7 +2639,8 @@ def get_mean_for_min_std():
     # Base Vector v2057818
     # Base Vector v2523013
     # =========================================================================
-    FILE_NAME = '/home/alexander/projects/stat_can_lab.xlsx'
+    DIR = '/home/alexander/science'
+    FILE_NAME = 'stat_can_lab.xlsx'
     SERIES_IDS = (
         'v123355112',
         'v1235071986',
@@ -2638,7 +2648,7 @@ def get_mean_for_min_std():
         'v2057818',
         'v2523013',
     )
-    _df = pd.read_excel(FILE_NAME, index_col=0)
+    _df = pd.read_excel(os.path.join(DIR, FILE_NAME), index_col=0)
     df = DataFrame()
     for series_id in SERIES_IDS:
         chunk = _df.loc[:, [series_id]].dropna(axis=0)
@@ -2747,7 +2757,7 @@ def transform_cobb_douglas(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
     # =========================================================================
     df['lab_product'] = df.iloc[:, 2].div(df.iloc[:, 1])
     # =========================================================================
-    # Original: k=0.25
+    # Original: k=0.25, b=1.01
     # =========================================================================
     k, b = np.polyfit(
         np.log(df.iloc[:, -2].astype(float)),
@@ -2813,7 +2823,7 @@ def transform_cobb_douglas_alt(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
     # =========================================================================
     df['lab_product'] = df.iloc[:, 2].div(df.iloc[:, 1])
     # =========================================================================
-    # Original: k=0.25
+    # Original: k=0.25, b=1.01
     # =========================================================================
     k, b = np.polyfit(
         np.log(df.iloc[:, -2]),
@@ -2848,7 +2858,7 @@ def transform_cobb_douglas_alt(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
     # =========================================================================
     df['_lab_product'] = df.iloc[:, 3].div(df.iloc[:, 1])
     # =========================================================================
-    # Original: _k=0.25
+    # Original: _k=0.25, _b=1.01
     # =========================================================================
     _k, _b = np.polyfit(
         np.log(df.iloc[:, 4]),
@@ -2877,81 +2887,98 @@ def transform_cobb_douglas_alt(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
     df['_prod_comp_roll_sub'] = df.iloc[:, -2].sub(df.iloc[:, -1])
     return df, (k, np.exp(b),), (_k, np.exp(_b),)
 
-# def transform_cobb_douglas(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
-# =============================================================================
-#     TODO: Implement Additional Features
-# =============================================================================
-#     '''
-#     df.index: Period,
-#     df.iloc[:, 0]: Capital,
-#     df.iloc[:, 1]: Labor,
-#     df.iloc[:, 2]: Product
-#     '''
-#     from sklearn.linear_model import Lasso
-#     from sklearn.linear_model import LassoCV
-#     from sklearn.linear_model import LinearRegression
-#     from sklearn.linear_model import Ridge
-#     # =========================================================================
-#     # Labor Capital Intensity
-#     # =========================================================================
-#     df['lab_cap_int'] = df.iloc[:, 0].div(df.iloc[:, 1])
-#     # =========================================================================
-#     # Labor Productivity
-#     # =========================================================================
-#     df['lab_product'] = df.iloc[:, 2].div(df.iloc[:, 1])
-#     # # =========================================================================
-#     # # TODO: Refresh
-#     # # =========================================================================
-#     # df['_lab_cap_int'] = np.vstack(
-#     #     (np.zeros((df.shape[0], 1)).T,
-#     #      np.log(df.iloc[:, [-2]])))
 
-# # # =============================================================================
-# # #     las = Lasso(alpha=0.01).fit(df['_lab_cap_int'], np.log(df.iloc[:, -1]))
-# # #     reg = LinearRegression().fit(df['_lab_cap_int'], np.log(df.iloc[:, -1]))
-# # # =============================================================================
-# #     las = LassoCV(cv=4, random_state=0).fit(
-# #         df['_lab_cap_int'], np.log(df.iloc[:, -1]))
-# #     print(las)
-# # # =============================================================================
-# # #     tik = Ridge(alpha=0.01).fit(df['_lab_cap_int'], np.log(df.iloc[:, -1]))
-# # #     print('Lasso: a_0 = {0:.12f} & a_1 = {1:.12f}'.format(las.intercept_, las.coef_[1]))
-# # #     print('Linear Regression: a_0 = {0:.12f} & a_1 = {1:.12f}'.format(reg.intercept_, reg.coef_[1]))
-# # #     print('Ridge Regression: a_0 = {0:.12f} & a_1 = {1:.12f}'.format(tik.intercept_, tik.coef_[1]))
-# # # =============================================================================
-# #     b = np.exp(las.intercept_)
-# # #     # =========================================================================
-# # #     # Original: k=0.25
-# # #     # =========================================================================
-# # #     k, b = np.polyfit(
-# # #         np.log(df.iloc[:, -2]),
-# # #         np.log(df.iloc[:, -1]),
-# # #         deg=1
-# # #     )
+def transform_cobb_douglas_sklearn(df: DataFrame) -> DataFrame:
+    '''
+
+
+    Parameters
+    ----------
+    df : DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Capital
+    df.iloc[:, 1]      Labor
+    df.iloc[:, 2]      Product
+    ================== =================================
+
+    Returns
+    -------
+    None.
+
+    '''
+    # =========================================================================
+    # Labor Capital Intensity
+    # =========================================================================
+    df['lab_cap_int'] = df.iloc[:, 0].div(df.iloc[:, 1])
+    # =========================================================================
+    # Labor Productivity
+    # =========================================================================
+    df['lab_product'] = df.iloc[:, 2].div(df.iloc[:, 1])
+
+    # =========================================================================
+    # Original: k=.25, b=1.01
+    # =========================================================================
+    X = np.column_stack((np.zeros(df.shape[0]), np.log(df.iloc[:, -2])))
+    y = np.log(df.iloc[:, -1].to_numpy())
+# =============================================================================
 #     # =========================================================================
-#     # Description
+#     # Lasso
 #     # =========================================================================
-#     df['cap_to_lab'] = df.iloc[:, 1].div(df.iloc[:, 0])
+#     las = Lasso(alpha=.01).fit(X, y)
+#     k, b = las.coef_[1], las.intercept_
+#     # print('Lasso: k = {:.12f}, b = {:.12f}'.format(k, b))
+#
+#     las = LassoCV(cv=4, random_state=0).fit(X, y)
+#     k, b = las.coef_[1], las.intercept_
+#     # print('LassoCV: k = {:.12f}, b = {:.12f}'.format(k, b))
 #     # =========================================================================
-#     # Fixed Assets Turnover
+#     #     print(reg.score(X, y))
+#     #     print(reg)
+#     #     print(reg.predict(X[:1, ]))
 #     # =========================================================================
-#     df['c_turnover'] = df.iloc[:, 2].div(df.iloc[:, 0])
-#     # =========================================================================
-#     # Product Trend Line=3 Year Moving Average
-#     # =========================================================================
-#     df['prod_roll'] = df.iloc[:, 2].rolling(window=3, center=True).mean()
-#     # df['prod_roll_sub'] = df.iloc[:, 2].sub(df.iloc[:, -1])
-#     # =========================================================================
-#     # Computed Product
-#     # =========================================================================
-# #     df['prod_comp'] = df.iloc[:, 0].pow(las.coef_[1]).mul(
-# #         df.iloc[:, 1].pow(1-las.coef_[1])).mul(b)
-#     # =========================================================================
-#     # Computed Product Trend Line=3 Year Moving Average
-#     # =========================================================================
-#     df['prod_comp_roll'] = df.iloc[:, -1].rolling(window=3, center=True).mean()
-#     df['prod_comp_roll_sub'] = df.iloc[:, -2].sub(df.iloc[:, -1])
-# # #     return df, (k, np.exp(b),)
+# =============================================================================
+
+    reg = LinearRegression().fit(X, y)
+    k, b = reg.coef_[1], reg.intercept_
+    # print('Linear Regression: k = {:.12f}, b = {:.12f}'.format(k, b))
+    # =========================================================================
+    #     reg.score(X, y)
+    #     reg.coef_
+    #     reg.intercept_
+    # =========================================================================
+
+    # =========================================================================
+    # tik = Ridge(alpha=.01).fit(X, y)
+    # k, b = tik.coef_[1], tik.intercept_
+    # print('Ridge Regression: k = {:.12f}, b = {:.12f}'.format(k, b))
+    # =========================================================================
+
+    # =========================================================================
+    # Description
+    # =========================================================================
+    df['cap_to_lab'] = df.iloc[:, 1].div(df.iloc[:, 0])
+    # =========================================================================
+    # Fixed Assets Turnover
+    # =========================================================================
+    df['c_turnover'] = df.iloc[:, 2].div(df.iloc[:, 0])
+    # =========================================================================
+    # Product Trend Line=3 Year Moving Average
+    # =========================================================================
+    df['prod_roll'] = df.iloc[:, 2].rolling(window=3, center=True).mean()
+    df['prod_roll_sub'] = df.iloc[:, 2].sub(df.iloc[:, -1])
+    # =========================================================================
+    # Computed Product
+    # =========================================================================
+    df['prod_comp'] = df.iloc[:, 0].pow(k).mul(
+        df.iloc[:, 1].pow(1-k)).mul(np.exp(b))
+    # =========================================================================
+    # Computed Product Trend Line=3 Year Moving Average
+    # =========================================================================
+    df['prod_comp_roll'] = df.iloc[:, -1].rolling(window=3, center=True).mean()
+    df['prod_comp_roll_sub'] = df.iloc[:, -2].sub(df.iloc[:, -1])
+    # =========================================================================
+    return df, (k, np.exp(b),)
 
 
 def transform_kurenkov(data_testing: DataFrame) -> tuple[DataFrame]:
