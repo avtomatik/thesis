@@ -701,7 +701,7 @@ def collect_capital_purchases() -> DataFrame:
     return df
 
 
-def collect_census_a():
+def collect_census_a() -> tuple[DataFrame, int]:
     '''Census Manufacturing Indexes, 1899=100'''
     ARCHIVE_NAMES = (
         'dataset_usa_census1949.zip', 'dataset_usa_census1975.zip',
@@ -719,11 +719,13 @@ def collect_census_a():
         # HSUS 1975 Page 667, P17: Edwin Frickey Series, Indexes of Manufacturing Production
         # =====================================================================
         'P0017',)
-    _args = [tuple((ARCHIVE_NAMES[1], series_id,)) if series_id.startswith(
-        'P') else tuple((ARCHIVE_NAMES[0], series_id,)) for series_id in SERIES_IDS]
+    _args = [
+        tuple((ARCHIVE_NAMES[1], series_id,)) if series_id.startswith('P')
+        else tuple((ARCHIVE_NAMES[0], series_id,))
+        for series_id in SERIES_IDS
+    ]
     df = pd.concat([extract_usa_census(*_) for _ in _args], axis=1, sort=True)
-    df = df.div(df.loc[1899, :]).mul(100)
-    return df, df.index.get_loc(1899)
+    return df.div(df.loc[1899, :]).mul(100), df.index.get_loc(1899)
 
 
 def collect_census_b_a() -> DataFrame:
@@ -2624,8 +2626,7 @@ def collect_version_c() -> DataFrame:
         axis=1,
         sort=True
     ).dropna()
-    df = df.div(df.iloc[0, :])
-    return df
+    return df.div(df.iloc[0, :])
 
 
 def get_mean_for_min_std():
