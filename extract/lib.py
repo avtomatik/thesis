@@ -62,9 +62,9 @@ def extract_can_capital_series_ids_archived() -> list[str]:
         ARCHIVE_NAME,
         usecols=["PRICES", "CATEGORY", "COMPONENT", "Vector", ]
     )
-    with sqlite3.connect("/home/alexander/science/capital.db") as con:
-        cursor = con.cursor()
-        df.to_sql("capital", con, if_exists="replace", index=False)
+    with sqlite3.connect("/home/alexander/science/capital.db") as conn:
+        cursor = conn.cursor()
+        df.to_sql("capital", conn, if_exists="replace", index=False)
         stmt = """
         SELECT Vector FROM capital
         WHERE
@@ -73,7 +73,7 @@ def extract_can_capital_series_ids_archived() -> list[str]:
             AND lower(COMPONENT) LIKE '%industrial%'
             ;
         """
-        cursor = con.execute(stmt)
+        cursor = conn.execute(stmt)
         rows = cursor.fetchall()
         return sorted(set(_[0] for _ in rows))
 
@@ -276,22 +276,35 @@ def extract_usa_bea(archive_name: str, wb_name: str, sh_name: str, series_id: st
     return df.loc[:, [series_id]]
 
 
-def extract_usa_bea_filter(series_id: str) -> DataFrame:
+def extract_usa_bea_by_series_id(series_id: str) -> DataFrame:
     '''
-    Retrieve Yearly Data for BEA Series' Code
+    Retrieve Yearly Data for BEA Series' series_id
     '''
     ARCHIVE_NAME = 'dataset_usa_bea-nipa-2015-05-01.zip'
     _df = pd.read_csv(ARCHIVE_NAME, usecols=[0, *range(14, 18)])
-    query = (_df.iloc[:, 1] == series_id) & \
-            (_df.iloc[:, 3] == 0)
-    _df = _df[query]
+    with sqlite3.connect("/home/alexander/science/temporary.db") as conn:
+        cursor = conn.cursor()
+        _df.to_sql("temporary", conn, if_exists="replace", index=False)
+        stmt = f"""
+        SELECT * FROM temporary
+        WHERE
+            vector = '{series_id}'
+            AND subperiod = 0
+            ;
+        """
+        cursor = conn.execute(stmt)
+    _df = DataFrame(
+        cursor.fetchall(),
+        columns=['source_id', 'series_id', 'period', 'sub_period', 'value']
+    )
+    _df.drop('sub_period', axis=1, inplace=True)
+    _df.set_index('period', inplace=True)
     df = DataFrame()
     for source_id in sorted(set(_df.iloc[:, 0])):
-        chunk = _df[_df.iloc[:, 0] == source_id].iloc[:, [2, 4]]
-        chunk.columns = [chunk.columns[0],
-                         ''.join((source_id.split()[1].replace('.', '_'), series_id))]
+        chunk = _df[_df.iloc[:, 0] == source_id].iloc[:, [2]]
+        chunk.columns = [
+            ''.join((source_id.split()[1].replace('.', '_'), series_id))]
         chunk.drop_duplicates(inplace=True)
-        chunk.set_index(chunk.columns[0], inplace=True, verify_integrity=True)
         df = pd.concat([df, chunk], axis=1, sort=True)
     return df
 
@@ -320,6 +333,32 @@ def extract_usa_bls(file_name, series_id: str) -> DataFrame:
     df.iloc[:, 0] = df.iloc[:, 0].astype(int)
     df.iloc[:, 1] = df.iloc[:, 1].astype(float)
     return df.set_index(df.columns[0])
+
+
+def extract_usa_classic(archive_name: str, series_id: str) -> DataFrame:
+    '''
+    Data Fetch Procedure for Enumerated Classical Datasets
+    '''
+    USECOLS = {
+        'dataset_douglas.zip': (4, 7,),
+        'dataset_usa_brown.zip': (3, 6,),
+        'dataset_usa_cobb-douglas.zip': (5, 8,),
+        'dataset_usa_kendrick.zip': (4, 7,),
+    }
+    df = pd.read_csv(
+        archive_name,
+        names=['series_id', 'period', series_id],
+        index_col=1,
+        skiprows=(1, 5)[archive_name == 'dataset_usa_brown.zip'],
+        usecols=range(*USECOLS[archive_name])
+    )
+    df = df[df.iloc[:, 0] == series_id].iloc[:, [1]]
+    df.index = pd.to_numeric(
+        df.index.astype(str).to_series().str.slice(stop=4),
+        downcast='integer'
+    )
+    df.iloc[:, 0] = pd.to_numeric(df.iloc[:, 0], errors='coerce')
+    return df.sort_index()
 
 
 def extract_usa_census(archive_name: str, series_id: str) -> DataFrame:
@@ -377,32 +416,6 @@ def extract_usa_census_description(archive_name: str, series_id: str) -> str:
     return description
 
 
-def extract_usa_classic(archive_name: str, series_id: str) -> DataFrame:
-    '''
-    Data Fetch Procedure for Enumerated Classical Datasets
-    '''
-    USECOLS = {
-        'dataset_douglas.zip': (4, 7,),
-        'dataset_usa_brown.zip': (3, 6,),
-        'dataset_usa_cobb-douglas.zip': (5, 8,),
-        'dataset_usa_kendrick.zip': (4, 7,),
-    }
-    df = pd.read_csv(
-        archive_name,
-        names=['series_id', 'period', series_id],
-        index_col=1,
-        skiprows=(1, 5)[archive_name == 'dataset_usa_brown.zip'],
-        usecols=range(*USECOLS[archive_name])
-    )
-    df = df[df.iloc[:, 0] == series_id].iloc[:, [1]]
-    df.index = pd.to_numeric(
-        df.index.astype(str).to_series().str.slice(stop=4),
-        downcast='integer'
-    )
-    df.iloc[:, 0] = pd.to_numeric(df.iloc[:, 0], errors='coerce')
-    return df.sort_index()
-
-
 def extract_usa_mcconnel(series_id: str) -> DataFrame:
     '''Data Frame Fetching from McConnell C.R. & Brue S.L.'''
     ARCHIVE_NAME = 'dataset_usa_mc_connell_brue.zip'
@@ -434,11 +447,12 @@ def extract_worldbank() -> DataFrame:
         # Select Largest File
         # =====================================================================
         with z.open(_map[max(_map.keys())]) as f:
-            df = pd.read_csv(f, skiprows=4)
-            df.dropna(axis=1, how='all', inplace=True)
-            df.set_index(df.columns[0], inplace=True)
-            df = df.transpose()
-            df = df.drop(df.index[:3])
+            df = pd.read_csv(
+                f,
+                index_col=0,
+                skiprows=4
+            ).dropna(axis=1, how='all').transpose()
+            df.drop(df.index[:3], inplace=True)
             return df.rename_axis('period')
 
 
@@ -461,3 +475,9 @@ def extract_usa_frb_ms() -> DataFrame:
         thousands=','
     )
     return df.groupby(df.index.year).mean()
+
+
+def data_select(df: DataFrame, query) -> DataFrame:
+    for column, value in query['filter'].items():
+        df = df[df.iloc[:, column] == value]
+    return df
