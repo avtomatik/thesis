@@ -6,20 +6,17 @@ Created on Wed Feb  5 22:19:02 2020
 
 
 import os
-from prepare.lib import get_data_usa_bea_labor_mfg
-from prepare.lib import get_data_usa_frb_cu
-from prepare.lib import get_data_version_a
-from prepare.lib import get_data_version_b
-from prepare.lib import get_data_capital_purchases
+from collect.lib import collect_capital_purchases
+from collect.lib import collect_cobb_douglas
+from collect.lib import collect_usa_bea_labor_mfg
+from collect.lib import collect_usa_frb_cu
+from collect.lib import collect_version_a
+from collect.lib import collect_version_b
+from collect.lib import transform_cobb_douglas
+from collect.lib import transform_cobb_douglas_alt
+from toolkit.lib import calculate_curve_fit_params
 from plot.lib import plot_capital_purchases
 from plot.lib import plot_cobb_douglas_alt
-from prepare.lib import transform_cobb_douglas
-from prepare.lib import transform_cobb_douglas_alt
-from toolkit.lib import calculate_curve_fit_params
-from prepare.lib import get_data_cobb_douglas
-
-
-print(__doc__)
 
 
 def main():
@@ -36,7 +33,7 @@ def main():
     # =========================================================================
     # Project I. Classified
     # =========================================================================
-    df = get_data_cobb_douglas(5)
+    df = collect_cobb_douglas(5)
     _df_b = df.iloc[:, [0, 1, 3]]
     plot_cobb_douglas_alt(
         *transform_cobb_douglas_alt(df),
@@ -50,8 +47,8 @@ def main():
     _df_a = df.iloc[:, [0, 1, 2]]
     _df_b = df.iloc[:, [0, 1, 3]]
     _df_c = df.iloc[:, [0, 1, 4]]
-    _df_d, _df_e = get_data_version_a()
-    _df_f, _df_g, _df_h = get_data_version_b()
+    _df_d, _df_e = collect_version_a()
+    _df_f, _df_g, _df_h = collect_version_b()
     _df_i = dataset_version_c()
 
 # =============================================================================
@@ -110,7 +107,7 @@ def main():
     # =========================================================================
     # Project III. Scipy Signal Wiener Filter
     # =========================================================================
-    plot_capital_purchases(get_dataset_capital_purchases())
+    plot_capital_purchases(collect_capital_purchases())
 
 
 if __name__ == '__main__':

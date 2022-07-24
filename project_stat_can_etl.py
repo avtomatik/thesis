@@ -7,6 +7,8 @@ Created on Sat Sep 18 22:20:54 2021
 
 
 import pandas as pd
+from toolkit.lib import build_load_data_frame
+
 # =============================================================================
 # Capital
 # # 16100077-eng.xlsx: NO;
@@ -67,9 +69,6 @@ import pandas as pd
 # # 36100480-eng.xlsx: Total number of jobs: v111382232;
 # # 36100488-eng.xlsx: Output, by sector and industry, provincial and territorial: v64602050;
 # =============================================================================
-
-
-from toolkit.lib import build_load_data_frame
 
 
 def string_to_url(string):
@@ -251,14 +250,15 @@ PRODUCT = (
 )
 
 
+DIR = '/home/alexander/science'
 FILE_NAMES = (
-    '/home/alexander/projects/stat_can_cap.xlsx',
-    '/home/alexander/projects/stat_can_lab.xlsx',
-    '/home/alexander/projects/stat_can_prd.xlsx',
+    'stat_can_cap.xlsx',
+    'stat_can_lab.xlsx',
+    'stat_can_prd.xlsx',
 )
-build_load_data_frame('/home/alexander/projects/stat_can_cap.xlsx', CAPITAL)
-build_load_data_frame('/home/alexander/projects/stat_can_lab.xlsx', LABOUR)
-build_load_data_frame('/home/alexander/projects/stat_can_prd.xlsx', PRODUCT)
+build_load_data_frame('stat_can_cap.xlsx', CAPITAL)
+build_load_data_frame('stat_can_lab.xlsx', LABOUR)
+build_load_data_frame('stat_can_prd.xlsx', PRODUCT)
 combined = pd.DataFrame()
 for file_name in FILE_NAMES:
     data = pd.read_excel(file_name)
@@ -269,7 +269,7 @@ for file_name in FILE_NAMES:
         axis=1,
     )
 combined.sort_index(inplace=True)
-FILE_NAME = '/home/alexander/projects/stat_can_desc.xlsx'
+FILE_NAME = 'stat_can_desc.xlsx'
 titles = pd.read_excel(FILE_NAME)
 combined = pd.merge(
     titles.set_index(titles.columns[0]),
@@ -277,4 +277,4 @@ combined = pd.merge(
     left_index=True,
     right_index=True,
 )
-combined.T.to_excel('/home/alexander/projects/stat_can_combined.xlsx')
+combined.T.to_excel('stat_can_combined.xlsx')

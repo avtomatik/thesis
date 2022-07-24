@@ -29,7 +29,7 @@ print(df)
 #         pass
 
 
-# filedict = {url.split('/')[-1]: url for url in urls}
+# file_dict = {url.split('/')[-1]: url for url in urls}
 
 
 # downloaded = set()
@@ -38,26 +38,24 @@ print(df)
 #         downloaded.add(file_name)
 
 
-# difference = set(filedict.keys()) - downloaded
+# difference = set(file_dict.keys()) - downloaded
 
 
-# urls = []
-# for file_name in difference:
-#     urls.append(filedict[file_name])
+# urls = [file_dict[file_name] for file_name in difference]
 
 
 # with open('output_b.txt', 'w') as f:
 #     for url in sorted(urls):
 #         data = fetch_from_url(url)
-#         print(url, file = f)
-#         print('Periods Length {}'.format(len(data['REF_DATE'].unique())), file = f)
-#         print(data['REF_DATE'].unique(), file = f)
+#         print(url, file=f)
+#         print('Periods Length {}'.format(len(data['REF_DATE'].unique())), file=f)
+#         print(data['REF_DATE'].unique(), file=f)
 # # # # urls = sorted(list(urls))
 # # # # with open('output.txt', 'w') as f:
 # # # #     for url in urls:
 # # # #         data = fetch_from_url(url)
-# # # #         print(url, file = f)
-# # # #         print('Periods Length {}'.format(len(data['REF_DATE'].unique())), file = f)
-# # # #         print(data['REF_DATE'].unique(), file = f)
+# # # #         print(url, file=f)
+# # # #         print('Periods Length {}'.format(len(data['REF_DATE'].unique())), file=f)
+# # # #         print(data['REF_DATE'].unique(), file=f)
 # # # # # df.dropna(how='all', inplace=True)
 # # # # # df.to_excel('/home/alexander/projects/stat_can_selected.xlsx', index=False)

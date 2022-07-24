@@ -22,7 +22,7 @@ def main():
         'year_price': 1899,
     }
 
-    df = get_dataset()
+    df = collect()
     plot_cobb_douglas(df)
 
 

@@ -159,7 +159,7 @@ FILE_NAME = 'stat_can_cap_matching.xlsx'
 # data = data[data.iloc[:, 5] != 'Information and communication technologies machinery and equipment']
 # data = data[data.iloc[:, 5] != 'Land']
 # data = data[data.iloc[:, 6] != 'Intellectual property products']
-# # data.dropna(axis = 0, how='all', inplace=True)
+# # data.dropna(axis=0, how='all', inplace=True)
 # data.to_excel('DIR/stat_can_cap_matching_alpha.xlsx', index=True)
 
 FILE_NAME = 'stat_can_cap.xlsx'
@@ -179,16 +179,13 @@ SERIES_IDS = (
     'v46445844',
 )
 for series_id in SERIES_IDS[::3]:
-    chunk = data.loc[:, [series_id]]
-    chunk.dropna(axis=0, how='all', inplace=True)
+    chunk = data.loc[:, [series_id]].dropna(axis=0, how='all')
     chunk.plot(grid=True)
     # chunk.plot(grid=True).get_figure().savefig(
     #     'temporary.pdf', format='pdf', dpi=900)
 # for series_id in SERIES_IDS[1::3]:
-#     chunk = data.loc[:, [series_id]]
-#     chunk.dropna(axis = 0, how='all', inplace=True)
+#     chunk = data.loc[:, [series_id]].dropna(axis=0, how='all')
 #     chunk.plot(grid=True)
 # for series_id in SERIES_IDS[2::3]:
-#     chunk = data.loc[:, [series_id]]
-#     chunk.dropna(axis = 0, how='all', inplace=True)
+#     chunk = data.loc[:, [series_id]].dropna(axis=0, how='all')
 #     chunk.plot(grid=True)
