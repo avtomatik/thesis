@@ -9,6 +9,7 @@ Created on Sun Jun 12 00:44:36 2022
 
 import io
 import os
+import re
 import sqlite3
 from zipfile import ZipFile
 import pandas as pd
@@ -42,11 +43,13 @@ def extract_can_annual(file_id: int, series_id: str) -> DataFrame:
         3800567: (4, 6,),
     }
     df = pd.read_csv(
-        f'dataset_can_{file_id:08n}-eng.zip', usecols=[0, *USECOLS[file_id]]
+        f'dataset_can_{file_id:08n}-eng.zip',
+        names=['REF_DATE', 'series_id', series_id],
+        index_col=0,
+        usecols=[0, *USECOLS[file_id]],
+        skiprows=1,
     )
-    df = df[df.iloc[:, 1] == series_id].iloc[:, [0, 2]]
-    df.columns = [df.columns[0].upper(), series_id]
-    df.set_index(df.columns[0], inplace=True)
+    df = df[df.iloc[:, 0] == series_id].iloc[:, [1]]
     df.iloc[:, 0] = pd.to_numeric(df.iloc[:, 0])
     return df
 
@@ -268,11 +271,10 @@ def extract_usa_bea(archive_name: str, wb_name: str, sh_name: str, series_id: st
         df = pd.read_excel(
             xl_file,
             sh_name,
+            index_col=0,
             usecols=range(2, df.shape[1]),
             skiprows=7
-        ).dropna(axis=0)
-    df.columns = ['period', *df.columns[1:]]
-    df = df.set_index(df.columns[0]).transpose()
+        ).dropna(axis=0).transpose()
     return df.loc[:, [series_id]]
 
 
@@ -420,8 +422,7 @@ def extract_usa_mcconnel(series_id: str) -> DataFrame:
     '''Data Frame Fetching from McConnell C.R. & Brue S.L.'''
     ARCHIVE_NAME = 'dataset_usa_mc_connell_brue.zip'
     df = pd.read_csv(ARCHIVE_NAME, index_col=1, usecols=range(1, 4))
-    df = df[df.iloc[:, 0] == series_id].iloc[:, [1]]
-    return df.sort_index()
+    return df[df.iloc[:, 0] == series_id].iloc[:, [1]].sort_index()
 
 
 def extract_usa_nber(file_name: str, agg: str) -> DataFrame:

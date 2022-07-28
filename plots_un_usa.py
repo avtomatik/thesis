@@ -21,17 +21,19 @@ def main():
 
     '''
     URL = 'https://unstats.un.org/unsd/amaapi/api/file/2'
-    df = pd.read_excel(io.BytesIO(requests.get(URL).content), skiprows=2)
-    df = df[df.iloc[:, 2] == 'Gross Domestic Product (GDP)']
-    df.drop(
-        [df.columns[0], df.columns[2]],
-        axis=1,
-        inplace=True
+    _df = pd.read_excel(
+        io.BytesIO(requests.get(URL).content),
+        index_col=1,
+        skiprows=2
     )
-    df = df.set_index(df.columns[0]).transpose()
-    data = pd.DataFrame()
-    data['us_to_world'] = df.loc[:, 'United States'].div(df.sum(1))
-    data.plot(grid=True)
+    _df = _df[_df.iloc[:, 1] == 'Gross Domestic Product (GDP)']
+    _df = _df.drop(
+        _df.columns[:2],
+        axis=1,
+    ).transpose()
+    df = pd.DataFrame()
+    df['us_to_world'] = _df.loc[:, 'United States'].div(_df.sum(1))
+    df.plot(grid=True)
 
 
 if __name__ == '__main__':

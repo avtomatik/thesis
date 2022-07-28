@@ -154,8 +154,8 @@ def test_data_consistency_b():
     )
     df = pd.concat(
         [
-            extract_usa_bea(ARCHIVE_NAME, WB_NAME, sh, _id)
-            for sh, _id in zip(SH_NAMES, SERIES_IDS)
+            extract_usa_bea(ARCHIVE_NAME, WB_NAME, sh, series_id)
+            for sh, series_id in zip(SH_NAMES, SERIES_IDS)
         ],
         axis=1,
         sort=True
@@ -202,8 +202,8 @@ def test_data_consistency_d():
                 'archive_name': archive_name,
                 'wb_name': wb_name,
                 'sh_name': _sh,
-                'series_id': _id,
-            } for _sh, _id in zip(sheet_names, series_ids)
+                'series_id': series_id,
+            } for _sh, series_id in zip(sheet_names, series_ids)
         ]
 
     # =========================================================================
@@ -353,14 +353,14 @@ def test_substitute_b(df: DataFrame):
 def test_usa_bea_sfat_series() -> DataFrame:
     ARCHIVE_NAME = 'dataset_usa_bea-nipa-selected.zip'
     SERIES_ID = 'k3n31gd1es000'
-    _df = pd.read_csv(ARCHIVE_NAME, usecols=[0, *range(8, 11)])
+    _df = pd.read_csv(ARCHIVE_NAME, index_col=2, usecols=[0, *range(8, 11)])
     _df = _df[_df.iloc[:, 1] == SERIES_ID]
     control_frame = DataFrame()
     for source_id in sorted(set(_df.iloc[:, 0])):
-        chunk = _df[_df.iloc[:, 0] == source_id].iloc[:, [2, 3]]
-        chunk.columns = [chunk.columns[0],
-                         ''.join((source_id.split()[1].replace('.', '_'), SERIES_ID))]
-        chunk.set_index(chunk.columns[0], inplace=True, verify_integrity=True)
+        chunk = _df[_df.iloc[:, 0] == source_id].iloc[:, [2]]
+        chunk.columns = [
+            ''.join((source_id.split()[1].replace('.', '_'), SERIES_ID))
+        ]
         control_frame = pd.concat([control_frame, chunk], axis=1, sort=True)
 
     ARCHIVE_NAME = 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip'

@@ -8,8 +8,6 @@ Created on Wed Feb  5 22:19:02 2020
 import os
 from collect.lib import collect_capital_purchases
 from collect.lib import collect_cobb_douglas
-from collect.lib import collect_usa_bea_labor_mfg
-from collect.lib import collect_usa_frb_cu
 from collect.lib import collect_version_a
 from collect.lib import collect_version_b
 from collect.lib import transform_cobb_douglas

@@ -1955,7 +1955,7 @@ def plot_lab_prod_polynomial(df: DataFrame) -> None:
     # =========================================================================
     _df = DataFrame()
     _df['pow'] = df.iloc[:, -2].pow(k).mul(np.exp(b))
-    _df['p_1'] = _p1[1] + df.iloc[:, -2].mul(_p1[0])
+    _df['p_1'] = df.iloc[:, -2].mul(_p1[0]).add(_p1[1] )
     _df['p_2'] = _p2[2] + df.iloc[:, -
                                   2].mul(_p2[1]) + df.iloc[:, -2].pow(2).mul(_p2[0])
     _df['p_3'] = _p3[3] + df.iloc[:, -2].mul(_p3[2]) + df.iloc[:, -2].pow(
