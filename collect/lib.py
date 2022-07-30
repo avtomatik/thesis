@@ -301,8 +301,7 @@ def collect_can_price_b():
         chunk = _df.iloc[:, [_]].dropna(axis=0)
         chunk[f'{_df.columns[_]}_prc'] = chunk.iloc[:, 0].div(
             chunk.iloc[:, 0].shift(1)).sub(1)
-        chunk.dropna(axis=0, inplace=True)
-        df = pd.concat([df, chunk.iloc[:, [1]]], axis=1)
+        df = pd.concat([df, chunk.iloc[:, [1]].dropna(axis=0)], axis=1)
     return df
 
 
@@ -313,8 +312,10 @@ def collect_archived() -> DataFrame:
     )
     WB_NAMES = (
         'Section1ALL_Hist.xls',
-        'Section1all_xls.xls',
+        'Section1ALL_Hist.xls',
         'Section5ALL_Hist.xls',
+        'Section1all_xls.xls',
+        'Section1all_xls.xls',
         'Section5all_xls.xls',
     )
     SH_NAMES = (
@@ -341,16 +342,18 @@ def collect_archived() -> DataFrame:
         [
             pd.concat(
                 [
-                    extract_usa_bea(ARCHIVE_NAMES[0], _wb, _sh, _id)
-                    for _wb, _sh, _id in zip(tuple(WB_NAMES[2*(_ // 2)] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
+                    extract_usa_bea(
+                        ARCHIVE_NAMES[0], wb_name, sh_name, series_id)
+                    for wb_name, sh_name, series_id in zip(WB_NAMES, SH_NAMES, SERIES_IDS)
                 ],
                 axis=1,
                 sort=True
             ),
             pd.concat(
                 [
-                    extract_usa_bea(ARCHIVE_NAMES[1], _wb, _sh, _id)
-                    for _wb, _sh, _id in zip(tuple(WB_NAMES[1 + 2*(_ // 2)] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
+                    extract_usa_bea(
+                        ARCHIVE_NAMES[1], wb_name, sh_name, series_id)
+                    for wb_name, sh_name, series_id in zip(WB_NAMES[len(SERIES_IDS):], SH_NAMES, SERIES_IDS)
                 ],
                 axis=1,
                 sort=True
@@ -435,12 +438,8 @@ def collect_bea_gdp() -> DataFrame:
             pd.concat(
                 [
                     extract_usa_bea(
-                        ARCHIVE_NAMES[0],
-                        WB_NAMES[0],
-                        sh,
-                        series_id
-                    )
-                    for sh, series_id in zip(SH_NAMES, SERIES_IDS)
+                        ARCHIVE_NAMES[0], WB_NAMES[0], sh_name, series_id)
+                    for sh_name, series_id in zip(SH_NAMES, SERIES_IDS)
                 ],
                 axis=1,
                 sort=True
@@ -448,12 +447,8 @@ def collect_bea_gdp() -> DataFrame:
             pd.concat(
                 [
                     extract_usa_bea(
-                        ARCHIVE_NAMES[1],
-                        WB_NAMES[1],
-                        sh,
-                        series_id
-                    )
-                    for sh, series_id in zip(SH_NAMES, SERIES_IDS)
+                        ARCHIVE_NAMES[1], WB_NAMES[1], sh_name, series_id)
+                    for sh_name, series_id in zip(SH_NAMES, SERIES_IDS)
                 ],
                 axis=1,
                 sort=True
@@ -557,13 +552,21 @@ def collect_capital_combined_archived() -> DataFrame:
     )
     WB_NAMES = (
         'Section1ALL_Hist.xls',
-        'Section1all_xls.xls',
+        'Section1ALL_Hist.xls',
+        'Section1ALL_Hist.xls',
         'Section5ALL_Hist.xls',
+        'Section5ALL_Hist.xls',
+        'Section1all_xls.xls',
+        'Section1all_xls.xls',
+        'Section1all_xls.xls',
+        'Section5all_xls.xls',
         'Section5all_xls.xls',
     )
     SH_NAMES = (
         '10105 Ann',
+        '10105 Ann',
         '10106 Ann',
+        '50900 Ann',
         '50900 Ann',
     )
     SERIES_IDS = (
@@ -599,28 +602,18 @@ def collect_capital_combined_archived() -> DataFrame:
         [
             pd.concat(
                 [
-                    extract_usa_bea(ARCHIVE_NAMES[0], _wb, _sh, _id)
-                    for _wb, _sh, _id in zip(
-                        tuple(WB_NAMES[2*(_ // len(SH_NAMES))]
-                              for _ in range(len(SERIES_IDS))),
-                        tuple(SH_NAMES[2*(_ // len(SH_NAMES)) + ((_ - 1) % len(SH_NAMES)) *
-                                       (2 - ((_ - 1) % len(SH_NAMES)))] for _ in range(len(SERIES_IDS))),
-                        SERIES_IDS,
-                    )
+                    extract_usa_bea(
+                        ARCHIVE_NAMES[0], wb_name, sh_name, series_id)
+                    for wb_name, sh_name, series_id in zip(WB_NAMES, SH_NAMES, SERIES_IDS)
                 ],
                 axis=1,
                 sort=True
             ),
             pd.concat(
                 [
-                    extract_usa_bea(ARCHIVE_NAMES[1], _wb, _sh, _id)
-                    for _wb, _sh, _id in zip(
-                        tuple(WB_NAMES[1 + 2*(_ // len(SH_NAMES))]
-                              for _ in range(len(SERIES_IDS))),
-                        tuple(SH_NAMES[2*(_ // len(SH_NAMES)) + ((_ - 1) % len(SH_NAMES)) *
-                                       (2 - ((_ - 1) % len(SH_NAMES)))] for _ in range(len(SERIES_IDS))),
-                        SERIES_IDS,
-                    )
+                    extract_usa_bea(
+                        ARCHIVE_NAMES[1], wb_name, sh_name, series_id)
+                    for wb_name, sh_name, series_id in zip(WB_NAMES[len(SERIES_IDS):], SH_NAMES, SERIES_IDS)
                 ],
                 axis=1,
                 sort=True
@@ -1064,7 +1057,7 @@ def collect_centered_by_period(df: DataFrame) -> DataFrame:
     return _df
 
 
-def collect_cobb_douglas_deflator():
+def collect_cobb_douglas_deflator() -> DataFrame:
     '''Fixed Assets Deflator, 2009=100'''
     # =========================================================================
     # TODO: Change Name; Be Careful with Usage Due to Change in Behavior
@@ -1268,7 +1261,7 @@ def collect_cobb_douglas_extension_capital() -> DataFrame:
     return df.iloc[:, [-1]].dropna(axis=0)
 
 
-def collect_cobb_douglas_extension_labor():
+def collect_cobb_douglas_extension_labor() -> DataFrame:
     '''Manufacturing Laborers` Series Comparison'''
     # =========================================================================
     # TODO: Bureau of Labor Statistics
@@ -1371,7 +1364,7 @@ def collect_cobb_douglas_extension_labor():
     return df.iloc[:, [-1]]
 
 
-def collect_cobb_douglas_extension_product():
+def collect_cobb_douglas_extension_product() -> DataFrame:
     ARCHIVE_NAMES = (
         'dataset_usa_census1949.zip',
         'dataset_usa_census1949.zip',
@@ -1452,7 +1445,7 @@ def collect_cobb_douglas_price() -> DataFrame:
             for series_id in SERIES_IDS
         ],
         axis=1
-        )
+    )
     df['deflator'] = df.iloc[:, 0].div(df.iloc[:, 1])
     df['prc'] = df.iloc[:, -1].div(df.iloc[:, -1].shift(1)).sub(1)
     return df.iloc[:, [-1]].dropna(axis=0)
@@ -1509,7 +1502,7 @@ def collect_cobb_douglas(series_number: int = 3) -> DataFrame:
     return df.div(df.iloc[0, :]).iloc[:, range(series_number)]
 
 
-def collect_combined():
+def collect_combined() -> DataFrame:
     '''Most Up-To-Date Version'''
     # =========================================================================
     # TODO: Refactor It
@@ -1566,8 +1559,8 @@ def collect_combined():
     # =========================================================================
     _data_sfat = pd.concat(
         [
-            extract_usa_bea(_archive, _wb, SH_NAME, SERIES_ID)
-            for _archive, _wb in zip(ARCHIVE_NAMES, WB_NAMES)
+            extract_usa_bea(archive_name, wb_name, SH_NAME, SERIES_ID)
+            for archive_name, wb_name in zip(ARCHIVE_NAMES, WB_NAMES)
         ],
         sort=True
     ).drop_duplicates()
@@ -1577,6 +1570,9 @@ def collect_combined():
     ARCHIVE_NAME = 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip'
     WB_NAMES = (
         'Section1ALL_xls.xls',
+        'Section1ALL_xls.xls',
+        'Section1ALL_xls.xls',
+        'Section2ALL_xls.xls',
         'Section2ALL_xls.xls',
     )
     SH_NAMES = (
@@ -1610,8 +1606,8 @@ def collect_combined():
     )
     _data_sfat_ = pd.concat(
         [
-            extract_usa_bea(ARCHIVE_NAME, _wb, _sh, _id) for _wb, _sh, _id in zip(
-                tuple(WB_NAMES[_ // 3] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
+            extract_usa_bea(ARCHIVE_NAME, wb_name, sh_name, series_id)
+            for wb_name, sh_name, series_id in zip(WB_NAMES, SH_NAMES, SERIES_IDS)
         ],
         axis=1,
         sort=True
@@ -1633,7 +1629,7 @@ def collect_combined():
     )
 
 
-def collect_combined_archived():
+def collect_combined_archived() -> DataFrame:
     '''Version: 02 December 2013'''
     ARCHIVE_NAMES = (
         'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
@@ -1641,8 +1637,26 @@ def collect_combined_archived():
     )
     WB_NAMES = (
         'Section1ALL_Hist.xls',
-        'Section1all_xls.xls',
+        'Section1ALL_Hist.xls',
+        'Section1ALL_Hist.xls',
+        'Section1ALL_Hist.xls',
+        'Section1ALL_Hist.xls',
+        'Section1ALL_Hist.xls',
+        'Section1ALL_Hist.xls',
+        'Section1ALL_Hist.xls',
         'Section5ALL_Hist.xls',
+        'Section5ALL_Hist.xls',
+        'Section5ALL_Hist.xls',
+        'Section1all_xls.xls',
+        'Section1all_xls.xls',
+        'Section1all_xls.xls',
+        'Section1all_xls.xls',
+        'Section1all_xls.xls',
+        'Section1all_xls.xls',
+        'Section1all_xls.xls',
+        'Section1all_xls.xls',
+        'Section5all_xls.xls',
+        'Section5all_xls.xls',
         'Section5all_xls.xls',
     )
     SH_NAMES = (
@@ -1709,16 +1723,18 @@ def collect_combined_archived():
         [
             pd.concat(
                 [
-                    extract_usa_bea(ARCHIVE_NAMES[0], _wb, _sh, _id) for _wb, _sh, _id in zip(
-                        tuple(WB_NAMES[2*(_ // 8)] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
+                    extract_usa_bea(
+                        ARCHIVE_NAMES[0], wb_name, sh_name, series_id)
+                    for wb_name, sh_name, series_id in zip(WB_NAMES, SH_NAMES, SERIES_IDS)
                 ],
                 axis=1,
                 sort=True
             ),
             pd.concat(
                 [
-                    extract_usa_bea(ARCHIVE_NAMES[1], _wb, _sh, _id) for _wb, _sh, _id in zip(
-                        tuple(WB_NAMES[1 + 2*(_ // 8)] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
+                    extract_usa_bea(
+                        ARCHIVE_NAMES[1], wb_name, sh_name, series_id)
+                    for wb_name, sh_name, series_id in zip(WB_NAMES[len(SERIES_IDS):], SH_NAMES, SERIES_IDS)
                 ],
                 axis=1,
                 sort=True
@@ -1729,6 +1745,9 @@ def collect_combined_archived():
     ARCHIVE_NAME = 'dataset_usa_bea-sfat-release-2012-08-15-SectionAll_xls.zip'
     WB_NAMES = (
         'Section1ALL_xls.xls',
+        'Section1ALL_xls.xls',
+        'Section1ALL_xls.xls',
+        'Section2ALL_xls.xls',
         'Section2ALL_xls.xls',
     )
     SH_NAMES = (
@@ -1762,8 +1781,8 @@ def collect_combined_archived():
     )
     _data_sfat = pd.concat(
         [
-            extract_usa_bea(ARCHIVE_NAME, _wb, _sh, _id) for _wb, _sh, _id in zip(
-                tuple(WB_NAMES[_ // 3] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
+            extract_usa_bea(ARCHIVE_NAME, wb_name, sh_name, series_id)
+            for wb_name, sh_name, series_id in zip(WB_NAMES, SH_NAMES, SERIES_IDS)
         ],
         axis=1,
         sort=True
@@ -1799,7 +1818,7 @@ def collect_combined_archived():
     return df.iloc[:, [0, 1, 2, 3, 4, 7, 5, 6, 18, 9, 10, 8, 11, 12, 13, 14, 15, 16, 19, 20, 17, ]]
 
 
-def collect_common_archived():
+def collect_common_archived() -> DataFrame:
     '''Data Fetch'''
     ARCHIVE_NAMES = (
         'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1929_1969.zip',
@@ -1807,8 +1826,14 @@ def collect_common_archived():
     )
     WB_NAMES = (
         'Section1ALL_Hist.xls',
-        'Section1all_xls.xls',
+        'Section1ALL_Hist.xls',
+        'Section1ALL_Hist.xls',
+        'Section1ALL_Hist.xls',
         'Section5ALL_Hist.xls',
+        'Section1all_xls.xls',
+        'Section1all_xls.xls',
+        'Section1all_xls.xls',
+        'Section1all_xls.xls',
         'Section5all_xls.xls',
     )
     SH_NAMES = (
@@ -1844,16 +1869,18 @@ def collect_common_archived():
         [
             pd.concat(
                 [
-                    extract_usa_bea(ARCHIVE_NAMES[0], _wb, _sh, _id) for _wb, _sh, _id in zip(
-                        tuple(WB_NAMES[2*(_ // 4)] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
+                    extract_usa_bea(
+                        ARCHIVE_NAMES[0], wb_name, sh_name, series_id)
+                    for wb_name, sh_name, series_id in zip(WB_NAMES, SH_NAMES, SERIES_IDS)
                 ],
                 axis=1,
                 sort=True
             ),
             pd.concat(
                 [
-                    extract_usa_bea(ARCHIVE_NAMES[1], _wb, _sh, _id) for _wb, _sh, _id in zip(
-                        tuple(WB_NAMES[1 + 2*(_ // 4)] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
+                    extract_usa_bea(
+                        ARCHIVE_NAMES[1], wb_name, sh_name, series_id)
+                    for wb_name, sh_name, series_id in zip(WB_NAMES[len(SERIES_IDS):], SH_NAMES, SERIES_IDS)
                 ],
                 axis=1,
                 sort=True
@@ -1867,6 +1894,8 @@ def collect_common_archived():
     ARCHIVE_NAME = 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip'
     WB_NAMES = (
         'Section2ALL_xls.xls',
+        'Section2ALL_xls.xls',
+        'Section4ALL_xls.xls',
         'Section4ALL_xls.xls',
     )
     SH_NAMES = (
@@ -1895,13 +1924,12 @@ def collect_common_archived():
     )
     _data_sfat = pd.concat(
         [
-            extract_usa_bea(ARCHIVE_NAME, _wb, _sh, _id) for _wb, _sh, _id in zip(
-                tuple(WB_NAMES[_ // 2] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
+            extract_usa_bea(ARCHIVE_NAME, wb_name, sh_name, series_id)
+            for wb_name, sh_name, series_id in zip(WB_NAMES, SH_NAMES, SERIES_IDS)
         ],
         axis=1,
         sort=True
     )
-
     return pd.concat(
         [
             _data_nipa,
@@ -1917,7 +1945,7 @@ def collect_common_archived():
     )
 
 
-def collect_douglas():
+def collect_douglas() -> DataFrame:
     '''Douglas Data Preprocessing'''
     ARCHIVE_NAME = 'dataset_douglas.zip'
     SERIES_IDS = ('DT19AS03', 'DT19AS02', 'DT19AS01',)
@@ -1932,15 +1960,19 @@ def collect_douglas():
     return df.div(df.loc[1899, :])
 
 
-def collect_local():
+def collect_local() -> DataFrame:
     ARCHIVE_NAMES = (
         'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
         'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
     )
     WB_NAMES = (
         'Section1ALL_Hist.xls',
-        'Section1all_xls.xls',
+        'Section1ALL_Hist.xls',
+        'Section1ALL_Hist.xls',
         'Section5ALL_Hist.xls',
+        'Section1all_xls.xls',
+        'Section1all_xls.xls',
+        'Section1all_xls.xls',
         'Section5all_xls.xls',
     )
     SH_NAMES = (
@@ -1971,14 +2003,20 @@ def collect_local():
     _data_nipa = pd.concat(
         [
             pd.concat(
-                [extract_usa_bea(ARCHIVE_NAMES[0], _wb, _sh, _id)
-                 for _wb, _sh, _id in zip(tuple(WB_NAMES[2*(_ // 3)] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)],
+                [
+                    extract_usa_bea(
+                        ARCHIVE_NAMES[0], wb_name, sh_name, series_id)
+                    for wb_name, sh_name, series_id in zip(WB_NAMES, SH_NAMES, SERIES_IDS)
+                ],
                 axis=1,
                 sort=True
             ),
             pd.concat(
-                [extract_usa_bea(ARCHIVE_NAMES[1], _wb, _sh, _id)
-                 for _wb, _sh, _id in zip(tuple(WB_NAMES[1 + 2*(_ // 3)] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)],
+                [
+                    extract_usa_bea(
+                        ARCHIVE_NAMES[1], wb_name, sh_name, series_id)
+                    for wb_name, sh_name, series_id in zip(WB_NAMES[len(SERIES_IDS):], SH_NAMES, SERIES_IDS)
+                ],
                 axis=1,
                 sort=True
             ),
@@ -2034,7 +2072,7 @@ def collect() -> DataFrame:
     return df.div(df.iloc[0, :])
 
 
-def collect_updated():
+def collect_updated() -> DataFrame:
     URL = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
     _data = extract_usa_bea_from_url(URL)
     SERIES_IDS = (
@@ -2069,8 +2107,8 @@ def collect_updated():
     )
     _data_sfat = pd.concat(
         [
-            extract_usa_bea(ARCHIVE_NAME, WB_NAME, _sh, series_id)
-            for _sh, series_id in zip(SH_NAMES, SERIES_IDS)
+            extract_usa_bea(ARCHIVE_NAME, WB_NAME, sh_name, series_id)
+            for sh_name, series_id in zip(SH_NAMES, SERIES_IDS)
         ],
         axis=1,
         sort=True
@@ -2105,7 +2143,7 @@ def collect_updated():
     )
 
 
-def collect_usa_bea_labor():
+def collect_usa_bea_labor() -> DataFrame:
     # =========================================================================
     # Labor Series: A4601C0, 1929--2011
     # =========================================================================
@@ -2133,8 +2171,8 @@ def collect_usa_bea_labor():
     SERIES_ID = 'A4601C0'
     df = pd.concat(
         [
-            extract_usa_bea(archive_name, wb, sh, SERIES_ID)
-            for archive_name, wb, sh in zip(ARCHIVE_NAMES, WB_NAMES, SH_NAMES)
+            extract_usa_bea(archive_name, wb_name, sh_name, SERIES_ID)
+            for archive_name, wb_name, sh_name in zip(ARCHIVE_NAMES, WB_NAMES, SH_NAMES)
         ],
         axis=1,
         sort=True
@@ -2143,7 +2181,7 @@ def collect_usa_bea_labor():
     return df.iloc[:, [-1]].dropna(axis=0)
 
 
-def collect_usa_bea_labor_mfg():
+def collect_usa_bea_labor_mfg() -> DataFrame:
     # =========================================================================
     # Manufacturing Labor Series: H4313C0, 1929--1948
     # Manufacturing Labor Series: J4313C0, 1948--1969
@@ -2181,8 +2219,8 @@ def collect_usa_bea_labor_mfg():
     )
     df = pd.concat(
         [
-            extract_usa_bea(archive_name, wb, sh, series_id)
-            for archive_name, wb, sh, series_id in zip(ARCHIVE_NAMES, WB_NAMES, SH_NAMES, SERIES_IDS)
+            extract_usa_bea(archive_name, wb_name, sh_name, series_id)
+            for archive_name, wb_name, sh_name, series_id in zip(ARCHIVE_NAMES, WB_NAMES, SH_NAMES, SERIES_IDS)
         ],
         axis=1,
         sort=True
@@ -2191,7 +2229,7 @@ def collect_usa_bea_labor_mfg():
     return df.iloc[:, [-1]].dropna(axis=0)
 
 
-def collect_usa_bls_cpiu():
+def collect_usa_bls_cpiu() -> DataFrame:
     '''BLS CPI-U Price Index Fetch'''
     FILE_NAME = 'dataset_usa_bls_cpiai.txt'
     df = pd.read_csv(
@@ -2213,7 +2251,7 @@ def collect_usa_bls_cpiu():
     return df.iloc[:, [-1]].dropna(axis=0)
 
 
-def collect_usa_capital():
+def collect_usa_capital() -> DataFrame:
     # =========================================================================
     # Series Not Used - `k3ntotl1si00`
     # =========================================================================
@@ -2499,14 +2537,20 @@ def collect_usa_xlsm() -> DataFrame:
     _data = pd.concat(
         [
             pd.concat(
-                [extract_usa_bea(ARCHIVE_NAMES[0], WB_NAMES[0], _sh, series_id)
-                 for _sh, series_id in zip(SH_NAMES, SERIES_IDS)],
+                [
+                    extract_usa_bea(
+                        ARCHIVE_NAMES[0], WB_NAMES[0], sh_name, series_id)
+                    for sh_name, series_id in zip(SH_NAMES, SERIES_IDS)
+                ],
                 axis=1,
                 sort=True
             ),
             pd.concat(
-                [extract_usa_bea(ARCHIVE_NAMES[1], WB_NAMES[1], _sh, series_id)
-                 for _sh, series_id in zip(SH_NAMES, SERIES_IDS)],
+                [
+                    extract_usa_bea(
+                        ARCHIVE_NAMES[1], WB_NAMES[1], sh_name, series_id)
+                    for sh_name, series_id in zip(SH_NAMES, SERIES_IDS)
+                ],
                 axis=1,
                 sort=True
             ),
@@ -2559,8 +2603,8 @@ def collect_version_a():
             # =================================================================
             pd.concat(
                 [
-                    extract_usa_bea(_archive_name, _wb, SH_NAME, SERIES_ID)
-                    for _archive_name, _wb in zip(ARCHIVE_NAMES, WB_NAMES)
+                    extract_usa_bea(archive_name, wb_name, SH_NAME, SERIES_ID)
+                    for archive_name, wb_name in zip(ARCHIVE_NAMES, WB_NAMES)
                 ],
                 sort=True
             ).drop_duplicates(),
@@ -2583,8 +2627,8 @@ def collect_version_a():
             # =================================================================
             pd.concat(
                 [
-                    extract_usa_bea(_archive_name, _wb, SH_NAME, SERIES_ID)
-                    for _archive_name, _wb in zip(ARCHIVE_NAMES, WB_NAMES)
+                    extract_usa_bea(archive_name, wb_name, SH_NAME, SERIES_ID)
+                    for archive_name, wb_name in zip(ARCHIVE_NAMES, WB_NAMES)
                 ],
                 sort=True
             ).drop_duplicates(),
