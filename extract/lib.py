@@ -313,14 +313,19 @@ def extract_usa_bea_by_series_id(series_id: str) -> DataFrame:
 
 def extract_usa_bea_from_loaded(df: DataFrame, series_id: str) -> DataFrame:
     '''`NipaDataA.txt`: U.S. Bureau of Economic Analysis'''
-    df = df[df.iloc[:, 0] == series_id].iloc[:, [1, 2]]
-    df.columns = [df.columns[0].lower(), series_id]
-    return df.set_index(df.columns[0], verify_integrity=True)
+    _df = df[df.iloc[:, 0] == series_id].iloc[:, [1]]
+    return _df.rename(columns={"value": series_id})
 
 
 def extract_usa_bea_from_url(url: str) -> DataFrame:
     '''Retrieves U.S. Bureau of Economic Analysis DataFrame from URL'''
-    return pd.read_csv(io.BytesIO(requests.get(url).content), thousands=',')
+    return pd.read_csv(
+        io.BytesIO(requests.get(url).content),
+        names=['series_ids', 'period', 'value'],
+        index_col=1,
+        skiprows=1,
+        thousands=','
+    )
 
 
 def extract_usa_bls(file_name, series_id: str) -> DataFrame:
@@ -447,7 +452,7 @@ def extract_worldbank() -> DataFrame:
         # =====================================================================
         # Select Largest File
         # =====================================================================
-        with z.open(_map[max(_map.keys())]) as f:
+        with z.open(_map[max(_map)]) as f:
             df = pd.read_csv(
                 f,
                 index_col=0,
