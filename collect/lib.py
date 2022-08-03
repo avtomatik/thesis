@@ -307,8 +307,8 @@ def collect_can_price_b():
 
 def collect_archived() -> DataFrame:
     ARCHIVE_NAMES = (
-        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
-        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
+        'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1929_1969.zip',
+        'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1969_2015.zip',
     )
     WB_NAMES = (
         'Section1ALL_Hist.xls',
@@ -321,28 +321,24 @@ def collect_archived() -> DataFrame:
     SH_NAMES = (
         '10105 Ann',
         '10106 Ann',
-        '50900 Ann',
+        '51000 Ann',
     )
     SERIES_IDS = (
         # =====================================================================
-        # Nominal Investment Series: A006RC1, 1929--2012
+        # Nominal Investment Series: A006RC1, 1929--2014
         # =====================================================================
         'A006RC1',
         # =====================================================================
-        # Real Gross Domestic Product Series, 2005=100: A191RX1, 1929--2012
+        # Real Gross Domestic Product Series, 2009=100: A191RX1, 1929--2014
         # =====================================================================
         'A191RX1',
         # =====================================================================
-        # Fixed Assets Series: K160491, 1951--2011
-        # `K160491` Replaced with `K10070` in `collect_combined()`
-        # =====================================================================
-        # =====================================================================
-        # K10070 << K100701 << K160491
+        # Fixed Assets Series: K100701, 1951--2013
         # =====================================================================
         # =====================================================================
         # TODO: Replace with "k1n31gd1es00"
         # =====================================================================
-        'K160491',
+        'K100701',
     )
     _data_bea = pd.concat(
         [
@@ -379,16 +375,16 @@ def collect_archived() -> DataFrame:
         sort=True
     ).dropna(axis=0)
     # =========================================================================
-    # Deflator, 2005=100
+    # Deflator, 2009=100
     # =========================================================================
     _df['deflator'] = _df.iloc[:, 0].add(1).cumprod()
-    _df.iloc[:, -1] = _df.iloc[:, -1].rdiv(_df.loc[2005, _df.columns[-1]])
+    _df.iloc[:, -1] = _df.iloc[:, -1].rdiv(_df.loc[2009, _df.columns[-1]])
     # =========================================================================
-    # Investment, 2005=100
+    # Investment, 2009=100
     # =========================================================================
     _df['investment'] = _df.iloc[:, 1].mul(_df.iloc[:, -1])
     # =========================================================================
-    # Capital, 2005=100
+    # Capital, 2009=100
     # =========================================================================
     _df['capital'] = _df.iloc[:, 3].mul(_df.iloc[:, -1])
     # =========================================================================
@@ -418,8 +414,8 @@ def collect_bea_def() -> DataFrame:
 
 def collect_bea_gdp() -> DataFrame:
     ARCHIVE_NAMES = (
-        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
-        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
+        'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1929_1969.zip',
+        'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1969_2015.zip',
     )
     WB_NAMES = (
         'Section1ALL_Hist.xls',
@@ -431,11 +427,11 @@ def collect_bea_gdp() -> DataFrame:
     )
     SERIES_IDS = (
         # =====================================================================
-        # Nominal Gross Domestic Product Series: A191RC1, 1929--2012
+        # Nominal Gross Domestic Product Series: A191RC1, 1929--2014
         # =====================================================================
         'A191RC1',
         # =====================================================================
-        # Real Gross Domestic Product Series, 2005=100: A191RX1, 1929--2012
+        # Real Gross Domestic Product Series, 2009=100: A191RX1, 1929--2014
         # =====================================================================
         'A191RX1',
     )
@@ -553,8 +549,8 @@ def collect_brown() -> DataFrame:
 
 def collect_capital_combined_archived() -> DataFrame:
     ARCHIVE_NAMES = (
-        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
-        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
+        'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1929_1969.zip',
+        'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1969_2015.zip',
     )
     WB_NAMES = (
         'Section1ALL_Hist.xls',
@@ -572,49 +568,41 @@ def collect_capital_combined_archived() -> DataFrame:
         '10105 Ann',
         '10105 Ann',
         '10106 Ann',
-        '50900 Ann',
-        '50900 Ann',
+        '51000 Ann',
+        '51000 Ann',
     )
     SERIES_IDS = (
         # =====================================================================
-        # Nominal Investment Series: A006RC1, 1929--2012
+        # Nominal Investment Series: A006RC1, 1929--2014
         # =====================================================================
         'A006RC1',
         # =====================================================================
-        # Nominal Gross Domestic Product Series: A191RC1, 1929--2012
+        # Nominal Gross Domestic Product Series: A191RC1, 1929--2014
         # =====================================================================
         'A191RC1',
         # =====================================================================
-        # Real Gross Domestic Product Series: A191RX1, 1929--2012
+        # Real Gross Domestic Product Series: A191RX1, 1929--2014
         # =====================================================================
         'A191RX1',
         # =====================================================================
-        # Fixed Assets Series: K160021, 1951--2011
-        # =====================================================================
-        # =====================================================================
-        # K10002 << K100021 << K160021
+        # Fixed Assets Series: K100021, 1951--2013
         # =====================================================================
         # =====================================================================
         # TODO: Replace with "k1n31gd1es00"
         # =====================================================================
-        'K160021',
+        'K100021',
         # =====================================================================
-        # Fixed Assets Series: K160491, 1951--2011
+        # Fixed Assets Series: K100701, 1951--2013
         # =====================================================================
         # =====================================================================
-        # U.S. Bureau of Economic Analysis, Produced assets, closing balance: Fixed assets (DISCONTINUED) [K160491A027NBEA], retrieved from FRED, Federal Reserve Bank of St. Louis;
-        # https://fred.stlouisfed.org/series/K160491A027NBEA, August 23, 2018.
         # http://www.bea.gov/data/economic-accounts/national
         # https://fred.stlouisfed.org/series/K160491A027NBEA
         # https://search.bea.gov/search?affiliate=u.s.bureauofeconomicanalysis&query=k160491
         # =====================================================================
         # =====================================================================
-        # K10070 << K100701 << K160491
-        # =====================================================================
-        # =====================================================================
         # TODO: Replace with "k1n31gd1es00"
         # =====================================================================
-        'K160491',
+        'K100701',
     )
     _df = pd.concat(
         [
@@ -647,11 +635,11 @@ def collect_capital_combined_archived() -> DataFrame:
             # =================================================================
             collect_usa_frb_cu(),
             # =================================================================
-            # Manufacturing Labor Series: _4313C0, 1929--2011
+            # Manufacturing Labor Series: _4313C0, 1929--2013
             # =================================================================
             collect_usa_bea_labor_mfg(),
             # =================================================================
-            # Labor Series: A4601C0, 1929--2011
+            # Labor Series: A4601C0, 1929--2013
             # =================================================================
             collect_usa_bea_labor()
         ],
@@ -1532,10 +1520,15 @@ def collect_cobb_douglas(series_number: int = 3) -> DataFrame:
 
 
 def collect_combined() -> DataFrame:
-    '''Most Up-To-Date Version'''
-    # =========================================================================
-    # TODO: Refactor It
-    # =========================================================================
+    '''
+    Valid Version
+
+    Returns
+    -------
+    DataFrame
+        DESCRIPTION.
+
+    '''
     URL = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
     _data = extract_usa_bea_from_url(URL)
     SERIES_IDS = (
@@ -1574,69 +1567,51 @@ def collect_combined() -> DataFrame:
     )
     _labor_frame['bea_mfg_labor'] = _labor_frame.mean(axis=1)
     _labor_frame = _labor_frame.iloc[:, [-1]]
-    ARCHIVE_NAMES = (
-        'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1929_1969.zip',
-        'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1969_2015.zip',
+    SERIES_IDS = (
+        # =====================================================================
+        # Fixed Assets Series: K10070, 1951--2020
+        # =====================================================================
+        'K10070',
     )
-    WB_NAMES = (
-        'Section5ALL_Hist.xls',
-        'Section5all_xls.xls',
-    )
-    SH_NAME, SERIES_ID = ('51000 Ann', 'K100701',)
-    # =========================================================================
-    # Fixed Assets Series: K100701, 1951--2013
-    # =========================================================================
     _data_sfat = pd.concat(
         [
-            extract_usa_bea(archive_name, wb_name, SH_NAME, SERIES_ID)
-            for archive_name, wb_name in zip(ARCHIVE_NAMES, WB_NAMES)
+            extract_usa_bea_from_loaded(_data, series_id)
+            for series_id in SERIES_IDS
         ],
+        axis=1,
         sort=True
-    ).drop_duplicates()
+    )
     # =========================================================================
     # US BEA Fixed Assets Series Tests
     # =========================================================================
-    ARCHIVE_NAME = 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip'
-    WB_NAMES = (
-        'Section1ALL_xls.xls',
-        'Section1ALL_xls.xls',
-        'Section1ALL_xls.xls',
-        'Section2ALL_xls.xls',
-        'Section2ALL_xls.xls',
-    )
-    SH_NAMES = (
-        '105 Ann',
-        '106 Ann',
-        '101 Ann',
-        '203 Ann',
-        '202 Ann',
-    )
+    URL = 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt'
+    _data = extract_usa_bea_from_url(URL)
     SERIES_IDS = (
         # =====================================================================
-        # Investment in Fixed Assets, Private, i3ptotl1es000, 1901--2016
+        # Investment in Fixed Assets, Private, i3ptotl1es00, 1901--2016
         # =====================================================================
-        'i3ptotl1es000',
+        'i3ptotl1es00',
         # =====================================================================
-        # Chain-Type Quantity Index for Investment in Fixed Assets, Private, icptotl1es000, 1901--2016
+        # Chain-Type Quantity Index for Investment in Fixed Assets, Private, icptotl1es00, 1901--2016
         # =====================================================================
-        'icptotl1es000',
+        'icptotl1es00',
         # =====================================================================
-        # Current-Cost Net Stock of Fixed Assets, Private, k1ptotl1es000, 1925--2016
+        # Current-Cost Net Stock of Fixed Assets, Private, k1ptotl1es00, 1925--2016
         # =====================================================================
-        'k1ptotl1es000',
+        'k1ptotl1es00',
         # =====================================================================
-        # Historical-Cost Net Stock of Private Fixed Assets, Private Fixed Assets, k3ptotl1es000, 1925--2016
+        # Historical-Cost Net Stock of Private Fixed Assets, Private Fixed Assets, k3ptotl1es00, 1925--2016
         # =====================================================================
-        'k3ptotl1es000',
+        'k3ptotl1es00',
         # =====================================================================
-        # Chain-Type Quantity Indexes for Net Stock of Fixed Assets, Private, kcptotl1es000, 1925--2016
+        # Chain-Type Quantity Indexes for Net Stock of Fixed Assets, Private, kcptotl1es00, 1925--2016
         # =====================================================================
-        'kcptotl1es000',
+        'kcptotl1es00',
     )
     _data_sfat_ = pd.concat(
         [
-            extract_usa_bea(ARCHIVE_NAME, wb_name, sh_name, series_id)
-            for wb_name, sh_name, series_id in zip(WB_NAMES, SH_NAMES, SERIES_IDS)
+            extract_usa_bea_from_loaded(_data, series_id)
+            for series_id in SERIES_IDS
         ],
         axis=1,
         sort=True
@@ -1661,8 +1636,8 @@ def collect_combined() -> DataFrame:
 def collect_combined_archived() -> DataFrame:
     '''Version: 02 December 2013'''
     ARCHIVE_NAMES = (
-        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
-        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
+        'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1929_1969.zip',
+        'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1969_2015.zip',
     )
     WB_NAMES = (
         'Section1ALL_Hist.xls',
@@ -1699,60 +1674,56 @@ def collect_combined_archived() -> DataFrame:
         '10705 Ann',
         '50100 Ann',
         '50206 Ann',
-        '50900 Ann',
+        '51000 Ann',
     )
     SERIES_IDS = (
         # =====================================================================
-        # Gross Domestic Product, 2005=100: B191RA3, 1929--2012
+        # Gross Domestic Product, 2009=100: B191RA3, 1929--2014
         # =====================================================================
         'B191RA3',
         # =====================================================================
-        # Nominal Investment Series: A006RC1, 1929--2012
+        # Nominal Investment Series: A006RC1, 1929--2014
         # =====================================================================
         'A006RC1',
         # =====================================================================
-        # Gross private domestic investment -- Nonresidential: A008RC1, 1929--2012
+        # Gross private domestic investment -- Nonresidential: A008RC1, 1929--2014
         # =====================================================================
         'A008RC1',
         # =====================================================================
-        # Nominal Nominal Gross Domestic Product Series: A191RC1, 1929--2012
+        # Nominal Nominal Gross Domestic Product Series: A191RC1, 1929--2014
         # =====================================================================
         'A191RC1',
         # =====================================================================
-        # Real Gross Domestic Product Series, 2005=100: A191RX1, 1929--2012
+        # Real Gross Domestic Product Series, 2009=100: A191RX1, 1929--2014
         # =====================================================================
         'A191RX1',
         # =====================================================================
-        # Implicit Price Deflator Series: A006RD3, 1929--2012
+        # Implicit Price Deflator Series: A006RD3, 1929--2014
         # =====================================================================
         'A006RD3',
         # =====================================================================
-        # Implicit Price Deflator -- Gross private domestic investment -- Nonresidential: A008RD3, 1929--2012
+        # Implicit Price Deflator -- Gross private domestic investment -- Nonresidential: A008RD3, 1929--2014
         # =====================================================================
         'A008RD3',
         # =====================================================================
-        # Nominal National income Series: A032RC1, 1929--2011
+        # Nominal National income Series: A032RC1, 1929--2013
         # =====================================================================
         'A032RC1',
         # =====================================================================
-        # Gross Domestic Investment, W170RC1, 1929--2012
+        # Gross Domestic Investment, W170RC1, 1929--2014
         # =====================================================================
         'W170RC1',
         # =====================================================================
-        # Gross Domestic Investment, W170RX1, 1967--2011
+        # Gross Domestic Investment, W170RX1, 1967--2013
         # =====================================================================
         'W170RX1',
         # =====================================================================
-        # `K160491` Replaced with `K10070` in `collect_combined()`
-        # Fixed Assets Series: K160491, 1951--2011
-        # =====================================================================
-        # =====================================================================
-        # K10070 << K100701 << K160491
+        # Fixed Assets Series: K100701, 1951--2013
         # =====================================================================
         # =====================================================================
         # TODO: Replace with "k1n31gd1es00"
         # =====================================================================
-        'K160491',
+        'K100701',
     )
     _data_nipa = pd.concat(
         [
@@ -1777,47 +1748,34 @@ def collect_combined_archived() -> DataFrame:
         ],
         sort=True
     ).drop_duplicates()
-    ARCHIVE_NAME = 'dataset_usa_bea-sfat-release-2012-08-15-SectionAll_xls.zip'
-    WB_NAMES = (
-        'Section1ALL_xls.xls',
-        'Section1ALL_xls.xls',
-        'Section1ALL_xls.xls',
-        'Section2ALL_xls.xls',
-        'Section2ALL_xls.xls',
-    )
-    SH_NAMES = (
-        '105 Ann',
-        '106 Ann',
-        '101 Ann',
-        '203 Ann',
-        '202 Ann',
-    )
+    URL = 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt'
+    _data = extract_usa_bea_from_url(URL)
     SERIES_IDS = (
         # =====================================================================
-        # Investment in Fixed Assets and Consumer Durable Goods, Private, i3ptotl1es000, 1901--2011
+        # Investment in Fixed Assets, Private, i3ptotl1es00, 1901--2016
         # =====================================================================
-        'i3ptotl1es000',
+        'i3ptotl1es00',
         # =====================================================================
-        # Chain-Type Quantity Indexes for Investment in Fixed Assets and Consumer Durable Goods, Private, icptotl1es000, 1901--2011
+        # Chain-Type Quantity Index for Investment in Fixed Assets, Private, icptotl1es00, 1901--2016
         # =====================================================================
-        'icptotl1es000',
+        'icptotl1es00',
         # =====================================================================
-        # Current-Cost Net Stock of Fixed Assets and Consumer Durable Goods, Private, k1ptotl1es000, 1925--2011
+        # Current-Cost Net Stock of Fixed Assets, Private, k1ptotl1es00, 1925--2016
         # =====================================================================
-        'k1ptotl1es000',
+        'k1ptotl1es00',
         # =====================================================================
-        # Historical-Cost Net Stock of Private Fixed Assets, Equipment and Software, and Structures by Type, Private fixed assets, k3ptotl1es000, 1925--2011
+        # Historical-Cost Net Stock of Private Fixed Assets, Private Fixed Assets, k3ptotl1es00, 1925--2016
         # =====================================================================
-        'k3ptotl1es000',
+        'k3ptotl1es00',
         # =====================================================================
-        # Chain-Type Quantity Indexes for Net Stock of Private Fixed Assets, Equipment and Software, and Structures by Type, Private fixed assets, kcptotl1es000, 1925--2011
+        # Chain-Type Quantity Indexes for Net Stock of Fixed Assets, Private, kcptotl1es00, 1925--2016
         # =====================================================================
-        'kcptotl1es000',
+        'kcptotl1es00',
     )
     _data_sfat = pd.concat(
         [
-            extract_usa_bea(ARCHIVE_NAME, wb_name, sh_name, series_id)
-            for wb_name, sh_name, series_id in zip(WB_NAMES, SH_NAMES, SERIES_IDS)
+            extract_usa_bea_from_loaded(_data, series_id)
+            for series_id in SERIES_IDS
         ],
         axis=1,
         sort=True
@@ -1841,7 +1799,7 @@ def collect_combined_archived() -> DataFrame:
             _data_sfat,
             _data,
             # =================================================================
-            # Labor Series
+            # Manufacturing Labor Series: _4313C0, 1929--2013
             # =================================================================
             collect_usa_bea_labor_mfg(),
             extract_usa_census(ARCHIVE_NAME, SERIES_ID),
@@ -1969,6 +1927,9 @@ def collect_common_archived() -> DataFrame:
         [
             _data_nipa,
             _data_sfat,
+            # =================================================================
+            # Manufacturing Labor Series: _4313C0, 1929--2013
+            # =================================================================
             collect_usa_bea_labor_mfg(),
             # =====================================================================
             # Capacity Utilization Series: CAPUTL.B50001.A, 1967--2012
@@ -1997,8 +1958,8 @@ def collect_douglas() -> DataFrame:
 
 def collect_local() -> DataFrame:
     ARCHIVE_NAMES = (
-        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
-        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
+        'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1929_1969.zip',
+        'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1969_2015.zip',
     )
     WB_NAMES = (
         'Section1ALL_Hist.xls',
@@ -2014,32 +1975,28 @@ def collect_local() -> DataFrame:
         '10105 Ann',
         '10105 Ann',
         '10106 Ann',
-        '50900 Ann',
+        '51000 Ann',
     )
     SERIES_IDS = (
         # =====================================================================
-        # Nominal Investment Series: A006RC1, 1929--2012
+        # Nominal Investment Series: A006RC1, 1929--2014
         # =====================================================================
         'A006RC1',
         # =====================================================================
-        # Nominal Nominal Gross Domestic Product Series: A191RC1, 1929--2012
+        # Nominal Nominal Gross Domestic Product Series: A191RC1, 1929--2014
         # =====================================================================
         'A191RC1',
         # =====================================================================
-        # Real Gross Domestic Product Series, 2005=100: A191RX1, 1929--2012
+        # Real Gross Domestic Product Series, 2009=100: A191RX1, 1929--2014
         # =====================================================================
         'A191RX1',
         # =====================================================================
-        # `K160491` Replaced with `K10070` in `collect_combined()`
-        # Fixed Assets Series: K160491, 1951--2011
-        # =====================================================================
-        # =====================================================================
-        # K10070 << K100701 << K160491
+        # Fixed Assets Series: K100701, 1951--2013
         # =====================================================================
         # =====================================================================
         # TODO: Replace with "k1n31gd1es00"
         # =====================================================================
-        'K160491',
+        'K100701',
     )
     _data_nipa = pd.concat(
         [
@@ -2067,6 +2024,9 @@ def collect_local() -> DataFrame:
     return pd.concat(
         [
             _data_nipa,
+            # =================================================================
+            # Manufacturing Labor Series: _4313C0, 1929--2013
+            # =================================================================
             collect_usa_bea_labor_mfg(),
             collect_usa_frb_cu(),
         ],
@@ -2186,14 +2146,14 @@ def collect_updated() -> DataFrame:
 
 def collect_usa_bea_labor() -> DataFrame:
     # =========================================================================
-    # Labor Series: A4601C0, 1929--2011
+    # Labor Series: A4601C0, 1929--2013
     # =========================================================================
     ARCHIVE_NAMES = (
-        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
-        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
-        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
-        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
-        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
+        'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1929_1969.zip',
+        'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1929_1969.zip',
+        'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1969_2015.zip',
+        'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1969_2015.zip',
+        'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1969_2015.zip',
     )
     WB_NAMES = (
         'Section6ALL_Hist.xls',
@@ -2223,45 +2183,37 @@ def collect_usa_bea_labor() -> DataFrame:
 
 
 def collect_usa_bea_labor_mfg() -> DataFrame:
-    # =========================================================================
-    # Manufacturing Labor Series: H4313C0, 1929--1948
-    # Manufacturing Labor Series: J4313C0, 1948--1969
-    # Manufacturing Labor Series: J4313C0, 1969--1987
-    # Manufacturing Labor Series: A4313C0, 1987--2000
-    # Manufacturing Labor Series: N4313C0, 1998--2011
-    # =========================================================================
-    ARCHIVE_NAMES = (
-        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
-        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
-        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
-        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
-        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
-    )
-    WB_NAMES = (
-        'Section6ALL_Hist.xls',
-        'Section6ALL_Hist.xls',
-        'Section6all_xls.xls',
-        'Section6all_xls.xls',
-        'Section6all_xls.xls',
-    )
-    SH_NAMES = (
-        '60500A Ann',
-        '60500B Ann',
-        '60500B Ann',
-        '60500C Ann',
-        '60500D Ann',
-    )
+    '''
+    Manufacturing Labor Series
+
+    Returns
+    -------
+    DataFrame
+    '''
+    URL = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
+    _df = extract_usa_bea_from_url(URL)
     SERIES_IDS = (
-        'H4313C0',
-        'J4313C0',
-        'J4313C0',
-        'A4313C0',
-        'N4313C0',
+        # =====================================================================
+        # Manufacturing Labor Series: H4313C, 1929--1948
+        # =====================================================================
+        'H4313C',
+        # =====================================================================
+        # Manufacturing Labor Series: J4313C, 1948--1987
+        # =====================================================================
+        'J4313C',
+        # =====================================================================
+        # Manufacturing Labor Series: A4313C, 1987--2000
+        # =====================================================================
+        'A4313C',
+        # =====================================================================
+        # Manufacturing Labor Series: N4313C, 1998--2020
+        # =====================================================================
+        'N4313C',
     )
     df = pd.concat(
         [
-            extract_usa_bea(archive_name, wb_name, sh_name, series_id)
-            for archive_name, wb_name, sh_name, series_id in zip(ARCHIVE_NAMES, WB_NAMES, SH_NAMES, SERIES_IDS)
+            extract_usa_bea_from_loaded(_df, series_id)
+            for series_id in SERIES_IDS
         ],
         axis=1,
         sort=True
@@ -2544,8 +2496,8 @@ def collect_usa_sahr_infcf() -> DataFrame:
 
 def collect_usa_xlsm() -> DataFrame:
     ARCHIVE_NAMES = (
-        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
-        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
+        'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1929_1969.zip',
+        'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1969_2015.zip',
     )
     WB_NAMES = (
         'Section1ALL_Hist.xls',
@@ -2559,19 +2511,19 @@ def collect_usa_xlsm() -> DataFrame:
     )
     SERIES_IDS = (
         # =====================================================================
-        # Nominal Investment Series: A006RC1, 1929--2012
+        # Nominal Investment Series: A006RC1, 1929--2014
         # =====================================================================
         'A006RC1',
         # =====================================================================
-        # Nominal Nominal Gross Domestic Product Series: A191RC1, 1929--2012
+        # Nominal Nominal Gross Domestic Product Series: A191RC1, 1929--2014
         # =====================================================================
         'A191RC1',
         # =====================================================================
-        # Real Gross Domestic Product Series, 2005=100: A191RX1, 1929--2012
+        # Real Gross Domestic Product Series, 2009=100: A191RX1, 1929--2014
         # =====================================================================
         'A191RX1',
         # =====================================================================
-        # Nominal National income Series: A032RC1, 1929--2011
+        # Nominal National income Series: A032RC1, 1929--2013
         # =====================================================================
         'A032RC1',
     )
@@ -2636,7 +2588,7 @@ def collect_version_a():
             # =================================================================
             extract_usa_bea(**KWARGS),
             # =================================================================
-            # Labor
+            # Manufacturing Labor Series: _4313C0, 1929--2013
             # =================================================================
             collect_usa_bea_labor_mfg(),
             # =================================================================
@@ -2660,7 +2612,7 @@ def collect_version_a():
             # =================================================================
             extract_usa_bea(**KWARGS),
             # =================================================================
-            # Labor
+            # Manufacturing Labor Series: _4313C0, 1929--2013
             # =================================================================
             collect_usa_bea_labor_mfg(),
             # =================================================================
@@ -2708,7 +2660,7 @@ def collect_version_b() -> tuple[DataFrame]:
             # =================================================================
             extract_usa_bea(**KWARGS),
             # =================================================================
-            # Labor
+            # Manufacturing Labor Series: _4313C0, 1929--2013
             # =================================================================
             collect_usa_bea_labor_mfg(),
             # =================================================================
@@ -2727,7 +2679,7 @@ def collect_version_b() -> tuple[DataFrame]:
             # =================================================================
             extract_usa_bea(**KWARGS),
             # =================================================================
-            # Labor
+            # Manufacturing Labor Series: _4313C0, 1929--2013
             # =================================================================
             collect_usa_bea_labor_mfg(),
             # =================================================================
@@ -3173,7 +3125,7 @@ def transform_kurenkov(data_testing: DataFrame) -> tuple[DataFrame]:
     data_c = pd.concat(
         [
             data_control.iloc[:, [2]],
-            data_testing.loc[:, ['K160491']],
+            data_testing.loc[:, ['K100701']],
         ],
         axis=1,
         sort=True
