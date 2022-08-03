@@ -319,13 +319,22 @@ def extract_usa_bea_from_loaded(df: DataFrame, series_id: str) -> DataFrame:
 
 def extract_usa_bea_from_url(url: str) -> DataFrame:
     '''Retrieves U.S. Bureau of Economic Analysis DataFrame from URL'''
-    return pd.read_csv(
-        io.BytesIO(requests.get(url).content),
-        names=['series_ids', 'period', 'value'],
-        index_col=1,
-        skiprows=1,
-        thousands=','
-    )
+    try:
+        return pd.read_csv(
+            io.BytesIO(requests.get(url).content),
+            names=['series_ids', 'period', 'value'],
+            index_col=1,
+            skiprows=1,
+            thousands=','
+        )
+    except requests.ConnectionError:
+        return pd.read_csv(
+            url.split('/')[-1],
+            names=['series_ids', 'period', 'value'],
+            index_col=1,
+            skiprows=1,
+            thousands=','
+        )
 
 
 def extract_usa_bls(file_name, series_id: str) -> DataFrame:
