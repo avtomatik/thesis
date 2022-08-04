@@ -478,18 +478,70 @@ def extract_series_ids(archive_name: str) -> dict[str]:
 
 
 def extract_usa_frb_ms() -> DataFrame:
-    ''''Indexed Money Stock Measures (H.6) Series'''
+    '''
+    Money Stock Measures (H.6) Series
+
+    Returns
+    -------
+    DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      M1
+    ================== =================================
+    '''
     URL = 'https://www.federalreserve.gov/datadownload/Output.aspx?rel=H6&series=5398d8d1734b19f731aba3105eb36d47&lastobs=&from=01/01/1959&to=12/31/2018&filetype=csv&label=include&layout=seriescolumn'
-    df = pd.read_csv(
+    _df = pd.read_csv(
         io.BytesIO(requests.get(URL).content),
         names=['period', 'm1_m'],
         index_col=0,
         usecols=range(2),
         skiprows=6,
         parse_dates=True,
-        thousands=','
     )
-    return df.groupby(df.index.year).mean()
+    return _df.groupby(_df.index.year).mean()
+
+
+def extract_usa_ppi() -> DataFrame:
+    '''
+    Producer Price Index
+
+    Returns
+    -------
+    DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Producer Price Index
+    ================== =================================
+    '''
+    URL = 'https://fred.stlouisfed.org/graph/fredgraph.csv?bgcolor=%23e1e9f0&chart_type=line&drp=0&fo=open%20sans&graph_bgcolor=%23ffffff&height=450&mode=fred&recession_bars=on&txtcolor=%23444444&ts=12&tts=12&width=1168&nt=0&thu=0&trc=0&show_legend=yes&show_axis_titles=yes&show_tooltip=yes&id=PPIACO&scale=left&cosd=1913-01-01&coed=2022-06-01&line_color=%234572a7&link_values=false&line_style=solid&mark_type=none&mw=3&lw=2&ost=-99999&oet=99999&mma=0&fml=a&fq=Monthly&fam=avg&fgst=lin&fgsnd=2020-02-01&line_index=1&transformation=lin&vintage_date=2022-08-04&revision_date=2022-08-04&nd=1913-01-01'
+    _df = pd.read_csv(
+        io.BytesIO(requests.get(URL).content),
+        names=['period', 'ppi'],
+        index_col=0,
+        skiprows=1,
+        parse_dates=True,
+    )
+    return _df.groupby(_df.index.year).mean()
+
+# =============================================================================
+# def extract_usa_prime_rate() -> DataFrame:
+#     '''
+#     USA Prime Rate, WIth Gaps, However
+#
+#     Returns
+#     -------
+#     DataFrame
+#     '''
+#     URL = 'https://fred.stlouisfed.org/graph/fredgraph.csv?bgcolor=%23e1e9f0&chart_type=line&drp=0&fo=open%20sans&graph_bgcolor=%23ffffff&height=450&mode=fred&recession_bars=on&txtcolor=%23444444&ts=12&tts=12&width=1168&nt=0&thu=0&trc=0&show_legend=yes&show_axis_titles=yes&show_tooltip=yes&id=PRIME&scale=left&cosd=1955-08-04&coed=2022-07-28&line_color=%234572a7&link_values=false&line_style=solid&mark_type=none&mw=3&lw=2&ost=-99999&oet=99999&mma=0&fml=a&fq=Not%20Applicable&fam=avg&fgst=lin&fgsnd=2020-02-01&line_index=1&transformation=lin&vintage_date=2022-08-03&revision_date=2022-08-03&nd=1955-08-04'
+#     _df = pd.read_csv(
+#         io.BytesIO(requests.get(URL).content),
+#         names=['period', 'prime_rate'],
+#         index_col=0,
+#         skiprows=1,
+#         parse_dates=True,
+#     )
+#     return _df.groupby(_df.index.year).mean()
+# =============================================================================
 
 
 def data_select(df: DataFrame, query) -> DataFrame:

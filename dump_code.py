@@ -6,6 +6,8 @@ Created on Sun Jun 12 16:24:57 2022
 @author: alexander
 """
 
+import pandas as pd
+from pandas import DataFrame
 from extract.lib import extract_usa_bea
 
 
@@ -256,3 +258,25 @@ def test_data_capital_combined_archived():
         print('Series `A006RC1` & `A191RC1` @ Worksheet `10105 Ann` Equals Series `A006RC1` & `A191RC1` @ Worksheet `10505 Ann` for Period 1969--2012')
     else:
         print('Data Varies from Worksheet `10105 Ann` to Worksheet `10505 Ann`')
+
+
+def collect_usa_bls_cpiu() -> DataFrame:
+    '''BLS CPI-U Price Index Fetch'''
+    FILE_NAME = 'dataset_usa_bls_cpiai.txt'
+    df = pd.read_csv(
+        FILE_NAME,
+        sep='\s+',
+        index_col=0,
+        usecols=range(13),
+        skiprows=16
+    )
+    df.rename_axis('period', inplace=True)
+    df['mean'] = df.mean(axis=1)
+    df['sqrt'] = df.iloc[:, :-1].prod(1).pow(1/12)
+    # =========================================================================
+    # Tests
+    # =========================================================================
+    df['mean_less_sqrt'] = df.iloc[:, -2].sub(df.iloc[:, -1])
+    df['dec_on_dec'] = df.iloc[:, -3].div(df.iloc[:, -3].shift(1)).sub(1)
+    df['mean_on_mean'] = df.iloc[:, -4].div(df.iloc[:, -4].shift(1)).sub(1)
+    return df.iloc[:, [-1]].dropna(axis=0)
