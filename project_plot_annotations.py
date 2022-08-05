@@ -3,63 +3,99 @@
 # =============================================================================
 
 
-from extract.lib import get_data_version_c
-from extract.lib import get_data_usa_sahr_infcf
-from toolkit.lib import strip_cumulated_deflator
-from toolkit.lib import price_inverse_single
+import os
+import matplotlib.pyplot as plt
+import pandas as pd
+from collect.lib import collect_version_c
+from collect.lib import collect_common_archived
 from plot.lib import plot_increment
 
 
-def preprocessing_dx_dy(df: pd.DataFrame) -> pd.DataFrame:
+def data_transform_add_dx_dy(df: pd.DataFrame) -> pd.DataFrame:
     '''
+
+
+    Parameters
+    ----------
+    df : pd.DataFrame
     ================== =================================
     df.index           Period
     df.iloc[:, 0]      Capital
     df.iloc[:, 1]      Labor
     df.iloc[:, 2]      Product
     ================== =================================
+    Returns
+    -------
+    df : pd.DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Labor Capital Intensity
+    df.iloc[:, 1]      Labor Productivity
+    df.iloc[:, 2]      Labor Capital Intensity Increment
+    df.iloc[:, 3]      Labor Productivity Increment
+    ================== =================================
     '''
-    df.dropna(inplace=True)
+    _df = df.copy()
+    _df.dropna(inplace=True)
     # =========================================================================
     # Labor Capital Intensity
     # =========================================================================
-    df['lab_cap_int'] = df.iloc[:, 0].div(df.iloc[:, 1])
+    _df['lab_cap_int'] = _df.iloc[:, 0].div(_df.iloc[:, 1])
     # =========================================================================
     # Labor Productivity
     # =========================================================================
-    df['lab_product'] = df.iloc[:, 2].div(df.iloc[:, 1])
+    _df['lab_product'] = _df.iloc[:, 2].div(_df.iloc[:, 1])
     # =========================================================================
     # Labor Capital Intensity Increment
     # =========================================================================
-    df['lab_cap_int_inc'] = df.iloc[:, -2].div(df.iloc[:, -2].shift(1))
+    _df['lab_cap_int_inc'] = _df.iloc[:, -2].div(_df.iloc[:, -2].shift(1))
     # =========================================================================
     # Labor Productivity Increment
     # =========================================================================
-    df['lab_product_inc'] = df.iloc[:, -2].div(df.iloc[:, -2].shift(1))
-    return df.iloc[:, range(3, df.shape[1])].dropna(axis=0)
+    _df['lab_product_inc'] = _df.iloc[:, -2].div(_df.iloc[:, -2].shift(1))
+    return _df.iloc[:, -4:].dropna(axis=0)
 
 
-def procedure_b(x, y, dx, dy):
-    # =============================================================================
+def plot_local(df: pd.DataFrame) -> None:
+    '''
+
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Labor Capital Intensity
+    df.iloc[:, 1]      Labor Productivity
+    df.iloc[:, 2]      Labor Capital Intensity Increment
+    df.iloc[:, 3]      Labor Productivity Increment
+    ================== =================================
+    Returns
+    -------
+    None
+        DESCRIPTION.
+
+    '''
+    # =========================================================================
     # Scenario I
-    # =============================================================================
+    # =========================================================================
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    plt.plot(X, Y)
+    plt.plot(df.iloc[:, range(2)])
     plt.xlabel('Labor Capital Intensity')
     plt.ylabel('Labor Productivity')
-    # for i in range(4, 90, 5):
-    #     ax.annotate(period[i], (X[i], Y[i]))
+    for _ in range(4, df.shape[0], 5):
+        ax.annotate(df.index[_], (df.iloc[_, 0], df.iloc[_, 1]))
     plt.grid()
     plt.show()
-# =============================================================================
-# Scenario II
-# =============================================================================
-    # plt.figure()
-    # plt.plot(X, Y, 'o', X, Y, '-')
-    # plt.xlabel('Labor Capital Intensity')
-    # plt.ylabel('Labor Productivity')
-    # plt.show()
+    # =========================================================================
+    # Scenario II
+    # =========================================================================
+    plt.figure()
+    plt.plot(df.iloc[:, range(2)], 'o', df.iloc[:, range(2)], '-')
+    plt.xlabel('Labor Capital Intensity')
+    plt.ylabel('Labor Productivity')
+    plt.show()
 
 
 # =============================================================================
@@ -67,95 +103,77 @@ def procedure_b(x, y, dx, dy):
 # =============================================================================
 DIR = '/media/alexander/321B-6A94'
 os.chdir(DIR)
-data_frame = get_dataset_common_archived()
-T = data_frame.iloc[:, 0]
+_df = collect_common_archived()
 # =============================================================================
 # Deflator, 2009=100
 # =============================================================================
-d = data_frame.loc[:, ['A191RX1']].div(data_frame.loc[:, ['A191RC1']])
+_defl = _df.loc[:, ['A191RX1']].div(_df.loc[:, ['A191RC1']])
 # =============================================================================
 # Fixed Assets, K160491
 # =============================================================================
-cap_a_a = data_frame.loc[:, ['K160491']]*d
+cap_a_a = _df.loc[:, ['K160491']].mul(_defl)
 # =============================================================================
 # Fixed Assets, k3n31gd1es000
 # =============================================================================
-cap_a_b = data_frame.loc[:, ['k3n31gd1es000']]*d
-cap_b_a = data_frame.loc[:, ['k1ntotl1si000']].mul(
-    data_frame.loc[:, ['A191RD3']])
-cap_b_b = data_frame.loc[:, ['k1ntotl1si000']].mul(
-    data_frame.loc[:, ['A191RX1']]).div(data_frame.loc[:, ['A191RC1']])
-cap_b_c = data_frame.loc[:, ['k3n31gd1es000']].mul(
-    data_frame.loc[:, ['A191RD3']])
-cap_b_d = data_frame.loc[:, ['k3n31gd1es000']].mul(
-    data_frame.loc[:, ['A191RX1']]).div(data_frame.loc[:, ['A191RC1']])
-L = data_frame.loc[:, ['Labor']]
+cap_a_b = _df.loc[:, ['k3n31gd1es000']].mul(_defl)
+cap_b_a = _df.loc[:, ['k1ntotl1si000']].mul(_df.loc[:, ['A191RD3']])
+cap_b_b = _df.loc[:, ['k1ntotl1si000']].mul(_defl)
+cap_b_c = _df.loc[:, ['k3n31gd1es000']].mul(_df.loc[:, ['A191RD3']])
+cap_b_d = _df.loc[:, ['k3n31gd1es000']].mul(_defl)
+L = _df.loc[:, ['bea_mfg_labor']]
 # =============================================================================
 # Production
 # =============================================================================
-prd_a_a = d*data_frame.loc[:, ['A032RC1']]
+prd_a_a = _df.loc[:, ['A032RC1']].mul(_defl)
 # =============================================================================
 # Production Maximum
 # =============================================================================
-prd_a_b = 100*d*data_frame.loc[:, ['A032RC1']
-                               ].div(data_frame.loc[:, ['CAPUTLB50001A']])
-prd_b_a = data_frame.loc[:, ['A191RC1']].mul(data_frame.loc[:, ['A191RD3']])
-prd_b_b = data_frame.loc[:, ['A191RX1']]
-# # =============================================================================
-# # Option 1
-# # =============================================================================
-# x_a, x_b, x_c, x_d = preprocessing_dx_dy(data_frame.index.get_loc(1967),
-#                                          data_frame.index.get_loc(2012),
-#                                          T, data_frame.loc[:, ['K160491']]*d, L, prd_a_a)
-# # =============================================================================
-# # Option 2
-# # =============================================================================
-# x_a, x_b, x_c, x_d = preprocessing_dx_dy(data_frame.index.get_loc(1967),
-#                                          data_frame.index.get_loc(2012),
-#                                          T, data_frame.loc[:, ['K160491']]*d, L, prd_a_b)
-# # =============================================================================
-# # Option 3
-# # =============================================================================
-# x_a, x_b, x_c, x_d = preprocessing_dx_dy(data_frame.index.get_loc(1967),
-#                                          data_frame.index.get_loc(2012),
-#                                          T, cap_a_b, L, prd_a_a)
-# # =============================================================================
-# # Option 4
-# # =============================================================================
-# x_a, x_b, x_c, x_d = preprocessing_dx_dy(data_frame.index.get_loc(1967),
-#                                          data_frame.index.get_loc(2012),
-#                                          T, cap_a_b, L, prd_a_b)
-# # =============================================================================
-# # TODO: test `k1ntotl1si000`
-# # =============================================================================
-# # =============================================================================
-# # Option 1
-# # =============================================================================
-# x_a, x_b, x_c, x_d = preprocessing_dx_dy(data_frame.index.get_loc(1929),
-#                                          data_frame.index.get_loc(2013),
-#                                          T, cap_b_a, L, prd_b_a)
-# # =============================================================================
-# # Option 2
-# # =============================================================================
-# x_a, x_b, x_c, x_d = preprocessing_dx_dy(data_frame.index.get_loc(1929),
-#                                          data_frame.index.get_loc(2013),
-#                                          T, cap_b_b, L, prd_b_b)
-# # =============================================================================
-# # Option 5
-# # =============================================================================
-# x_a, x_b, x_c, x_d = preprocessing_dx_dy(data_frame.index.get_loc(1929),
-#                                          data_frame.index.get_loc(2013),
-#                                          T, cap_b_c, L, prd_b_a)
-# # =============================================================================
-# # Option 6
-# # =============================================================================
-# x_a, x_b, x_c, x_d = preprocessing_dx_dy(data_frame.index.get_loc(1929),
-#                                          data_frame.index.get_loc(2013),
-#                                          T, cap_b_d, L, prd_b_b)
-plot_increment(x_a, x_b, x_c, x_d)
-# # procedure_b(x_a, x_b, x_c, x_d)
-"""Update from `project.py`"""
+prd_a_b = _df.loc[:, ['A032RC1']].div(
+    _df.loc[:, ['CAPUTLB50001A']]).mul(_defl).mul(100)
+prd_b_a = _df.loc[:, ['A191RC1']].mul(_df.loc[:, ['A191RD3']])
+prd_b_b = _df.loc[:, ['A191RX1']]
+# =============================================================================
+# Option 1: 1967--2012
+# =============================================================================
+df = data_transform_add_dx_dy(_df.loc[:, ['K160491']].mul(_defl), L, prd_a_a)
+# =============================================================================
+# Option 2: 1967--2012
+# =============================================================================
+df = data_transform_add_dx_dy(_df.loc[:, ['K160491']].mul(_defl), L, prd_a_b)
+# =============================================================================
+# Option 3: 1967--2012
+# =============================================================================
+df = data_transform_add_dx_dy(pd.concat([cap_a_b, L, prd_a_a], axis=1))
+# =============================================================================
+# Option 4: 1967--2012
+# =============================================================================
+df = data_transform_add_dx_dy(pd.concat([cap_a_b, L, prd_a_b], axis=1))
+# =============================================================================
+# TODO: test `k1ntotl1si000`
+# =============================================================================
+# =============================================================================
+# Option 1: 1929--2013
+# =============================================================================
+df = data_transform_add_dx_dy(pd.concat([cap_b_a, L, prd_b_a], axis=1))
+# =============================================================================
+# Option 2: 1929--2013
+# =============================================================================
+df = data_transform_add_dx_dy(pd.concat([cap_b_b, L, prd_b_b], axis=1))
+# =============================================================================
+# Option 5: 1929--2013
+# =============================================================================
+df = data_transform_add_dx_dy(pd.concat([cap_b_c, L, prd_b_a], axis=1))
+# =============================================================================
+# Option 6: 1929--2013
+# =============================================================================
+df = data_transform_add_dx_dy(pd.concat([cap_b_d, L, prd_b_b], axis=1))
+plot_increment(df)
+plot_local(df)
 
+# =============================================================================
+# Update from `project.py`
+# =============================================================================
 
-source_frame = preprocessing_dx_dy_service(get_dataset_version_c())
-plot_increment(source_frame)
+_df = data_transform_add_dx_dy(collect_version_c())
+plot_increment(_df)
+plot_local(_df)

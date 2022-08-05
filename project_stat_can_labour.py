@@ -15,30 +15,36 @@ from collect.lib import collect_can_price_a
 from collect.lib import collect_can_price_b
 
 
-def append_series_ids(df: DataFrame, chunk: DataFrame, series_ids: tuple[str]) -> DataFrame:
-    for series_id in series_ids:
-        chunk = pd.concat(
-            [
-                chunk,
-                df.loc[:, [series_id]].dropna(axis=0)
-            ],
-            axis=1)
-    return chunk
+def append_series_ids(df: DataFrame, series_ids: tuple[str]) -> DataFrame:
+    # =========================================================================
+    # TODO: What?
+    # =========================================================================
+    return pd.concat(
+        [
+            df.loc[:, [series_id]].dropna(axis=0)
+            for series_id in series_ids
+        ],
+        axis=1
+    )
 
 
 DIR = '/home/alexander/science'
-# # data = pd.DataFrame()
-# # CALLS = {
-# #     # 'cobb_douglas':price_cobb_douglas(),
-# #     # 'census':price_census(),
-# #     'canada_a': price_canada_a(),
-# #     'canada_b': price_canada_b(),
-# # }
-# # for key, chunk in CALLS.items():
-# #     data = pd.concat([data, chunk], axis=1)
-# # data['mean'] = data.mean(1)
-# # data['cum_mean'] = np.cumprod(1 + data.iloc[:, -1])
-# # data = data.div(data.loc[2012])
+_DIR = '/media/alexander/321B-6A94'
+
+# =============================================================================
+# CALLS = (
+#     # =========================================================================
+#     # collect_cobb_douglas_price,
+#     # collect_census_price,
+#     # =========================================================================
+#     collect_can_price_a,
+#     collect_can_price_b,
+# )
+# data = pd.concat([call() for call in CALLS], axis=1)
+# data['mean'] = data.mean(1)
+# data['cum_mean'] = df.iloc[:, -1].add(1).cumprod()
+# data = data.div(data.loc[2012])
+# =============================================================================
 
 
 # # =============================================================================
@@ -72,7 +78,7 @@ FILE_NAME = 'stat_can_prd.xlsx'
 # combined = combined.iloc[:, [-1]]
 # result = pd.concat([result, combined], axis=1)
 # # combined.plot(grid=True).get_figure().savefig('view.pdf', format='pdf', dpi=900)
-# # combined.to_excel('/media/alexander/321B-6A94/result.xlsx')
+# # combined.to_excel(os.path.join(_DIR, 'result.xlsx'))
 
 
 FILE_NAME = 'stat_can_cap.xlsx'
@@ -87,15 +93,21 @@ FILE_NAME = 'stat_can_cap.xlsx'
 # data = pd.read_excel(os.path.join(DIR, FILE_NAME), index_col=0)
 #
 #
+# =============================================================================
 # result = pd.DataFrame(columns=['series_id_1', 'series_id_2', 'r_2'])
 # for pair in combinations(data.columns, 2):
 #     chunk = data.loc[:, list(pair)].dropna(axis=0)
 #     if not chunk.empty:
-#         result = result.append({'series_id_1': pair[0],
-#                                 'series_id_2': pair[1],
-#                                 'r_2': r2_score(chunk.iloc[:, 0], chunk.iloc[:, 1])},
-#                                 ignore_index=True)
-# result.to_excel('result.xlsx', index=False)
+#         result = result.append(
+#             {
+#                 'series_id_1': pair[0],
+#                 'series_id_2': pair[1],
+#                 'r_2': r2_score(chunk.iloc[:, 0], chunk.iloc[:, 1])
+#             },
+#             ignore_index=True
+#         )
+# result.to_excel(os.path.join(_DIR, 'result.xlsx'), index=False)
+# =============================================================================
 
 
 # # combined = pd.DataFrame()
@@ -136,22 +148,22 @@ FILE_NAME = 'stat_can_prd.xlsx'
 # # # combined = combined.div(combined.loc[1997]).mul(100)
 # # # combined.plot(grid=True).get_figure().savefig(
 # # #     'view.pdf', format='pdf', dpi=900)
-# # # combined.to_excel('/media/alexander/321B-6A94/result.xlsx')
+# # # combined.to_excel(os.path.join(_DIR, 'result.xlsx'))
 
 
-FILE_NAME = 'stat_can_cap.xlsx'
+# =============================================================================
+# FILE_NAME = 'stat_can_cap.xlsx'
 # data = pd.read_excel(os.path.join(DIR, FILE_NAME), index_col=0)
-# combined = pd.DataFrame()
-# for _ in range(30, 35):
-#     chunk = data.iloc[:, [_]].dropna()
-#     combined = pd.concat([combined, chunk],
-#                           axis=1,
-#                           sort=False)
+# combined = pd.concat(
+#     [data.iloc[:, [_]].dropna() for _ in range(30, 35)],
+#     axis=1
+# )
 # combined = combined.div(combined.loc[1997]).mul(100)
 # combined['mean'] = combined.sum(1)
 # combined = combined.iloc[:, [-1]]
 # result = pd.concat([result, combined], axis=1)
 # result.plot(grid=True).get_figure().savefig('view.pdf', format='pdf', dpi=900)
+# =============================================================================
 
 
 FILE_NAME = 'stat_can_cap_matching.xlsx'
@@ -159,8 +171,7 @@ FILE_NAME = 'stat_can_cap_matching.xlsx'
 # data = data[data.iloc[:, 5] != 'Information and communication technologies machinery and equipment']
 # data = data[data.iloc[:, 5] != 'Land']
 # data = data[data.iloc[:, 6] != 'Intellectual property products']
-# # data.dropna(axis=0, how='all', inplace=True)
-# data.to_excel('DIR/stat_can_cap_matching_alpha.xlsx', index=True)
+# # data.dropna(axis=0, how='all').to_excel(os.path.join(DIR, FILE_NAME), index=True)
 
 FILE_NAME = 'stat_can_cap.xlsx'
 data = pd.read_excel(os.path.join(DIR, FILE_NAME), index_col=0)

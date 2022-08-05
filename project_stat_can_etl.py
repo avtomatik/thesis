@@ -6,6 +6,7 @@ Created on Sat Sep 18 22:20:54 2021
 """
 
 
+import os
 import pandas as pd
 from toolkit.lib import build_load_data_frame
 
@@ -71,11 +72,39 @@ from toolkit.lib import build_load_data_frame
 # =============================================================================
 
 
-def string_to_url(string):
+def string_to_url(string: str) -> str:
+    '''
+    TODO: Move to Fit Module
+
+    Parameters
+    ----------
+    string : str
+        DESCRIPTION.
+
+    Returns
+    -------
+    str
+        DESCRIPTION.
+
+    '''
     return f'https://www150.statcan.gc.ca/n1/tbl/csv/{string}'
 
 
-def string_to_numeric(string):
+def string_to_numeric(string: str) -> float:
+    '''
+    TODO: Move to Fit Module
+
+    Parameters
+    ----------
+    string : str
+        DESCRIPTION.
+
+    Returns
+    -------
+    float
+        DESCRIPTION.
+
+    '''
     y, m = string.split('-')
     return int(y) + (int(m) - 0.5) / 12
 
@@ -156,8 +185,16 @@ LABOUR = (
         'series_ids':
         (
             'v65521825',
-            # 'v65522120', # Not Useful
-            # 'v65522415', # Not Useful
+            # =================================================================
+            # # =================================================================
+            # # Not Useful
+            # # =================================================================
+            # 'v65522120',
+            # # =================================================================
+            # # Not Useful
+            # # =================================================================
+            # 'v65522415',
+            # =================================================================
         ),
     },
 )
@@ -196,7 +233,12 @@ PRODUCT = (
         'file_name': '36100208-eng.zip',
         'series_ids':
             (
-                # 'v41712954', # Not Useful: Labour input
+                # =============================================================
+                # # =============================================================
+                # # Not Useful: Labour input
+                # # =============================================================
+                # 'v41712954',
+                # =============================================================
                 'v41713056', 'v41713073', 'v41713243',
             ),
     },
@@ -220,7 +262,12 @@ PRODUCT = (
         'series_ids':
             (
                 'v41707475',
-                # 'v41707595', # Not Useful: Labour input
+                # =============================================================
+                # # =============================================================
+                # # Not Useful: Labour input
+                # # =============================================================
+                # 'v41707595',
+                # =============================================================
                 'v41707775', 'v41708195', 'v41708375', ),
     },
     {
@@ -228,7 +275,12 @@ PRODUCT = (
         'series_ids':
             (
                 'v42189127',
-                # 'v42189231', # Not Useful: Labour input
+                # =============================================================
+                # # =============================================================
+                # # Not Useful: Labour input
+                # # =============================================================
+                # 'v42189231',
+                # =============================================================
                 'v42189387', 'v42189751', 'v42189907',
             ),
     },
@@ -251,30 +303,41 @@ PRODUCT = (
 
 
 DIR = '/home/alexander/science'
+FILE_NAME = 'stat_can_desc.xlsx'
 FILE_NAMES = (
     'stat_can_cap.xlsx',
     'stat_can_lab.xlsx',
     'stat_can_prd.xlsx',
 )
-build_load_data_frame('stat_can_cap.xlsx', CAPITAL)
-build_load_data_frame('stat_can_lab.xlsx', LABOUR)
-build_load_data_frame('stat_can_prd.xlsx', PRODUCT)
-combined = pd.DataFrame()
-for file_name in FILE_NAMES:
-    data = pd.read_excel(file_name)
-    data.rename(columns={'Unnamed: 0': 'REF_DATE'}, inplace=True)
-    data.set_index(data.columns[0], inplace=True)
-    combined = pd.concat(
-        [combined, data],
-        axis=1,
-    )
-combined.sort_index(inplace=True)
-FILE_NAME = 'stat_can_desc.xlsx'
-titles = pd.read_excel(FILE_NAME)
-combined = pd.merge(
-    titles.set_index(titles.columns[0]),
-    combined.T,
-    left_index=True,
-    right_index=True,
-)
-combined.T.to_excel('stat_can_combined.xlsx')
+_FILE_NAME = 'stat_can_desc.xlsx'
+
+
+# =============================================================================
+# # =============================================================================
+# # Construct Excel File from Specification
+# # =============================================================================
+# MAP_FILES = dict(zip(FILE_NAMES, (CAPITAL, LABOUR, PRODUCT)))
+# for file_name, criteria in MAP_FILES.items():
+#     build_load_data_frame(file_name, criteria)
+# =============================================================================
+
+# =============================================================================
+# # =============================================================================
+# # Retrieve Series Description
+# # =============================================================================
+# _df = pd.concat(
+#     [
+#         pd.read_excel(os.path.join(DIR, file_name), index_col=0)
+#         for file_name in FILE_NAMES
+#     ],
+#     axis=1
+# )
+#
+# desc = pd.merge(
+#     pd.read_excel(os.path.join(DIR, FILE_NAME), index_col=0),
+#     _df.transpose(),
+#     left_index=True,
+#     right_index=True,
+# )
+# desc.transpose().to_excel(os.path.join(DIR, _FILE_NAME))
+# =============================================================================

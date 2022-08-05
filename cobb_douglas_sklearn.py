@@ -134,11 +134,33 @@ tscv = TimeSeriesSplit(n_splits=3)
 print(tscv.split(X))
 plt.figure()
 plt.scatter(X, y)
-# # # # # # # # # # # for _, (train, test) in enumerate(kf.split(X), start=1):
-# # # # # # # # # for _, (train, test) in enumerate(rkf.split(X), start=1):
-# # # # # # # for _, (train, test) in enumerate(loo.split(X), start=1):
-# # # # # for _, (train, test) in enumerate(lpo.split(X), start=1):
-# # # for _, (train, test) in enumerate(ss.split(X), start=1):
+# =============================================================================
+# for _, (train, test) in enumerate(kf.split(X), start=1):
+#     k, b = np.polyfit(X[train], y[train], 1)
+#     Z = b + k*X
+#     plt.plot(X, Z, label=f'Test {_:02d}')
+#
+# for _, (train, test) in enumerate(rkf.split(X), start=1):
+#     k, b = np.polyfit(X[train], y[train], 1)
+#     Z = b + k*X
+#     plt.plot(X, Z, label=f'Test {_:02d}')
+#
+# for _, (train, test) in enumerate(loo.split(X), start=1):
+#     k, b = np.polyfit(X[train], y[train], 1)
+#     Z = b + k*X
+#     plt.plot(X, Z, label=f'Test {_:02d}')
+#
+# for _, (train, test) in enumerate(lpo.split(X), start=1):
+#     k, b = np.polyfit(X[train], y[train], 1)
+#     Z = b + k*X
+#     plt.plot(X, Z, label=f'Test {_:02d}')
+#
+# for _, (train, test) in enumerate(ss.split(X), start=1):
+#     k, b = np.polyfit(X[train], y[train], 1)
+#     Z = b + k*X
+#     plt.plot(X, Z, label=f'Test {_:02d}')
+# =============================================================================
+
 for _, (train, test) in enumerate(tscv.split(X), start=1):
     k, b = np.polyfit(X[train], y[train], 1)
     Z = b + k*X

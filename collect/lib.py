@@ -43,7 +43,6 @@ ARCHIVE_NAMES_UTILISED = (
     'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
     'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1929_1969.zip',
     'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1969_2015.zip',
-    'dataset_usa_bea-sfat-release-2012-08-15-SectionAll_xls.zip',
     'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip',
     'dataset_usa_brown.zip',
     'dataset_usa_census1949.zip',
@@ -55,8 +54,6 @@ ARCHIVE_NAMES_UTILISED = (
 FILE_NAMES_UTILISED = (
     'dataset_usa_0022_m1.txt',
     'dataset_usa_0025_p_r.txt',
-    'dataset_usa_bls_cpiai.txt',
-    'dataset_usa_bea-GDPDEF.xls',
     'dataset_usa_davis-j-h-ip-total.xls',
     'dataset_usa_frb_g17_all_annual_2013_06_23.csv',
     'dataset_usa_frb_invest_capital.csv',
@@ -111,7 +108,7 @@ def collect_can():
 def collect_can():
     df = pd.concat(
         [
-            # =============================================================================
+            # =================================================================
             # A. Fixed Assets Block: `Industrial buildings`, `Industrial machinery` for `Newfoundland and Labrador`, `Prince Edward Island`, `Nova Scotia`, `New Brunswick`, \
             #     `Quebec`, `Ontario`, `Manitoba`, `Saskatchewan`, `Alberta`, `British Columbia`, `Yukon`, `Northwest Territories`, `Nunavut`
             # 2007 constant prices
@@ -120,20 +117,20 @@ def collect_can():
             #     `v43976019`, `v43976435`, `v43976851`, `v43977267`
             # Industrial machinery (x 1,000,000): `v43975594`, `v43977674`, `v43978090`, `v43978506`, `v43978922`, `v43979338`, `v43979754`, `v43980170`, `v43980586`, \
             #     `v43976010`,  `v43976426`, `v43976842`, `v43977258`
-            # =============================================================================
+            # =================================================================
             extract_can_fixed_assets(
                 extract_can_capital_series_ids_archived()),
-            # =============================================================================
+            # =================================================================
             # B. Labor Block: `v2523012`, Preferred Over `v3437501` Which Is Quarterly
             # `v2523012` - 282-0012 Labour Force Survey Estimates (LFS), employment by class of worker, North American Industry Classification System (NAICS)\
             # and sex; Canada; Total employed, all class of workers; Manufacturing; Both sexes (x 1,000) (annual, 1987 to 2017)
-            # =============================================================================
+            # =================================================================
             extract_can_annual(2820012, 'v2523012'),
-            # =============================================================================
+            # =================================================================
             # C. Production Block: `v65201809`
             # `v65201809` - 379-0031 Gross domestic product (GDP) at basic prices, by North American Industry Classification System (NAICS); Canada; Trading-day\
             # adjusted; 2007 constant prices; Manufacturing (x 1,000,000) (monthly, 1997-01-01 to 2017-10-01)
-            # =============================================================================
+            # =================================================================
             extract_can_quarter(3790031, 'v65201809'),
         ],
         axis=1,
@@ -366,9 +363,9 @@ def collect_archived() -> DataFrame:
     ).drop_duplicates()
     _df = pd.concat(
         [
-            # =====================================================================
+            # =================================================================
             # Producer Price Index
-            # =====================================================================
+            # =================================================================
             extract_usa_ppi(),
             _data_bea,
         ],
@@ -633,7 +630,7 @@ def collect_capital_combined_archived() -> DataFrame:
             # =================================================================
             # Labor Series: A4601C0, 1929--2013
             # =================================================================
-            collect_usa_bea_labor()
+            collect_usa_bea_labor_mfg()
         ],
         axis=1,
         sort=True
@@ -1101,7 +1098,7 @@ def collect_cobb_douglas_deflator() -> DataFrame:
         'dataset_usa_census1975.zip',
         'dataset_usa_census1975.zip',
     )
-    CS_SERIES_IDS = (
+    SERIES_IDS_CS = (
         'L0002',
         'L0015',
         'E0007',
@@ -1115,7 +1112,7 @@ def collect_cobb_douglas_deflator() -> DataFrame:
     # Bureau of Economic Analysis
     # =========================================================================
     URL = 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt'
-    BE_SERIES_IDS = (
+    SERIES_IDS_BE = (
         # =====================================================================
         # Fixed Assets: k1n31gd1es00, 1925--2019, Table 4.1. Current-Cost Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
         # =====================================================================
@@ -1143,7 +1140,7 @@ def collect_cobb_douglas_deflator() -> DataFrame:
                         'archive_name': archive_name,
                         'series_id': series_id,
                     })
-                    for archive_name, series_id in zip(ARCHIVE_NAMES[:-2], CS_SERIES_IDS[:-2])
+                    for archive_name, series_id in zip(ARCHIVE_NAMES[:-2], SERIES_IDS_CS[:-2])
                 ],
                 axis=1,
                 sort=True
@@ -1154,7 +1151,7 @@ def collect_cobb_douglas_deflator() -> DataFrame:
                         'archive_name': archive_name,
                         'series_id': series_id,
                     })
-                    for archive_name, series_id in zip(ARCHIVE_NAMES[-2:], CS_SERIES_IDS[-2:])
+                    for archive_name, series_id in zip(ARCHIVE_NAMES[-2:], SERIES_IDS_CS[-2:])
                 ],
                 axis=1,
                 sort=True
@@ -1182,7 +1179,7 @@ def collect_cobb_douglas_deflator() -> DataFrame:
                         'df': _df,
                         'series_id': series_id,
                     })
-                    for series_id in BE_SERIES_IDS[:2]
+                    for series_id in SERIES_IDS_BE[:2]
                 ],
                 axis=1,
                 sort=True
@@ -1195,12 +1192,12 @@ def collect_cobb_douglas_deflator() -> DataFrame:
         axis=1,
         sort=True
     ).truncate(before=1794)
-    df['fa_def_cs'] = df.loc[:, CS_SERIES_IDS[-2]].div(
-        df.loc[:, CS_SERIES_IDS[-1]])
-    df['ppi_bea'] = df.loc[:, BE_SERIES_IDS[0]].div(
-        df.loc[:, BE_SERIES_IDS[1]]).div(df.loc[2012, BE_SERIES_IDS[0]]).mul(100)
+    df['fa_def_cs'] = df.loc[:, SERIES_IDS_CS[-2]].div(
+        df.loc[:, SERIES_IDS_CS[-1]])
+    df['ppi_bea'] = df.loc[:, SERIES_IDS_BE[0]].div(
+        df.loc[:, SERIES_IDS_BE[1]]).div(df.loc[2012, SERIES_IDS_BE[0]]).mul(100)
     df.drop(
-        [*CS_SERIES_IDS[-2:], *BE_SERIES_IDS[:2]],
+        [*SERIES_IDS_CS[-2:], *SERIES_IDS_BE[:2]],
         axis=1,
         inplace=True
     )
@@ -1263,9 +1260,9 @@ def collect_cobb_douglas_extension_capital() -> DataFrame:
     df.iloc[:, -8] = df.iloc[:, -8].mul(
         df.loc[1925, df.columns[-1]]
     ).div(df.loc[1925, df.columns[-8]])
-    # =============================================================================
+    # =========================================================================
     #     Blending Previous Series with 'nominal_extended'
-    # =============================================================================
+    # =========================================================================
     df.iloc[:, -1] = df.iloc[:, [-8, -1]].mean(axis=1)
     return df.iloc[:, [-1]].dropna(axis=0)
 
@@ -1514,158 +1511,54 @@ def collect_combined() -> DataFrame:
         DESCRIPTION.
 
     '''
-    URL = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
-    _data = extract_usa_bea_from_url(URL)
-    SERIES_IDS = (
-        'A006RC',
-        'A006RD',
-        'A008RC',
-        'A008RD',
-        'A032RC',
-        'A191RA',
-        'A191RC',
-        'A191RX',
-        'W170RC',
-        'W170RX',
-    )
-    _data_nipa = pd.concat(
-        [
-            extract_usa_bea_from_loaded(_data, series_id)
-            for series_id in SERIES_IDS
-        ],
-        axis=1,
-        sort=True
-    )
-    SERIES_IDS = (
-        # =====================================================================
-        # Fixed Assets Series: K10070, 1951--2020
-        # =====================================================================
-        'K10070',
-    )
-    _data_sfat = pd.concat(
-        [
-            extract_usa_bea_from_loaded(_data, series_id)
-            for series_id in SERIES_IDS
-        ],
-        axis=1,
-        sort=True
-    )
-    # =========================================================================
-    # US BEA Fixed Assets Series Tests
-    # =========================================================================
-    URL = 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt'
-    _data = extract_usa_bea_from_url(URL)
-    SERIES_IDS = (
-        # =====================================================================
-        # Investment in Fixed Assets, Private, i3ptotl1es00, 1901--2016
-        # =====================================================================
-        'i3ptotl1es00',
-        # =====================================================================
-        # Chain-Type Quantity Index for Investment in Fixed Assets, Private, icptotl1es00, 1901--2016
-        # =====================================================================
-        'icptotl1es00',
-        # =====================================================================
-        # Current-Cost Net Stock of Fixed Assets, Private, k1ptotl1es00, 1925--2016
-        # =====================================================================
-        'k1ptotl1es00',
-        # =====================================================================
-        # Historical-Cost Net Stock of Private Fixed Assets, Private Fixed Assets, k3ptotl1es00, 1925--2016
-        # =====================================================================
-        'k3ptotl1es00',
-        # =====================================================================
-        # Chain-Type Quantity Indexes for Net Stock of Fixed Assets, Private, kcptotl1es00, 1925--2016
-        # =====================================================================
-        'kcptotl1es00',
-    )
-    _data_sfat_ = pd.concat(
-        [
-            extract_usa_bea_from_loaded(_data, series_id)
-            for series_id in SERIES_IDS
-        ],
-        axis=1,
-        sort=True
-    )
-    FILE_NAME = 'dataset_usa_0025_p_r.txt'
-    return pd.concat(
-        [
-            _data_nipa,
-            collect_usa_bea_labor_mfg(),
-            _data_sfat,
-            _data_sfat_,
-            extract_usa_frb_ms(),
-            extract_usa_frb_ms(),
-            extract_usa_frb_ms(),
-            pd.read_csv(FILE_NAME, index_col=0),
-        ],
-        axis=1,
-        sort=True
-    )
-
-
-def collect_combined_archived() -> DataFrame:
-    '''
-
-
-    Returns
-    -------
-    DataFrame
-        DESCRIPTION.
-
-    '''
     URLS = (
         'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
         'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
     )
-    FILE_NAMES = (
-        'dataset_usa_0022_m1.txt',
-        'dataset_usa_0025_p_r.txt',
-    )
-    ARCHIVE_NAME, SERIES_ID = 'dataset_usa_census1975.zip', 'X0414'
-
-    _df = extract_usa_bea_from_url(URLS[0])
+    FILE_NAME = 'dataset_usa_0025_p_r.txt'
     SERIES_IDS_NIPA = (
         # =====================================================================
-        # Nominal Investment Series: A006RC, 1929--2014
+        # Nominal Investment Series: A006RC
         # =====================================================================
         'A006RC',
         # =====================================================================
-        # Implicit Price Deflator Series: A006RD, 1929--2014
+        # Implicit Price Deflator Series: A006RD
         # =====================================================================
         'A006RD',
         # =====================================================================
-        # Gross private domestic investment -- Nonresidential: A008RC, 1929--2014
+        # Gross private domestic investment -- Nonresidential: A008RC
         # =====================================================================
         'A008RC',
         # =====================================================================
-        # Implicit Price Deflator -- Gross private domestic investment -- Nonresidential: A008RD3, 1929--2014
+        # Implicit Price Deflator -- Gross private domestic investment -- Nonresidential: A008RD
         # =====================================================================
         'A008RD',
         # =====================================================================
-        # Nominal National income Series: A032RC, 1929--2013
+        # Nominal National income Series: A032RC
         # =====================================================================
         'A032RC',
         # =====================================================================
-        # Gross Domestic Product, 2009=100: A191RA, 1929--2014
+        # Gross Domestic Product, 2012=100: A191RA
         # =====================================================================
         'A191RA',
         # =====================================================================
-        # Nominal Nominal Gross Domestic Product Series: A191RC, 1929--2014
+        # Nominal Nominal Gross Domestic Product Series: A191RC
         # =====================================================================
         'A191RC',
         # =====================================================================
-        # Real Gross Domestic Product Series, 2009=100: A191RX, 1929--2014
+        # Real Gross Domestic Product Series, 2012=100: A191RX
         # =====================================================================
         'A191RX',
         # =====================================================================
-        # Gross Domestic Investment, W170RC, 1929--2014
+        # Gross Domestic Investment, W170RC
         # =====================================================================
         'W170RC',
         # =====================================================================
-        # Gross Domestic Investment, W170RX, 1967--2013
+        # Gross Domestic Investment, W170RX
         # =====================================================================
         'W170RX',
         # =====================================================================
-        # Fixed Assets Series: K10070, 1951--2013
+        # Fixed Assets Series: K10070
         # =====================================================================
         # =====================================================================
         # TODO: Replace with "k1n31gd1es00"
@@ -1674,26 +1567,27 @@ def collect_combined_archived() -> DataFrame:
     )
     SERIES_IDS_SFAT = (
         # =====================================================================
-        # Investment in Fixed Assets, Private, i3ptotl1es00, 1901--2016
+        # Investment in Fixed Assets, Private, i3ptotl1es00
         # =====================================================================
         'i3ptotl1es00',
         # =====================================================================
-        # Chain-Type Quantity Index for Investment in Fixed Assets, Private, icptotl1es00, 1901--2016
+        # Chain-Type Quantity Index for Investment in Fixed Assets, Private, icptotl1es00
         # =====================================================================
         'icptotl1es00',
         # =====================================================================
-        # Current-Cost Net Stock of Fixed Assets, Private, k1ptotl1es00, 1925--2016
+        # Current-Cost Net Stock of Fixed Assets, Private, k1ptotl1es00
         # =====================================================================
         'k1ptotl1es00',
         # =====================================================================
-        # Historical-Cost Net Stock of Private Fixed Assets, Private Fixed Assets, k3ptotl1es00, 1925--2016
+        # Historical-Cost Net Stock of Private Fixed Assets, Private Fixed Assets, k3ptotl1es00
         # =====================================================================
         'k3ptotl1es00',
         # =====================================================================
-        # Chain-Type Quantity Indexes for Net Stock of Fixed Assets, Private, kcptotl1es00, 1925--2016
+        # Chain-Type Quantity Indexes for Net Stock of Fixed Assets, Private, kcptotl1es00
         # =====================================================================
         'kcptotl1es00',
     )
+    _df = extract_usa_bea_from_url(URLS[0])
     _df_nipa = pd.concat(
         [
             pd.concat(
@@ -1718,13 +1612,149 @@ def collect_combined_archived() -> DataFrame:
     return pd.concat(
         [
             _df_nipa,
+            # =================================================================
+            # US BEA Fixed Assets Series
+            # =================================================================
             pd.concat(
                 [
                     extract_usa_bea_from_loaded(_df, series_id)
                     for series_id in SERIES_IDS_SFAT
                 ],
                 axis=1,
-                sort=True
+            ),
+            extract_usa_frb_ms(),
+            extract_usa_frb_ms(),
+            extract_usa_frb_ms(),
+            pd.read_csv(FILE_NAME, index_col=0),
+        ],
+        axis=1,
+    )
+
+
+def collect_combined_archived() -> DataFrame:
+    '''
+
+
+    Returns
+    -------
+    DataFrame
+        DESCRIPTION.
+
+    '''
+    URLS = (
+        'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
+    )
+    FILE_NAMES = (
+        'dataset_usa_0022_m1.txt',
+        'dataset_usa_0025_p_r.txt',
+    )
+    ARCHIVE_NAME, SERIES_ID = 'dataset_usa_census1975.zip', 'X0414'
+    SERIES_IDS_NIPA = (
+        # =====================================================================
+        # Nominal Investment Series: A006RC
+        # =====================================================================
+        'A006RC',
+        # =====================================================================
+        # Implicit Price Deflator Series: A006RD
+        # =====================================================================
+        'A006RD',
+        # =====================================================================
+        # Gross private domestic investment -- Nonresidential: A008RC
+        # =====================================================================
+        'A008RC',
+        # =====================================================================
+        # Implicit Price Deflator -- Gross private domestic investment -- Nonresidential: A008RD
+        # =====================================================================
+        'A008RD',
+        # =====================================================================
+        # Nominal National income Series: A032RC
+        # =====================================================================
+        'A032RC',
+        # =====================================================================
+        # Gross Domestic Product, 2012=100: A191RA
+        # =====================================================================
+        'A191RA',
+        # =====================================================================
+        # Nominal Nominal Gross Domestic Product Series: A191RC
+        # =====================================================================
+        'A191RC',
+        # =====================================================================
+        # Real Gross Domestic Product Series, 2012=100: A191RX
+        # =====================================================================
+        'A191RX',
+        # =====================================================================
+        # Gross Domestic Investment, W170RC
+        # =====================================================================
+        'W170RC',
+        # =====================================================================
+        # Gross Domestic Investment, W170RX
+        # =====================================================================
+        'W170RX',
+        # =====================================================================
+        # Fixed Assets Series: K10070
+        # =====================================================================
+        # =====================================================================
+        # TODO: Replace with "k1n31gd1es00"
+        # =====================================================================
+        'K10070',
+    )
+    SERIES_IDS_SFAT = (
+        # =====================================================================
+        # Investment in Fixed Assets, Private, i3ptotl1es00
+        # =====================================================================
+        'i3ptotl1es00',
+        # =====================================================================
+        # Chain-Type Quantity Index for Investment in Fixed Assets, Private, icptotl1es00
+        # =====================================================================
+        'icptotl1es00',
+        # =====================================================================
+        # Current-Cost Net Stock of Fixed Assets, Private, k1ptotl1es00
+        # =====================================================================
+        'k1ptotl1es00',
+        # =====================================================================
+        # Historical-Cost Net Stock of Private Fixed Assets, Private Fixed Assets, k3ptotl1es00
+        # =====================================================================
+        'k3ptotl1es00',
+        # =====================================================================
+        # Chain-Type Quantity Indexes for Net Stock of Fixed Assets, Private, kcptotl1es00
+        # =====================================================================
+        'kcptotl1es00',
+    )
+    _df = extract_usa_bea_from_url(URLS[0])
+    _df_nipa = pd.concat(
+        [
+            pd.concat(
+                [
+                    extract_usa_bea_from_loaded(_df, series_id)
+                    for series_id in SERIES_IDS_NIPA[:8]
+                ],
+                axis=1
+            ),
+            collect_usa_bea_labor_mfg(),
+            pd.concat(
+                [
+                    extract_usa_bea_from_loaded(_df, series_id)
+                    for series_id in SERIES_IDS_NIPA[8:]
+                ],
+                axis=1
+            ),
+        ],
+        axis=1
+    )
+    _df = extract_usa_bea_from_url(URLS[-1])
+    return pd.concat(
+        [
+            _df_nipa,
+            # =================================================================
+            # US BEA Fixed Assets Series
+            # =================================================================
+            pd.concat(
+                [
+                    extract_usa_bea_from_loaded(_df, series_id)
+                    for series_id in SERIES_IDS_SFAT
+                ],
+                axis=1,
             ),
             pd.read_csv(FILE_NAMES[0], index_col=0),
             extract_usa_census(ARCHIVE_NAME, SERIES_ID),
@@ -1782,7 +1812,7 @@ def collect_common_archived() -> DataFrame:
         # =====================================================================
         'K100021',
     )
-    _data_nipa = pd.concat(
+    _df_nipa = pd.concat(
         [
             pd.concat(
                 [
@@ -1805,8 +1835,8 @@ def collect_common_archived() -> DataFrame:
         ],
         sort=True
     ).drop_duplicates()
-    _data_nipa.loc[:, [SERIES_IDS[2]]
-                   ] = _data_nipa.loc[:, [SERIES_IDS[2]]].rdiv(100)
+    _df_nipa.loc[:, [SERIES_IDS[2]]
+                 ] = _df_nipa.loc[:, [SERIES_IDS[2]]].rdiv(100)
 
     ARCHIVE_NAME = 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip'
     WB_NAMES = (
@@ -1839,7 +1869,7 @@ def collect_common_archived() -> DataFrame:
         # =====================================================================
         'k3n31gd1es000',
     )
-    _data_sfat = pd.concat(
+    _df_sfat = pd.concat(
         [
             extract_usa_bea(ARCHIVE_NAME, wb_name, sh_name, series_id)
             for wb_name, sh_name, series_id in zip(WB_NAMES, SH_NAMES, SERIES_IDS)
@@ -1849,8 +1879,8 @@ def collect_common_archived() -> DataFrame:
     )
     return pd.concat(
         [
-            _data_nipa,
-            _data_sfat,
+            _df_nipa,
+            _df_sfat,
             # =================================================================
             # Manufacturing Labor Series: _4313C0, 1929--2013
             # =================================================================
@@ -1922,7 +1952,7 @@ def collect_local() -> DataFrame:
         # =====================================================================
         'K100701',
     )
-    _data_nipa = pd.concat(
+    _df_nipa = pd.concat(
         [
             pd.concat(
                 [
@@ -1947,7 +1977,7 @@ def collect_local() -> DataFrame:
     ).drop_duplicates()
     return pd.concat(
         [
-            _data_nipa,
+            _df_nipa,
             # =================================================================
             # Manufacturing Labor Series: _4313C0, 1929--2013
             # =================================================================
@@ -2006,7 +2036,7 @@ def collect_updated() -> DataFrame:
         'A191RC',
         'A191RX',
     )
-    _data_nipa = pd.concat(
+    _df_nipa = pd.concat(
         [
             extract_usa_bea_from_loaded(_data, series_id)
             for series_id in SERIES_IDS
@@ -2030,7 +2060,7 @@ def collect_updated() -> DataFrame:
         # =====================================================================
         'kcn31gd1es000',
     )
-    _data_sfat = pd.concat(
+    _df_sfat = pd.concat(
         [
             extract_usa_bea(ARCHIVE_NAME, WB_NAME, sh_name, series_id)
             for sh_name, series_id in zip(SH_NAMES, SERIES_IDS)
@@ -2040,8 +2070,8 @@ def collect_updated() -> DataFrame:
     )
     df = pd.concat(
         [
-            _data_nipa,
-            _data_sfat,
+            _df_nipa,
+            _df_sfat,
         ],
         axis=1,
         sort=True
@@ -3001,9 +3031,9 @@ def transform_kurenkov(data_testing: DataFrame) -> tuple[DataFrame]:
     '''Returns Four DataFrames with Comparison of data_testing: DataFrame and Yu.V. Kurenkov Data'''
     FILE_NAME = 'dataset_usa_reference_ru_kurenkov_yu_v.csv'
     data_control = pd.read_csv(FILE_NAME, index_col=0)
-    # =============================================================================
+    # =========================================================================
     # Production
-    # =============================================================================
+    # =========================================================================
     data_a = pd.concat(
         [
             data_control.iloc[:, [0]],
@@ -3014,9 +3044,9 @@ def transform_kurenkov(data_testing: DataFrame) -> tuple[DataFrame]:
         sort=True
     ).dropna(how='all')
     data_a = data_a.div(data_a.loc[1950, :]).mul(100)
-    # =============================================================================
+    # =========================================================================
     # Labor
-    # =============================================================================
+    # =========================================================================
     data_b = pd.concat(
         [
             data_control.iloc[:, [1]],
@@ -3025,9 +3055,9 @@ def transform_kurenkov(data_testing: DataFrame) -> tuple[DataFrame]:
         axis=1,
         sort=True
     ).dropna(how='all')
-    # =============================================================================
+    # =========================================================================
     # Capital
-    # =============================================================================
+    # =========================================================================
     data_c = pd.concat(
         [
             data_control.iloc[:, [2]],
@@ -3037,9 +3067,9 @@ def transform_kurenkov(data_testing: DataFrame) -> tuple[DataFrame]:
         sort=True
     ).dropna(how='all')
     data_c = data_c.div(data_c.loc[1951, :]).mul(100)
-    # =============================================================================
+    # =========================================================================
     # Capacity Utilization
-    # =============================================================================
+    # =========================================================================
     data_d = pd.concat(
         [
             data_control.iloc[:, [3]],

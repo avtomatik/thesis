@@ -27,7 +27,8 @@ def main():
             extract_usa_census(ARCHIVE_NAME, 'D0086'),
             extract_usa_bls(FILE_NAME, 'LNU04000000'),
         ],
-        axis=1, sort=True)
+        axis=1
+    )
     df.plot(
         title='US Unemployment, {}$-${}'.format(*df.index[[0, -1]]),
         grid=True
