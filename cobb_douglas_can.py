@@ -24,6 +24,7 @@ def main():
         'fg_e': 'Chart V Relative Final Productivities of Labor and Capital',
         'year_price': 2007,
     }
+
     _df = collect_can()
     plot_cobb_douglas(
         *transform_cobb_douglas(_df),

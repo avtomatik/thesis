@@ -168,40 +168,16 @@ def extract_can_fixed_assets(series_ids: list[str]) -> DataFrame:
     return df.iloc[:, [-1]]
 
 
-def extract_can_from_url(url: str, usecols: list = None) -> DataFrame:
+def extract_can_from_url(url: str, **kwargs) -> DataFrame:
     '''Downloading zip file from url'''
     name = url.split('/')[-1]
     if os.path.exists(name):
         with ZipFile(name, 'r').open(name.replace('-eng.zip', '.csv')) as f:
-            return pd.read_csv(f, usecols=usecols)
+            return pd.read_csv(f, **kwargs)
     else:
         r = requests.get(url)
         with ZipFile(io.BytesIO(r.content)).open(name.replace('-eng.zip', '.csv')) as f:
-            return pd.read_csv(f, usecols=usecols)
-
-
-def extract_can_group_a(file_id: int, skiprows) -> DataFrame:
-    # =========================================================================
-    # Not Used Anywhere
-    # =========================================================================
-    df = pd.read_csv(f'dataset_can_cansim{file_id:n}.csv', skiprows=skiprows)
-    if file_id == 7931814471809016759:
-        df.columns = [column[:7] for column in df.columns]
-        df.iloc[:, -1] = pd.to_numeric(df.iloc[:, -1].str.replace(';', ''))
-    df = df.set_index(df.columns[0]).transpose()
-    df.reset_index(inplace=True)
-    df[['quarter', 'period', ]] = df.iloc[:, 0].str.split(expand=True)
-    df.set_index(df.columns[0], inplace=True)
-    return df.groupby(df.columns[-1]).mean()
-
-
-def extract_can_group_b(file_id: int, skiprows) -> DataFrame:
-    # =========================================================================
-    # Not Used Anywhere
-    # =========================================================================
-    df = pd.read_csv(f'dataset_can_cansim{file_id:n}.csv', skiprows=skiprows)
-    df[['month', 'period', ]] = df.iloc[:, 0].str.split('-', expand=True)
-    return df.groupby(df.columns[-1]).mean()
+            return pd.read_csv(f, **kwargs)
 
 
 def extract_can_quarter(df: DataFrame, series_id: str) -> DataFrame:
@@ -216,27 +192,34 @@ def extract_can_quarter(df: DataFrame, series_id: str) -> DataFrame:
     return df.groupby(df.columns[-2]).sum()
 
 
-def extract_can_quarter(file_id, series_id: str) -> DataFrame:
+def extract_can_quarter(file_id: int, series_id: str) -> DataFrame:
     '''
     Data Frame Fetching from Quarterly Data within CANSIM Zip Archives
     Should Be [x 7 columns]
     '''
     RESERVED_FILE_IDS = (2820011, 2820012, 3790031, 3800068,)
-    RESERVED_COMBINATIONS = ((3790031, 'v65201809',),
-                             (3800084, 'v62306938',),)
+    RESERVED_COMBINATIONS = (
+        (3790031, 'v65201809',),
+        (3800084, 'v62306938',),
+    )
     USECOLS = ((4, 6,), (5, 7,),)
     usecols = (USECOLS[0], USECOLS[1])[file_id in RESERVED_FILE_IDS]
-    df = pd.read_csv(
-        f'dataset_can_{file_id:08n}-eng.zip', usecols=[0, *usecols]
+    _df = pd.read_csv(
+        f'dataset_can_{file_id:08n}-eng.zip',
+        names=['REF_DATE', 'series_id', series_id],
+        index_col=0,
+        usecols=[0, *usecols],
+        skiprows=1,
     )
-    df = df[df.iloc[:, 1] == series_id].iloc[:, [0, 2]]
-    df.columns = [df.columns[0], series_id]
-    df[['period', 'sub_period', ]] = df.iloc[:, 0].str.split('/', expand=True)
-    df.iloc[:, 1] = df.iloc[:, 1].astype(float)
-    df.iloc[:, -2] = df.iloc[:, -2].astype(int)
+    _df = _df[_df.iloc[:, 0] == series_id].iloc[:, [1]]
+    _df.index = pd.to_numeric(
+        _df.index.astype(str).to_series().str.slice(stop=4),
+        downcast='integer'
+    )
+    _df.iloc[:, 0] = pd.to_numeric(_df.iloc[:, 0], errors='coerce')
     if (file_id, series_id,) in RESERVED_COMBINATIONS:
-        return df.groupby(df.columns[-2]).sum()
-    return df.groupby(df.columns[-2]).mean()
+        return _df.groupby(_df.index).sum()
+    return _df.groupby(_df.index).mean()
 
 
 def extract_usa_bea(archive_name: str, wb_name: str, sh_name: str, series_id: str) -> DataFrame:

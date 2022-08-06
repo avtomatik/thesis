@@ -1007,51 +1007,6 @@ def collect_census_price() -> DataFrame:
     return df.iloc[:, [-1]].dropna(axis=0)
 
 
-def collect_centered_by_period(df: DataFrame) -> DataFrame:
-    '''
-    Parameters
-    ----------
-    df : DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Target Series
-    ================== =================================
-    Returns
-    -------
-    DataFrame
-    '''
-    # =========================================================================
-    # TODO: Any Use?
-    # =========================================================================
-    # =========================================================================
-    # DataFrame for Results
-    # =========================================================================
-    _df = df.reset_index(level=0).copy()
-    period = _df.iloc[:, 0]
-    series = _df.iloc[:, 1]
-    # =========================================================================
-    # Loop
-    # =========================================================================
-    for _ in range(_df.shape[0] // 2):
-        period = period.rolling(2).mean()
-        series = series.rolling(2).mean()
-        period_roll = period.shift(-((1 + _) // 2))
-        series_roll = series.shift(-((1 + _) // 2))
-        _df = pd.concat(
-            [
-                _df,
-                period_roll,
-                series_roll,
-                series_roll.div(_df.iloc[:, 1]),
-                series_roll.shift(-2).sub(series_roll).div(
-                    series_roll.shift(-1)).div(2),
-            ],
-            axis=1,
-            sort=True
-        )
-    return _df
-
-
 def collect_cobb_douglas_deflator() -> DataFrame:
     '''Fixed Assets Deflator, 2009=100'''
     # =========================================================================

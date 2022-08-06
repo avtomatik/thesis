@@ -24,6 +24,7 @@ def main():
         # =========================================================================
         'year_price': 1899,
     }
+
     os.chdir(DIR)
     plot_cobb_douglas(
         *transform_cobb_douglas(collect()),

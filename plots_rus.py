@@ -13,6 +13,7 @@ from plot.lib import plot_grigoriev
 
 def main():
     DIR = '/media/alexander/321B-6A94'
+
     os.chdir(DIR)
     plot_is_lm()
     plot_grigoriev()

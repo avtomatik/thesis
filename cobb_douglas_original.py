@@ -32,6 +32,7 @@ def main():
         'fg_e': 'Chart V Relative Final Productivities of Labor and Capital',
         'year_price': 1899,
     }
+
     os.chdir(DIR)
     plot_cobb_douglas(
         *transform_cobb_douglas(collect_cobb_douglas()),

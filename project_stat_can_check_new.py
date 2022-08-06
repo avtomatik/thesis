@@ -33,48 +33,48 @@ def url_to_file_name(_url: str) -> str:
     )
 
 
-DIR = '/home/alexander/science'
-FILE_NAME = 'stat_can_all.xlsx'
+def main():
+    DIR = '/home/alexander/science'
+    FILE_NAME = 'stat_can_all.xlsx'
+
+    # =============================================================================
+    # TODO: Modify
+    # =============================================================================
+    # =============================================================================
+    # Read File Generated with main() @ stat_can_web_scraper.py @ https://github.com/avtomatik/stat-can
+    # =============================================================================
+    df = pd.read_excel(os.path.join(DIR, FILE_NAME))
+
+    urls_available = set()
+    for _ in range(df.shape[0]):
+        try:
+            urls_available.add(url_to_file_name(df.iloc[_, 8]))
+        except IndexError:
+            pass
+
+    MAP_FILES = {url.split('/')[-1]: url for url in urls_available}
+
+    file_names_downloaded = {
+        f for f in os.listdir(os.path.join(DIR, 'data')) if f.endswith(('_eng.zip'))
+    }
+
+    file_names_to_check = set(MAP_FILES) - file_names_downloaded
+
+    urls_to_check = tuple(
+        MAP_FILES[file_name] for file_name in file_names_to_check
+    )
+
+    with open(os.path.join(DIR, 'stat_can_dump.txt'), 'w') as f:
+        for url in sorted(urls_to_check):
+            _df = extract_can_from_url(url)
+            print(url, file=f)
+            print(f"Periods Length: {len(set(_df['REF_DATE'])):3};", file=f)
+            print(_df['REF_DATE'].unique(), file=f)
+
+    # =============================================================================
+    # df.dropna(how='all').to_excel(os.path.join(DIR, FILE_NAME), index=False)
+    # =============================================================================
 
 
-# =============================================================================
-# TODO: Modify
-# =============================================================================
-# =============================================================================
-# Read File Generated with main() @ stat_can_web_scraper.py @ https://github.com/avtomatik/stat-can
-# =============================================================================
-df = pd.read_excel(os.path.join(DIR, FILE_NAME))
-
-urls_available = set()
-for _ in range(df.shape[0]):
-    try:
-        urls_available.add(url_to_file_name(df.iloc[_, 8]))
-    except IndexError:
-        pass
-
-
-MAP_FILES = {url.split('/')[-1]: url for url in urls_available}
-
-file_names_downloaded = {
-    f for f in os.listdir(os.path.join(DIR, 'data')) if f.endswith(('_eng.zip'))
-}
-
-
-file_names_to_check = set(MAP_FILES) - file_names_downloaded
-
-
-urls_to_check = tuple(
-    MAP_FILES[file_name] for file_name in file_names_to_check
-)
-
-with open(os.path.join(DIR, 'stat_can_dump.txt'), 'w') as f:
-    for url in sorted(urls_to_check):
-        _df = extract_can_from_url(url)
-        print(url, file=f)
-        print(f"Periods Length: {len(set(_df['REF_DATE'])):3};", file=f)
-        print(_df['REF_DATE'].unique(), file=f)
-
-
-# =============================================================================
-# df.dropna(how='all').to_excel(os.path.join(DIR, FILE_NAME), index=False)
-# =============================================================================
+if __name__ == '__main__':
+    main()

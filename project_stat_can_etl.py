@@ -302,42 +302,46 @@ PRODUCT = (
 )
 
 
-DIR = '/home/alexander/science'
-FILE_NAME = 'stat_can_desc.xlsx'
-FILE_NAMES = (
-    'stat_can_cap.xlsx',
-    'stat_can_lab.xlsx',
-    'stat_can_prd.xlsx',
-)
-_FILE_NAME = 'stat_can_desc.xlsx'
+def main():
+    DIR = '/home/alexander/science'
+    FILE_NAME = 'stat_can_desc.xlsx'
+    FILE_NAMES = (
+        'stat_can_cap.xlsx',
+        'stat_can_lab.xlsx',
+        'stat_can_prd.xlsx',
+    )
+    _FILE_NAME = 'stat_can_desc.xlsx'
+
+    # =============================================================================
+    # # =============================================================================
+    # # Construct Excel File from Specification
+    # # =============================================================================
+    # MAP_FILES = dict(zip(FILE_NAMES, (CAPITAL, LABOUR, PRODUCT)))
+    # for file_name, criteria in MAP_FILES.items():
+    #     build_load_data_frame(file_name, criteria)
+    # =============================================================================
+
+    # =============================================================================
+    # # =============================================================================
+    # # Retrieve Series Description
+    # # =============================================================================
+    # _df = pd.concat(
+    #     [
+    #         pd.read_excel(os.path.join(DIR, file_name), index_col=0)
+    #         for file_name in FILE_NAMES
+    #     ],
+    #     axis=1
+    # )
+    #
+    # desc = pd.merge(
+    #     pd.read_excel(os.path.join(DIR, FILE_NAME), index_col=0),
+    #     _df.transpose(),
+    #     left_index=True,
+    #     right_index=True,
+    # )
+    # desc.transpose().to_excel(os.path.join(DIR, _FILE_NAME))
+    # =============================================================================
 
 
-# =============================================================================
-# # =============================================================================
-# # Construct Excel File from Specification
-# # =============================================================================
-# MAP_FILES = dict(zip(FILE_NAMES, (CAPITAL, LABOUR, PRODUCT)))
-# for file_name, criteria in MAP_FILES.items():
-#     build_load_data_frame(file_name, criteria)
-# =============================================================================
-
-# =============================================================================
-# # =============================================================================
-# # Retrieve Series Description
-# # =============================================================================
-# _df = pd.concat(
-#     [
-#         pd.read_excel(os.path.join(DIR, file_name), index_col=0)
-#         for file_name in FILE_NAMES
-#     ],
-#     axis=1
-# )
-#
-# desc = pd.merge(
-#     pd.read_excel(os.path.join(DIR, FILE_NAME), index_col=0),
-#     _df.transpose(),
-#     left_index=True,
-#     right_index=True,
-# )
-# desc.transpose().to_excel(os.path.join(DIR, _FILE_NAME))
-# =============================================================================
+if __name__ == '__main__':
+    main()

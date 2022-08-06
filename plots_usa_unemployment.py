@@ -21,6 +21,7 @@ def main():
     ARCHIVE_NAME = 'dataset_usa_census1975.zip'
     FILE_NAME = 'dataset_usa_bls-2017-07-06-ln.data.1.AllData'
     _FILE_NAME = 'plot_usa_unemployment_autocorrelation.pdf'
+
     os.chdir(DIR)
     df = pd.concat(
         [
