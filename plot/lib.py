@@ -2126,7 +2126,8 @@ def plot_rolling_mean_filter(df: DataFrame) -> None:
     -------
     None
     '''
-    df_o, df_e, residuals_o, residuals_e = rolling_mean_filter(df)
+    _df = df.copy()
+    df_o, df_e, residuals_o, residuals_e = rolling_mean_filter(_df)
     plt.figure(1)
     plt.title(
         f'Rolling Mean {df_o.index[0]}$-${df_o.index[-1]}'

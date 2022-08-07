@@ -44,13 +44,13 @@ def extract_can_annual(file_id: int, series_id: str) -> DataFrame:
     }
     df = pd.read_csv(
         f'dataset_can_{file_id:08n}-eng.zip',
+        header=0,
         names=['REF_DATE', 'series_id', series_id],
         index_col=0,
         usecols=[0, *USECOLS[file_id]],
-        skiprows=1,
     )
     df = df[df.iloc[:, 0] == series_id].iloc[:, [1]]
-    df.iloc[:, 0] = pd.to_numeric(df.iloc[:, 0])
+    df.iloc[:, 0] = pd.to_numeric(df.iloc[:, 0], errors='coerce')
     return df
 
 
@@ -206,10 +206,10 @@ def extract_can_quarter(file_id: int, series_id: str) -> DataFrame:
     usecols = (USECOLS[0], USECOLS[1])[file_id in RESERVED_FILE_IDS]
     _df = pd.read_csv(
         f'dataset_can_{file_id:08n}-eng.zip',
+        header=0,
         names=['REF_DATE', 'series_id', series_id],
         index_col=0,
         usecols=[0, *usecols],
-        skiprows=1,
     )
     _df = _df[_df.iloc[:, 0] == series_id].iloc[:, [1]]
     _df.index = pd.to_numeric(
@@ -305,18 +305,18 @@ def extract_usa_bea_from_url(url: str) -> DataFrame:
     try:
         return pd.read_csv(
             io.BytesIO(requests.get(url).content),
+            header=0,
             names=['series_ids', 'period', 'value'],
             index_col=1,
-            skiprows=1,
-            thousands=','
+            thousands=',',
         )
     except requests.ConnectionError:
         return pd.read_csv(
             url.split('/')[-1],
+            header=0,
             names=['series_ids', 'period', 'value'],
             index_col=1,
-            skiprows=1,
-            thousands=','
+            thousands=',',
         )
 
 
@@ -334,22 +334,41 @@ def extract_usa_bls(file_name, series_id: str) -> DataFrame:
     return df.set_index(df.columns[0])
 
 
-def extract_usa_classic(archive_name: str, series_id: str) -> DataFrame:
+def extract_usa_hist(archive_name: str, series_id: str) -> DataFrame:
     '''
-    Data Fetch Procedure for Enumerated Classical Datasets
+    Extract Data from Enumerated Historical Datasets
+
+    Parameters
+    ----------
+    archive_name : str
+        DESCRIPTION.
+    series_id : str
+        DESCRIPTION.
+
+    Returns
+    -------
+    DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Series
+    ================== =================================
     '''
     USECOLS = {
         'dataset_douglas.zip': (4, 7,),
         'dataset_usa_brown.zip': (3, 6,),
+        'dataset_usa_census1949.zip': (8, 11,),
+        'dataset_usa_census1975.zip': (8, 11,),
         'dataset_usa_cobb-douglas.zip': (5, 8,),
         'dataset_usa_kendrick.zip': (4, 7,),
     }
     df = pd.read_csv(
         archive_name,
+        header=0,
         names=['series_id', 'period', series_id],
         index_col=1,
-        skiprows=(1, 5)[archive_name == 'dataset_usa_brown.zip'],
-        usecols=range(*USECOLS[archive_name])
+        skiprows=(0, 4)[archive_name == 'dataset_usa_brown.zip'],
+        usecols=range(*USECOLS[archive_name]),
+        dtype=str,
     )
     df = df[df.iloc[:, 0] == series_id].iloc[:, [1]]
     df.index = pd.to_numeric(
@@ -357,32 +376,9 @@ def extract_usa_classic(archive_name: str, series_id: str) -> DataFrame:
         downcast='integer'
     )
     df.iloc[:, 0] = pd.to_numeric(df.iloc[:, 0], errors='coerce')
+    if 'census' in archive_name:
+        return df.groupby(df.index).mean()
     return df.sort_index()
-
-
-def extract_usa_census(archive_name: str, series_id: str) -> DataFrame:
-    '''
-    Selected Series by U.S. Bureau of the Census
-    U.S. Bureau of the Census, Historical Statistics of the United States,
-    1789--1945, Washington, D.C., 1949.
-    U.S. Bureau of the Census. Historical Statistics of the United States,
-    Colonial Times to 1970, Bicentennial Edition. Washington, D.C., 1975.
-    '''
-    df = pd.read_csv(
-        archive_name,
-        names=['period', 'series_id', series_id],
-        index_col=1,
-        usecols=range(8, 11),
-        skiprows=1,
-        dtype=str
-    )
-    df = df[df.iloc[:, 0] == series_id].iloc[:, [1]]
-    df.index = pd.to_numeric(
-        df.index.astype(str).to_series().str.slice(stop=4),
-        downcast='integer'
-    )
-    df.iloc[:, 0] = pd.to_numeric(df.iloc[:, 0], errors='coerce')
-    return df.groupby(df.index).mean()
 
 
 def extract_usa_census_description(archive_name: str, series_id: str) -> str:

@@ -8,7 +8,6 @@ Created on Sun Jun 12 11:52:01 2022
 
 import os
 import itertools
-from functools import partial
 import numpy as np
 import pandas as pd
 from pandas import DataFrame
@@ -28,8 +27,7 @@ from extract.lib import extract_can_quarter
 from extract.lib import extract_usa_bea
 from extract.lib import extract_usa_bea_from_loaded
 from extract.lib import extract_usa_bea_from_url
-from extract.lib import extract_usa_census
-from extract.lib import extract_usa_classic
+from extract.lib import extract_usa_hist
 from extract.lib import extract_usa_frb_ms
 from extract.lib import extract_usa_mcconnel
 from extract.lib import extract_usa_ppi
@@ -452,7 +450,7 @@ def collect_bea_gdp() -> DataFrame:
 def collect_brown() -> DataFrame:
     # =========================================================================
     # Fetch Data from `Reference RU Brown M. 0597_088.pdf`, Page 193
-    # Dependent on `extract_usa_classic`
+    # Dependent on `extract_usa_hist`
     # Out of Kendrick J.W. Data & Table 2. of `Reference RU Brown M. 0597_088.pdf`
     # =========================================================================
     # =========================================================================
@@ -472,7 +470,7 @@ def collect_brown() -> DataFrame:
     }
     _b_frame = pd.concat(
         [
-            extract_usa_classic(ARCHIVE_NAMES[0], series_id)
+            extract_usa_hist(ARCHIVE_NAMES[0], series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -498,7 +496,7 @@ def collect_brown() -> DataFrame:
     SERIES_IDS = ('KTA03S07', 'KTA03S08', 'KTA10S08', 'KTA15S07', 'KTA15S08',)
     _k_frame = pd.concat(
         [
-            extract_usa_classic(ARCHIVE_NAMES[1], series_id)
+            extract_usa_hist(ARCHIVE_NAMES[1], series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -658,7 +656,7 @@ def collect_capital_purchases() -> DataFrame:
         for series_id in SERIES_IDS
     ]
     _df = pd.concat(
-        [extract_usa_classic(*arg) for arg in _args],
+        [extract_usa_hist(*args) for args in _args],
         axis=1,
         sort=True
     )
@@ -688,7 +686,7 @@ def collect_capital_purchases() -> DataFrame:
         for series_id in SERIES_IDS
     ]
     data_frame_ = pd.concat(
-        [extract_usa_census(*_[:2]).mul(_[-1]) for _ in _args],
+        [extract_usa_hist(*args[:2]).mul(args[-1]) for args in _args],
         axis=1,
         sort=True
     )
@@ -735,7 +733,14 @@ def collect_census_a() -> tuple[DataFrame, int]:
         [series_id.startswith('P')]
         for series_id in SERIES_IDS
     ]
-    df = pd.concat([extract_usa_census(*_) for _ in _args], axis=1, sort=True)
+    df = pd.concat(
+        [
+            extract_usa_hist(*args)
+            for args in _args
+        ],
+        axis=1,
+        sort=True
+    )
     return df.div(df.loc[1899, :]).mul(100), df.index.get_loc(1899)
 
 
@@ -766,7 +771,7 @@ def collect_census_b_a() -> DataFrame:
         for series_id in SERIES_IDS
     ]
     df = pd.concat(
-        [extract_usa_census(*_[:2]).mul(_[-1]) for _ in _args],
+        [extract_usa_hist(*args[:2]).mul(args[-1]) for args in _args],
         axis=1,
         sort=True
     ).truncate(before=1875)
@@ -805,8 +810,10 @@ def collect_census_b_b() -> DataFrame:
         'P0118',  # 1958=100
     )
     _df = pd.concat(
-        [extract_usa_census(ARCHIVE_NAME, series_id)
-         for series_id in SERIES_IDS],
+        [
+            extract_usa_hist(ARCHIVE_NAME, series_id)
+            for series_id in SERIES_IDS
+        ],
         axis=1,
         sort=True
     ).truncate(before=1879)
@@ -844,7 +851,7 @@ def collect_census_c() -> tuple[DataFrame, tuple[int]]:
     }
     df = pd.concat(
         [
-            extract_usa_census(ARCHIVE_NAME, series_id)
+            extract_usa_hist(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -868,7 +875,7 @@ def collect_census_e() -> DataFrame:
     SERIES_IDS = tuple(f'C{_id:04n}' for _id in ids)
     df = pd.concat(
         [
-            extract_usa_census(ARCHIVE_NAME, series_id)
+            extract_usa_hist(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -885,7 +892,7 @@ def collect_census_f() -> DataFrame:
     SERIES_IDS = ('D0085', 'D0086', 'D0796', 'D0797', 'D0977', 'D0982',)
     df = pd.concat(
         [
-            extract_usa_census(ARCHIVE_NAME, series_id)
+            extract_usa_hist(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -903,7 +910,7 @@ def collect_census_g() -> DataFrame:
     SERIES_IDS = ('F0003', 'F0004',)
     df = pd.concat(
         [
-            extract_usa_census(ARCHIVE_NAME, series_id)
+            extract_usa_hist(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -918,7 +925,7 @@ def collect_census_i_a() -> DataFrame:
     SERIES_IDS = ('U0001', 'U0008', 'U0015',)
     return pd.concat(
         [
-            extract_usa_census(ARCHIVE_NAME, series_id)
+            extract_usa_hist(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -932,7 +939,7 @@ def collect_census_i_b() -> DataFrame:
     SERIES_IDS = ('U0187', 'U0188', 'U0189',)
     return pd.concat(
         [
-            extract_usa_census(ARCHIVE_NAME, series_id)
+            extract_usa_hist(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -954,7 +961,7 @@ def collect_census_i_c() -> DataFrame:
     SERIES_IDS = tuple(f'U{_id:04n}' for _id in ids)
     df = pd.concat(
         [
-            extract_usa_census(ARCHIVE_NAME, series_id)
+            extract_usa_hist(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -983,7 +990,7 @@ def collect_census_j() -> DataFrame:
     SERIES_IDS = ('X0410', 'X0414', 'X0415',)
     df = pd.concat(
         [
-            extract_usa_census(ARCHIVE_NAME, series_id)
+            extract_usa_hist(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -997,7 +1004,7 @@ def collect_census_price() -> DataFrame:
     SERIES_IDS = ('P0107', 'P0110')
     df = pd.concat(
         [
-            extract_usa_census(ARCHIVE_NAME, series_id)
+            extract_usa_hist(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1
@@ -1091,22 +1098,16 @@ def collect_cobb_douglas_deflator() -> DataFrame:
         [
             pd.concat(
                 [
-                    extract_usa_census(**{
-                        'archive_name': archive_name,
-                        'series_id': series_id,
-                    })
-                    for archive_name, series_id in zip(ARCHIVE_NAMES[:-2], SERIES_IDS_CS[:-2])
+                    extract_usa_hist(*args)
+                    for args in zip(ARCHIVE_NAMES[:-2], SERIES_IDS_CS[:-2])
                 ],
                 axis=1,
                 sort=True
             ),
             pd.concat(
                 [
-                    extract_usa_census(**{
-                        'archive_name': archive_name,
-                        'series_id': series_id,
-                    })
-                    for archive_name, series_id in zip(ARCHIVE_NAMES[-2:], SERIES_IDS_CS[-2:])
+                    extract_usa_hist(*args)
+                    for args in zip(ARCHIVE_NAMES[-2:], SERIES_IDS_CS[-2:])
                 ],
                 axis=1,
                 sort=True
@@ -1279,25 +1280,14 @@ def collect_cobb_douglas_extension_labor() -> DataFrame:
         # =====================================================================
         'KTD02S02',
     )
-    FUNCTIONS = (
-        extract_usa_classic,
-        extract_usa_census,
-        extract_usa_census,
-        extract_usa_census,
-        extract_usa_census,
-        extract_usa_census,
-        extract_usa_classic,
-    )
     _df = pd.concat(
         [
             pd.concat(
                 [
-                    partial(func, **{'archive_name': archive_name,
-                                     'series_id': series_id})()
-                    for archive_name, series_id, func in zip(ARCHIVE_NAMES, SERIES_IDS, FUNCTIONS)
+                    extract_usa_hist(*args)
+                    for args in zip(ARCHIVE_NAMES, SERIES_IDS)
                 ],
-                axis=1,
-                sort=True
+                axis=1
             ),
             # =========================================================================
             # Bureau of Economic Analysis, H4313C & J4313C & A4313C & N4313C
@@ -1308,8 +1298,7 @@ def collect_cobb_douglas_extension_labor() -> DataFrame:
             # =================================================================
             pd.read_csv(FILE_NAME, index_col=0, usecols=[0, 2]),
         ],
-        axis=1,
-        sort=True
+        axis=1
     ).truncate(before=1889)
     _df.iloc[:, 6] = _df.iloc[:, 6].mul(
         _df.loc[1899, _df.columns[0]]
@@ -1325,6 +1314,7 @@ def collect_cobb_douglas_extension_product() -> DataFrame:
         'dataset_usa_census1975.zip',
         'dataset_douglas.zip',
     )
+    FILE_NAME = 'dataset_usa_davis-j-h-ip-total.xls'
     SERIES_IDS = (
         # =====================================================================
         # Bureau of the Census, 1949, Page 179, J13: National Bureau of Economic Research Index of Physical Output, All Manufacturing Industries.
@@ -1343,25 +1333,15 @@ def collect_cobb_douglas_extension_product() -> DataFrame:
         # =====================================================================
         'DT24AS01',
     )
-    FUNCTIONS = (
-        extract_usa_census,
-        extract_usa_census,
-        extract_usa_census,
-        extract_usa_classic,
-    )
     df = pd.concat(
         [
-            partial(func, **{'archive_name': archive_name,
-                             'series_id': series_id})()
-            for archive_name, series_id, func in zip(ARCHIVE_NAMES, SERIES_IDS, FUNCTIONS)
-        ],
-        axis=1,
-        sort=True
-    )
-    FILE_NAME = 'dataset_usa_davis-j-h-ip-total.xls'
-    df = pd.concat(
-        [
-            df,
+            pd.concat(
+                [
+                    extract_usa_hist(*args)
+                    for args in zip(ARCHIVE_NAMES, SERIES_IDS)
+                ],
+                axis=1
+            ),
             # =================================================================
             # Joseph H. Davis Production Index
             # =================================================================
@@ -1377,8 +1357,7 @@ def collect_cobb_douglas_extension_product() -> DataFrame:
             # =================================================================
             collect_usa_frb_ip(),
         ],
-        axis=1,
-        sort=True
+        axis=1
     )
     df.iloc[:, 1] = df.iloc[:, 1].div(
         df.loc[1899, df.columns[1]]).mul(100)
@@ -1395,7 +1374,7 @@ def collect_cobb_douglas_price() -> DataFrame:
     SERIES_IDS = ('CDT2S1', 'CDT2S3')
     df = pd.concat(
         [
-            extract_usa_classic(ARCHIVE_NAME, series_id)
+            extract_usa_hist(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1
@@ -1406,7 +1385,24 @@ def collect_cobb_douglas_price() -> DataFrame:
 
 
 def collect_cobb_douglas(series_number: int = 3) -> DataFrame:
-    '''Original Cobb--Douglas Data Preprocessing Extension'''
+    '''
+    Original Cobb--Douglas Data Preprocessing Extension
+
+    Parameters
+    ----------
+    series_number : int, optional
+        DESCRIPTION. The default is 3.
+
+    Returns
+    -------
+    DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Capital
+    df.iloc[:, 1]      Labor
+    df.iloc[:, 2]      Product
+    ================== =================================
+    '''
     ARCHIVE_NAMES = (
         'dataset_usa_cobb-douglas.zip',
         'dataset_usa_cobb-douglas.zip',
@@ -1436,18 +1432,10 @@ def collect_cobb_douglas(series_number: int = 3) -> DataFrame:
         # =====================================================================
         'DT24AS01': 'product_rev',
     }
-    FUNCTIONS = (
-        extract_usa_classic,
-        extract_usa_classic,
-        extract_usa_census,
-        extract_usa_census,
-        extract_usa_classic,
-    )
     df = pd.concat(
         [
-            partial(func, **{'archive_name': archive_name,
-                             'series_id': series_id})()
-            for archive_name, series_id, func in zip(ARCHIVE_NAMES, SERIES_IDS, FUNCTIONS)
+            extract_usa_hist(*args)
+            for args in zip(ARCHIVE_NAMES, SERIES_IDS)
         ],
         axis=1,
         sort=True
@@ -1712,7 +1700,7 @@ def collect_combined_archived() -> DataFrame:
                 axis=1,
             ),
             pd.read_csv(FILE_NAMES[0], index_col=0),
-            extract_usa_census(ARCHIVE_NAME, SERIES_ID),
+            extract_usa_hist(ARCHIVE_NAME, SERIES_ID),
             extract_usa_frb_ms(),
             pd.read_csv(FILE_NAMES[-1], index_col=0),
         ],
@@ -1856,7 +1844,7 @@ def collect_douglas() -> DataFrame:
     SERIES_IDS = ('DT19AS03', 'DT19AS02', 'DT19AS01',)
     df = pd.concat(
         [
-            extract_usa_classic(ARCHIVE_NAME, series_id)
+            extract_usa_hist(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -2157,7 +2145,7 @@ def collect_usa_capital() -> DataFrame:
     )
     df = pd.concat(
         [
-            extract_usa_classic(ARCHIVE_NAME, series_id)
+            extract_usa_hist(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -2209,24 +2197,15 @@ def collect_usa_capital() -> DataFrame:
         # =====================================================================
         'DT63AS01',
     )
-    FUNCTIONS = (
-        extract_usa_census,
-        extract_usa_census,
-        extract_usa_census,
-        extract_usa_classic,
-        extract_usa_classic,
-    )
     return pd.concat(
         [
             df,
             pd.concat(
                 [
-                    partial(func, **{'archive_name': archive_name,
-                                     'series_id': series_id})()
-                    for archive_name, series_id, func in zip(ARCHIVE_NAMES, SERIES_IDS, FUNCTIONS)
+                    extract_usa_hist(*args)
+                    for args in zip(ARCHIVE_NAMES, SERIES_IDS)
                 ],
                 axis=1,
-                sort=True
             ).truncate(before=1869),
             # =================================================================
             # FRB Data
@@ -2596,7 +2575,7 @@ def collect_version_b() -> tuple[DataFrame]:
 
 def collect_version_c() -> DataFrame:
     '''Data Fetch'''
-    capital_frame = pd.concat(
+    df_capital = pd.concat(
         [
             # =================================================================
             # Data Fetch for Capital
@@ -2610,18 +2589,20 @@ def collect_version_c() -> DataFrame:
         axis=1,
         sort=True
     ).dropna(axis=0)
-    capital_frame['capital_real'] = capital_frame.iloc[:, 0].div(
-        capital_frame.iloc[:, 1])
-    # =========================================================================
-    # Data Fetch for Labor
-    # =========================================================================
-    labor_frame = collect_cobb_douglas_extension_labor()
-    # =========================================================================
-    # Data Fetch for Product
-    # =========================================================================
-    product_frame = collect_cobb_douglas_extension_product()
+    df_capital['capital_real'] = df_capital.iloc[:, 0].div(
+        df_capital.iloc[:, 1])
     df = pd.concat(
-        [capital_frame.iloc[:, 2], labor_frame, product_frame],
+        [
+            df_capital.iloc[:, 2],
+            # =================================================================
+            # Data Fetch for Labor
+            # =================================================================
+            collect_cobb_douglas_extension_labor(),
+            # =================================================================
+            # Data Fetch for Product
+            # =================================================================
+            collect_cobb_douglas_extension_product()
+        ],
         axis=1,
         sort=True
     ).dropna()

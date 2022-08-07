@@ -14,8 +14,6 @@ import os
 import pandas as pd
 from pandas import DataFrame
 from extract.lib import (
-    extract_can_group_a,
-    extract_can_group_b,
     extract_can_quarter,
     extract_usa_bea,
 )

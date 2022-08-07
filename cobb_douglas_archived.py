@@ -10,10 +10,12 @@ from collect.lib import collect_capital_purchases
 from collect.lib import collect_cobb_douglas
 from collect.lib import collect_version_a
 from collect.lib import collect_version_b
+from collect.lib import collect_version_c
 from collect.lib import transform_cobb_douglas
 from collect.lib import transform_cobb_douglas_alt
 from toolkit.lib import calculate_curve_fit_params
 from plot.lib import plot_capital_purchases
+from plot.lib import plot_cobb_douglas
 from plot.lib import plot_cobb_douglas_alt
 
 
@@ -48,7 +50,7 @@ def main():
     _df_c = df.iloc[:, [0, 1, 4]]
     _df_d, _df_e = collect_version_a()
     _df_f, _df_g, _df_h = collect_version_b()
-    _df_i = dataset_version_c()
+    _df_i = collect_version_c()
 
 # =============================================================================
 #     df = transform_cobb_douglas(collect_cobb_douglas())[0].iloc[:, [3, 4]]
@@ -91,18 +93,15 @@ def main():
     # =========================================================================
     # Project II. Scipy Signal Median Filter, Non-Linear Low-Pass Filter
     # =========================================================================
-    procedure(_df_a)
-    procedure(_df_b)
-    procedure(_df_c)
-    procedure(_df_d)
-    procedure(_df_e)
-    procedure(_df_f)
-    procedure(_df_g)
-    procedure(_df_h)
-    procedure(_df_i)
-    procedure(_df_a)
-    procedure(_df_b)
-    procedure(_df_c)
+    plot_cobb_douglas(*transform_cobb_douglas(_df_a), MAP_FIG)
+    plot_cobb_douglas(*transform_cobb_douglas(_df_b), MAP_FIG)
+    plot_cobb_douglas(*transform_cobb_douglas(_df_c), MAP_FIG)
+    plot_cobb_douglas(*transform_cobb_douglas(_df_d), MAP_FIG)
+    plot_cobb_douglas(*transform_cobb_douglas(_df_e), MAP_FIG)
+    plot_cobb_douglas(*transform_cobb_douglas(_df_f), MAP_FIG)
+    plot_cobb_douglas(*transform_cobb_douglas(_df_g), MAP_FIG)
+    plot_cobb_douglas(*transform_cobb_douglas(_df_h), MAP_FIG)
+    plot_cobb_douglas(*transform_cobb_douglas(_df_i), MAP_FIG)
     # =========================================================================
     # Project III. Scipy Signal Wiener Filter
     # =========================================================================
