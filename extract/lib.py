@@ -22,7 +22,6 @@ ARCHIVE_NAMES_UTILISED = (
     'dataset_douglas.zip',
     'dataset_usa_bea-nipa-2015-05-01.zip',
     'dataset_usa_bea-nipa-selected.zip',
-    'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip',
     'dataset_usa_brown.zip',
     'dataset_usa_cobb-douglas.zip',
     'dataset_usa_kendrick.zip',
@@ -61,13 +60,13 @@ def extract_can_capital_series_ids_archived() -> list[str]:
     territories, annual (dollars x 1,000,000)
     '''
     ARCHIVE_NAME = "dataset_can_00310004-eng.zip"
-    df = pd.read_csv(
+    _df = pd.read_csv(
         ARCHIVE_NAME,
         usecols=["PRICES", "CATEGORY", "COMPONENT", "Vector", ]
     )
     with sqlite3.connect("/home/alexander/science/capital.db") as conn:
         cursor = conn.cursor()
-        df.to_sql("capital", conn, if_exists="replace", index=False)
+        _df.to_sql("capital", conn, if_exists="replace", index=False)
         stmt = """
         SELECT Vector FROM capital
         WHERE
@@ -119,20 +118,35 @@ def extract_can_capital_series_ids() -> list[str]:
 
 def extract_can_capital(series_ids: list[str]) -> DataFrame:
     '''
-    Fetch <DataFrame> from Statistics Canada. Table: 36-10-0238-01 (formerly
-    CANSIM 031-0004): Flows and stocks of fixed non-residential capital, total
-    all industries, by asset, provinces and territories, annual
-    (dollars x 1,000,000)
+    Collects Summarized Data from Statistics Canada. Table: 36-10-0238-01
+    (formerly CANSIM 031-0004): Flows and stocks of fixed non-residential
+    capital, total all industries, by asset, provinces and territories,
+    annual (dollars x 1,000,000)
+
+    Parameters
+    ----------
+    series_ids : list[str]
+        DESCRIPTION.
+
+    Returns
+    -------
+    DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Sum of <series_ids>
+    ================== =================================
     '''
     URL = 'https://www150.statcan.gc.ca/n1/en/tbl/csv/36100096-eng.zip'
-    _df = extract_can_from_url(URL, usecols=[0, 11, 13])
-    _df = _df[_df.iloc[:, 1].isin(series_ids)]
-    df = DataFrame()
-    for series_id in series_ids:
-        chunk = _df[_df.iloc[:, 1] == series_id].iloc[:, [0, 2]]
-        chunk.columns = [chunk.columns[0], series_id]
-        chunk.set_index(chunk.columns[0], inplace=True, verify_integrity=True)
-        df = pd.concat([df, chunk], axis=1, sort=True)
+    _df = extract_can_from_url(URL, index_col=0, usecols=[0, 11, 13])
+    _df = _df[_df.iloc[:, 0].isin(series_ids)]
+    df = pd.concat(
+        [
+            _df[_df.iloc[:, 0] == series_id].iloc[:, [1]]
+            for series_id in series_ids
+        ],
+        axis=1
+    )
+    df.columns = series_ids
     df['sum'] = df.sum(axis=1)
     return df.iloc[:, [-1]]
 
@@ -150,20 +164,41 @@ def extract_can(df: DataFrame, series_id: str) -> DataFrame:
 
 def extract_can_fixed_assets(series_ids: list[str]) -> DataFrame:
     '''
-    Fetch <SERIES_IDS> from CANSIM Table 031-0004: Flows and stocks of fixed
-    non-residential capital, total all industries, by asset, provinces and
-    territories, annual (dollars x 1,000,000)
+    Collects Summarized Data from CANSIM Table 031-0004: Flows and stocks of
+    fixed non-residential capital, total all industries, by asset, provinces
+    and territories, annual (dollars x 1,000,000) by <SERIES_IDS>
+
+    Parameters
+    ----------
+    series_ids : list[str]
+        DESCRIPTION.
+
+    Returns
+    -------
+    DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Sum of <series_ids>
+    ================== =================================
     '''
     ARCHIVE_NAME = 'dataset_can_00310004-eng.zip'
-    _df = pd.read_csv(ARCHIVE_NAME, usecols=[0, 6, 8])
-    _df = _df[_df.iloc[:, 1].isin(series_ids)]
-    _df.iloc[:, 2] = pd.to_numeric(_df.iloc[:, 2], errors='coerce')
-    df = DataFrame()
-    for series_id in series_ids:
-        chunk = _df[_df.iloc[:, 1] == series_id].iloc[:, [0, 2]]
-        chunk.columns = [chunk.columns[0].upper(), series_id]
-        chunk.set_index(chunk.columns[0], inplace=True, verify_integrity=True)
-        df = pd.concat([df, chunk], axis=1, sort=True)
+    _df = pd.read_csv(
+        ARCHIVE_NAME,
+        header=0,
+        names=['REF_DATE', 'series_id', 'value'],
+        index_col=0,
+        usecols=[0, 6, 8],
+    )
+    _df = _df[_df.iloc[:, 0].isin(series_ids)]
+    _df.iloc[:, 1] = pd.to_numeric(_df.iloc[:, 1], errors='coerce')
+    df = pd.concat(
+        [
+            _df[_df.iloc[:, 0] == series_id].iloc[:, [1]]
+            for series_id in series_ids
+        ],
+        axis=1
+    )
+    df.columns = series_ids
     df['sum'] = df.sum(axis=1)
     return df.iloc[:, [-1]]
 
@@ -263,7 +298,18 @@ def extract_usa_bea(archive_name: str, wb_name: str, sh_name: str, series_id: st
 
 def extract_usa_bea_by_series_id(series_id: str) -> DataFrame:
     '''
-    Retrieve Yearly Data for BEA Series' series_id
+    Retrieves Yearly Data for BEA Series' series_id
+
+    Parameters
+    ----------
+    series_id : str
+        DESCRIPTION.
+
+    Returns
+    -------
+    DataFrame
+        DESCRIPTION.
+
     '''
     ARCHIVE_NAME = 'dataset_usa_bea-nipa-2015-05-01.zip'
     _df = pd.read_csv(ARCHIVE_NAME, usecols=[0, *range(14, 18)])
@@ -280,17 +326,21 @@ def extract_usa_bea_by_series_id(series_id: str) -> DataFrame:
         cursor = conn.execute(stmt)
     _df = DataFrame(
         cursor.fetchall(),
-        columns=['source_id', 'series_id', 'period', 'sub_period', 'value']
+        columns=['source_id', 'series_id', 'period', 'sub_period', 'value'],
     )
-    _df.drop('sub_period', axis=1, inplace=True)
     _df.set_index('period', inplace=True)
-    df = DataFrame()
-    for source_id in sorted(set(_df.iloc[:, 0])):
-        chunk = _df[_df.iloc[:, 0] == source_id].iloc[:, [2]]
-        chunk.columns = [
-            ''.join((source_id.split()[1].replace('.', '_'), series_id))]
-        chunk.drop_duplicates(inplace=True)
-        df = pd.concat([df, chunk], axis=1, sort=True)
+    _df.drop('sub_period', axis=1, inplace=True)
+    df = pd.concat(
+        [
+            _df[_df.iloc[:, 0] == source_id].iloc[:, [2]].drop_duplicates()
+            for source_id in sorted(set(_df.iloc[:, 0]))
+        ],
+        axis=1
+    )
+    df.columns = [
+        ''.join((source_id.split()[1].replace('.', '_'), series_id))
+        for source_id in sorted(set(_df.iloc[:, 0]))
+    ]
     return df
 
 
@@ -523,7 +573,7 @@ def extract_usa_ppi() -> DataFrame:
 # =============================================================================
 
 
-def data_select(df: DataFrame, query) -> DataFrame:
+def data_select(df: DataFrame, query: dict[str]) -> DataFrame:
     for column, value in query['filter'].items():
         df = df[df.iloc[:, column] == value]
     return df
