@@ -79,7 +79,7 @@ def collect_can():
     # and territories, annual (dollars x 1,000,000)'''
     # =========================================================================
     URL = 'https://www150.statcan.gc.ca/n1/en/tbl/csv/36100096-eng.zip'
-    capital = extract_can_from_url(URL)
+    capital = extract_can_from_url(URL, index_col=0, usecols=range(13))
     capital = extract_can_capital(extract_can_capital_series_ids())
     # =========================================================================
     # '''B. Labor Block: `v2523012`, Preferred Over `v3437501` Which Is Quarterly'''
@@ -87,7 +87,7 @@ def collect_can():
     # by class of worker, annual (x 1,000)'''
     # =========================================================================
     URL = 'https://www150.statcan.gc.ca/n1/tbl/csv/14100027-eng.zip'
-    labor = extract_can_from_url(URL)
+    labor = extract_can_from_url(URL, index_col=0, usecols=range(13))
     labor = extract_can(labor, 'v2523012')
     # =========================================================================
     # '''C. Production Block: `v65201809`'''
@@ -95,7 +95,12 @@ def collect_can():
     # domestic product (GDP) at basic prices, by industry, monthly (x 1,000,000)'''
     # =========================================================================
     URL = 'https://www150.statcan.gc.ca/n1/tbl/csv/36100434-eng.zip'
-    product = extract_can_from_url(URL)
+    product = extract_can_from_url(
+        URL,
+        index_col=0,
+        usecols=range(13),
+        parse_dates=True
+    )
     product = extract_can_quarter(product, 'v65201809')
     df = pd.concat([capital, labor, product], axis=1, sort=True)
     # df = df.dropna(axis=0)

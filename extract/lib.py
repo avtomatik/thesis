@@ -31,7 +31,7 @@ ARCHIVE_NAMES_UTILISED = (
 
 def extract_can_annual(file_id: int, series_id: str) -> DataFrame:
     '''
-    DataFrame Fetching from CANSIM Zip Archives
+    Retrieves DataFrame from CANSIM Zip Archives
     '''
     USECOLS = {
         2820012: (5, 7,),
@@ -151,15 +151,32 @@ def extract_can_capital(series_ids: list[str]) -> DataFrame:
     return df.iloc[:, [-1]]
 
 
-def extract_can(df: DataFrame, series_id: str) -> DataFrame:
+def extract_can(_df: DataFrame, series_id: str) -> DataFrame:
     '''
-    Data Frame Fetching from CANSIM Zip Archives
+    Retrieves DataFrame from CANSIM Zip Archives
+
+    Parameters
+    ----------
+    _df : DataFrame
+        Retrieved with extract_can_from_url().
+    series_id : str
+        DESCRIPTION.
+
+    Returns
+    -------
+    DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Series
+    ================== =================================
     '''
-    df = df[df.iloc[:, 10] == series_id].iloc[:, [0, 12]]
-    df.iloc[:, 0] = df.iloc[:, 0].astype(int)
-    df.iloc[:, 1] = df.iloc[:, 1].astype(float)
-    df.columns = [df.columns[0], series_id]
-    return df.set_index(df.columns[0])
+    _df = _df[_df.iloc[:, 9] == series_id].iloc[:, [11]]
+    _df.index = pd.to_numeric(
+        _df.index.astype(str).to_series().str.slice(stop=4),
+        downcast='integer'
+    )
+    _df.iloc[:, 0] = pd.to_numeric(_df.iloc[:, 0], errors='coerce')
+    return _df.rename(columns={"VALUE": series_id})
 
 
 def extract_can_fixed_assets(series_ids: list[str]) -> DataFrame:
@@ -204,7 +221,22 @@ def extract_can_fixed_assets(series_ids: list[str]) -> DataFrame:
 
 
 def extract_can_from_url(url: str, **kwargs) -> DataFrame:
-    '''Downloading zip file from url'''
+    '''
+    Downloading zip file from url
+
+    Parameters
+    ----------
+    url : str
+        DESCRIPTION.
+    **kwargs : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    DataFrame
+        DESCRIPTION.
+
+    '''
     name = url.split('/')[-1]
     if os.path.exists(name):
         with ZipFile(name, 'r').open(name.replace('-eng.zip', '.csv')) as f:
@@ -215,21 +247,33 @@ def extract_can_from_url(url: str, **kwargs) -> DataFrame:
             return pd.read_csv(f, **kwargs)
 
 
-def extract_can_quarter(df: DataFrame, series_id: str) -> DataFrame:
+def extract_can_quarter(_df: DataFrame, series_id: str) -> DataFrame:
     '''
-    Data Frame Fetching from Quarterly Data within CANSIM Zip Archives
+    DataFrame Fetching from Quarterly Data within CANSIM Zip Archives
+
+    Parameters
+    ----------
+    _df : DataFrame
+        DESCRIPTION.
+    series_id : str
+        DESCRIPTION.
+
+    Returns
+    -------
+    DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Series
+    ================== =================================
     '''
-    df = df[df.iloc[:, 10] == series_id].iloc[:, [0, 12]]
-    df.columns = [df.columns[0], series_id]
-    df[['period', 'sub_period', ]] = df.iloc[:, 0].str.split('-', expand=True)
-    df.iloc[:, 1] = df.iloc[:, 1].astype(float)
-    df.iloc[:, -2] = df.iloc[:, -2].astype(int)
-    return df.groupby(df.columns[-2]).sum()
+    _df = _df[_df.iloc[:, 9] == series_id].iloc[:, [11]]
+    _df.rename(columns={"VALUE": series_id}, inplace=True)
+    return _df.groupby(_df.index.year).sum()
 
 
 def extract_can_quarter(file_id: int, series_id: str) -> DataFrame:
     '''
-    Data Frame Fetching from Quarterly Data within CANSIM Zip Archives
+    Retrieves DataFrame from Quarterly Data within CANSIM Zip Archives
     Should Be [x 7 columns]
     '''
     RESERVED_FILE_IDS = (2820011, 2820012, 3790031, 3800068,)
@@ -259,7 +303,7 @@ def extract_can_quarter(file_id: int, series_id: str) -> DataFrame:
 
 def extract_usa_bea(archive_name: str, wb_name: str, sh_name: str, series_id: str) -> DataFrame:
     '''
-    Data Frame Fetching from Bureau of Economic Analysis Zip Archives
+    Retrieves DataFrame from Bureau of Economic Analysis Zip Archives
 
     Parameters
     ----------
@@ -462,7 +506,7 @@ def extract_usa_census_description(archive_name: str, series_id: str) -> str:
 
 
 def extract_usa_mcconnel(series_id: str) -> DataFrame:
-    '''Data Frame Fetching from McConnell C.R. & Brue S.L.'''
+    '''Retrieves DataFrame from McConnell C.R. & Brue S.L.'''
     ARCHIVE_NAME = 'dataset_usa_mc_connell_brue.zip'
     df = pd.read_csv(ARCHIVE_NAME, index_col=1, usecols=range(1, 4))
     return df[df.iloc[:, 0] == series_id].iloc[:, [1]].sort_index()
@@ -474,12 +518,6 @@ def extract_usa_nber(file_name: str, agg: str) -> DataFrame:
     if agg == 'mean':
         return _df.groupby(_df.columns[0]).mean()
     return _df.groupby(_df.columns[0]).sum()
-
-
-def _extract_worldbank(df: DataFrame, series_id: str) -> DataFrame:
-    chunk = df[df.iloc[:, 1] == series_id].iloc[:, [0, 2]]
-    chunk.columns = [chunk.columns[0], series_id]
-    return chunk.set_index(df.columns[0])
 
 
 def extract_worldbank() -> DataFrame:
@@ -521,10 +559,11 @@ def extract_usa_frb_ms() -> DataFrame:
     URL = 'https://www.federalreserve.gov/datadownload/Output.aspx?rel=H6&series=5398d8d1734b19f731aba3105eb36d47&lastobs=&from=01/01/1959&to=12/31/2018&filetype=csv&label=include&layout=seriescolumn'
     _df = pd.read_csv(
         io.BytesIO(requests.get(URL).content),
+        header=0,
         names=['period', 'm1_m'],
         index_col=0,
         usecols=range(2),
-        skiprows=6,
+        skiprows=5,
         parse_dates=True,
     )
     return _df.groupby(_df.index.year).mean()
@@ -545,9 +584,9 @@ def extract_usa_ppi() -> DataFrame:
     URL = 'https://fred.stlouisfed.org/graph/fredgraph.csv?bgcolor=%23e1e9f0&chart_type=line&drp=0&fo=open%20sans&graph_bgcolor=%23ffffff&height=450&mode=fred&recession_bars=on&txtcolor=%23444444&ts=12&tts=12&width=1168&nt=0&thu=0&trc=0&show_legend=yes&show_axis_titles=yes&show_tooltip=yes&id=PPIACO&scale=left&cosd=1913-01-01&coed=2022-06-01&line_color=%234572a7&link_values=false&line_style=solid&mark_type=none&mw=3&lw=2&ost=-99999&oet=99999&mma=0&fml=a&fq=Monthly&fam=avg&fgst=lin&fgsnd=2020-02-01&line_index=1&transformation=lin&vintage_date=2022-08-04&revision_date=2022-08-04&nd=1913-01-01'
     _df = pd.read_csv(
         io.BytesIO(requests.get(URL).content),
+        header=0,
         names=['period', 'ppi'],
         index_col=0,
-        skiprows=1,
         parse_dates=True,
     )
     return _df.groupby(_df.index.year).mean()
@@ -564,9 +603,9 @@ def extract_usa_ppi() -> DataFrame:
 #     URL = 'https://fred.stlouisfed.org/graph/fredgraph.csv?bgcolor=%23e1e9f0&chart_type=line&drp=0&fo=open%20sans&graph_bgcolor=%23ffffff&height=450&mode=fred&recession_bars=on&txtcolor=%23444444&ts=12&tts=12&width=1168&nt=0&thu=0&trc=0&show_legend=yes&show_axis_titles=yes&show_tooltip=yes&id=PRIME&scale=left&cosd=1955-08-04&coed=2022-07-28&line_color=%234572a7&link_values=false&line_style=solid&mark_type=none&mw=3&lw=2&ost=-99999&oet=99999&mma=0&fml=a&fq=Not%20Applicable&fam=avg&fgst=lin&fgsnd=2020-02-01&line_index=1&transformation=lin&vintage_date=2022-08-03&revision_date=2022-08-03&nd=1955-08-04'
 #     _df = pd.read_csv(
 #         io.BytesIO(requests.get(URL).content),
+#         header=0,
 #         names=['period', 'prime_rate'],
 #         index_col=0,
-#         skiprows=1,
 #         parse_dates=True,
 #     )
 #     return _df.groupby(_df.index.year).mean()
