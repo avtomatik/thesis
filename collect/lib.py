@@ -287,8 +287,7 @@ def collect_can_price_a():
             chunk['deflator'] = chunk.iloc[:, 0].div(chunk.iloc[:, 1])
             chunk['prc'] = chunk.iloc[:, 2].div(
                 chunk.iloc[:, 2].shift(1)).sub(1)
-            chunk.dropna(axis=0, inplace=True)
-            df = pd.concat([df, chunk.iloc[:, [3]]], axis=1)
+            df = pd.concat([df, chunk.iloc[:, [3]].dropna(axis=0)], axis=1)
             df.plot(grid=True)
     # return df
 
@@ -713,38 +712,35 @@ def collect_capital_purchases() -> DataFrame:
 
 
 def collect_census_a() -> tuple[DataFrame, int]:
-    '''Census Manufacturing Indexes, 1899=100'''
-    ARCHIVE_NAMES = (
-        'dataset_usa_census1949.zip', 'dataset_usa_census1975.zip',
-    )
-    SERIES_IDS = (
+    '''
+    Census Manufacturing Indexes, 1899=100
+
+    Returns
+    -------
+    tuple[DataFrame, int]
+        DESCRIPTION.
+
+    '''
+    SERIES_IDS = {
         # =====================================================================
         # Bureau of the Census, 1949, Page 179, J13: National Bureau of Economic Research Index of Physical Output, All Manufacturing Industries.
         # =====================================================================
-        'J0013',
+        'J0013': 'dataset_usa_census1949.zip',
         # =====================================================================
         # Bureau of the Census, 1949, Page 179, J14: Warren M. Persons, Index of Physical Production of Manufacturing
         # =====================================================================
-        'J0014',
+        'J0014': 'dataset_usa_census1949.zip',
         # =====================================================================
         # HSUS 1975 Page 667, P17: Edwin Frickey Series, Indexes of Manufacturing Production
         # =====================================================================
-        'P0017',)
-    _args = [
-        (
-            tuple((ARCHIVE_NAMES[0], series_id,)),
-            tuple((ARCHIVE_NAMES[1], series_id,))
-        )
-        [series_id.startswith('P')]
-        for series_id in SERIES_IDS
-    ]
+        'P0017': 'dataset_usa_census1975.zip',
+    }
     df = pd.concat(
         [
-            extract_usa_hist(*args)
-            for args in _args
+            extract_usa_hist(archive_name, series_id)
+            for series_id, archive_name in SERIES_IDS.items()
         ],
-        axis=1,
-        sort=True
+        axis=1
     )
     return df.div(df.loc[1899, :]).mul(100), df.index.get_loc(1899)
 
@@ -800,20 +796,20 @@ def collect_census_b_a() -> DataFrame:
 def collect_census_b_b() -> DataFrame:
     '''Returns Census Fused Capital Deflator'''
     ARCHIVE_NAME = 'dataset_usa_census1975.zip'
-    SERIES_IDS = (
-        'P0107',  # Nominal
-        'P0108',  # Nominal
-        'P0109',  # Nominal
-        'P0110',  # 1958=100
-        'P0111',  # 1958=100
-        'P0112',  # 1958=100
-        'P0113',  # Nominal
-        'P0114',  # Nominal
-        'P0115',  # Nominal
-        'P0116',  # 1958=100
-        'P0117',  # 1958=100
-        'P0118',  # 1958=100
-    )
+    SERIES_IDS = {
+        'P0107': 'Nominal',
+        'P0108': 'Nominal',
+        'P0109': 'Nominal',
+        'P0110': '1958=100',
+        'P0111': '1958=100',
+        'P0112': '1958=100',
+        'P0113': 'Nominal',
+        'P0114': 'Nominal',
+        'P0115': 'Nominal',
+        'P0116': '1958=100',
+        'P0117': '1958=100',
+        'P0118': '1958=100',
+    }
     _df = pd.concat(
         [
             extract_usa_hist(ARCHIVE_NAME, series_id)
@@ -831,10 +827,9 @@ def collect_census_b_b() -> DataFrame:
     df = pd.concat(
         [
             price_inverse_single(
-                _df.iloc[:, [-(1+_)]].dropna()).dropna() for _ in range(6)
+                _df.iloc[:, [-(1+_)]].dropna(axis=0)).dropna(axis=0) for _ in range(6)
         ],
-        axis=1,
-        sort=True
+        axis=1
     )
     df['census_fused'] = df.mean(axis=1)
     return df.iloc[:, [-1]]
@@ -859,7 +854,7 @@ def collect_census_c() -> tuple[DataFrame, tuple[int]]:
             extract_usa_hist(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
-        axis=1,
+        axis=1
     )
     for series_id, year in SERIES_IDS.items():
         df.loc[:, series_id] = df.loc[:, [series_id]].div(
@@ -886,7 +881,6 @@ def collect_census_e() -> DataFrame:
         axis=1,
         sort=True
     )
-
     df['C89'] = df.sum(1)
     return df.iloc[:, [-1]]
 
@@ -900,12 +894,15 @@ def collect_census_f() -> DataFrame:
             extract_usa_hist(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
-        axis=1,
-        sort=True
+        axis=1
     )
     df['workers'] = df.iloc[:, 0].div(df.iloc[:, 1]).mul(100)
-    df.iloc[:, 4].fillna(df.loc[:1906, df.columns[4]].mean(), inplace=True)
-    df.iloc[:, 5].fillna(df.loc[:1906, df.columns[5]].mean(), inplace=True)
+    df.iloc[:, range(4, 6)] = df.iloc[:, range(4, 6)].fillna(
+        {
+            df.columns[_]: df.loc[:1906, df.columns[_]].mean()
+            for _ in range(4, 6)
+        }
+    )
     return df
 
 
@@ -982,8 +979,9 @@ def collect_census_i_c() -> DataFrame:
 
     for _ in range(len(SERIES_IDS) // 2):
         _title = f'{df.columns[_ + len(SERIES_IDS)]}_over_all'
-        df[_title] = df.iloc[:, _ +
-                             len(SERIES_IDS)].div(df.loc[:, 'exports'].sub(df.loc[:, 'imports']))
+        df[_title] = df.iloc[:, _ + len(SERIES_IDS)].div(
+            df.loc[:, 'exports'].sub(df.loc[:, 'imports'])
+        )
 
     return df
 
@@ -1168,7 +1166,7 @@ def collect_cobb_douglas_deflator() -> DataFrame:
     for _ in range(df.shape[1]):
         df.iloc[:, _] = strip_cumulated_deflator(df.iloc[:, [_]])
     df['def_mean'] = df.mean(axis=1)
-    return df.iloc[:, [-1]].dropna()
+    return df.iloc[:, [-1]].dropna(axis=0)
 
 
 def collect_cobb_douglas_extension_capital() -> DataFrame:
@@ -1568,14 +1566,14 @@ def collect_combined() -> DataFrame:
                     extract_usa_bea_from_loaded(_df, series_id)
                     for series_id in SERIES_IDS_SFAT
                 ],
-                axis=1,
+                axis=1
             ),
             extract_usa_frb_ms(),
             extract_usa_frb_ms(),
             extract_usa_frb_ms(),
             pd.read_csv(FILE_NAME, index_col=0),
         ],
-        axis=1,
+        axis=1
     )
 
 
@@ -1702,14 +1700,14 @@ def collect_combined_archived() -> DataFrame:
                     extract_usa_bea_from_loaded(_df, series_id)
                     for series_id in SERIES_IDS_SFAT
                 ],
-                axis=1,
+                axis=1
             ),
             pd.read_csv(FILE_NAMES[0], index_col=0),
             extract_usa_hist(ARCHIVE_NAME, SERIES_ID),
             extract_usa_frb_ms(),
             pd.read_csv(FILE_NAMES[-1], index_col=0),
         ],
-        axis=1,
+        axis=1
     )
 
 
@@ -2310,7 +2308,17 @@ def collect_usa_frb_fa_def() -> DataFrame:
 
 
 def collect_usa_frb_ip() -> DataFrame:
-    '''Indexed Manufacturing Series: FRB G17 IP, AIPMA_SA_IX, 1919--2018'''
+    '''
+    Manufacturing Series: FRB G17 IP, AIPMA_SA_IX, 1919--2018
+
+    Returns
+    -------
+    DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      AIPMA_SA_IX
+    ================== =================================
+    '''
     # =========================================================================
     # TODO: https://www.federalreserve.gov/datadownload/Output.aspx?rel=g17&filetype=zip
     # =========================================================================
@@ -2319,11 +2327,10 @@ def collect_usa_frb_ip() -> DataFrame:
     # =========================================================================
     FILE_NAME = 'dataset_usa_frb_us3_ip_2018_09_02.csv'
     SERIES_ID = 'AIPMA_SA_IX'
-    df = pd.read_csv(FILE_NAME, skiprows=7, parse_dates=[0])
-    df.columns = [column.strip() for column in df.columns]
-    df = df.loc[:, [df.columns[0], SERIES_ID]]
-    df['period'] = df.iloc[:, 0].dt.year
-    return df.groupby(df.columns[-1]).mean()
+    _df = pd.read_csv(FILE_NAME, index_col=0, skiprows=7, parse_dates=True)
+    _df.rename_axis('period', inplace=True)
+    _df.columns = [column.strip() for column in _df.columns]
+    return _df.groupby(_df.index.year).mean().loc[:, [SERIES_ID]]
 
 
 def collect_usa_mcconnel(series_ids: tuple[str]) -> DataFrame:
@@ -2610,7 +2617,7 @@ def collect_version_c() -> DataFrame:
         ],
         axis=1,
         sort=True
-    ).dropna()
+    ).dropna(axis=0)
     return df.div(df.iloc[0, :])
 
 
@@ -2673,17 +2680,17 @@ def get_price_base(df: DataFrame) -> int:
 
 
 def transform_a(df: DataFrame) -> DataFrame:
-    df = df.iloc[:, [0, 4, 6, 7]].dropna()
+    df = df.iloc[:, [0, 4, 6, 7]].dropna(axis=0)
     df.iloc[:, 1] = pd.to_numeric(df.iloc[:, 1], errors='coerce')
-    return df.div(df.iloc[0, :]).dropna()
+    return df.div(df.iloc[0, :]).dropna(axis=0)
 
 
 def transform_b(df: DataFrame) -> DataFrame:
-    return df.iloc[:, [0, 6, 7, 20]].dropna()
+    return df.iloc[:, [0, 6, 7, 20]].dropna(axis=0)
 
 
 def transform_c(df: DataFrame) -> DataFrame:
-    df_production = df.iloc[:, [0, 6, 7]].dropna()
+    df_production = df.iloc[:, [0, 6, 7]].dropna(axis=0)
     df_production = df_production.div(df_production.iloc[0, :])
     df_money = df.iloc[:, range(18, 20)].dropna(how='all')
     df_money['m1_fused'] = df_money.mean(axis=1)
@@ -2693,7 +2700,8 @@ def transform_c(df: DataFrame) -> DataFrame:
             df_production,
             df_money
         ],
-        axis=1).dropna()
+        axis=1
+    ).dropna(axis=0)
     return _df.div(_df.iloc[0, :])
 
 
@@ -2701,7 +2709,7 @@ def transform_d(df: DataFrame) -> DataFrame:
     # =========================================================================
     # TODO: Eliminate This Function
     # =========================================================================
-    return df.iloc[:, [0, 1, 2, 3, 7]].dropna()
+    return df.iloc[:, [0, 1, 2, 3, 7]].dropna(axis=0)
 
 
 def transform_e(df: DataFrame) -> tuple[DataFrame]:
@@ -2718,11 +2726,11 @@ def transform_e(df: DataFrame) -> tuple[DataFrame]:
         # =====================================================================
         # DataFrame Nominal
         # =====================================================================
-        df.iloc[:, [0, 6, 11]].dropna(),
+        df.iloc[:, [0, 6, 11]].dropna(axis=0),
         # =====================================================================
         # DataFrame `Real`
         # =====================================================================
-        df.iloc[:, [-2, 7, -1]].dropna(),
+        df.iloc[:, [-2, 7, -1]].dropna(axis=0),
     )
 
 

@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sun Jun 12 00:44:36 2022
-
 @author: alexander
 """
 
@@ -122,12 +121,10 @@ def extract_can_capital(series_ids: list[str]) -> DataFrame:
     (formerly CANSIM 031-0004): Flows and stocks of fixed non-residential
     capital, total all industries, by asset, provinces and territories,
     annual (dollars x 1,000,000)
-
     Parameters
     ----------
     series_ids : list[str]
         DESCRIPTION.
-
     Returns
     -------
     DataFrame
@@ -154,14 +151,12 @@ def extract_can_capital(series_ids: list[str]) -> DataFrame:
 def extract_can(_df: DataFrame, series_id: str) -> DataFrame:
     '''
     Retrieves DataFrame from CANSIM Zip Archives
-
     Parameters
     ----------
     _df : DataFrame
         Retrieved with extract_can_from_url().
     series_id : str
         DESCRIPTION.
-
     Returns
     -------
     DataFrame
@@ -184,12 +179,10 @@ def extract_can_fixed_assets(series_ids: list[str]) -> DataFrame:
     Collects Summarized Data from CANSIM Table 031-0004: Flows and stocks of
     fixed non-residential capital, total all industries, by asset, provinces
     and territories, annual (dollars x 1,000,000) by <SERIES_IDS>
-
     Parameters
     ----------
     series_ids : list[str]
         DESCRIPTION.
-
     Returns
     -------
     DataFrame
@@ -223,19 +216,16 @@ def extract_can_fixed_assets(series_ids: list[str]) -> DataFrame:
 def extract_can_from_url(url: str, **kwargs) -> DataFrame:
     '''
     Downloading zip file from url
-
     Parameters
     ----------
     url : str
         DESCRIPTION.
     **kwargs : TYPE
         DESCRIPTION.
-
     Returns
     -------
     DataFrame
         DESCRIPTION.
-
     '''
     name = url.split('/')[-1]
     if os.path.exists(name):
@@ -250,14 +240,12 @@ def extract_can_from_url(url: str, **kwargs) -> DataFrame:
 def extract_can_quarter(_df: DataFrame, series_id: str) -> DataFrame:
     '''
     DataFrame Fetching from Quarterly Data within CANSIM Zip Archives
-
     Parameters
     ----------
     _df : DataFrame
         DESCRIPTION.
     series_id : str
         DESCRIPTION.
-
     Returns
     -------
     DataFrame
@@ -304,7 +292,6 @@ def extract_can_quarter(file_id: int, series_id: str) -> DataFrame:
 def extract_usa_bea(archive_name: str, wb_name: str, sh_name: str, series_id: str) -> DataFrame:
     '''
     Retrieves DataFrame from Bureau of Economic Analysis Zip Archives
-
     Parameters
     ----------
     archive_name : str
@@ -315,12 +302,10 @@ def extract_usa_bea(archive_name: str, wb_name: str, sh_name: str, series_id: st
         DESCRIPTION.
     series_id : str
         DESCRIPTION.
-
     Returns
     -------
     TYPE
         DESCRIPTION.
-
     '''
     with pd.ExcelFile(ZipFile(archive_name, 'r').open(wb_name)) as xl_file:
         # =====================================================================
@@ -343,17 +328,14 @@ def extract_usa_bea(archive_name: str, wb_name: str, sh_name: str, series_id: st
 def extract_usa_bea_by_series_id(series_id: str) -> DataFrame:
     '''
     Retrieves Yearly Data for BEA Series' series_id
-
     Parameters
     ----------
     series_id : str
         DESCRIPTION.
-
     Returns
     -------
     DataFrame
         DESCRIPTION.
-
     '''
     ARCHIVE_NAME = 'dataset_usa_bea-nipa-2015-05-01.zip'
     _df = pd.read_csv(ARCHIVE_NAME, usecols=[0, *range(14, 18)])
@@ -414,31 +396,52 @@ def extract_usa_bea_from_url(url: str) -> DataFrame:
         )
 
 
-def extract_usa_bls(file_name, series_id: str) -> DataFrame:
+def extract_usa_bls(file_name: str, series_id: str) -> DataFrame:
     '''
     Bureau of Labor Statistics Data Fetch
+
+    Parameters
+    ----------
+    file_name : str
+        DESCRIPTION.
+    series_id : str
+        DESCRIPTION.
+
+    Returns
+    -------
+    DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Series
+    ================== =================================
     '''
-    df = pd.read_csv(file_name, sep='\t', usecols=range(4), low_memory=False)
-    query = (df.iloc[:, 0].str.contains(series_id)) & \
-            (df.iloc[:, 2] == 'M13')
-    df = df[query].iloc[:, [1, 3]]
-    df.columns = [df.columns[0], series_id]
-    df.iloc[:, 0] = df.iloc[:, 0].astype(int)
-    df.iloc[:, 1] = df.iloc[:, 1].astype(float)
-    return df.set_index(df.columns[0])
+    _df = pd.read_csv(
+        file_name,
+        sep='\t',
+        header=0,
+        names=['series_id', 'period', 'sub_period', series_id],
+        index_col=1,
+        usecols=range(4),
+        low_memory=False
+    )
+    _q = (_df.iloc[:, 0].str.contains(series_id)) & (_df.iloc[:, 1] == 'M13')
+    _df.index = pd.to_numeric(
+        _df.index.astype(str).to_series().str.slice(stop=4),
+        downcast='integer'
+    )
+    _df.iloc[:, -1] = pd.to_numeric(_df.iloc[:, -1], errors='coerce')
+    return _df[_q].iloc[:, [-1]]
 
 
 def extract_usa_hist(archive_name: str, series_id: str) -> DataFrame:
     '''
     Extract Data from Enumerated Historical Datasets
-
     Parameters
     ----------
     archive_name : str
         DESCRIPTION.
     series_id : str
         DESCRIPTION.
-
     Returns
     -------
     DataFrame
@@ -522,8 +525,7 @@ def extract_usa_nber(file_name: str, agg: str) -> DataFrame:
 
 def extract_worldbank() -> DataFrame:
     URL = 'https://api.worldbank.org/v2/en/indicator/NY.GDP.MKTP.CD?downloadformat=csv'
-    r = requests.get(URL)
-    with ZipFile(io.BytesIO(r.content)) as z:
+    with ZipFile(io.BytesIO(requests.get(URL).content)) as z:
         _map = {_.file_size: _.filename for _ in z.filelist}
         # =====================================================================
         # Select Largest File
@@ -547,7 +549,6 @@ def extract_series_ids(archive_name: str) -> dict[str]:
 def extract_usa_frb_ms() -> DataFrame:
     '''
     Money Stock Measures (H.6) Series
-
     Returns
     -------
     DataFrame
@@ -572,7 +573,6 @@ def extract_usa_frb_ms() -> DataFrame:
 def extract_usa_ppi() -> DataFrame:
     '''
     Producer Price Index
-
     Returns
     -------
     DataFrame
