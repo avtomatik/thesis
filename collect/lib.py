@@ -2224,38 +2224,21 @@ def collect_usa_frb_cu() -> DataFrame:
     '''Indexed Capacity Utilization Series: CAPUTL.B50001.A, 1967--2012
     CAPUTL.B50001.A Fetching'''
     FILE_NAME = 'dataset_usa_frb_g17_all_annual_2013_06_23.csv'
-    SERIES_ID = 'CAPUTLB50001A'
-    df = pd.read_csv(FILE_NAME, skiprows=1, usecols=range(5, 100))
-    df.columns = ['period', *df.columns[1:]]
-    df.iloc[:, 0] = df.iloc[:, 0].str.replace(r"[,@\'?\.$%_]",
-                                              '',
-                                              regex=True)
-    df = df.set_index(df.columns[0]).transpose()
+    SERIES_ID = 'CAPUTL.B50001.A'
+    df = pd.read_csv(
+        FILE_NAME,
+        skiprows=1,
+        index_col=0,
+        usecols=range(5, 100)
+    ).transpose()
     df.index = pd.to_numeric(df.index, downcast='integer')
+    df.rename_axis('period', inplace=True)
     return df.loc[:, [SERIES_ID]].dropna(axis=0)
-
-
-# =============================================================================
-# def collect_usa_frb_cu() -> DataFrame:
-#     '''Indexed Capacity Utilization Series: CAPUTL.B50001.A, 1967--2012
-#     CAPUTL.B50001.A Fetching'''
-#     FILE_NAME = 'dataset_usa_frb_g17_all_annual_2013_06_23.csv'
-#     SERIES_ID = 'CAPUTL.B50001.A'
-#     df = pd.read_csv(
-#         FILE_NAME,
-#         skiprows=1,
-#         index_col=0,
-#         usecols=range(5, 100)
-#     ).transpose()
-#     df.index = pd.to_numeric(df.index, downcast='integer')
-#     df.rename_axis('period', inplace=True)
-#     return df.loc[:, [SERIES_ID]].dropna(axis=0)
-# =============================================================================
 
 
 def collect_usa_frb_fa() -> DataFrame:
     '''
-    Returns Frame of Manufacturing Fixed Assets Series, Billion USD
+    Retrieves DataFrame for Manufacturing Fixed Assets Series, Billion USD
 
     Returns
     -------
@@ -2267,13 +2250,7 @@ def collect_usa_frb_fa() -> DataFrame:
     ================== =================================
     '''
     FILE_NAME = 'dataset_usa_frb_invest_capital.csv'
-    df = pd.read_csv(
-        FILE_NAME,
-        index_col=0,
-        skiprows=4,
-        skipfooter=688,
-        engine='python'
-    ).transpose()
+    df = pd.read_csv(FILE_NAME, index_col=0, skiprows=4,).transpose()
     df.index = df.index.astype(int)
     df['frb_nominal'] = ((df.iloc[:, 1].mul(df.iloc[:, 2]).div(df.iloc[:, 0])).add(
         df.iloc[:, 4].mul(df.iloc[:, 5]).div(df.iloc[:, 3]))).div(1000)
@@ -2283,7 +2260,7 @@ def collect_usa_frb_fa() -> DataFrame:
 
 def collect_usa_frb_fa_def() -> DataFrame:
     '''
-    Returns Frame of Deflator for Manufacturing Fixed Assets Series
+    Retrieves DataFrame for Deflator for Manufacturing Fixed Assets Series
 
     Returns
     -------
@@ -2294,13 +2271,7 @@ def collect_usa_frb_fa_def() -> DataFrame:
     ================== =================================
     '''
     FILE_NAME = 'dataset_usa_frb_invest_capital.csv'
-    df = pd.read_csv(
-        FILE_NAME,
-        index_col=0,
-        skiprows=4,
-        skipfooter=688,
-        engine='python'
-    ).transpose()
+    df = pd.read_csv(FILE_NAME, index_col=0, skiprows=4,).transpose()
     df.index = df.index.astype(int)
     df['fa_def_frb'] = (df.iloc[:, [1, 4]].sum(axis=1)).div(
         df.iloc[:, [0, 3]].sum(axis=1))
