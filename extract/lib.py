@@ -509,10 +509,37 @@ def extract_usa_census_description(archive_name: str, series_id: str) -> str:
 
 
 def extract_usa_mcconnel(series_id: str) -> DataFrame:
-    '''Retrieves DataFrame from McConnell C.R. & Brue S.L.'''
+    '''
+    Retrieves DataFrame from McConnell C.R. & Brue S.L.
+
+    Parameters
+    ----------
+    series_id : str
+        DESCRIPTION.
+
+    Returns
+    -------
+    DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Series
+    ================== =================================
+    '''
     ARCHIVE_NAME = 'dataset_usa_mc_connell_brue.zip'
-    df = pd.read_csv(ARCHIVE_NAME, index_col=1, usecols=range(1, 4))
-    return df[df.iloc[:, 0] == series_id].iloc[:, [1]].sort_index()
+    MAP = {
+        'prime_rate': 'Ставка прайм-рейт, %',
+        'A006RC1': 'Валовой объем внутренних частных инвестиций, млрд долл. США',
+        'A032RC1': 'Национальный доход, млрд долл. США',
+        'A191RC1': 'Валовой внутренний продукт, млрд долл. США',
+    }
+    df = pd.read_csv(
+        ARCHIVE_NAME,
+        header=0,
+        names=['series_id', 'period', series_id],
+        index_col=1,
+        usecols=range(1, 4)
+    )
+    return df[df.iloc[:, 0] == MAP[series_id]].iloc[:, [1]].sort_index()
 
 
 def extract_usa_nber(file_name: str, agg: str) -> DataFrame:

@@ -894,13 +894,14 @@ def collect_census_f() -> DataFrame:
             extract_usa_hist(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
-        axis=1
+        axis=1,
+        sort=True
     )
     df['workers'] = df.iloc[:, 0].div(df.iloc[:, 1]).mul(100)
-    df.iloc[:, range(4, 6)] = df.iloc[:, range(4, 6)].fillna(
+    df.loc[:, SERIES_IDS[-2:]] = df.loc[:, SERIES_IDS[-2:]].fillna(
         {
-            df.columns[_]: df.loc[:1906, df.columns[_]].mean()
-            for _ in range(4, 6)
+            series_id: df.loc[:1906, series_id].mean()
+            for series_id in SERIES_IDS[-2:]
         }
     )
     return df
@@ -2305,19 +2306,10 @@ def collect_usa_frb_ip() -> DataFrame:
 
 
 def collect_usa_mcconnel(series_ids: tuple[str]) -> DataFrame:
-    MAP = {
-        'prime_rate': 'Ставка прайм-рейт, %',
-        'A006RC1': 'Валовой объем внутренних частных инвестиций, млрд долл. США',
-        'A032RC1': 'Национальный доход, млрд долл. США',
-        'A191RC1': 'Валовой внутренний продукт, млрд долл. США',
-    }
-    SERIES_IDS = {series_id: MAP[series_id] for series_id in series_ids}
-    df = pd.concat(
-        [extract_usa_mcconnel(SERIES_IDS[key]) for key in SERIES_IDS],
+    return pd.concat(
+        [extract_usa_mcconnel(series_id) for series_id in series_ids],
         axis=1
-    )
-    df.columns = SERIES_IDS
-    return df.truncate(before=1980)
+    ).truncate(before=1980)
 
 
 def collect_usa_sahr_infcf() -> DataFrame:
