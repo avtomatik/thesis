@@ -50,7 +50,6 @@ ARCHIVE_NAMES_UTILISED = (
     'dataset_usa_kendrick.zip',
 )
 FILE_NAMES_UTILISED = (
-    'dataset_usa_0022_m1.txt',
     'dataset_usa_0025_p_r.txt',
     'dataset_usa_davis-j-h-ip-total.xls',
     'dataset_usa_frb_g17_all_annual_2013_06_23.csv',
@@ -104,7 +103,7 @@ def collect_can():
     product = extract_can_quarter(product, 'v65201809')
     df = pd.concat([capital, labor, product], axis=1, sort=True)
     # df = df.dropna(axis=0)
-    df.columns = ['capital', 'labor', 'product']
+    df.columns = ('capital', 'labor', 'product',)
     return df.div(df.iloc[0, :])
 
 
@@ -139,7 +138,7 @@ def collect_can():
         axis=1,
         sort=True
     ).dropna(axis=0)
-    df.columns = ['capital', 'labor', 'product']
+    df.columns = ('capital', 'labor', 'product',)
     return df
 
 
@@ -264,7 +263,7 @@ def collect_can():
         axis=1,
         sort=True
     ).dropna(axis=0)
-    df.columns = ['capital', 'labor', 'product']
+    df.columns = ('capital', 'labor', 'product',)
     return df
 
 
@@ -640,62 +639,37 @@ def collect_capital_combined_archived() -> DataFrame:
 
 
 def collect_capital_purchases() -> DataFrame:
-    ARCHIVE_NAMES = (
-        # =====================================================================
-        # CDT2S1: Nominal; CDT2S3: 1880=100;
-        # =====================================================================
-        'dataset_usa_cobb-douglas.zip',
-        # =====================================================================
-        # DT63AS01: 1880=100; DT63AS02: Do Not Use; DT63AS03: Do Not Use;
-        # =====================================================================
-        'dataset_douglas.zip',
-    )
-    SERIES_IDS = ('CDT2S1', 'CDT2S3', 'DT63AS01', 'DT63AS02', 'DT63AS03',)
-    _args = [
-        (
-            tuple((ARCHIVE_NAMES[0], series_id)),
-            tuple((ARCHIVE_NAMES[1], series_id))
-        )
-        [series_id.startswith('DT')]
-        for series_id in SERIES_IDS
-    ]
-    _df = pd.concat(
-        [extract_usa_hist(*args) for args in _args],
-        axis=1,
-        sort=True
-    )
-
-    ARCHIVE_NAMES = (
-        # =====================================================================
-        # Nominal Series, USD Millions
-        # =====================================================================
-        'dataset_usa_census1949.zip',
-        # =====================================================================
-        # P0107, P0108, P0109, P0113, P0114, P0115 -- Nominal Series, USD Billions
-        # P0110, P0111, P0112, P0116, P0117, P0118, P0119, P0120, P0121, P0122 -- Real Series, 1958=100, USD Billions
-        # =====================================================================
-        'dataset_usa_census1975.zip',
-    )
-    SERIES_IDS = (
-        'J0149', 'J0150', 'J0151', 'P0107', 'P0108', 'P0109', 'P0110',
-        'P0111', 'P0112', 'P0113', 'P0114', 'P0115', 'P0116', 'P0117',
-        'P0118', 'P0119', 'P0120', 'P0121', 'P0122',
-    )
-    _args = [
-        (
-            tuple((ARCHIVE_NAMES[0], series_id, 1,)),
-            tuple((ARCHIVE_NAMES[1], series_id, 1000,))
-        )
-        [series_id.startswith('P')]
-        for series_id in SERIES_IDS
-    ]
-    data_frame_ = pd.concat(
-        [extract_usa_hist(*args[:2]).mul(args[-1]) for args in _args],
-        axis=1,
-        sort=True
-    )
+    SERIES_IDS = {
+        'CDT2S1': ('dataset_usa_cobb-douglas.zip', 1, 'nominal, millions'),
+        'CDT2S3': ('dataset_usa_cobb-douglas.zip', 1, '1880=100, millions'),
+        'DT63AS01': ('dataset_douglas.zip', 1, '1880=100, millions'),
+        'DT63AS02': ('dataset_douglas.zip', 1, 'DO_NOT_USE_nominal, millions'),
+        'DT63AS03': ('dataset_douglas.zip', 1, 'DO_NOT_USE_nominal, millions'),
+        'J0149': ('dataset_usa_census1949.zip', 1, 'nominal, millions',),
+        'J0150': ('dataset_usa_census1949.zip', 1, 'nominal, millions',),
+        'J0151': ('dataset_usa_census1949.zip', 1, 'nominal, millions',),
+        'P0107': ('dataset_usa_census1975.zip', 1000, 'nominal, billions',),
+        'P0108': ('dataset_usa_census1975.zip', 1000, 'nominal, billions',),
+        'P0109': ('dataset_usa_census1975.zip', 1000, 'nominal, billions',),
+        'P0110': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
+        'P0111': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
+        'P0112': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
+        'P0113': ('dataset_usa_census1975.zip', 1000, 'nominal, billions',),
+        'P0114': ('dataset_usa_census1975.zip', 1000, 'nominal, billions',),
+        'P0115': ('dataset_usa_census1975.zip', 1000, 'nominal, billions',),
+        'P0116': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
+        'P0117': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
+        'P0118': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
+        'P0119': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
+        'P0120': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
+        'P0121': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
+        'P0122': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
+    }
     df = pd.concat(
-        [_df, data_frame_],
+        [
+            extract_usa_hist(archive_name, series_id).mul(factor)
+            for series_id, (archive_name, factor, _) in SERIES_IDS.items()
+        ],
         axis=1,
         sort=True
     ).truncate(before=1875)
@@ -747,32 +721,32 @@ def collect_census_a() -> tuple[DataFrame, int]:
 
 def collect_census_b_a() -> DataFrame:
     '''Returns Nominal Million-Dollar Capital, Including Structures & Equipment, Series'''
-    ARCHIVE_NAMES = (
-        # =====================================================================
-        # Nominal Series, USD Millions
-        # =====================================================================
-        'dataset_usa_census1949.zip',
-        # =====================================================================
-        # P0107, P0108, P0109, P0113, P0114, P0115 -- Nominal Series, USD Billions
-        # P0110, P0111, P0112, P0116, P0117, P0118, P0119, P0120, P0121, P0122 -- Real Series, 1958=100, USD Billions
-        # =====================================================================
-        'dataset_usa_census1975.zip',
-    )
-    SERIES_IDS = (
-        'J0149', 'J0150', 'J0151', 'P0107', 'P0108', 'P0109', 'P0110',
-        'P0111', 'P0112', 'P0113', 'P0114', 'P0115', 'P0116', 'P0117',
-        'P0118', 'P0119', 'P0120', 'P0121', 'P0122',
-    )
-    _args = [
-        (
-            tuple((ARCHIVE_NAMES[0], series_id, 1,)),
-            tuple((ARCHIVE_NAMES[1], series_id, 1000,))
-        )
-        [series_id.startswith('P')]
-        for series_id in SERIES_IDS
-    ]
+    SERIES_IDS = {
+        'J0149': ('dataset_usa_census1949.zip', 1, 'nominal, millions',),
+        'J0150': ('dataset_usa_census1949.zip', 1, 'nominal, millions',),
+        'J0151': ('dataset_usa_census1949.zip', 1, 'nominal, millions',),
+        'P0107': ('dataset_usa_census1975.zip', 1000, 'nominal, billions',),
+        'P0108': ('dataset_usa_census1975.zip', 1000, 'nominal, billions',),
+        'P0109': ('dataset_usa_census1975.zip', 1000, 'nominal, billions',),
+        'P0110': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
+        'P0111': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
+        'P0112': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
+        'P0113': ('dataset_usa_census1975.zip', 1000, 'nominal, billions',),
+        'P0114': ('dataset_usa_census1975.zip', 1000, 'nominal, billions',),
+        'P0115': ('dataset_usa_census1975.zip', 1000, 'nominal, billions',),
+        'P0116': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
+        'P0117': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
+        'P0118': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
+        'P0119': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
+        'P0120': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
+        'P0121': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
+        'P0122': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
+    }
     df = pd.concat(
-        [extract_usa_hist(*args[:2]).mul(args[-1]) for args in _args],
+        [
+            extract_usa_hist(archive_name, series_id).mul(factor)
+            for series_id, (archive_name, factor, _) in SERIES_IDS.items()
+        ],
         axis=1,
         sort=True
     ).truncate(before=1875)
@@ -795,25 +769,24 @@ def collect_census_b_a() -> DataFrame:
 
 def collect_census_b_b() -> DataFrame:
     '''Returns Census Fused Capital Deflator'''
-    ARCHIVE_NAME = 'dataset_usa_census1975.zip'
     SERIES_IDS = {
-        'P0107': 'Nominal',
-        'P0108': 'Nominal',
-        'P0109': 'Nominal',
-        'P0110': '1958=100',
-        'P0111': '1958=100',
-        'P0112': '1958=100',
-        'P0113': 'Nominal',
-        'P0114': 'Nominal',
-        'P0115': 'Nominal',
-        'P0116': '1958=100',
-        'P0117': '1958=100',
-        'P0118': '1958=100',
+        'P0107': ('dataset_usa_census1975.zip', 1000, 'nominal, billions',),
+        'P0108': ('dataset_usa_census1975.zip', 1000, 'nominal, billions',),
+        'P0109': ('dataset_usa_census1975.zip', 1000, 'nominal, billions',),
+        'P0110': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
+        'P0111': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
+        'P0112': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
+        'P0113': ('dataset_usa_census1975.zip', 1000, 'nominal, billions',),
+        'P0114': ('dataset_usa_census1975.zip', 1000, 'nominal, billions',),
+        'P0115': ('dataset_usa_census1975.zip', 1000, 'nominal, billions',),
+        'P0116': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
+        'P0117': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
+        'P0118': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
     }
     _df = pd.concat(
         [
-            extract_usa_hist(ARCHIVE_NAME, series_id)
-            for series_id in SERIES_IDS
+            extract_usa_hist(archive_name, series_id)
+            for series_id, (archive_name, *_) in SERIES_IDS.items()
         ],
         axis=1,
         sort=True
@@ -1592,10 +1565,7 @@ def collect_combined_archived() -> DataFrame:
         'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
         'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
     )
-    FILE_NAMES = (
-        'dataset_usa_0022_m1.txt',
-        'dataset_usa_0025_p_r.txt',
-    )
+    FILE_NAME = 'dataset_usa_0025_p_r.txt'
     ARCHIVE_NAME, SERIES_ID = 'dataset_usa_census1975.zip', 'X0414'
     SERIES_IDS_NIPA = (
         # =====================================================================
@@ -1703,10 +1673,10 @@ def collect_combined_archived() -> DataFrame:
                 ],
                 axis=1
             ),
-            pd.read_csv(FILE_NAMES[0], index_col=0),
+            extract_usa_frb_ms(),
             extract_usa_hist(ARCHIVE_NAME, SERIES_ID),
             extract_usa_frb_ms(),
-            pd.read_csv(FILE_NAMES[-1], index_col=0),
+            pd.read_csv(FILE_NAME, index_col=0),
         ],
         axis=1
     )
@@ -2181,33 +2151,26 @@ def collect_usa_capital() -> DataFrame:
         axis=1,
         sort=True
     )
-    ARCHIVE_NAMES = (
-        'dataset_usa_census1975.zip',
-        'dataset_usa_census1975.zip',
-        'dataset_usa_census1975.zip',
-        'dataset_usa_kendrick.zip',
-        'dataset_douglas.zip',
-    )
-    SERIES_IDS = (
-        'P0107',
-        'P0110',
-        'P0119',
+    SERIES_IDS = {
+        'P0107': 'dataset_usa_census1975.zip',
+        'P0110': 'dataset_usa_census1975.zip',
+        'P0119': 'dataset_usa_census1975.zip',
         # =====================================================================
         # Kendrick J.W., Productivity Trends in the United States, Page 320
         # =====================================================================
-        'KTA15S08',
+        'KTA15S08': 'dataset_usa_kendrick.zip',
         # =====================================================================
         # Douglas P.H., Theory of Wages, Page 332
         # =====================================================================
-        'DT63AS01',
-    )
+        'DT63AS01': 'dataset_douglas.zip',
+    }
     return pd.concat(
         [
             df,
             pd.concat(
                 [
-                    extract_usa_hist(*args)
-                    for args in zip(ARCHIVE_NAMES, SERIES_IDS)
+                    extract_usa_hist(archive_name, series_id)
+                    for series_id, archive_name in SERIES_IDS.items()
                 ],
                 axis=1,
             ).truncate(before=1869),
@@ -2879,6 +2842,7 @@ def transform_cobb_douglas_sklearn(df: DataFrame) -> DataFrame:
     # =========================================================================
     X = np.column_stack((np.zeros(df.shape[0]), np.log(df.iloc[:, -2])))
     y = np.log(df.iloc[:, -1].to_numpy())
+    return X, y
 # =============================================================================
 #     # =========================================================================
 #     # Lasso

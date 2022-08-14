@@ -24,9 +24,8 @@ from pandas.plotting import (
 from collect.lib import transform_cobb_douglas
 from extract.lib import (
     extract_series_ids,
-    extract_usa_census,
     extract_usa_census_description,
-    extract_usa_classic,
+    extract_usa_hist,
     extract_usa_nber,
     extract_worldbank,
 )
@@ -39,12 +38,10 @@ from toolkit.lib import (
 
 
 ARCHIVE_NAMES_UTILISED = (
-    'CHN_TUR_GDP.zip',
     'dataset_rus_m1.zip',
     'dataset_usa_census1975.zip',
 )
 FILE_NAMES_UTILISED = (
-    'datasetAutocorrelation.txt',
     'dataset_rus_grigoriev_v.csv',
     'dataset_usa_nber_ces_mid_naics5811.csv',
     'dataset_usa_nber_ces_mid_sic5811.csv',
@@ -369,7 +366,7 @@ def plot_census_d(series_ids: tuple[str]) -> None:
     ARCHIVE_NAME = 'dataset_usa_census1975.zip'
     df = DataFrame()
     for series_id in series_ids:
-        chunk = extract_usa_census(ARCHIVE_NAME, series_id)
+        chunk = extract_usa_hist(ARCHIVE_NAME, series_id)
         descr = extract_usa_census_description(ARCHIVE_NAME, series_id)
         print(f'<{series_id}> {descr}')
         df = pd.concat(
@@ -425,21 +422,21 @@ def plot_census_f_a(df: DataFrame) -> None:
 
 
 def plot_census_f_b(df: DataFrame) -> None:
-    fig, _axs_stoppages = plt.subplots()
+    fig, _axes_stoppages = plt.subplots()
     color = 'tab:red'
-    _axs_stoppages.set_xlabel('Period')
-    _axs_stoppages.set_ylabel('Number', color=color)
-    _axs_stoppages.plot(df.iloc[:, 4], color=color, label='Stoppages')
-    _axs_stoppages.set_title('Work Conflicts')
-    _axs_stoppages.grid(True)
-    _axs_stoppages.legend(loc=2)
-    _axs_stoppages.tick_params(axis='y', labelcolor=color)
-    _axs_workers = _axs_stoppages.twinx()
+    _axes_stoppages.set_xlabel('Period')
+    _axes_stoppages.set_ylabel('Number', color=color)
+    _axes_stoppages.plot(df.iloc[:, 4], color=color, label='Stoppages')
+    _axes_stoppages.set_title('Work Conflicts')
+    _axes_stoppages.grid(True)
+    _axes_stoppages.legend(loc=2)
+    _axes_stoppages.tick_params(axis='y', labelcolor=color)
+    _axes_workers = _axes_stoppages.twinx()
     color = 'tab:blue'
-    _axs_workers.set_ylabel('1,000 People', color=color)
-    _axs_workers.plot(df.iloc[:, 5], color=color, label='Workers Involved')
-    _axs_workers.legend(loc=1)
-    _axs_workers.tick_params(axis='y', labelcolor=color)
+    _axes_workers.set_ylabel('1,000 People', color=color)
+    _axes_workers.plot(df.iloc[:, 5], color=color, label='Workers Involved')
+    _axes_workers.legend(loc=1)
+    _axes_workers.tick_params(axis='y', labelcolor=color)
     fig.tight_layout()
     plt.show()
 
@@ -470,7 +467,7 @@ def plot_census_h() -> None:
         'series_id': 'K0005',
     }
     plt.figure()
-    plt.plot(extract_usa_census(**_kwargs))
+    plt.plot(extract_usa_hist(**_kwargs))
     plt.title('Land in Farms')
     plt.xlabel('Period')
     plt.ylabel('1,000 acres')
@@ -586,7 +583,7 @@ def plot_census_k() -> None:
     )
     SERIES_IDS = tuple(f'X{_id:04n}' for _id in ids)
     for _, series_id in enumerate(SERIES_IDS, start=1):
-        df = extract_usa_census(ARCHIVE_NAME, series_id)
+        df = extract_usa_hist(ARCHIVE_NAME, series_id)
         df = df.div(df.iloc[0, :]).mul(100)
         descr = extract_usa_census_description(ARCHIVE_NAME, series_id)
         plt.figure(_)
@@ -1315,32 +1312,32 @@ def plot_cobb_douglas_tight_layout(df: DataFrame, params: tuple[float], mapping:
     def _cap_productivity(array: np.array, k: float = 0.25, b: float = 1.01) -> np.array:
         return np.multiply(np.power(array, 1-k), b)
 
-    fig, axs = plt.subplots(5, 1)
-    axs[0].plot(df.iloc[:, range(3)], label=[
+    fig, axes = plt.subplots(5, 1)
+    axes[0].plot(df.iloc[:, range(3)], label=[
         'Fixed Capital',
         'Labor Force',
         'Physical Product',
     ]
     )
-    axs[0].set_xlabel('Period')
-    axs[0].set_ylabel('Indexes')
-    axs[0].set_title(mapping['fg_a'].format(*df.index[[0, -1]],
+    axes[0].set_xlabel('Period')
+    axes[0].set_ylabel('Indexes')
+    axes[0].set_title(mapping['fg_a'].format(*df.index[[0, -1]],
                                             mapping['year_price']))
-    axs[0].legend()
-    axs[0].grid(True)
-    axs[1].plot(df.iloc[:, [2, 5]], label=[
+    axes[0].legend()
+    axes[0].grid(True)
+    axes[1].plot(df.iloc[:, [2, 5]], label=[
         'Actual Product',
         'Computed Product, $P\' = {:,.4f}L^{{{:,.4f}}}C^{{{:,.4f}}}$'.format(
             params[1], 1-params[0], params[0]),
     ]
     )
-    axs[1].set_xlabel('Period')
-    axs[1].set_ylabel('Production')
-    axs[1].set_title(mapping['fg_b'].format(*df.index[[0, -1]],
+    axes[1].set_xlabel('Period')
+    axes[1].set_ylabel('Production')
+    axes[1].set_title(mapping['fg_b'].format(*df.index[[0, -1]],
                                             mapping['year_price']))
-    axs[1].legend()
-    axs[1].grid(True)
-    axs[2].plot(df.iloc[:, [8, 9]],
+    axes[1].legend()
+    axes[1].grid(True)
+    axes[2].plot(df.iloc[:, [8, 9]],
                 label=[
                     'Deviations of $P$',
                     'Deviations of $P\'$',
@@ -1349,28 +1346,28 @@ def plot_cobb_douglas_tight_layout(df: DataFrame, params: tuple[float], mapping:
         #      TODO: ls=['solid','dashed',]
         # =========================================================================
     )
-    axs[2].set_xlabel('Period')
-    axs[2].set_ylabel('Percentage Deviation')
-    axs[2].set_title(mapping['fg_c'])
-    axs[2].legend()
-    axs[2].grid(True)
-    axs[3].plot(df.iloc[:, 5].div(df.iloc[:, 2]).sub(1))
-    axs[3].set_xlabel('Period')
-    axs[3].set_ylabel('Percentage Deviation')
-    axs[3].set_title(mapping['fg_d'].format(*df.index[[0, -1]]))
-    axs[3].grid(True)
+    axes[2].set_xlabel('Period')
+    axes[2].set_ylabel('Percentage Deviation')
+    axes[2].set_title(mapping['fg_c'])
+    axes[2].legend()
+    axes[2].grid(True)
+    axes[3].plot(df.iloc[:, 5].div(df.iloc[:, 2]).sub(1))
+    axes[3].set_xlabel('Period')
+    axes[3].set_ylabel('Percentage Deviation')
+    axes[3].set_title(mapping['fg_d'].format(*df.index[[0, -1]]))
+    axes[3].grid(True)
     lc = np.arange(0.2, 1.0, 0.005)
-    axs[4].scatter(df.iloc[:, 10], df.iloc[:, 4])
-    axs[4].scatter(df.iloc[:, 10], df.iloc[:, 11])
-    axs[4].plot(lc, _lab_productivity(lc, *params),
+    axes[4].scatter(df.iloc[:, 10], df.iloc[:, 4])
+    axes[4].scatter(df.iloc[:, 10], df.iloc[:, 11])
+    axes[4].plot(lc, _lab_productivity(lc, *params),
                 label='$\\frac{3}{4}\\frac{P}{L}$')
-    axs[4].plot(lc, _cap_productivity(lc, *params),
+    axes[4].plot(lc, _cap_productivity(lc, *params),
                 label='$\\frac{1}{4}\\frac{P}{C}$')
-    axs[4].set_xlabel('$\\frac{L}{C}$')
-    axs[4].set_ylabel('Indexes')
-    axs[4].set_title(mapping['fg_e'])
-    axs[4].legend()
-    axs[4].grid(True)
+    axes[4].set_xlabel('$\\frac{L}{C}$')
+    axes[4].set_ylabel('Indexes')
+    axes[4].set_title(mapping['fg_e'])
+    axes[4].legend()
+    axes[4].grid(True)
     plt.tight_layout()
     plt.show()
 
@@ -1424,7 +1421,7 @@ def plot_douglas(
             plt.figure(_n)
             for _ in range(_lw, _up, skip):
                 plt.plot(
-                    extract_usa_classic(archive_name, _SERIES_IDS[_]),
+                    extract_usa_hist(archive_name, _SERIES_IDS[_]),
                     label=_MAP_SERIES[_SERIES_IDS[_]]
                 )
             plt.title(_tt)
@@ -1447,7 +1444,7 @@ def plot_douglas(
             plt.figure(_n)
             for _ in range(_lw, _up, skip):
                 plt.plot(
-                    extract_usa_classic(archive_name, _SERIES_IDS[_]),
+                    extract_usa_hist(archive_name, _SERIES_IDS[_]),
                     label=_MAP_SERIES[_SERIES_IDS[_]]
                 )
             plt.title(_tt)
@@ -1668,9 +1665,8 @@ def plot_grigoriev() -> None:
     FILE_NAME = 'dataset_rus_grigoriev_v.csv'
     df = pd.read_csv(FILE_NAME, index_col=1, usecols=range(2, 5))
     for series_id in sorted(set(df.iloc[:, 0])):
-        chunk = df[df.iloc[:, 0] == series_id].iloc[:, [1]]
-        chunk.columns = [series_id]
-        chunk.sort_index(inplace=True)
+        chunk = df[df.iloc[:, 0] == series_id].iloc[:, [1]].sort_index()
+        chunk.columns = (series_id,)
         chunk.plot(grid=True)
 
 
@@ -1722,23 +1718,23 @@ def plot_increment(df: DataFrame) -> None:
     FLAG = False
     DIR = '/home/alexander/science'
     FILE_NAME = 'fig_file_name.pdf'
-    fig, axs = plt.subplots(2, 1)
-    axs[0].plot(df.iloc[:, 0], df.iloc[:, 1], label='Curve')
-    axs[0].set_xlabel('Labor Capital Intensity')
-    axs[0].set_ylabel('Labor Productivity')
-    axs[0].set_title('Labor Capital Intensity to Labor Productivity Relation')
-    axs[0].legend()
-    axs[0].grid(True)
-    axs[1].plot(df.iloc[:, 2], df.iloc[:, 3], label='Curve')
-    axs[1].set_xlabel('Labor Capital Intensity Increment')
-    axs[1].set_ylabel('Labor Productivity Increment')
-    axs[1].set_title(
+    fig, axes = plt.subplots(2, 1)
+    axes[0].plot(df.iloc[:, 0], df.iloc[:, 1], label='Curve')
+    axes[0].set_xlabel('Labor Capital Intensity')
+    axes[0].set_ylabel('Labor Productivity')
+    axes[0].set_title('Labor Capital Intensity to Labor Productivity Relation')
+    axes[0].legend()
+    axes[0].grid(True)
+    axes[1].plot(df.iloc[:, 2], df.iloc[:, 3], label='Curve')
+    axes[1].set_xlabel('Labor Capital Intensity Increment')
+    axes[1].set_ylabel('Labor Productivity Increment')
+    axes[1].set_title(
         'Labor Capital Intensity to Labor Productivity Increments Relation')
-    axs[1].grid(True)
-    axs[1].legend()
+    axes[1].grid(True)
+    axes[1].legend()
     for _ in range(3, df.shape[0], 5):
-        axs[0].annotate(df.index[_], (df.iloc[_, 0], df.iloc[_, 1]))
-        axs[1].annotate(df.index[_], (df.iloc[_, 2], df.iloc[_, 3]))
+        axes[0].annotate(df.index[_], (df.iloc[_, 0], df.iloc[_, 1]))
+        axes[1].annotate(df.index[_], (df.iloc[_, 2], df.iloc[_, 3]))
     fig.set_size_inches(10., 20.)
     fig.tight_layout()
     if FLAG:
@@ -1845,8 +1841,8 @@ def plot_kurenkov(data_frames: tuple[DataFrame]) -> None:
     # =========================================================================
     # Plotting
     # =========================================================================
-    fig, axs = plt.subplots(4, 1)
-    axs[0].plot(
+    fig, axes = plt.subplots(4, 1)
+    axes[0].plot(
         data_frames[0],
         label=[
             'Kurenkov Data, 1950=100',
@@ -1854,50 +1850,50 @@ def plot_kurenkov(data_frames: tuple[DataFrame]) -> None:
             'FRB Data, 1950=100',
         ]
     )
-    axs[0].set_title('Production')
-    axs[0].set_xlabel('Period')
-    axs[0].set_ylabel('Percentage')
-    axs[0].legend()
-    axs[0].grid(True)
-    axs[1].plot(
+    axes[0].set_title('Production')
+    axes[0].set_xlabel('Period')
+    axes[0].set_ylabel('Percentage')
+    axes[0].legend()
+    axes[0].grid(True)
+    axes[1].plot(
         data_frames[1],
         label=[
             'Kurenkov Data',
             'BEA Data',
         ]
     )
-    axs[1].set_title('Labor')
-    axs[1].set_xlabel('Period')
-    axs[1].set_ylabel('Thousands of Persons')
-    axs[1].legend()
-    axs[1].grid(True)
+    axes[1].set_title('Labor')
+    axes[1].set_xlabel('Period')
+    axes[1].set_ylabel('Thousands of Persons')
+    axes[1].legend()
+    axes[1].grid(True)
     # =========================================================================
     # Revised Capital
     # =========================================================================
-    axs[2].plot(
+    axes[2].plot(
         data_frames[2],
         label=[
             'Kurenkov Data, 1951=100',
             'BEA Data, 1951=100',
         ]
     )
-    axs[2].set_title('Capital')
-    axs[2].set_xlabel('Period')
-    axs[2].set_ylabel('Percentage')
-    axs[2].legend()
-    axs[2].grid(True)
-    axs[3].plot(
+    axes[2].set_title('Capital')
+    axes[2].set_xlabel('Period')
+    axes[2].set_ylabel('Percentage')
+    axes[2].legend()
+    axes[2].grid(True)
+    axes[3].plot(
         data_frames[3],
         label=[
             'Kurenkov Data',
             'FRB Data',
         ]
     )
-    axs[3].set_title('Capacity Utilization')
-    axs[3].set_xlabel('Period')
-    axs[3].set_ylabel('Percentage')
-    axs[3].legend()
-    axs[3].grid(True)
+    axes[3].set_title('Capacity Utilization')
+    axes[3].set_xlabel('Period')
+    axes[3].set_ylabel('Percentage')
+    axes[3].legend()
+    axes[3].grid(True)
     fig.set_size_inches(10., 20.)
 
 

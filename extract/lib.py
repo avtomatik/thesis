@@ -20,7 +20,6 @@ ARCHIVE_NAMES_UTILISED = (
     'dataset_can_00310004-eng.zip',
     'dataset_douglas.zip',
     'dataset_usa_bea-nipa-2015-05-01.zip',
-    'dataset_usa_bea-nipa-selected.zip',
     'dataset_usa_brown.zip',
     'dataset_usa_cobb-douglas.zip',
     'dataset_usa_kendrick.zip',

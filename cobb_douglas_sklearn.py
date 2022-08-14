@@ -11,13 +11,48 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from numpy.fft import rfft
-from sklearn import cross_validation, linear_model
+from sklearn import datasets
 from sklearn import linear_model
+from sklearn import svm  # Support Vector Machine
 from sklearn.linear_model import Lasso
 from sklearn.model_selection import TimeSeriesSplit
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import train_test_split
+from plot.lib import plot_cobb_douglas
 from collect.lib import collect_cobb_douglas
 from collect.lib import transform_cobb_douglas_sklearn
-from plot.lib import plot_cobb_douglas
+
+
+def plot_discrete_fourier_transform(array: np.ndarray) -> None:
+    '''
+    Discrete Fourier Transform
+
+    Parameters
+    ----------
+    array : np.ndarray
+        DESCRIPTION.
+
+    Returns
+    -------
+    None
+        DESCRIPTION.
+
+    '''
+    # =========================================================================
+    # TODO: Refine It
+    # =========================================================================
+    plt.plot(
+        array,
+        label='Labor Productivity',
+    )
+    plt.plot(
+        rfft(array),
+        'r:',
+        label='Fourier Transform',
+    )
+    plt.grid(True)
+    plt.legend()
+    plt.show()
 
 
 DIR = '/media/alexander/321B-6A94'
@@ -39,38 +74,15 @@ os.chdir(DIR)
 # =============================================================================
 
 
-# =============================================================================
-# # =============================================================================
-# # Discrete Fourier Transform
-# # =============================================================================
-df = collect_cobb_douglas()
-# =========================================================================
-# Labor Capital Intensity
-# =========================================================================
-df['lab_cap_int'] = df.iloc[:, 0].div(df.iloc[:, 1])
-# =========================================================================
-# Labor Productivity
-# =========================================================================
-df['lab_product'] = df.iloc[:, 2].div(df.iloc[:, 1])
-X = np.column_stack((np.zeros(df.shape[0]), np.log(df.iloc[:, -2])))
-y = np.log(df.iloc[:, -1].to_numpy())
-# F = rfft(X)
-# plt.plot(X)
-# plt.plot(F, 'r:')
-# plt.grid(True)
-# plt.legend()
-# plt.show()
-# =============================================================================
+_df = collect_cobb_douglas()
+X, y = transform_cobb_douglas_sklearn(_df)
+print(X)
 
 # =============================================================================
-# Discrete Laplace Transform
-# =============================================================================
-# =============================================================================
-# Spectrum Representations:
-# https://matplotlib.org/3.1.1/gallery/lines_bars_and_markers/spectrum_demo.html
+# TODO: Discrete Laplace Transform
 # =============================================================================
 
-# =============================================================================
+
 # # =============================================================================
 # # Elastic Net
 # # =============================================================================
@@ -79,104 +91,101 @@ y = np.log(df.iloc[:, -1].to_numpy())
 # alphas, coefs, _ = las.path(X, y, alphas=alphas)
 # fig, ax = plt.subplots()
 # ax.plot(alphas, coefs.T)
-# ax.set_scale('log')
+# ax.set_yscale('log')
 # ax.set_xlim(alphas.max(), alphas.min())
 # plt.show()
-# =============================================================================
 
-# =============================================================================
-# Cross Validation
-# =============================================================================
-# =============================================================================
-# K-Fold
-# =============================================================================
+# # =============================================================================
+# # Cross Validation
+# # =============================================================================
+# # =============================================================================
+# # K-Fold
+# # =============================================================================
 
-# from sklearn.model_selection import KFold
-# kf = KFold(n_splits=4)
+# # from sklearn.model_selection import KFold
+# # kf = KFold(n_splits=4)
 
-# =============================================================================
-# Repeated K-Fold
-# =============================================================================
+# # =============================================================================
+# # Repeated K-Fold
+# # =============================================================================
 
-# from sklearn.model_selection import RepeatedKFold
-# random_state = 12883823
-# rkf = RepeatedKFold(n_splits=2, n_repeats=2, random_state=random_state)
+# # from sklearn.model_selection import RepeatedKFold
+# # random_state = 12883823
+# # rkf = RepeatedKFold(n_splits=2, n_repeats=2, random_state=random_state)
 
-# =============================================================================
-# Leave One Out (LOO)
-# =============================================================================
+# # =============================================================================
+# # Leave One Out (LOO)
+# # =============================================================================
 
-# from sklearn.model_selection import LeaveOneOut
-# loo = LeaveOneOut()
+# # from sklearn.model_selection import LeaveOneOut
+# # loo = LeaveOneOut()
 
-# =============================================================================
-# Leave P Out (LPO)
-# =============================================================================
+# # =============================================================================
+# # Leave P Out (LPO)
+# # =============================================================================
 
-# from sklearn.model_selection import LeavePOut
-# lpo = LeavePOut(p=2)
+# # from sklearn.model_selection import LeavePOut
+# # lpo = LeavePOut(p=2)
 
-# =============================================================================
-# Random Permutations Cross-Validation a.k.a. Shuffle & Split
-# =============================================================================
+# # =============================================================================
+# # Random Permutations Cross-Validation a.k.a. Shuffle & Split
+# # =============================================================================
 
-# from sklearn.model_selection import ShuffleSplit
-# ss = ShuffleSplit(n_splits=2, test_size=.25, random_state=0)
+# # from sklearn.model_selection import ShuffleSplit
+# # ss = ShuffleSplit(n_splits=2, test_size=.25, random_state=0)
 
-# =============================================================================
-# Time Series Split
-# =============================================================================
-# =============================================================================
-# X = np.column_stack(np.log(df.iloc[:, -2]))
-# =============================================================================
-X = np.log(df.iloc[:, -2])
-y = np.vstack(y)
-tscv = TimeSeriesSplit(n_splits=3)
-print(tscv.split(X))
-plt.figure()
-plt.scatter(X, y)
-# =============================================================================
-# for _, (train, test) in enumerate(kf.split(X), start=1):
+
+# # =============================================================================
+# # Time Series Split
+# # =============================================================================
+# # =============================================================================
+# # X = np.column_stack(np.log(df.iloc[:, -2]))
+# # =============================================================================
+# tscv = TimeSeriesSplit(n_splits=3)
+# plt.figure()
+# plt.scatter(X, y)
+# # =============================================================================
+# # for _, (train, test) in enumerate(kf.split(X), start=1):
+# #     k, b = np.polyfit(X[train], y[train], 1)
+# #     Z = b + k*X
+# #     plt.plot(X, Z, label=f'Test {_:02d}')
+# #
+# # for _, (train, test) in enumerate(rkf.split(X), start=1):
+# #     k, b = np.polyfit(X[train], y[train], 1)
+# #     Z = b + k*X
+# #     plt.plot(X, Z, label=f'Test {_:02d}')
+# #
+# # for _, (train, test) in enumerate(loo.split(X), start=1):
+# #     k, b = np.polyfit(X[train], y[train], 1)
+# #     Z = b + k*X
+# #     plt.plot(X, Z, label=f'Test {_:02d}')
+# #
+# # for _, (train, test) in enumerate(lpo.split(X), start=1):
+# #     k, b = np.polyfit(X[train], y[train], 1)
+# #     Z = b + k*X
+# #     plt.plot(X, Z, label=f'Test {_:02d}')
+# #
+# # for _, (train, test) in enumerate(ss.split(X), start=1):
+# #     k, b = np.polyfit(X[train], y[train], 1)
+# #     Z = b + k*X
+# #     plt.plot(X, Z, label=f'Test {_:02d}')
+# # =============================================================================
+
+# for _, (train, test) in enumerate(tscv.split(X), start=1):
 #     k, b = np.polyfit(X[train], y[train], 1)
 #     Z = b + k*X
 #     plt.plot(X, Z, label=f'Test {_:02d}')
-#
-# for _, (train, test) in enumerate(rkf.split(X), start=1):
-#     k, b = np.polyfit(X[train], y[train], 1)
-#     Z = b + k*X
-#     plt.plot(X, Z, label=f'Test {_:02d}')
-#
-# for _, (train, test) in enumerate(loo.split(X), start=1):
-#     k, b = np.polyfit(X[train], y[train], 1)
-#     Z = b + k*X
-#     plt.plot(X, Z, label=f'Test {_:02d}')
-#
-# for _, (train, test) in enumerate(lpo.split(X), start=1):
-#     k, b = np.polyfit(X[train], y[train], 1)
-#     Z = b + k*X
-#     plt.plot(X, Z, label=f'Test {_:02d}')
-#
-# for _, (train, test) in enumerate(ss.split(X), start=1):
-#     k, b = np.polyfit(X[train], y[train], 1)
-#     Z = b + k*X
-#     plt.plot(X, Z, label=f'Test {_:02d}')
-# =============================================================================
 
-for _, (train, test) in enumerate(tscv.split(X), start=1):
-    k, b = np.polyfit(X[train], y[train], 1)
-    Z = b + k*X
-    plt.plot(X, Z, label=f'Test {_:02d}')
+# # =============================================================================
+# # b = np.exp(b)
+# # =============================================================================
 
-# =============================================================================
-# b = np.exp(b)
-# =============================================================================
-
-k, b = np.polyfit(X, y, 1)
-Z = b + k*X
-plt.plot(X, Z, label='Test {:02d}'.format(0))
-plt.grid(True)
-plt.legend()
-plt.show()
+# k, b = np.polyfit(X, y, 1)
+# Z = b + k*X
+# plt.plot(X, Z, label='Test {:02d}'.format(0))
+# plt.grid(True)
+# plt.legend()
+# plt.show()
 
 # =============================================================================
 # # =============================================================================
@@ -225,59 +234,83 @@ plt.show()
 # =============================================================================
 
 # =============================================================================
+# Cross Validation
+# =============================================================================
+# =============================================================================
 # http://scikit-learn.org/stable/modules/cross_validation.html
 # =============================================================================
 
-# from sklearn.model_selection import train_test_split
-# from sklearn import datasets
-# from sklearn import svm # # Support Vector Machine
-# iris = datasets.load_iris()
-# # # X_train, X_test, y_train, y_test = train_test_split(iris.data, iris.target, test_size=.4, random_state=0)
-# # # clf = svm.SVC(kernel='linear', C=1).fit(X_train, y_train)
-# # # SVC: Support Vector Classification
-# from sklearn.model_selection import cross_val_score
-# clf = svm.SVC(kernel='linear', C=1)
-# # # 1
-# # # scores = cross_val_score(clf, iris.data, iris.target, cv=5)
-# # # 2
-# # # from sklearn import metrics
-# # # scores = cross_val_score(clf, iris.data, iris.target, cv=5, scoring='f1_macro')
-# # # print(scores)
-# # # print('Accuracy: %0.2f (+/- %0.2f)' %(scores.mean(), 2*scores.std()))
-# # # 3
-# # # from sklearn.model_selection import ShuffleSplit
-# # # # # print(iris.data.shape[0])
-# # # cv = ShuffleSplit(n_splits=5, test_size=.3, random_state=0)
-# # # result = cross_val_score(clf, iris.data, iris.target, cv=cv)
-# # # print(result)
-# # # 4
-# # # def custom_cv_2folds(X):
-# # #    n = X.shape[0]
-# # #    i = 1
-# # #    while i <= 2:
-# # #        idx = np.range(n*(i-1)/2, n*i/s, dtype=int)
-# # #        yield idx, idx
-# # #        i += 1
-# # # custom_cv = custom_cv_2folds(iris.data)
-# # # cross_val_score(clf, iris.data, iris.target, cv=custom_cv)
-# # # 5
-# # # from sklearn import preprocessing
-# # # X_train, X_test, y_train, y_test = train_test_split(iris.data, iris.target, test_size=.4, random_state=0)
-# # # scaler = preprocessing.StandardScaler().fit(X_train)
-# # # X_train_transformed = scaler.transform(X_train)
-# # # clf = svm.SVC(C=1).fit(X_train_transformed, y_train)
-# # # X_test_transformed = scaler.transform(X_test)
-# # # result = clf.score(X_test_transformed, y_test)
-# # # print(result)
-# # # 6
-# # # from sklearn.model_selection import ShuffleSplit
-# # # from sklearn.pipeline import make_pipeline
-# # # from sklearn import preprocessing
-# # # cv = ShuffleSplit(n_splits=5, test_size=.3, random_state=0)
-# # # clf = make_pipeline(preprocessing.StandardScaler(), svm.SVC(C=1))
-# # # result = cross_val_score(clf, iris.data, iris.target, cv=cv)
-# # # print(result)
+iris = datasets.load_iris()
+X_train, X_test, y_train, y_test = train_test_split(
+    iris.data, iris.target, test_size=.4, random_state=0
+)
+clf = svm.SVC(kernel='linear', C=1).fit(X_train, y_train)
+# =============================================================================
+# SVC: Support Vector Classification
+# =============================================================================
+clf = svm.SVC(kernel='linear', C=1)
+# =============================================================================
+# Option 1
+# =============================================================================
+
+scores = cross_val_score(clf, iris.data, iris.target, cv=5)
+print(scores)
+# # =============================================================================
+# # Option 2
+# # =============================================================================
+# from sklearn import metrics
+# scores = cross_val_score(clf, iris.data, iris.target, cv=5, scoring='f1_macro')
+# print(scores)
+# print('Accuracy: %0.2f (+/- %0.2f)' %(scores.mean(), 2*scores.std()))
+# # =============================================================================
+# # Option 3
+# # =============================================================================
+# from sklearn.model_selection import ShuffleSplit
+# print(iris.data.shape[0])
+# cv = ShuffleSplit(n_splits=5, test_size=.3, random_state=0)
+# result = cross_val_score(clf, iris.data, iris.target, cv=cv)
+# print(result)
+# # =============================================================================
+# # Option 4
+# # =============================================================================
+
+
+# def custom_cv_2folds(X):
+#     n = X.shape[0]
+#     i = 1
+#     while i <= 2:
+#         idx = np.range(n*(i-1)/2, n*i/s, dtype=int)
+#         yield idx, idx
+#         i += 1
+
+# custom_cv = custom_cv_2folds(iris.data)
+# cross_val_score(clf, iris.data, iris.target, cv=custom_cv)
+# # =============================================================================
+# # Option 5
+# # =============================================================================
+# from sklearn import preprocessing
+# X_train, X_test, y_train, y_test = train_test_split(
+#     iris.data, iris.target, test_size=.4, random_state=0
+# )
+# scaler = preprocessing.StandardScaler().fit(X_train)
+# X_train_transformed = scaler.transform(X_train)
+# clf = svm.SVC(C=1).fit(X_train_transformed, y_train)
+# X_test_transformed = scaler.transform(X_test)
+# result = clf.score(X_test_transformed, y_test)
+# print(result)
+# # =============================================================================
+# # Option 6
+# # =============================================================================
+# from sklearn.model_selection import ShuffleSplit
+# from sklearn.pipeline import make_pipeline
+# from sklearn import preprocessing
+# cv = ShuffleSplit(n_splits=5, test_size=.3, random_state=0)
+# clf = make_pipeline(preprocessing.StandardScaler(), svm.SVC(C=1))
+# result = cross_val_score(clf, iris.data, iris.target, cv=cv)
+# print(result)
+
 # =============================================================================
 # Kolmogorov-Smirnov Test for Goodness of Fit
+# =============================================================================
 # =============================================================================
 # scipy.stats.kstest
