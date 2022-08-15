@@ -1027,26 +1027,16 @@ def collect_cobb_douglas_deflator() -> DataFrame:
     # `df.corr(method='spearman')`
     # Correlation Test Result: kendall & pearson & spearman: L2, L15, E7, E23, E40, E68
     # =========================================================================
-    ARCHIVE_NAMES = (
-        'dataset_usa_census1949.zip',
-        'dataset_usa_census1949.zip',
-        'dataset_usa_census1975.zip',
-        'dataset_usa_census1975.zip',
-        'dataset_usa_census1975.zip',
-        'dataset_usa_census1975.zip',
-        'dataset_usa_census1975.zip',
-        'dataset_usa_census1975.zip',
-    )
-    SERIES_IDS_CS = (
-        'L0002',
-        'L0015',
-        'E0007',
-        'E0023',
-        'E0040',
-        'E0068',
-        'P0107',
-        'P0110',
-    )
+    SERIES_IDS_CS = {
+        'L0002': ('dataset_usa_census1949.zip', None),
+        'L0015': ('dataset_usa_census1949.zip', None),
+        'E0007': ('dataset_usa_census1975.zip', None),
+        'E0023': ('dataset_usa_census1975.zip', None),
+        'E0040': ('dataset_usa_census1975.zip', None),
+        'E0068': ('dataset_usa_census1975.zip', None),
+        'P0107': ('dataset_usa_census1975.zip', 1885),
+        'P0110': ('dataset_usa_census1975.zip', 1885),
+    }
     # =========================================================================
     # Bureau of Economic Analysis
     # =========================================================================
@@ -1071,28 +1061,6 @@ def collect_cobb_douglas_deflator() -> DataFrame:
         'mcn31gd1es00',
         'mcntotl1si00',
     )
-    df = pd.concat(
-        [
-            pd.concat(
-                [
-                    extract_usa_hist(*args)
-                    for args in zip(ARCHIVE_NAMES[:-2], SERIES_IDS_CS[:-2])
-                ],
-                axis=1,
-                sort=True
-            ),
-            pd.concat(
-                [
-                    extract_usa_hist(*args)
-                    for args in zip(ARCHIVE_NAMES[-2:], SERIES_IDS_CS[-2:])
-                ],
-                axis=1,
-                sort=True
-            ).truncate(before=1885),
-        ],
-        axis=1,
-        sort=True
-    )
     # =========================================================================
     # Bureau of Economic Analysis
     # =========================================================================
@@ -1102,7 +1070,15 @@ def collect_cobb_douglas_deflator() -> DataFrame:
             # =================================================================
             # Bureau of the Census
             # =================================================================
-            df,
+            pd.concat(
+                [
+                    extract_usa_hist(
+                        archive_name, series_id).truncate(before=year)
+                    for series_id, (archive_name, year) in SERIES_IDS_CS.items()
+                ],
+                axis=1,
+                sort=True
+            ),
             # =================================================================
             # Bureau of Economic Analysis
             # =================================================================
@@ -1125,6 +1101,7 @@ def collect_cobb_douglas_deflator() -> DataFrame:
         axis=1,
         sort=True
     ).truncate(before=1794)
+    SERIES_IDS_CS = tuple(SERIES_IDS_CS)
     df['fa_def_cs'] = df.loc[:, SERIES_IDS_CS[-2]].div(
         df.loc[:, SERIES_IDS_CS[-1]])
     df['ppi_bea'] = df.loc[:, SERIES_IDS_BE[0]].div(
@@ -1137,10 +1114,15 @@ def collect_cobb_douglas_deflator() -> DataFrame:
     # =========================================================================
     # Strip Deflators
     # =========================================================================
-    for _ in range(df.shape[1]):
-        df.iloc[:, _] = strip_cumulated_deflator(df.iloc[:, [_]])
-    df['def_mean'] = df.mean(axis=1)
-    return df.iloc[:, [-1]].dropna(axis=0)
+    result = pd.concat(
+        [
+            strip_cumulated_deflator(df.iloc[:, [_]])
+            for _ in range(df.shape[1])
+        ],
+        axis=1
+    )
+    result['def_mean'] = result.mean(axis=1)
+    return result.iloc[:, [-1]].dropna(axis=0)
 
 
 def collect_cobb_douglas_extension_capital() -> DataFrame:
@@ -1153,13 +1135,13 @@ def collect_cobb_douglas_extension_capital() -> DataFrame:
     # =========================================================================
     df['nominal_cbb_dg'] = df.iloc[:, 0].mul(
         df.iloc[:, 2]).div(df.iloc[:, 1]).div(1000)
-    df['nominal_census'] = df.iloc[:, 5].mul(df.iloc[:, 7]).div(df.iloc[:, 6])
+    df['nominal_census'] = df.iloc[:, 3].mul(df.iloc[:, 5]).div(df.iloc[:, 4])
     df['nominal_dougls'] = df.iloc[:, 0].mul(
-        df.iloc[:, 9]).div(df.iloc[:, 1]).div(1000)
-    df['nominal_kndrck'] = df.iloc[:, 5].mul(
-        df.iloc[:, 8]).div(df.iloc[:, 6]).div(1000)
+        df.iloc[:, 7]).div(df.iloc[:, 1]).div(1000)
+    df['nominal_kndrck'] = df.iloc[:, 3].mul(
+        df.iloc[:, 6]).div(df.iloc[:, 4]).div(1000)
     df.iloc[:, -1] = df.iloc[:, -1].mul(
-        df.loc[1929, df.columns[6]]).div(df.loc[1929, df.columns[5]])
+        df.loc[1929, df.columns[4]]).div(df.loc[1929, df.columns[3]])
     # =========================================================================
     # Douglas P.H. -- Kendrick J.W. (Blended) Series
     # =========================================================================
@@ -1167,7 +1149,7 @@ def collect_cobb_douglas_extension_capital() -> DataFrame:
     # =========================================================================
     # Cobb C.W., Douglas P.H. -- FRB (Blended) Series
     # =========================================================================
-    df['nominal_cbb_dg_frb'] = df.iloc[:, [10, 12]].mean(axis=1)
+    df['nominal_cbb_dg_frb'] = df.iloc[:, [8, -5]].mean(axis=1)
     # =========================================================================
     # Capital Structure Series: `Cobb C.W., Douglas P.H. -- FRB (Blended) Series` to `Douglas P.H. -- Kendrick J.W. (Blended) Series`
     # =========================================================================
@@ -1194,7 +1176,7 @@ def collect_cobb_douglas_extension_capital() -> DataFrame:
         df.loc[1925, df.columns[-1]]
     ).div(df.loc[1925, df.columns[-8]])
     # =========================================================================
-    #     Blending Previous Series with 'nominal_extended'
+    # Blending Previous Series with 'nominal_extended'
     # =========================================================================
     df.iloc[:, -1] = df.iloc[:, [-8, -1]].mean(axis=1)
     return df.iloc[:, [-1]].dropna(axis=0)
@@ -1218,51 +1200,42 @@ def collect_cobb_douglas_extension_labor() -> DataFrame:
     # =========================================================================
     URL = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
     FILE_NAME = 'dataset_usa_reference_ru_kurenkov_yu_v.csv'
-    ARCHIVE_NAMES = (
-        'dataset_usa_cobb-douglas.zip',
-        'dataset_usa_census1949.zip',
-        'dataset_usa_census1949.zip',
-        'dataset_usa_census1975.zip',
-        'dataset_usa_census1975.zip',
-        'dataset_usa_census1975.zip',
-        'dataset_usa_kendrick.zip',
-    )
-    SERIES_IDS = (
+    SERIES_IDS = {
         # =====================================================================
         # Cobb C.W., Douglas P.H. Labor Series: Average Number Employed (in thousands)
         # =====================================================================
-        'CDT3S1',
+        'CDT3S1': 'dataset_usa_cobb-douglas.zip',
         # =====================================================================
         # Census Bureau 1949, D69
         # =====================================================================
-        'D0069',
+        'D0069': 'dataset_usa_census1949.zip',
         # =====================================================================
         # Census Bureau 1949, J4
         # =====================================================================
-        'J0004',
+        'J0004': 'dataset_usa_census1949.zip',
         # =====================================================================
         # Census Bureau 1975, D130
         # =====================================================================
-        'D0130',
+        'D0130': 'dataset_usa_census1975.zip',
         # =====================================================================
         # Census Bureau 1975, P5
         # =====================================================================
-        'P0005',
+        'P0005': 'dataset_usa_census1975.zip',
         # =====================================================================
         # Census Bureau 1975, P62
         # =====================================================================
-        'P0062',
+        'P0062': 'dataset_usa_census1975.zip',
         # =====================================================================
         # J.W. Kendrick, Productivity Trends in the United States, Table D-II, `Persons Engaged` Column, pp. 465--466
         # =====================================================================
-        'KTD02S02',
-    )
+        'KTD02S02': 'dataset_usa_kendrick.zip',
+    }
     _df = pd.concat(
         [
             pd.concat(
                 [
-                    extract_usa_hist(*args)
-                    for args in zip(ARCHIVE_NAMES, SERIES_IDS)
+                    extract_usa_hist(archive_name, series_id)
+                    for series_id, archive_name in SERIES_IDS.items()
                 ],
                 axis=1
             ),
@@ -1285,37 +1258,31 @@ def collect_cobb_douglas_extension_labor() -> DataFrame:
 
 
 def collect_cobb_douglas_extension_product() -> DataFrame:
-    ARCHIVE_NAMES = (
-        'dataset_usa_census1949.zip',
-        'dataset_usa_census1949.zip',
-        'dataset_usa_census1975.zip',
-        'dataset_douglas.zip',
-    )
     FILE_NAME = 'dataset_usa_davis-j-h-ip-total.xls'
-    SERIES_IDS = (
+    SERIES_IDS = {
         # =====================================================================
         # Bureau of the Census, 1949, Page 179, J13: National Bureau of Economic Research Index of Physical Output, All Manufacturing Industries.
         # =====================================================================
-        'J0013',
+        'J0013': 'dataset_usa_census1949.zip',
         # =====================================================================
         # Bureau of the Census, 1949, Page 179, J14: Warren M. Persons, Index of Physical Production of Manufacturing
         # =====================================================================
-        'J0014',
+        'J0014': 'dataset_usa_census1949.zip',
         # =====================================================================
         # Bureau of the Census, 1975, Page 667, P17: Edwin Frickey Index of Manufacturing Production
         # =====================================================================
-        'P0017',
+        'P0017': 'dataset_usa_census1975.zip',
         # =====================================================================
         # The Revised Index of Physical Production for All Manufacturing In the United States, 1899--1926
         # =====================================================================
-        'DT24AS01',
-    )
+        'DT24AS01': 'dataset_douglas.zip',
+    }
     df = pd.concat(
         [
             pd.concat(
                 [
-                    extract_usa_hist(*args)
-                    for args in zip(ARCHIVE_NAMES, SERIES_IDS)
+                    extract_usa_hist(archive_name, series_id)
+                    for series_id, archive_name in SERIES_IDS.items()
                 ],
                 axis=1
             ),
@@ -1380,44 +1347,37 @@ def collect_cobb_douglas(series_number: int = 3) -> DataFrame:
     df.iloc[:, 2]      Product
     ================== =================================
     '''
-    ARCHIVE_NAMES = (
-        'dataset_usa_cobb-douglas.zip',
-        'dataset_usa_cobb-douglas.zip',
-        'dataset_usa_census1949.zip',
-        'dataset_usa_census1949.zip',
-        'dataset_douglas.zip',
-    )
     SERIES_IDS = {
         # =====================================================================
         # Cobb C.W., Douglas P.H. Capital Series: Total Fixed Capital in 1880 dollars (4)
         # =====================================================================
-        'CDT2S4': 'capital',
+        'CDT2S4': ('dataset_usa_cobb-douglas.zip', 'capital', ),
         # =====================================================================
         # Cobb C.W., Douglas P.H. Labor Series: Average Number Employed (in thousands)
         # =====================================================================
-        'CDT3S1': 'labor',
+        'CDT3S1': ('dataset_usa_cobb-douglas.zip', 'labor',),
         # =====================================================================
         # Bureau of the Census, 1949, Page 179, J14: Warren M. Persons, Index of Physical Production of Manufacturing
         # =====================================================================
-        'J0014': 'product',
+        'J0014': ('dataset_usa_census1949.zip', 'product', ),
         # =====================================================================
         # Bureau of the Census, 1949, Page 179, J13: National Bureau of Economic Research Index of Physical Output, All Manufacturing Industries.
         # =====================================================================
-        'J0013': 'product_nber',
+        'J0013': ('dataset_usa_census1949.zip', 'product_nber', ),
         # =====================================================================
         # The Revised Index of Physical Production for All Manufacturing In the United States, 1899--1926
         # =====================================================================
-        'DT24AS01': 'product_rev',
+        'DT24AS01': ('dataset_douglas.zip', 'product_rev',),
     }
     df = pd.concat(
         [
-            extract_usa_hist(*args)
-            for args in zip(ARCHIVE_NAMES, SERIES_IDS)
+            extract_usa_hist(archive_name, series_id)
+            for series_id, (archive_name, _) in SERIES_IDS.items()
         ],
         axis=1,
         sort=True
     ).dropna(axis=0)
-    df.columns = SERIES_IDS.values()
+    df.columns = tuple(column_name for (_, column_name) in SERIES_IDS.values())
     return df.div(df.iloc[0, :]).iloc[:, range(series_number)]
 
 
@@ -2098,60 +2058,19 @@ def collect_usa_bea_labor_mfg() -> DataFrame:
 
 
 def collect_usa_capital() -> DataFrame:
-    # =========================================================================
-    # Series Not Used - `k3ntotl1si00`
-    # =========================================================================
-    URL = 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt'
-    ARCHIVE_NAME = 'dataset_usa_cobb-douglas.zip'
-    SERIES_IDS = (
+    SERIES_IDS = {
         # =====================================================================
         # Annual Increase in Terms of Cost Price (1)
         # =====================================================================
-        'CDT2S1',
+        'CDT2S1': 'dataset_usa_cobb-douglas.zip',
         # =====================================================================
         # Annual Increase in Terms of 1880 dollars (3)
         # =====================================================================
-        'CDT2S3',
+        'CDT2S3': 'dataset_usa_cobb-douglas.zip',
         # =====================================================================
         # Total Fixed Capital in 1880 dollars (4)
         # =====================================================================
-        'CDT2S4',
-    )
-    df = pd.concat(
-        [
-            extract_usa_hist(ARCHIVE_NAME, series_id)
-            for series_id in SERIES_IDS
-        ],
-        axis=1,
-        sort=True
-    )
-    _df = extract_usa_bea_from_url(URL)
-    SERIES_IDS = (
-        # =====================================================================
-        # Fixed Assets: k1n31gd1es00, 1925--2019, Table 4.1. Current-Cost Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
-        # =====================================================================
-        'k1n31gd1es00',
-        # =====================================================================
-        # Not Used: Fixed Assets: k3n31gd1es00, 1925--2019, Table 4.3. Historical-Cost Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
-        # =====================================================================
-        'k3n31gd1es00',
-    )
-    df = pd.concat(
-        [
-            df,
-            pd.concat(
-                [
-                    extract_usa_bea_from_loaded(_df, series_id)
-                    for series_id in SERIES_IDS
-                ],
-                axis=1,
-                sort=True
-            )
-        ],
-        axis=1,
-        sort=True
-    )
-    SERIES_IDS = {
+        'CDT2S4': 'dataset_usa_cobb-douglas.zip',
         'P0107': 'dataset_usa_census1975.zip',
         'P0110': 'dataset_usa_census1975.zip',
         'P0119': 'dataset_usa_census1975.zip',
@@ -2166,13 +2085,13 @@ def collect_usa_capital() -> DataFrame:
     }
     return pd.concat(
         [
-            df,
             pd.concat(
                 [
                     extract_usa_hist(archive_name, series_id)
                     for series_id, archive_name in SERIES_IDS.items()
                 ],
                 axis=1,
+                sort=True
             ).truncate(before=1869),
             # =================================================================
             # FRB Data
