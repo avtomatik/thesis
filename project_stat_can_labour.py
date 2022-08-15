@@ -10,7 +10,7 @@ import os
 import pandas as pd
 from pandas import DataFrame
 from collect.lib import collect_cobb_douglas_price
-from collect.lib import collect_census_price
+from collect.lib import collect_uscb_cap_prices
 from collect.lib import collect_can_price_a
 from collect.lib import collect_can_price_b
 
@@ -36,7 +36,7 @@ def main():
     # CALLS = (
     #     # =========================================================================
     #     # collect_cobb_douglas_price,
-    #     # collect_census_price,
+    #     # collect_uscb_cap_prices,
     #     # =========================================================================
     #     collect_can_price_a,
     #     collect_can_price_b,

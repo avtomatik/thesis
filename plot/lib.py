@@ -270,7 +270,7 @@ def plot_e(df: DataFrame) -> None:
     plt.show()
 
 
-def plot_census_a(df: DataFrame, base: int) -> None:
+def plot_uscb_production(df: DataFrame, base: int) -> None:
     plt.figure()
     plt.plot(df.iloc[:, [0, 2]], label=[
         'Fabricant S., Shiskin J., NBER',
@@ -291,7 +291,7 @@ def plot_census_a(df: DataFrame, base: int) -> None:
     plt.show()
 
 
-def plot_census_b_capital(df: DataFrame) -> None:
+def plot_uscb_cap(df: DataFrame) -> None:
     '''Census Manufacturing Fixed Assets Series'''
     plt.figure()
     plt.semilogy(df, label=['Total', 'Structures', 'Equipment'])
@@ -306,7 +306,7 @@ def plot_census_b_capital(df: DataFrame) -> None:
     plt.show()
 
 
-def plot_census_b_deflator(df: DataFrame) -> None:
+def plot_uscb_cap_deflator(df: DataFrame) -> None:
     '''Census Manufacturing Fixed Assets Deflator Series'''
     plt.figure()
     plt.plot(df)
@@ -320,7 +320,7 @@ def plot_census_b_deflator(df: DataFrame) -> None:
     plt.show()
 
 
-def plot_census_c(df: DataFrame, base: tuple[int]) -> None:
+def plot_uscb_metals(df: DataFrame, base: tuple[int]) -> None:
     _DESCS_RAW = (
         'P262 - Rails Produced, {}=100',
         'P265 - Raw Steel Produced - Total, {}=100',
@@ -362,7 +362,7 @@ def plot_census_c(df: DataFrame, base: tuple[int]) -> None:
     plt.show()
 
 
-def plot_census_d(series_ids: tuple[str]) -> None:
+def plot_uscb_commodities(series_ids: tuple[str]) -> None:
     ARCHIVE_NAME = 'dataset_usa_census1975.zip'
     df = DataFrame()
     for series_id in series_ids:
@@ -388,7 +388,7 @@ def plot_census_d(series_ids: tuple[str]) -> None:
     plt.show()
 
 
-def plot_census_e(df: DataFrame) -> None:
+def plot_uscb_immigration(df: DataFrame) -> None:
     plt.figure()
     plt.plot(df)
     plt.title('Total Immigration, {}$-${}'.format(*df.index[[0, -1]]))
@@ -398,7 +398,7 @@ def plot_census_e(df: DataFrame) -> None:
     plt.show()
 
 
-def plot_census_f_a(df: DataFrame) -> None:
+def plot_uscb_unemployment_hours_worked(df: DataFrame) -> None:
     plt.figure(1)
     plt.plot(df.iloc[:, 1])
     plt.title('Unemployment, Percent of Civilian Labor Force')
@@ -421,7 +421,7 @@ def plot_census_f_a(df: DataFrame) -> None:
     plt.show()
 
 
-def plot_census_f_b(df: DataFrame) -> None:
+def plot_uscb_employment_conflicts(df: DataFrame) -> None:
     fig, _axes_stoppages = plt.subplots()
     color = 'tab:red'
     _axes_stoppages.set_xlabel('Period')
@@ -441,7 +441,7 @@ def plot_census_f_b(df: DataFrame) -> None:
     plt.show()
 
 
-def plot_census_g(df: DataFrame) -> None:
+def plot_uscb_gnp(df: DataFrame) -> None:
     plt.figure()
     plt.plot(df, label=[
         'Gross National Product',
@@ -460,7 +460,7 @@ def plot_census_g(df: DataFrame) -> None:
     plt.show()
 
 
-def plot_census_h() -> None:
+def plot_uscb_farm_lands() -> None:
     '''Census 1975, Land in Farms'''
     _kwargs = {
         'archive_name': 'dataset_usa_census1975.zip',
@@ -475,7 +475,7 @@ def plot_census_h() -> None:
     plt.show()
 
 
-def plot_census_i_a(df: DataFrame) -> None:
+def plot_uscb_trade(df: DataFrame) -> None:
     plt.figure()
     plt.plot(df, label=[
         'Exports, U1',
@@ -495,7 +495,7 @@ def plot_census_i_a(df: DataFrame) -> None:
     plt.show()
 
 
-def plot_census_i_b(df: DataFrame) -> None:
+def plot_uscb_trade_gold_silver(df: DataFrame) -> None:
     plt.figure()
     plt.plot(df, label=[
         'Exports, U187',
@@ -515,8 +515,8 @@ def plot_census_i_b(df: DataFrame) -> None:
     plt.show()
 
 
-def plot_census_i_c(df: DataFrame) -> None:
-    assert df.shape[1] == 58, 'Works on DataFrame Produced with `get_data_census_i_c()`'
+def plot_uscb_trade_by_countries(df: DataFrame) -> None:
+    assert df.shape[1] == 58, 'Works on DataFrame Produced with `collect_uscb_trade_by_countries()`'
     _LABELS = (
         'America-Canada',
         'America-Cuba',
@@ -550,7 +550,7 @@ def plot_census_i_c(df: DataFrame) -> None:
     plt.show()
 
 
-def plot_census_j(df: DataFrame) -> None:
+def plot_uscb_money_stock(df: DataFrame) -> None:
     YEAR_BASE = 1915
     plt.figure()
     plt.semilogy(
@@ -570,7 +570,7 @@ def plot_census_j(df: DataFrame) -> None:
     plt.show()
 
 
-def plot_census_k() -> None:
+def plot_uscb_finance() -> None:
     '''Census Financial Markets & Institutions Series'''
     ARCHIVE_NAME = 'dataset_usa_census1975.zip'
     ids = itertools.chain(

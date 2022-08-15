@@ -11,17 +11,17 @@ Thesis Project
 import os
 from collect.lib import collect_archived
 from collect.lib import collect_can
-from collect.lib import collect_census_a
-from collect.lib import collect_census_b_a
-from collect.lib import collect_census_b_b
-from collect.lib import collect_census_c
-from collect.lib import collect_census_e
-from collect.lib import collect_census_f
-from collect.lib import collect_census_g
-from collect.lib import collect_census_i_a
-from collect.lib import collect_census_i_b
-from collect.lib import collect_census_i_c
-from collect.lib import collect_census_j
+from collect.lib import collect_uscb_production
+from collect.lib import collect_uscb_cap
+from collect.lib import collect_uscb_cap_deflator
+from collect.lib import collect_uscb_metals
+from collect.lib import collect_uscb_immigration
+from collect.lib import collect_uscb_employment
+from collect.lib import collect_uscb_gnp
+from collect.lib import collect_uscb_trade
+from collect.lib import collect_uscb_trade_gold_silver
+from collect.lib import collect_uscb_trade_by_countries
+from collect.lib import collect_uscb_money_stock
 from collect.lib import collect_cobb_douglas
 from collect.lib import collect_combined
 from collect.lib import collect_combined_archived
@@ -45,22 +45,22 @@ from plot.lib import plot_approx_log_linear
 from plot.lib import plot_b
 from plot.lib import plot_c
 from plot.lib import plot_capital_modelling
-from plot.lib import plot_census_a
-from plot.lib import plot_census_b_capital
-from plot.lib import plot_census_b_deflator
-from plot.lib import plot_census_c
+from plot.lib import plot_uscb_production
+from plot.lib import plot_uscb_cap
+from plot.lib import plot_uscb_cap_deflator
+from plot.lib import plot_uscb_metals
 from plot.lib import plot_census_complex
-from plot.lib import plot_census_d
-from plot.lib import plot_census_e
-from plot.lib import plot_census_f_a
-from plot.lib import plot_census_f_b
-from plot.lib import plot_census_g
-from plot.lib import plot_census_h
-from plot.lib import plot_census_i_a
-from plot.lib import plot_census_i_b
-from plot.lib import plot_census_i_c
-from plot.lib import plot_census_j
-from plot.lib import plot_census_k
+from plot.lib import plot_uscb_commodities
+from plot.lib import plot_uscb_immigration
+from plot.lib import plot_uscb_unemployment_hours_worked
+from plot.lib import plot_uscb_employment_conflicts
+from plot.lib import plot_uscb_gnp
+from plot.lib import plot_uscb_farm_lands
+from plot.lib import plot_uscb_trade
+from plot.lib import plot_uscb_trade_gold_silver
+from plot.lib import plot_uscb_trade_by_countries
+from plot.lib import plot_uscb_money_stock
+from plot.lib import plot_uscb_finance
 from plot.lib import plot_cobb_douglas
 from plot.lib import plot_cobb_douglas_3d
 from plot.lib import plot_cobb_douglas_complex
@@ -359,10 +359,10 @@ def main():
     # =========================================================================
     # Subproject X. USA Census
     # =========================================================================
-    plot_census_a(*collect_census_a())
-    plot_census_b_capital(collect_census_b_a())
-    plot_census_b_deflator(collect_census_b_b())
-    plot_census_c(*collect_census_c())
+    plot_uscb_production(*collect_uscb_production())
+    plot_uscb_cap(collect_uscb_cap())
+    plot_uscb_cap_deflator(collect_uscb_cap_deflator())
+    plot_uscb_metals(*collect_uscb_metals())
     # =========================================================================
     # Census Production Series
     # =========================================================================
@@ -385,18 +385,18 @@ def main():
     )
     SERIES_IDS_ALT = tuple(f'P{_id:04n}' for _id in ids)
 
-    plot_census_d(SERIES_IDS)
-    plot_census_e(collect_census_e())
-    df = collect_census_f()
-    plot_census_f_a(df)
-    plot_census_f_b(df)
-    plot_census_g(collect_census_g())
-    plot_census_h()
-    plot_census_i_a(collect_census_i_a())
-    plot_census_i_b(collect_census_i_b())
-    plot_census_i_c(collect_census_i_c())
-    plot_census_j(collect_census_j())
-    plot_census_k()
+    plot_uscb_commodities(SERIES_IDS)
+    plot_uscb_immigration(collect_uscb_immigration())
+    df = collect_uscb_employment()
+    plot_uscb_unemployment_hours_worked(df)
+    plot_uscb_employment_conflicts(df)
+    plot_uscb_gnp(collect_uscb_gnp())
+    plot_uscb_farm_lands()
+    plot_uscb_trade(collect_uscb_trade())
+    plot_uscb_trade_gold_silver(collect_uscb_trade_gold_silver())
+    plot_uscb_trade_by_countries(collect_uscb_trade_by_countries())
+    plot_uscb_money_stock(collect_uscb_money_stock())
+    plot_uscb_finance()
 
     # =========================================================================
     # Subproject XI. USA Census J14

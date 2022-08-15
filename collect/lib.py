@@ -685,7 +685,7 @@ def collect_capital_purchases() -> DataFrame:
     return df
 
 
-def collect_census_a() -> tuple[DataFrame, int]:
+def collect_uscb_production() -> tuple[DataFrame, int]:
     '''
     Census Manufacturing Indexes, 1899=100
 
@@ -719,7 +719,7 @@ def collect_census_a() -> tuple[DataFrame, int]:
     return df.div(df.loc[1899, :]).mul(100), df.index.get_loc(1899)
 
 
-def collect_census_b_a() -> DataFrame:
+def collect_uscb_cap(smoothing: bool = False) -> DataFrame:
     '''Returns Nominal Million-Dollar Capital, Including Structures & Equipment, Series'''
     SERIES_IDS = {
         'J0149': ('dataset_usa_census1949.zip', 1, 'nominal, millions',),
@@ -750,24 +750,24 @@ def collect_census_b_a() -> DataFrame:
         axis=1,
         sort=True
     ).truncate(before=1875)
-    df['total'] = df.loc[:, ['J0149', 'P0107']].mean(axis=1)
-    df['struc'] = df.loc[:, ['J0150', 'P0108']].mean(axis=1)
-    df['equip'] = df.loc[:, ['J0151', 'P0109']].mean(axis=1)
-# =============================================================================
-#     df['total'] = signal.wiener(
-#         df.loc[:, ['J0149', 'P0107']].mean(axis=1)
-#     ).round()
-#     df['struc'] = signal.wiener(
-#         df.loc[:, ['J0150', 'P0108']].mean(axis=1)
-#     ).round()
-#     df['equip'] = signal.wiener(
-#         df.loc[:, ['J0151', 'P0109']].mean(axis=1)
-#     ).round()
-# =============================================================================
+    if smoothing:
+        df['total'] = signal.wiener(
+            df.loc[:, ['J0149', 'P0107']].mean(axis=1)
+        ).round()
+        df['struc'] = signal.wiener(
+            df.loc[:, ['J0150', 'P0108']].mean(axis=1)
+        ).round()
+        df['equip'] = signal.wiener(
+            df.loc[:, ['J0151', 'P0109']].mean(axis=1)
+        ).round()
+    else:
+        df['total'] = df.loc[:, ['J0149', 'P0107']].mean(axis=1)
+        df['struc'] = df.loc[:, ['J0150', 'P0108']].mean(axis=1)
+        df['equip'] = df.loc[:, ['J0151', 'P0109']].mean(axis=1)
     return df.iloc[:, -3:]
 
 
-def collect_census_b_b() -> DataFrame:
+def collect_uscb_cap_deflator() -> DataFrame:
     '''Returns Census Fused Capital Deflator'''
     SERIES_IDS = {
         'P0107': ('dataset_usa_census1975.zip', 1000, 'nominal, billions',),
@@ -808,7 +808,7 @@ def collect_census_b_b() -> DataFrame:
     return df.iloc[:, [-1]]
 
 
-def collect_census_c() -> tuple[DataFrame, tuple[int]]:
+def collect_uscb_metals() -> tuple[DataFrame, tuple[int]]:
     '''Census Primary Metals & Railroad-Related Products Manufacturing Series'''
     ARCHIVE_NAME = 'dataset_usa_census1975.zip'
     SERIES_IDS = {
@@ -836,7 +836,7 @@ def collect_census_c() -> tuple[DataFrame, tuple[int]]:
     return df, tuple(SERIES_IDS.values())
 
 
-def collect_census_e() -> DataFrame:
+def collect_uscb_immigration() -> DataFrame:
     '''Census Total Immigration Series'''
     ARCHIVE_NAME = 'dataset_usa_census1975.zip'
     ids = itertools.chain(
@@ -858,10 +858,23 @@ def collect_census_e() -> DataFrame:
     return df.iloc[:, [-1]]
 
 
-def collect_census_f() -> DataFrame:
+def collect_uscb_employment() -> DataFrame:
     '''Census Employment Series'''
     ARCHIVE_NAME = 'dataset_usa_census1975.zip'
-    SERIES_IDS = ('D0085', 'D0086', 'D0796', 'D0797', 'D0977', 'D0982',)
+    SERIES_IDS = (
+        # =====================================================================
+        # Unemployment
+        # =====================================================================
+        'D0085', 'D0086',
+        # =====================================================================
+        # Hours Worked
+        # =====================================================================
+        'D0796', 'D0797',
+        # =====================================================================
+        # Stoppages & Workers Involved
+        # =====================================================================
+        'D0977', 'D0982',
+    )
     df = pd.concat(
         [
             extract_usa_hist(ARCHIVE_NAME, series_id)
@@ -880,7 +893,7 @@ def collect_census_f() -> DataFrame:
     return df
 
 
-def collect_census_g() -> DataFrame:
+def collect_uscb_gnp() -> DataFrame:
     '''Census Gross National Product Series'''
     ARCHIVE_NAME = 'dataset_usa_census1975.zip'
     SERIES_IDS = ('F0003', 'F0004',)
@@ -895,7 +908,7 @@ def collect_census_g() -> DataFrame:
     return df.div(df.iloc[0, :]).mul(100)
 
 
-def collect_census_i_a() -> DataFrame:
+def collect_uscb_trade() -> DataFrame:
     '''Census Foreign Trade Series'''
     ARCHIVE_NAME = 'dataset_usa_census1975.zip'
     SERIES_IDS = ('U0001', 'U0008', 'U0015',)
@@ -909,7 +922,7 @@ def collect_census_i_a() -> DataFrame:
     )
 
 
-def collect_census_i_b() -> DataFrame:
+def collect_uscb_trade_gold_silver() -> DataFrame:
     '''Census Foreign Trade Series'''
     ARCHIVE_NAME = 'dataset_usa_census1975.zip'
     SERIES_IDS = ('U0187', 'U0188', 'U0189',)
@@ -923,7 +936,7 @@ def collect_census_i_b() -> DataFrame:
     )
 
 
-def collect_census_i_c() -> DataFrame:
+def collect_uscb_trade_by_countries() -> DataFrame:
     '''Census Foreign Trade Series'''
     ARCHIVE_NAME = 'dataset_usa_census1975.zip'
     ids = itertools.chain(
@@ -960,7 +973,7 @@ def collect_census_i_c() -> DataFrame:
     return df
 
 
-def collect_census_j() -> DataFrame:
+def collect_uscb_money_stock() -> DataFrame:
     '''Census Money Supply Aggregates'''
     YEAR_BASE = 1915
     ARCHIVE_NAME = 'dataset_usa_census1975.zip'
@@ -976,7 +989,7 @@ def collect_census_j() -> DataFrame:
     return df.div(df.loc[YEAR_BASE, :]).mul(100)
 
 
-def collect_census_price() -> DataFrame:
+def collect_uscb_cap_prices() -> DataFrame:
     ARCHIVE_NAME = 'dataset_usa_census1975.zip'
     SERIES_IDS = ('P0107', 'P0110')
     df = pd.concat(
