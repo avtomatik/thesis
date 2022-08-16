@@ -47,24 +47,28 @@ def main():
     # =========================================================================
     # Census Production Series
     # =========================================================================
-    SERIES_IDS = (
-        'P0248', 'P0249', 'P0250', 'P0251', 'P0262',
-        'P0265', 'P0266', 'P0267', 'P0268', 'P0269',
-        'P0293', 'P0294', 'P0295',
-    )
     ids = itertools.chain(
-        range(231, 242),
-        range(244, 245),
-        range(247, 272),
-        range(277, 278),
-        range(279, 280),
-        range(281, 285),
-        range(286, 287),
-        range(288, 289),
-        range(290, 291),
-        range(293, 301),
+        range(248, 252),
+        (262,),
+        range(265, 270),
+        range(293, 296),
     )
-    SERIES_IDS_ALT = tuple(f'P{_id:04n}' for _id in ids)
+    SERIES_IDS = tuple(f'P{_id:04n}' for _id in ids)
+    # =========================================================================
+    #     ids = itertools.chain(
+    #         range(231, 242),
+    #         range(244, 245),
+    #         range(247, 272),
+    #         range(277, 278),
+    #         range(279, 280),
+    #         range(281, 285),
+    #         range(286, 287),
+    #         range(288, 289),
+    #         range(290, 291),
+    #         range(293, 301),
+    #     )
+    #     SERIES_IDS_ALT = tuple(f'P{_id:04n}' for _id in ids)
+    # =========================================================================
 
     plot_uscb_commodities(SERIES_IDS)
     plot_uscb_immigration(collect_uscb_immigration())

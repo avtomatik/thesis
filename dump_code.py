@@ -338,6 +338,51 @@ def transform_center_by_period(df: DataFrame) -> DataFrame:
     return _df
 
 
+def extract_usa_bea_by_series_id(series_id: str) -> DataFrame:
+    '''
+    Retrieves Yearly Data for BEA Series' series_id
+    Parameters
+    ----------
+    series_id : str
+        DESCRIPTION.
+    Returns
+    -------
+    DataFrame
+        DESCRIPTION.
+    '''
+    ARCHIVE_NAME = 'dataset_usa_bea-nipa-2015-05-01.zip'
+    _df = pd.read_csv(ARCHIVE_NAME, usecols=[0, *range(14, 18)])
+    with sqlite3.connect("/home/alexander/science/temporary.db") as conn:
+        cursor = conn.cursor()
+        _df.to_sql("temporary", conn, if_exists="replace", index=False)
+        stmt = f"""
+        SELECT * FROM temporary
+        WHERE
+            vector = '{series_id}'
+            AND subperiod = 0
+            ;
+        """
+        cursor = conn.execute(stmt)
+    _df = DataFrame(
+        cursor.fetchall(),
+        columns=['source_id', 'series_id', 'period', 'sub_period', 'value'],
+    )
+    _df.set_index('period', inplace=True)
+    _df.drop('sub_period', axis=1, inplace=True)
+    df = pd.concat(
+        [
+            _df[_df.iloc[:, 0] == source_id].iloc[:, [2]].drop_duplicates()
+            for source_id in sorted(set(_df.iloc[:, 0]))
+        ],
+        axis=1
+    )
+    df.columns = [
+        ''.join((source_id.split()[1].replace('.', '_'), series_id))
+        for source_id in sorted(set(_df.iloc[:, 0]))
+    ]
+    return df
+
+
 DIR = '/media/alexander/321B-6A94'
 
 os.chdir(DIR)

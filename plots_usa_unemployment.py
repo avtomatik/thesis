@@ -11,7 +11,7 @@ import os
 import pandas as pd
 from pandas.plotting import autocorrelation_plot
 from extract.lib import extract_usa_bls
-from extract.lib import extract_usa_census
+from extract.lib import extract_usa_hist
 
 
 def main():
@@ -25,7 +25,7 @@ def main():
     os.chdir(DIR)
     df = pd.concat(
         [
-            extract_usa_census(ARCHIVE_NAME, 'D0086'),
+            extract_usa_hist(ARCHIVE_NAME, 'D0086'),
             extract_usa_bls(FILE_NAME, 'LNU04000000'),
         ],
         axis=1

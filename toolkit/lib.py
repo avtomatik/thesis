@@ -403,7 +403,7 @@ def m_spline_ea(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFra
         pd.concat(
             [
                 df,
-                DataFrame(_splined, columns=['Splined']),
+                DataFrame(_splined, columns=('Splined')),
             ],
             axis=1,
             sort=True
@@ -453,7 +453,7 @@ def m_spline_eb(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFra
         pd.concat(
             [
                 df,
-                DataFrame(_splined, columns=['Spline'])
+                DataFrame(_splined, columns=('Spline'))
             ],
             axis=1,
             sort=True
@@ -513,7 +513,7 @@ def m_spline_la(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFra
         pd.concat(
             [
                 df,
-                DataFrame(_splined, columns=['Spline'])
+                DataFrame(_splined, columns=('Spline'))
             ],
             axis=1,
             sort=True
@@ -557,7 +557,7 @@ def m_spline_lb(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFra
         pd.concat(
             [
                 df,
-                DataFrame(_splined, columns=['Spline'])
+                DataFrame(_splined, columns=('Spline'))
             ],
             axis=1,
             sort=True
@@ -623,7 +623,7 @@ def m_spline_lls(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFr
         pd.concat(
             [
                 df,
-                DataFrame(_splined, columns=['Splined']),
+                DataFrame(_splined, columns=('Splined')),
             ],
             axis=1,
             sort=True
@@ -671,7 +671,7 @@ def m_spline_manager(df: DataFrame, kernel: callable) -> None:
         Draws matplotlib.pyplot Plots.
     '''
     df.reset_index(level=0, inplace=True)
-    df.columns = ['Period', 'Original']
+    df.columns = ('Period', 'Original')
     # =========================================================================
     # Number of Periods
     # =========================================================================
@@ -732,7 +732,7 @@ def m_spline_manager(df: DataFrame, kernel: callable) -> None:
         for _knot, _factor in zip(_knots, _correction_factors):
             modified.iloc[_knot, 1] = modified.iloc[_knot, 1]*_factor
 
-        modified.columns = ['Period', 'Corrected']
+        modified.columns = ('Period', 'Corrected')
         splined_frame, _params = kernel(modified, N, _knots)
         _m_spline_print_params(N, _params)
         _m_spline_error_metrics(splined_frame)

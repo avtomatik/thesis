@@ -1480,37 +1480,39 @@ def collect_combined() -> DataFrame:
         # =====================================================================
         'kcptotl1es00',
     )
-    _df = extract_usa_bea_from_url(URLS[0])
-    _df_nipa = pd.concat(
-        [
-            pd.concat(
-                [
-                    extract_usa_bea_from_loaded(_df, series_id)
-                    for series_id in SERIES_IDS_NIPA[:8]
-                ],
-                axis=1
-            ),
-            collect_usa_bea_labor_mfg(),
-            pd.concat(
-                [
-                    extract_usa_bea_from_loaded(_df, series_id)
-                    for series_id in SERIES_IDS_NIPA[8:]
-                ],
-                axis=1
-            ),
-        ],
-        axis=1
-    )
-    _df = extract_usa_bea_from_url(URLS[-1])
+    # =========================================================================
+    # TODO: Think About Lazy Evaluation & Singleton Pattern
+    # =========================================================================
+    _df_nipa = extract_usa_bea_from_url(URLS[0])
+    _df_sfat = extract_usa_bea_from_url(URLS[-1])
     return pd.concat(
         [
-            _df_nipa,
+            pd.concat(
+                [
+                    pd.concat(
+                        [
+                            extract_usa_bea_from_loaded(_df_nipa, series_id)
+                            for series_id in SERIES_IDS_NIPA[:8]
+                        ],
+                        axis=1
+                    ),
+                    collect_usa_bea_labor_mfg(),
+                    pd.concat(
+                        [
+                            extract_usa_bea_from_loaded(_df_nipa, series_id)
+                            for series_id in SERIES_IDS_NIPA[8:]
+                        ],
+                        axis=1
+                    ),
+                ],
+                axis=1
+            ),
             # =================================================================
             # US BEA Fixed Assets Series
             # =================================================================
             pd.concat(
                 [
-                    extract_usa_bea_from_loaded(_df, series_id)
+                    extract_usa_bea_from_loaded(_df_sfat, series_id)
                     for series_id in SERIES_IDS_SFAT
                 ],
                 axis=1
@@ -1611,44 +1613,46 @@ def collect_combined_archived() -> DataFrame:
         # =====================================================================
         'kcptotl1es00',
     )
-    _df = extract_usa_bea_from_url(URLS[0])
-    _df_nipa = pd.concat(
-        [
-            pd.concat(
-                [
-                    extract_usa_bea_from_loaded(_df, series_id)
-                    for series_id in SERIES_IDS_NIPA[:8]
-                ],
-                axis=1
-            ),
-            collect_usa_bea_labor_mfg(),
-            pd.concat(
-                [
-                    extract_usa_bea_from_loaded(_df, series_id)
-                    for series_id in SERIES_IDS_NIPA[8:]
-                ],
-                axis=1
-            ),
-        ],
-        axis=1
-    )
-    _df = extract_usa_bea_from_url(URLS[-1])
+    # =========================================================================
+    # TODO: Think About Lazy Evaluation & Singleton Pattern
+    # =========================================================================
+    _df_nipa = extract_usa_bea_from_url(URLS[0])
+    _df_sfat = extract_usa_bea_from_url(URLS[-1])
     return pd.concat(
         [
-            _df_nipa,
+            pd.concat(
+                [
+                    pd.concat(
+                        [
+                            extract_usa_bea_from_loaded(_df_nipa, series_id)
+                            for series_id in SERIES_IDS_NIPA[:8]
+                        ],
+                        axis=1
+                    ),
+                    collect_usa_bea_labor_mfg(),
+                    pd.concat(
+                        [
+                            extract_usa_bea_from_loaded(_df_nipa, series_id)
+                            for series_id in SERIES_IDS_NIPA[8:]
+                        ],
+                        axis=1
+                    ),
+                ],
+                axis=1
+            ),
             # =================================================================
             # US BEA Fixed Assets Series
             # =================================================================
             pd.concat(
                 [
-                    extract_usa_bea_from_loaded(_df, series_id)
+                    extract_usa_bea_from_loaded(_df_sfat, series_id)
                     for series_id in SERIES_IDS_SFAT
                 ],
                 axis=1
             ),
             extract_usa_frb_ms(),
-            extract_usa_hist(ARCHIVE_NAME, SERIES_ID),
             extract_usa_frb_ms(),
+            extract_usa_hist(ARCHIVE_NAME, SERIES_ID),
             pd.read_csv(FILE_NAME, index_col=0),
         ],
         axis=1
@@ -1918,53 +1922,49 @@ def collect() -> DataFrame:
 
 
 def collect_updated() -> DataFrame:
-    URL = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
-    _data = extract_usa_bea_from_url(URL)
-    SERIES_IDS = (
+    URLS = (
+        'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
+    )
+    SERIES_IDS_NIPA = (
         'A006RC',
         'A006RD',
         'A191RC',
         'A191RX',
     )
-    _df_nipa = pd.concat(
-        [
-            extract_usa_bea_from_loaded(_data, series_id)
-            for series_id in SERIES_IDS
-        ],
-        axis=1,
-        sort=True
-    )
-    ARCHIVE_NAME = 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip'
-    WB_NAME = 'Section4ALL_xls.xls'
-    SH_NAMES = (
-        '403 Ann',
-        '402 Ann',
-    )
-    SERIES_IDS = (
+    SERIES_IDS_SFAT = (
         # =====================================================================
-        # Not Used: Fixed Assets: k3n31gd1es000, 1925--2016, Table 4.3. Historical-Cost Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
+        # Not Used: Fixed Assets: k3n31gd1es00, 1925--2016, Table 4.3. Historical-Cost Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
         # =====================================================================
-        'k3n31gd1es000',
+        'k3n31gd1es00',
         # =====================================================================
-        # Fixed Assets: kcn31gd1es000, 1925--2016, Table 4.2. Chain-Type Quantity Indexes for Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
+        # Fixed Assets: kcn31gd1es00, 1925--2016, Table 4.2. Chain-Type Quantity Indexes for Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
         # =====================================================================
-        'kcn31gd1es000',
+        'kcn31gd1es00',
     )
-    _df_sfat = pd.concat(
-        [
-            extract_usa_bea(ARCHIVE_NAME, WB_NAME, sh_name, series_id)
-            for sh_name, series_id in zip(SH_NAMES, SERIES_IDS)
-        ],
-        axis=1,
-        sort=True
-    )
+    # =========================================================================
+    # TODO: Think About Lazy Evaluation & Singleton Pattern
+    # =========================================================================
+    _df_nipa = extract_usa_bea_from_url(URLS[0])
+    _df_sfat = extract_usa_bea_from_url(URLS[-1])
     df = pd.concat(
         [
-            _df_nipa,
-            _df_sfat,
+            pd.concat(
+                [
+                    extract_usa_bea_from_loaded(_df_nipa, series_id)
+                    for series_id in SERIES_IDS_NIPA
+                ],
+                axis=1
+            ),
+            pd.concat(
+                [
+                    extract_usa_bea_from_loaded(_df_sfat, series_id)
+                    for series_id in SERIES_IDS_SFAT
+                ],
+                axis=1
+            ),
         ],
-        axis=1,
-        sort=True
+        axis=1
     )
     # =========================================================================
     # Investment, 2012=100
@@ -1974,8 +1974,8 @@ def collect_updated() -> DataFrame:
     # =========================================================================
     # Capital, 2012=100
     # =========================================================================
-    df['_capital'] = df.loc[:, 'kcn31gd1es000'].mul(
-        df.loc[2009, 'k3n31gd1es000']).mul(1000).div(100)
+    df['_capital'] = df.loc[:, 'kcn31gd1es00'].mul(
+        df.loc[2012, 'k3n31gd1es00']).mul(1000).div(100)
     # =========================================================================
     # Capital Retirement Ratio
     # =========================================================================
@@ -2196,7 +2196,7 @@ def collect_usa_frb_ip() -> DataFrame:
     SERIES_ID = 'AIPMA_SA_IX'
     _df = pd.read_csv(FILE_NAME, index_col=0, skiprows=7, parse_dates=True)
     _df.rename_axis('period', inplace=True)
-    _df.columns = [column.strip() for column in _df.columns]
+    _df.columns = tuple(column_name.strip() for column_name in _df.columns)
     return _df.groupby(_df.index.year).mean().loc[:, [SERIES_ID]]
 
 
@@ -2235,69 +2235,39 @@ def collect_usa_sahr_infcf() -> DataFrame:
 
 
 def collect_usa_xlsm() -> DataFrame:
-    ARCHIVE_NAMES = (
-        'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1929_1969.zip',
-        'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1969_2015.zip',
-    )
-    WB_NAMES = (
-        'Section1ALL_Hist.xls',
-        'Section1all_xls.xls',
-    )
-    SH_NAMES = (
-        '10105 Ann',
-        '10105 Ann',
-        '10106 Ann',
-        '10705 Ann',
-    )
+    FILE_NAME = 'dataset_usa_0025_p_r.txt'
+    URL = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
     SERIES_IDS = (
         # =====================================================================
-        # Nominal Investment Series: A006RC1, 1929--2014
+        # Nominal Investment Series: A006RC, 1929--2021
         # =====================================================================
-        'A006RC1',
+        'A006RC',
         # =====================================================================
-        # Nominal Nominal Gross Domestic Product Series: A191RC1, 1929--2014
+        # Nominal Nominal Gross Domestic Product Series: A191RC, 1929--2021
         # =====================================================================
-        'A191RC1',
+        'A191RC',
         # =====================================================================
-        # Real Gross Domestic Product Series, 2009=100: A191RX1, 1929--2014
+        # Real Gross Domestic Product Series, 2012=100: A191RX, 1929--2021
         # =====================================================================
-        'A191RX1',
+        'A191RX',
         # =====================================================================
-        # Nominal National income Series: A032RC1, 1929--2013
+        # Nominal National income Series: A032RC, 1929--2021
         # =====================================================================
-        'A032RC1',
+        'A032RC',
     )
-    _data = pd.concat(
-        [
-            pd.concat(
-                [
-                    extract_usa_bea(
-                        ARCHIVE_NAMES[0], WB_NAMES[0], sh_name, series_id)
-                    for sh_name, series_id in zip(SH_NAMES, SERIES_IDS)
-                ],
-                axis=1,
-                sort=True
-            ),
-            pd.concat(
-                [
-                    extract_usa_bea(
-                        ARCHIVE_NAMES[1], WB_NAMES[1], sh_name, series_id)
-                    for sh_name, series_id in zip(SH_NAMES, SERIES_IDS)
-                ],
-                axis=1,
-                sort=True
-            ),
-        ],
-        sort=True
-    ).drop_duplicates()
-    FILE_NAME = 'dataset_usa_0025_p_r.txt'
+    _df = extract_usa_bea_from_url(URL)
     return pd.concat(
         [
-            _data,
-            pd.read_csv(FILE_NAME, index_col=0)
+            pd.concat(
+                [
+                    extract_usa_bea_from_loaded(_df, series_id)
+                    for series_id in SERIES_IDS
+                ],
+                axis=1
+            ),
+            pd.read_csv(FILE_NAME, index_col=0),
         ],
-        axis=1,
-        sort=True
+        axis=1
     )
 
 

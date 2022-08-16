@@ -45,7 +45,7 @@ def main():
         MAP_FIG
     )
 
-    _df_a = df.iloc[:, [0, 1, 2]]
+    _df_a = df.iloc[:, range(3)]
     _df_b = df.iloc[:, [0, 1, 3]]
     _df_c = df.iloc[:, [0, 1, 4]]
     _df_d, _df_e = collect_version_a()
@@ -66,9 +66,7 @@ def main():
     calculate_curve_fit_params(_df_g)
     calculate_curve_fit_params(_df_h)
     calculate_curve_fit_params(_df_i)
-    calculate_curve_fit_params(_df_a)
-    calculate_curve_fit_params(_df_b)
-    calculate_curve_fit_params(_df_c)
+
     # =========================================================================
     # No Capacity Utilization Adjustment
     # =========================================================================
