@@ -383,6 +383,43 @@ def extract_usa_bea_by_series_id(series_id: str) -> DataFrame:
     return df
 
 
+def collect_usa_xlsm() -> DataFrame:
+    FILE_NAME = 'dataset_usa_0025_p_r.txt'
+    URL = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
+    SERIES_IDS = (
+        # =====================================================================
+        # Nominal Investment Series: A006RC, 1929--2021
+        # =====================================================================
+        'A006RC',
+        # =====================================================================
+        # Nominal Nominal Gross Domestic Product Series: A191RC, 1929--2021
+        # =====================================================================
+        'A191RC',
+        # =====================================================================
+        # Real Gross Domestic Product Series, 2012=100: A191RX, 1929--2021
+        # =====================================================================
+        'A191RX',
+        # =====================================================================
+        # Nominal National income Series: A032RC, 1929--2021
+        # =====================================================================
+        'A032RC',
+    )
+    _df = extract_usa_bea_from_url(URL)
+    return pd.concat(
+        [
+            pd.concat(
+                [
+                    extract_usa_bea_from_loaded(_df, series_id)
+                    for series_id in SERIES_IDS
+                ],
+                axis=1
+            ),
+            pd.read_csv(FILE_NAME, index_col=0),
+        ],
+        axis=1
+    )
+
+
 DIR = '/media/alexander/321B-6A94'
 
 os.chdir(DIR)
