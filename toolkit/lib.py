@@ -350,31 +350,6 @@ def kol_zur_filter(df: DataFrame, k: int = None) -> tuple[DataFrame]:
     return df_o, df_e, residuals_o, residuals_e
 
 
-def mean_by_year(df: DataFrame) -> DataFrame:
-    '''
-    Process Non-Indexed Flat DataFrame
-    Parameters
-    ----------
-    df : DataFrame
-    Returns
-    -------
-    DataFrame
-    '''
-    # =========================================================================
-    # Index Width Check
-    # =========================================================================
-    width = 0
-    for item in df.index:
-        width = max(len(f'{item}'), width)
-    if width > 4:
-        df[['YEAR', 'Q']] = df.index.to_series().str.split('-', expand=True)
-        df = df.iloc[:, [1, 0]]
-        df = df.apply(pd.to_numeric)
-        df = df.groupby('YEAR').mean()
-        df.index.rename('REF_DATE', inplace=True)
-    return df
-
-
 def m_spline_ea(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFrame, tuple[float]]:
     '''Exponential Spline, Type A
     ================== =================================
@@ -871,7 +846,25 @@ def strip_cumulated_deflator(df: DataFrame):
     return price_inverse_single(df.dropna()).dropna()
 
 
-def build_load_data_frame(file_name: str, criteria: dict) -> None:
+def string_to_url(string: str) -> str:
+    '''
+
+
+    Parameters
+    ----------
+    string : str
+        DESCRIPTION.
+
+    Returns
+    -------
+    str
+        DESCRIPTION.
+
+    '''
+    return f'https://www150.statcan.gc.ca/n1/tbl/csv/{string}'
+
+
+def build_load_data_frame(file_name: str, blueprint: dict) -> None:
     '''
     Builds DataFrame & Loads It To Excel
 
@@ -879,7 +872,7 @@ def build_load_data_frame(file_name: str, criteria: dict) -> None:
     ----------
     file_name : str
         Excel File Name.
-    criteria : dict
+    blueprint : dict
         DESCRIPTION.
 
     Returns
@@ -887,17 +880,19 @@ def build_load_data_frame(file_name: str, criteria: dict) -> None:
     None
     '''
     df = DataFrame()
-    for criterion in criteria:
-        _df = extract_can_from_url(string_to_url(criterion['file_name']))
-        _df = _df[_df['VECTOR'].isin(criterion['series_ids'])]
-        _df = _df[['REF_DATE', 'VECTOR', 'VALUE']]
-        for series_id in criterion['series_ids']:
-            chunk = _df[_df['VECTOR'] == series_id]
-            chunk.set_index(chunk.columns[0], inplace=True)
-            chunk = chunk.iloc[:, [1]]
-            chunk = mean_by_year(chunk)
-            chunk.rename(columns={'VALUE': series_id}, inplace=True)
+    for item in blueprint:
+        _df = extract_can_from_url(
+            string_to_url(item['file_name']),
+            index_col=0,
+            usecols=range(14),
+            parse_dates=True
+        )
+        _df = _df[_df['VECTOR'].isin(item['series_ids'])]
+        for series_id in item['series_ids']:
+            chunk = _df[_df['VECTOR'] == series_id][['VALUE']]
+            chunk = chunk.groupby(chunk.index.year).mean()
             df = pd.concat([df, chunk], axis=1, sort=True)
+        df.columns = item['series_ids']
     df.to_excel(file_name)
 
 
