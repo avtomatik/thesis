@@ -57,6 +57,10 @@ FILE_NAMES_UTILISED = (
     'dataset_usa_frb_us3_ip_2018_09_02.csv',
     'dataset_usa_reference_ru_kurenkov_yu_v.csv',
 )
+URLS_UTILISED = (
+    'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+    'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
+)
 
 
 def collect_can():
@@ -305,85 +309,53 @@ def collect_can_price_b():
 
 
 def collect_archived() -> DataFrame:
-    ARCHIVE_NAMES = (
-        'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1929_1969.zip',
-        'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1969_2015.zip',
-    )
-    WB_NAMES = (
-        'Section1ALL_Hist.xls',
-        'Section1ALL_Hist.xls',
-        'Section5ALL_Hist.xls',
-        'Section1all_xls.xls',
-        'Section1all_xls.xls',
-        'Section5all_xls.xls',
-    )
-    SH_NAMES = (
-        '10105 Ann',
-        '10106 Ann',
-        '51000 Ann',
-    )
+    URL = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
     SERIES_IDS = (
         # =====================================================================
-        # Nominal Investment Series: A006RC1, 1929--2014
+        # Nominal Investment Series: A006RC, 1929--2021
         # =====================================================================
-        'A006RC1',
+        'A006RC',
         # =====================================================================
-        # Real Gross Domestic Product Series, 2009=100: A191RX1, 1929--2014
+        # Real Gross Domestic Product Series, 2012=100: A191RX, 1929--2021
         # =====================================================================
-        'A191RX1',
+        'A191RX',
         # =====================================================================
-        # Fixed Assets Series: K100701, 1951--2013
+        # Fixed Assets Series: K10070, 1951--2020
         # =====================================================================
         # =====================================================================
         # TODO: Replace with "k1n31gd1es00"
         # =====================================================================
-        'K100701',
+        'K10070',
     )
-    _data_bea = pd.concat(
-        [
-            pd.concat(
-                [
-                    extract_usa_bea(
-                        ARCHIVE_NAMES[0], wb_name, sh_name, series_id)
-                    for wb_name, sh_name, series_id in zip(WB_NAMES, SH_NAMES, SERIES_IDS)
-                ],
-                axis=1,
-                sort=True
-            ),
-            pd.concat(
-                [
-                    extract_usa_bea(
-                        ARCHIVE_NAMES[1], wb_name, sh_name, series_id)
-                    for wb_name, sh_name, series_id in zip(WB_NAMES[len(SERIES_IDS):], SH_NAMES, SERIES_IDS)
-                ],
-                axis=1,
-                sort=True
-            ),
-        ],
-        sort=True
-    ).drop_duplicates()
+    _df_nipa = extract_usa_bea_from_url(URL)
     _df = pd.concat(
         [
             # =================================================================
             # Producer Price Index
             # =================================================================
             extract_usa_ppi(),
-            _data_bea,
+            pd.concat(
+                [
+                    extract_usa_bea_from_loaded(_df_nipa, series_id)
+                    for series_id in SERIES_IDS
+                ],
+                axis=1
+            ),
         ],
         axis=1,
         sort=True
     ).dropna(axis=0)
     # =========================================================================
-    # Deflator, 2009=100
+    # Deflator, 2012=100
     # =========================================================================
     _df['deflator'] = _df.iloc[:, 0].add(1).cumprod()
-    _df.iloc[:, -1] = _df.iloc[:, -1].rdiv(_df.loc[2009, _df.columns[-1]])
+    _df.iloc[:, -1] = _df.iloc[:, -1].rdiv(_df.loc[2012, _df.columns[-1]])
     # =========================================================================
-    # Investment, 2009=100
+    # Investment, 2012=100
     # =========================================================================
     _df['investment'] = _df.iloc[:, 1].mul(_df.iloc[:, -1])
     # =========================================================================
-    # Capital, 2009=100
+    # Capital, 2012=100
     # =========================================================================
     _df['capital'] = _df.iloc[:, 3].mul(_df.iloc[:, -1])
     # =========================================================================
@@ -392,7 +364,7 @@ def collect_archived() -> DataFrame:
     _df['ratio_mu'] = _df.iloc[:, -2].mul(1).sub(_df.iloc[:, -1].shift(-1)).div(
         _df.iloc[:, -1]).add(1)
     return (
-        _df.loc[:, ['investment', 'A191RX1',
+        _df.loc[:, ['investment', 'A191RX',
                     'capital', 'ratio_mu']].dropna(axis=0),
         _df.loc[:, ['ratio_mu']].dropna(axis=0),
     )
@@ -538,51 +510,29 @@ def collect_brown() -> DataFrame:
 
 
 def collect_capital_combined_archived() -> DataFrame:
-    ARCHIVE_NAMES = (
-        'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1929_1969.zip',
-        'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1969_2015.zip',
-    )
-    WB_NAMES = (
-        'Section1ALL_Hist.xls',
-        'Section1ALL_Hist.xls',
-        'Section1ALL_Hist.xls',
-        'Section5ALL_Hist.xls',
-        'Section5ALL_Hist.xls',
-        'Section1all_xls.xls',
-        'Section1all_xls.xls',
-        'Section1all_xls.xls',
-        'Section5all_xls.xls',
-        'Section5all_xls.xls',
-    )
-    SH_NAMES = (
-        '10105 Ann',
-        '10105 Ann',
-        '10106 Ann',
-        '51000 Ann',
-        '51000 Ann',
-    )
+    URL = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
     SERIES_IDS = (
         # =====================================================================
-        # Nominal Investment Series: A006RC1, 1929--2014
+        # Nominal Investment Series: A006RC, 1929--2021
         # =====================================================================
-        'A006RC1',
+        'A006RC',
         # =====================================================================
-        # Nominal Gross Domestic Product Series: A191RC1, 1929--2014
+        # Nominal Gross Domestic Product Series: A191RC, 1929--2021
         # =====================================================================
-        'A191RC1',
+        'A191RC',
         # =====================================================================
-        # Real Gross Domestic Product Series: A191RX1, 1929--2014
+        # Real Gross Domestic Product Series: A191RX, 1929--2021
         # =====================================================================
-        'A191RX1',
+        'A191RX',
         # =====================================================================
-        # Fixed Assets Series: K100021, 1951--2013
+        # Fixed Assets Series: K10002, 1951--2020
         # =====================================================================
         # =====================================================================
         # TODO: Replace with "k1n31gd1es00"
         # =====================================================================
-        'K100021',
+        'K10002',
         # =====================================================================
-        # Fixed Assets Series: K100701, 1951--2013
+        # Fixed Assets Series: K10070, 1951--2020
         # =====================================================================
         # =====================================================================
         # http://www.bea.gov/data/economic-accounts/national
@@ -592,34 +542,18 @@ def collect_capital_combined_archived() -> DataFrame:
         # =====================================================================
         # TODO: Replace with "k1n31gd1es00"
         # =====================================================================
-        'K100701',
+        'K10070',
     )
-    _df = pd.concat(
-        [
-            pd.concat(
-                [
-                    extract_usa_bea(
-                        ARCHIVE_NAMES[0], wb_name, sh_name, series_id)
-                    for wb_name, sh_name, series_id in zip(WB_NAMES, SH_NAMES, SERIES_IDS)
-                ],
-                axis=1,
-                sort=True
-            ),
-            pd.concat(
-                [
-                    extract_usa_bea(
-                        ARCHIVE_NAMES[1], wb_name, sh_name, series_id)
-                    for wb_name, sh_name, series_id in zip(WB_NAMES[len(SERIES_IDS):], SH_NAMES, SERIES_IDS)
-                ],
-                axis=1,
-                sort=True
-            ),
-        ],
-        sort=True
-    ).drop_duplicates()
+    _df_nipa = extract_usa_bea_from_url(URL)
     return pd.concat(
         [
-            _df,
+            pd.concat(
+                [
+                    extract_usa_bea_from_loaded(_df_nipa, series_id)
+                    for series_id in SERIES_IDS
+                ],
+                axis=1
+            ),
             # =================================================================
             # Capacity Utilization Series: CAPUTL.B50001.A, 1967--2012
             # =================================================================
@@ -1715,7 +1649,8 @@ def collect_common_archived() -> DataFrame:
                 [
                     (
                         extract_usa_bea_from_loaded(_df_nipa, series_id),
-                        extract_usa_bea_from_loaded(_df_nipa, series_id).rdiv(100)
+                        extract_usa_bea_from_loaded(
+                            _df_nipa, series_id).rdiv(100)
                     )[series_id == 'A191RD']
                     for series_id in SERIES_IDS_NIPA
                 ],
@@ -1758,73 +1693,38 @@ def collect_douglas() -> DataFrame:
 
 
 def collect_local() -> DataFrame:
-    ARCHIVE_NAMES = (
-        'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1929_1969.zip',
-        'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1969_2015.zip',
-    )
-    WB_NAMES = (
-        'Section1ALL_Hist.xls',
-        'Section1ALL_Hist.xls',
-        'Section1ALL_Hist.xls',
-        'Section5ALL_Hist.xls',
-        'Section1all_xls.xls',
-        'Section1all_xls.xls',
-        'Section1all_xls.xls',
-        'Section5all_xls.xls',
-    )
-    SH_NAMES = (
-        '10105 Ann',
-        '10105 Ann',
-        '10106 Ann',
-        '51000 Ann',
-    )
+    URL = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
     SERIES_IDS = (
         # =====================================================================
-        # Nominal Investment Series: A006RC1, 1929--2014
+        # Nominal Investment Series: A006RC, 1929--2021
         # =====================================================================
-        'A006RC1',
+        'A006RC',
         # =====================================================================
-        # Nominal Nominal Gross Domestic Product Series: A191RC1, 1929--2014
+        # Nominal Nominal Gross Domestic Product Series: A191RC, 1929--2021
         # =====================================================================
-        'A191RC1',
+        'A191RC',
         # =====================================================================
-        # Real Gross Domestic Product Series, 2009=100: A191RX1, 1929--2014
+        # Real Gross Domestic Product Series, 2009=100: A191RX, 1929--2021
         # =====================================================================
-        'A191RX1',
+        'A191RX',
         # =====================================================================
-        # Fixed Assets Series: K100701, 1951--2013
+        # Fixed Assets Series: K10070, 1951--2020
         # =====================================================================
         # =====================================================================
         # TODO: Replace with "k1n31gd1es00"
         # =====================================================================
-        'K100701',
+        'K10070',
     )
-    _df_nipa = pd.concat(
-        [
-            pd.concat(
-                [
-                    extract_usa_bea(
-                        ARCHIVE_NAMES[0], wb_name, sh_name, series_id)
-                    for wb_name, sh_name, series_id in zip(WB_NAMES, SH_NAMES, SERIES_IDS)
-                ],
-                axis=1,
-                sort=True
-            ),
-            pd.concat(
-                [
-                    extract_usa_bea(
-                        ARCHIVE_NAMES[1], wb_name, sh_name, series_id)
-                    for wb_name, sh_name, series_id in zip(WB_NAMES[len(SERIES_IDS):], SH_NAMES, SERIES_IDS)
-                ],
-                axis=1,
-                sort=True
-            ),
-        ],
-        sort=True
-    ).drop_duplicates()
+    _df_nipa = extract_usa_bea_from_url(URL)
     return pd.concat(
         [
-            _df_nipa,
+            pd.concat(
+                [
+                    extract_usa_bea_from_loaded(_df_nipa, series_id)
+                    for series_id in SERIES_IDS
+                ],
+                axis=1
+            ),
             # =================================================================
             # Manufacturing Labor Series: _4313C0, 1929--2020
             # =================================================================
