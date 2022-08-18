@@ -7,7 +7,7 @@ Created on Mon Apr 12 22:46:08 2021
 
 
 import os
-from collect.lib import transform_cobb_douglas
+from collect.lib import collect_version_c, transform_cobb_douglas
 from plot.lib import plot_cobb_douglas
 
 
@@ -27,7 +27,7 @@ def main():
 
     os.chdir(DIR)
     plot_cobb_douglas(
-        *transform_cobb_douglas(collect()),
+        *transform_cobb_douglas(collect_version_c()),
         MAP_FIG
     )
 

@@ -29,7 +29,7 @@ from extract.lib import extract_usa_bea_from_url
 from extract.lib import extract_usa_hist
 from extract.lib import extract_usa_frb_ms
 from extract.lib import extract_usa_mcconnel
-from extract.lib import extract_usa_ppi
+from extract.lib import extract_usa_fred
 from toolkit.lib import price_inverse_single
 from toolkit.lib import strip_cumulated_deflator
 
@@ -308,6 +308,7 @@ def collect_can_price_b():
 
 def collect_archived() -> DataFrame:
     URL = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
+    SERIES_ID = 'PPIACO'
     SERIES_IDS = (
         # =====================================================================
         # Nominal Investment Series: A006RC, 1929--2021
@@ -331,7 +332,7 @@ def collect_archived() -> DataFrame:
             # =================================================================
             # Producer Price Index
             # =================================================================
-            extract_usa_ppi(),
+            extract_usa_fred(SERIES_ID),
             pd.concat(
                 [
                     extract_usa_bea_from_loaded(_df_nipa, series_id)
@@ -1687,88 +1688,6 @@ def collect_douglas() -> DataFrame:
     return df.div(df.loc[1899, :])
 
 
-def collect_local() -> DataFrame:
-    URL = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
-    SERIES_IDS = (
-        # =====================================================================
-        # Nominal Investment Series: A006RC, 1929--2021
-        # =====================================================================
-        'A006RC',
-        # =====================================================================
-        # Nominal Nominal Gross Domestic Product Series: A191RC, 1929--2021
-        # =====================================================================
-        'A191RC',
-        # =====================================================================
-        # Real Gross Domestic Product Series, 2009=100: A191RX, 1929--2021
-        # =====================================================================
-        'A191RX',
-        # =====================================================================
-        # Fixed Assets Series: K10070, 1951--2020
-        # =====================================================================
-        # =====================================================================
-        # TODO: Replace with "k1n31gd1es00"
-        # =====================================================================
-        'K10070',
-    )
-    _df_nipa = extract_usa_bea_from_url(URL)
-    return pd.concat(
-        [
-            pd.concat(
-                [
-                    extract_usa_bea_from_loaded(_df_nipa, series_id)
-                    for series_id in SERIES_IDS
-                ],
-                axis=1
-            ),
-            # =================================================================
-            # Manufacturing Labor Series: _4313C0, 1929--2020
-            # =================================================================
-            collect_usa_bea_labor_mfg(),
-            collect_usa_frb_cu(),
-        ],
-        axis=1,
-        sort=True
-    )
-
-
-def collect() -> DataFrame:
-    '''Data Fetch'''
-    # =========================================================================
-    # TODO: Update Accodring to Change in collect_cobb_douglas_deflator()
-    # =========================================================================
-    capital = pd.concat(
-        [
-            # =================================================================
-            # Data Fetch for Capital
-            # =================================================================
-            collect_cobb_douglas_extension_capital(),
-            # =================================================================
-            # Data Fetch for Capital Deflator
-            # =================================================================
-            collect_cobb_douglas_deflator(),
-        ],
-        axis=1,
-        sort=True
-    ).dropna(axis=0)
-    capital['capital_real'] = capital.iloc[:, 0].div(capital.iloc[:, 1])
-    df = pd.concat(
-        [
-            capital.iloc[:, [-1]],
-            # =================================================================
-            # Data Fetch for Labor
-            # =================================================================
-            collect_cobb_douglas_extension_labor(),
-            # =================================================================
-            # Data Fetch for Product
-            # =================================================================
-            collect_cobb_douglas_extension_product(),
-        ],
-        axis=1,
-        sort=True
-    ).dropna(axis=0)
-    return df.div(df.iloc[0, :])
-
-
 def collect_updated() -> DataFrame:
     URLS = (
         'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
@@ -2200,6 +2119,9 @@ def collect_version_b() -> tuple[DataFrame]:
 
 def collect_version_c() -> DataFrame:
     '''Data Fetch'''
+    # =========================================================================
+    # TODO: Update Accodring to Change in collect_cobb_douglas_deflator()
+    # =========================================================================
     df_capital = pd.concat(
         [
             # =================================================================
@@ -2209,7 +2131,7 @@ def collect_version_c() -> DataFrame:
             # =================================================================
             # Data Fetch for Capital Deflator
             # =================================================================
-            collect_cobb_douglas_deflator()
+            collect_cobb_douglas_deflator(),
         ],
         axis=1,
         sort=True
@@ -2218,7 +2140,7 @@ def collect_version_c() -> DataFrame:
         df_capital.iloc[:, 1])
     df = pd.concat(
         [
-            df_capital.iloc[:, -1],
+            df_capital.iloc[:, [-1]],
             # =================================================================
             # Data Fetch for Labor
             # =================================================================
@@ -2226,7 +2148,7 @@ def collect_version_c() -> DataFrame:
             # =================================================================
             # Data Fetch for Product
             # =================================================================
-            collect_cobb_douglas_extension_product()
+            collect_cobb_douglas_extension_product(),
         ],
         axis=1,
         sort=True
