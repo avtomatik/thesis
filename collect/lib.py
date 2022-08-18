@@ -37,10 +37,6 @@ from toolkit.lib import strip_cumulated_deflator
 
 ARCHIVE_NAMES_UTILISED = (
     'dataset_douglas.zip',
-    'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
-    'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
-    'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1929_1969.zip',
-    'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1969_2015.zip',
     'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip',
     'dataset_usa_brown.zip',
     'dataset_usa_census1949.zip',
@@ -58,8 +54,12 @@ FILE_NAMES_UTILISED = (
     'dataset_usa_reference_ru_kurenkov_yu_v.csv',
 )
 URLS_UTILISED = (
-    'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
     'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
+    'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+    'https://www.federalreserve.gov/datadownload/Output.aspx?rel=g17&filetype=zip',
+    'https://www150.statcan.gc.ca/n1/en/tbl/csv/36100096-eng.zip',
+    'https://www150.statcan.gc.ca/n1/tbl/csv/14100027-eng.zip',
+    'https://www150.statcan.gc.ca/n1/tbl/csv/36100434-eng.zip',
 )
 
 
@@ -563,7 +563,7 @@ def collect_capital_combined_archived() -> DataFrame:
             # =================================================================
             collect_usa_bea_labor_mfg(),
             # =================================================================
-            # Labor Series: A4601C0, 1929--2020
+            # For Overall Labor Series, See: A4601C0, 1929--2020
             # =================================================================
             collect_usa_bea_labor_mfg()
         ],
@@ -1845,38 +1845,10 @@ def collect_usa_bea_labor() -> DataFrame:
     # =========================================================================
     # Labor Series: A4601C0, 1929--2013
     # =========================================================================
-    ARCHIVE_NAMES = (
-        'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1929_1969.zip',
-        'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1929_1969.zip',
-        'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1969_2015.zip',
-        'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1969_2015.zip',
-        'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1969_2015.zip',
-    )
-    WB_NAMES = (
-        'Section6ALL_Hist.xls',
-        'Section6ALL_Hist.xls',
-        'Section6all_xls.xls',
-        'Section6all_xls.xls',
-        'Section6all_xls.xls',
-    )
-    SH_NAMES = (
-        '60800A Ann',
-        '60800B Ann',
-        '60800B Ann',
-        '60800C Ann',
-        '60800D Ann',
-    )
-    SERIES_ID = 'A4601C0'
-    df = pd.concat(
-        [
-            extract_usa_bea(archive_name, wb_name, sh_name, SERIES_ID)
-            for archive_name, wb_name, sh_name in zip(ARCHIVE_NAMES, WB_NAMES, SH_NAMES)
-        ],
-        axis=1,
-        sort=True
-    )
-    df[SERIES_ID] = df.mean(axis=1)
-    return df.iloc[:, [-1]].dropna(axis=0)
+    URL = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
+    SERIES_ID = 'A4601C'
+    _df_nipa = extract_usa_bea_from_url(URL)
+    return extract_usa_bea_from_loaded(_df_nipa, SERIES_ID)
 
 
 def collect_usa_bea_labor_mfg() -> DataFrame:
@@ -2087,80 +2059,79 @@ def collect_usa_sahr_infcf() -> DataFrame:
     return df.iloc[:, [-1]].dropna(axis=0)
 
 
-def collect_version_a():
-    '''Data Fetch Archived
-    Returns:
-        _data_a: Capital, Labor, Product;
-        _data_b: Capital, Labor, Product Adjusted to Capacity Utilisation'''
-    ARCHIVE_NAMES = (
-        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
-        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
+def collect_version_a() -> tuple[DataFrame]:
+    '''
+    Data Fetch Archived
+
+    Returns
+    -------
+    DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Capital Series
+    df.iloc[:, 1]      Labor Series
+    df.iloc[:, 2]      Product Series
+    ================== =================================
+    DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Capital Series
+    df.iloc[:, 1]      Labor Series
+    df.iloc[:, 2]      Product Series Adjusted to Capacity Utilisation
+    ================== =================================
+    '''
+    URLS = (
+        'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
     )
-    WB_NAMES = (
-        'Section1ALL_Hist.xls',
-        'Section1all_xls.xls',
+    SERIES_IDS = (
+        # =================================================================
+        # Fixed Assets: kcn31gd1es00, 1925--2016, Table 4.2. Chain-Type Quantity Indexes for Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
+        # =================================================================
+        'kcn31gd1es00',
+        # =================================================================
+        # Real Gross Domestic Product Series, 2012=100: A191RX, 1929--2012
+        # =================================================================
+        'A191RX',
     )
-    SH_NAME, SERIES_ID = ('10106 Ann', 'A191RX1')
-    KWARGS = {
-        'archive_name': 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip',
-        'wb_name': 'Section4ALL_xls.xls',
-        'sh_name': '402 Ann',
-        'series_id': 'kcn31gd1es000',
-    }
-    _data_a = pd.concat(
+    _df = pd.concat(
         [
-            # =================================================================
-            # Fixed Assets: kcn31gd1es000, 1925--2016, Table 4.2. Chain-Type Quantity Indexes for Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
-            # =================================================================
-            extract_usa_bea(**KWARGS),
+            pd.concat(
+                [
+                    extract_usa_bea_from_loaded(
+                        extract_usa_bea_from_url(url), series_id)
+                    for url, series_id in zip(URLS[::-1], SERIES_IDS)
+                ],
+                axis=1
+            ),
             # =================================================================
             # Manufacturing Labor Series: _4313C0, 1929--2020
             # =================================================================
             collect_usa_bea_labor_mfg(),
-            # =================================================================
-            # Real Gross Domestic Product Series, 2005=100: A191RX1, 1929--2012
-            # =================================================================
-            pd.concat(
-                [
-                    extract_usa_bea(archive_name, wb_name, SH_NAME, SERIES_ID)
-                    for archive_name, wb_name in zip(ARCHIVE_NAMES, WB_NAMES)
-                ],
-                sort=True
-            ).drop_duplicates(),
         ],
-        axis=1,
-        sort=True
+        axis=1
     ).dropna(axis=0)
-    _data_b = pd.concat(
+    # =========================================================================
+    # Below Method Is Not So Robust, But Changes the Ordering as Expected
+    # =========================================================================
+    _df = _df.reindex(columns=sorted(_df.columns)[::-1])
+    _df_adjusted = pd.concat(
         [
-            # =================================================================
-            # Fixed Assets: kcn31gd1es000, 1925--2016, Table 4.2. Chain-Type Quantity Indexes for Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
-            # =================================================================
-            extract_usa_bea(**KWARGS),
-            # =================================================================
-            # Manufacturing Labor Series: _4313C0, 1929--2020
-            # =================================================================
-            collect_usa_bea_labor_mfg(),
-            # =================================================================
-            # Real Gross Domestic Product Series, 2005=100: A191RX1, 1929--2012
-            # =================================================================
-            pd.concat(
-                [
-                    extract_usa_bea(archive_name, wb_name, SH_NAME, SERIES_ID)
-                    for archive_name, wb_name in zip(ARCHIVE_NAMES, WB_NAMES)
-                ],
-                sort=True
-            ).drop_duplicates(),
+            _df.copy(),
             # =================================================================
             # Capacity Utilization Series: CAPUTL.B50001.A, 1967--2012
             # =================================================================
             collect_usa_frb_cu(),
         ],
-        axis=1,
-        sort=True
+        axis=1
     ).dropna(axis=0)
-    _data_b.iloc[:, 2] = _data_b.iloc[:, 2].div(_data_b.iloc[:, 3]).mul(100)
-    return _data_a.div(_data_a.iloc[0, :]), _data_b.div(_data_b.iloc[0, :]).iloc[:, range(3)]
+    _df_adjusted.iloc[:, -2] = _df_adjusted.iloc[:, -2].div(
+        _df_adjusted.iloc[:, -1]
+    ).mul(100)
+    return (
+        _df.div(_df.iloc[0, :]),
+        _df_adjusted.div(_df_adjusted.iloc[0, :]).iloc[:, range(3)]
+    )
 
 
 def collect_version_b() -> tuple[DataFrame]:
