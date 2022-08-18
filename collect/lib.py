@@ -24,7 +24,6 @@ from extract.lib import extract_can_capital_series_ids_archived
 from extract.lib import extract_can_fixed_assets
 from extract.lib import extract_can_from_url
 from extract.lib import extract_can_quarter
-from extract.lib import extract_usa_bea
 from extract.lib import extract_usa_bea_from_loaded
 from extract.lib import extract_usa_bea_from_url
 from extract.lib import extract_usa_hist
@@ -37,7 +36,6 @@ from toolkit.lib import strip_cumulated_deflator
 
 ARCHIVE_NAMES_UTILISED = (
     'dataset_douglas.zip',
-    'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip',
     'dataset_usa_brown.zip',
     'dataset_usa_census1949.zip',
     'dataset_usa_census1975.zip',
@@ -412,10 +410,10 @@ def collect_bea_gdp() -> DataFrame:
         # =====================================================================
         'A191RX',
     )
-    _df = extract_usa_bea_from_url(URL)
+    _df_nipa = extract_usa_bea_from_url(URL)
     return pd.concat(
         [
-            extract_usa_bea_from_loaded(_df, series_id)
+            extract_usa_bea_from_loaded(_df_nipa, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1
@@ -1011,7 +1009,7 @@ def collect_cobb_douglas_deflator() -> DataFrame:
     # =========================================================================
     # Bureau of Economic Analysis
     # =========================================================================
-    _df = extract_usa_bea_from_url(URL)
+    _df_sfat = extract_usa_bea_from_url(URL)
     df = pd.concat(
         [
             # =================================================================
@@ -1031,10 +1029,7 @@ def collect_cobb_douglas_deflator() -> DataFrame:
             # =================================================================
             pd.concat(
                 [
-                    extract_usa_bea_from_loaded(**{
-                        'df': _df,
-                        'series_id': series_id,
-                    })
+                    extract_usa_bea_from_loaded(_df_sfat, series_id)
                     for series_id in SERIES_IDS_BE[:2]
                 ],
                 axis=1,
@@ -1882,10 +1877,10 @@ def collect_usa_bea_labor_mfg() -> DataFrame:
         # =====================================================================
         'N4313C',
     )
-    _df = extract_usa_bea_from_url(URL)
+    _df_nipa = extract_usa_bea_from_url(URL)
     df = pd.concat(
         [
-            extract_usa_bea_from_loaded(_df, series_id)
+            extract_usa_bea_from_loaded(_df_nipa, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -2136,26 +2131,41 @@ def collect_version_a() -> tuple[DataFrame]:
 
 def collect_version_b() -> tuple[DataFrame]:
     '''
+    Data Fetch Revised
+
     Returns
-        data_frame_a: Capital, Labor, Product;
-        data_frame_b: Capital, Labor, Product;
-        data_frame_c: Capital, Labor, Product Adjusted to Capacity Utilisation
+    -------
+    DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Capital Series
+    df.iloc[:, 1]      Labor Series
+    df.iloc[:, 2]      Product Series
+    ================== =================================
+    DataFrame
+    ================== =================================
+    df.index           Period Truncated
+    df.iloc[:, 0]      Capital Series
+    df.iloc[:, 1]      Labor Series
+    df.iloc[:, 2]      Product Series
+    ================== =================================
+    DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Capital Series
+    df.iloc[:, 1]      Labor Series
+    df.iloc[:, 2]      Product Series Adjusted to Capacity Utilisation
+    ================== =================================
     '''
-    # =========================================================================
-    # Data Fetch Revised
-    # =========================================================================
-    KWARGS = {
-        'archive_name': 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip',
-        'wb_name': 'Section4ALL_xls.xls',
-        'sh_name': '402 Ann',
-        'series_id': 'kcn31gd1es000',
-    }
-    data_frame_a = pd.concat(
+    URL = 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt'
+    SERIES_ID = 'kcn31gd1es00'
+    _df_sfat = extract_usa_bea_from_url(URL)
+    _df = pd.concat(
         [
             # =================================================================
-            # Fixed Assets: kcn31gd1es000, 1925--2016, Table 4.2. Chain-Type Quantity Indexes for Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
+            # Fixed Assets: kcn31gd1es00, 1925--2016, Table 4.2. Chain-Type Quantity Indexes for Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
             # =================================================================
-            extract_usa_bea(**KWARGS),
+            extract_usa_bea_from_loaded(_df_sfat, SERIES_ID),
             # =================================================================
             # Manufacturing Labor Series: _4313C0, 1929--2020
             # =================================================================
@@ -2165,38 +2175,26 @@ def collect_version_b() -> tuple[DataFrame]:
             # =================================================================
             collect_usa_frb_ip(),
         ],
-        axis=1,
-        sort=True
+        axis=1
     ).dropna(axis=0)
-    data_frame_b = data_frame_a.truncate(before=1967)
-    data_frame_c = pd.concat(
+    _df_adjusted = pd.concat(
         [
-            # =================================================================
-            # Fixed Assets: kcn31gd1es000, 1925--2016, Table 4.2. Chain-Type Quantity Indexes for Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
-            # =================================================================
-            extract_usa_bea(**KWARGS),
-            # =================================================================
-            # Manufacturing Labor Series: _4313C0, 1929--2020
-            # =================================================================
-            collect_usa_bea_labor_mfg(),
-            # =================================================================
-            # Manufacturing Series: FRB G17 IP, AIPMA_SA_IX, 1919--2018
-            # =================================================================
-            collect_usa_frb_ip(),
+            _df.copy(),
             # =================================================================
             # Capacity Utilization Series: CAPUTL.B50001.A, 1967--2012
             # =================================================================
             collect_usa_frb_cu(),
         ],
-        axis=1,
-        sort=True
+        axis=1
     ).dropna(axis=0)
-    data_frame_c.iloc[:, 2] = data_frame_c.iloc[:, 2].div(
-        data_frame_c.iloc[:, 3]).mul(100)
+    _df_adjusted.iloc[:, -2] = _df_adjusted.iloc[:, -2].div(
+        _df_adjusted.iloc[:, -1]
+    ).mul(100)
+    _df_truncated = _df.truncate(before=_df_adjusted.index[0])
     return (
-        data_frame_a.div(data_frame_a.iloc[0, :]),
-        data_frame_b.div(data_frame_b.iloc[0, :]),
-        data_frame_c.div(data_frame_c.iloc[0, :]).iloc[:, range(3)]
+        _df.div(_df.iloc[0, :]),
+        _df_truncated.div(_df_truncated.iloc[0, :]),
+        _df_adjusted.div(_df_adjusted.iloc[0, :]).iloc[:, range(3)]
     )
 
 
@@ -2220,7 +2218,7 @@ def collect_version_c() -> DataFrame:
         df_capital.iloc[:, 1])
     df = pd.concat(
         [
-            df_capital.iloc[:, 2],
+            df_capital.iloc[:, -1],
             # =================================================================
             # Data Fetch for Labor
             # =================================================================
@@ -2237,18 +2235,14 @@ def collect_version_c() -> DataFrame:
 
 
 def get_mean_for_min_std():
-    # =========================================================================
-    # Determine Year & Mean Value for Base Vectors for Year with Minimum StandardError
-    # =========================================================================
-    # =========================================================================
-    # Base Vector v123355112
-    # Base Vector v1235071986
-    # Base Vector v2057609
-    # Base Vector v2057818
-    # Base Vector v2523013
-    # =========================================================================
+    '''
+    Determine Year & Mean Value for Base Vectors for Year with Minimum StandardError
+    '''
     DIR = '/home/alexander/science'
     FILE_NAME = 'stat_can_lab.xlsx'
+    # =========================================================================
+    # Base Vectors
+    # =========================================================================
     SERIES_IDS = (
         'v123355112',
         'v1235071986',
