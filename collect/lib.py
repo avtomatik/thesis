@@ -16,20 +16,21 @@ from sklearn.linear_model import Lasso
 from sklearn.linear_model import LassoCV
 from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import Ridge
-from extract.lib import extract_can
 from extract.lib import extract_can_annual
 from extract.lib import extract_can_capital
-from extract.lib import extract_can_capital_series_ids
-from extract.lib import extract_can_capital_series_ids_archived
 from extract.lib import extract_can_fixed_assets
 from extract.lib import extract_can_from_url
 from extract.lib import extract_can_quarter
-from extract.lib import extract_usa_bea_from_loaded
 from extract.lib import extract_usa_bea_from_url
-from extract.lib import extract_usa_hist
 from extract.lib import extract_usa_frb_ms
-from extract.lib import extract_usa_mcconnel
 from extract.lib import extract_usa_fred
+from extract.lib import extract_usa_hist
+from extract.lib import extract_usa_mcconnel
+from extract.lib import retrieve_can
+from extract.lib import retrieve_can_capital_series_ids
+from extract.lib import retrieve_can_capital_series_ids_archived
+from extract.lib import retrieve_can_quarter
+from extract.lib import retrieve_usa_bea_from_cached
 from toolkit.lib import price_inverse_single
 from toolkit.lib import strip_cumulated_deflator
 
@@ -81,7 +82,7 @@ def collect_can():
     # =========================================================================
     URL = 'https://www150.statcan.gc.ca/n1/en/tbl/csv/36100096-eng.zip'
     capital = extract_can_from_url(URL, index_col=0, usecols=range(13))
-    capital = extract_can_capital(extract_can_capital_series_ids())
+    capital = extract_can_capital(retrieve_can_capital_series_ids())
     # =========================================================================
     # '''B. Labor Block: `v2523012`, Preferred Over `v3437501` Which Is Quarterly'''
     # '''`v2523012` - Table: 14-10-0027-01 (formerly CANSIM 282-0012): Employment\
@@ -89,7 +90,7 @@ def collect_can():
     # =========================================================================
     URL = 'https://www150.statcan.gc.ca/n1/tbl/csv/14100027-eng.zip'
     labor = extract_can_from_url(URL, index_col=0, usecols=range(13))
-    labor = extract_can(labor, 'v2523012')
+    labor = retrieve_can(labor, 'v2523012')
     # =========================================================================
     # '''C. Production Block: `v65201809`'''
     # '''`v65201809` - Table: 36-10-0434-01 (formerly CANSIM 379-0031): Gross\
@@ -102,7 +103,7 @@ def collect_can():
         usecols=range(13),
         parse_dates=True
     )
-    product = extract_can_quarter(product, 'v65201809')
+    product = retrieve_can_quarter(product, 'v65201809')
     df = pd.concat([capital, labor, product], axis=1, sort=True)
     # df = df.dropna(axis=0)
     df.columns = ('capital', 'labor', 'product',)
@@ -123,7 +124,7 @@ def collect_can():
             #     `v43976010`,  `v43976426`, `v43976842`, `v43977258`
             # =================================================================
             extract_can_fixed_assets(
-                extract_can_capital_series_ids_archived()),
+                retrieve_can_capital_series_ids_archived()),
             # =================================================================
             # B. Labor Block: `v2523012`, Preferred Over `v3437501` Which Is Quarterly
             # `v2523012` - 282-0012 Labour Force Survey Estimates (LFS), employment by class of worker, North American Industry Classification System (NAICS)\
@@ -240,7 +241,7 @@ def collect_can():
     #     'v43977050',
     # )
     capital = extract_can_fixed_assets(
-        extract_can_capital_series_ids_archived())
+        retrieve_can_capital_series_ids_archived())
     # =========================================================================
     # 3.i. Production Block: `v65201809`, Preferred Over `v65201536` Which Is Quarterly
     # 3.0. Production Block: `v65201809`
@@ -335,7 +336,7 @@ def collect_archived() -> DataFrame:
             extract_usa_fred(SERIES_ID),
             pd.concat(
                 [
-                    extract_usa_bea_from_loaded(_df_nipa, series_id)
+                    retrieve_usa_bea_from_cached(_df_nipa, series_id)
                     for series_id in SERIES_IDS
                 ],
                 axis=1
@@ -414,7 +415,7 @@ def collect_bea_gdp() -> DataFrame:
     _df_nipa = extract_usa_bea_from_url(URL)
     return pd.concat(
         [
-            extract_usa_bea_from_loaded(_df_nipa, series_id)
+            retrieve_usa_bea_from_cached(_df_nipa, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1
@@ -548,7 +549,7 @@ def collect_capital_combined_archived() -> DataFrame:
         [
             pd.concat(
                 [
-                    extract_usa_bea_from_loaded(_df_nipa, series_id)
+                    retrieve_usa_bea_from_cached(_df_nipa, series_id)
                     for series_id in SERIES_IDS
                 ],
                 axis=1
@@ -1030,7 +1031,7 @@ def collect_cobb_douglas_deflator() -> DataFrame:
             # =================================================================
             pd.concat(
                 [
-                    extract_usa_bea_from_loaded(_df_sfat, series_id)
+                    retrieve_usa_bea_from_cached(_df_sfat, series_id)
                     for series_id in SERIES_IDS_BE[:2]
                 ],
                 axis=1,
@@ -1409,9 +1410,6 @@ def collect_combined() -> DataFrame:
         # =====================================================================
         'kcptotl1es00',
     )
-    # =========================================================================
-    # TODO: Think About Lazy Evaluation & Singleton Pattern
-    # =========================================================================
     _df_nipa = extract_usa_bea_from_url(URLS[0])
     _df_sfat = extract_usa_bea_from_url(URLS[-1])
     return pd.concat(
@@ -1420,7 +1418,7 @@ def collect_combined() -> DataFrame:
                 [
                     pd.concat(
                         [
-                            extract_usa_bea_from_loaded(_df_nipa, series_id)
+                            retrieve_usa_bea_from_cached(_df_nipa, series_id)
                             for series_id in SERIES_IDS_NIPA[:8]
                         ],
                         axis=1
@@ -1428,7 +1426,7 @@ def collect_combined() -> DataFrame:
                     collect_usa_bea_labor_mfg(),
                     pd.concat(
                         [
-                            extract_usa_bea_from_loaded(_df_nipa, series_id)
+                            retrieve_usa_bea_from_cached(_df_nipa, series_id)
                             for series_id in SERIES_IDS_NIPA[8:]
                         ],
                         axis=1
@@ -1441,7 +1439,7 @@ def collect_combined() -> DataFrame:
             # =================================================================
             pd.concat(
                 [
-                    extract_usa_bea_from_loaded(_df_sfat, series_id)
+                    retrieve_usa_bea_from_cached(_df_sfat, series_id)
                     for series_id in SERIES_IDS_SFAT
                 ],
                 axis=1
@@ -1542,9 +1540,6 @@ def collect_combined_archived() -> DataFrame:
         # =====================================================================
         'kcptotl1es00',
     )
-    # =========================================================================
-    # TODO: Think About Lazy Evaluation & Singleton Pattern
-    # =========================================================================
     _df_nipa = extract_usa_bea_from_url(URLS[0])
     _df_sfat = extract_usa_bea_from_url(URLS[-1])
     return pd.concat(
@@ -1553,7 +1548,7 @@ def collect_combined_archived() -> DataFrame:
                 [
                     pd.concat(
                         [
-                            extract_usa_bea_from_loaded(_df_nipa, series_id)
+                            retrieve_usa_bea_from_cached(_df_nipa, series_id)
                             for series_id in SERIES_IDS_NIPA[:8]
                         ],
                         axis=1
@@ -1561,7 +1556,7 @@ def collect_combined_archived() -> DataFrame:
                     collect_usa_bea_labor_mfg(),
                     pd.concat(
                         [
-                            extract_usa_bea_from_loaded(_df_nipa, series_id)
+                            retrieve_usa_bea_from_cached(_df_nipa, series_id)
                             for series_id in SERIES_IDS_NIPA[8:]
                         ],
                         axis=1
@@ -1574,7 +1569,7 @@ def collect_combined_archived() -> DataFrame:
             # =================================================================
             pd.concat(
                 [
-                    extract_usa_bea_from_loaded(_df_sfat, series_id)
+                    retrieve_usa_bea_from_cached(_df_sfat, series_id)
                     for series_id in SERIES_IDS_SFAT
                 ],
                 axis=1
@@ -1634,9 +1629,6 @@ def collect_common_archived() -> DataFrame:
         # =====================================================================
         'k3n31gd1es00',
     )
-    # =========================================================================
-    # TODO: Think About Lazy Evaluation & Singleton Pattern
-    # =========================================================================
     _df_nipa = extract_usa_bea_from_url(URLS[0])
     _df_sfat = extract_usa_bea_from_url(URLS[-1])
     return pd.concat(
@@ -1644,8 +1636,8 @@ def collect_common_archived() -> DataFrame:
             pd.concat(
                 [
                     (
-                        extract_usa_bea_from_loaded(_df_nipa, series_id),
-                        extract_usa_bea_from_loaded(
+                        retrieve_usa_bea_from_cached(_df_nipa, series_id),
+                        retrieve_usa_bea_from_cached(
                             _df_nipa, series_id).rdiv(100)
                     )[series_id == 'A191RD']
                     for series_id in SERIES_IDS_NIPA
@@ -1654,7 +1646,7 @@ def collect_common_archived() -> DataFrame:
             ),
             pd.concat(
                 [
-                    extract_usa_bea_from_loaded(_df_sfat, series_id)
+                    retrieve_usa_bea_from_cached(_df_sfat, series_id)
                     for series_id in SERIES_IDS_SFAT
                 ],
                 axis=1
@@ -1709,23 +1701,20 @@ def collect_updated() -> DataFrame:
         # =====================================================================
         'kcn31gd1es00',
     )
-    # =========================================================================
-    # TODO: Think About Lazy Evaluation & Singleton Pattern
-    # =========================================================================
     _df_nipa = extract_usa_bea_from_url(URLS[0])
     _df_sfat = extract_usa_bea_from_url(URLS[-1])
     df = pd.concat(
         [
             pd.concat(
                 [
-                    extract_usa_bea_from_loaded(_df_nipa, series_id)
+                    retrieve_usa_bea_from_cached(_df_nipa, series_id)
                     for series_id in SERIES_IDS_NIPA
                 ],
                 axis=1
             ),
             pd.concat(
                 [
-                    extract_usa_bea_from_loaded(_df_sfat, series_id)
+                    retrieve_usa_bea_from_cached(_df_sfat, series_id)
                     for series_id in SERIES_IDS_SFAT
                 ],
                 axis=1
@@ -1762,7 +1751,7 @@ def collect_usa_bea_labor() -> DataFrame:
     URL = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
     SERIES_ID = 'A4601C'
     _df_nipa = extract_usa_bea_from_url(URL)
-    return extract_usa_bea_from_loaded(_df_nipa, SERIES_ID)
+    return retrieve_usa_bea_from_cached(_df_nipa, SERIES_ID)
 
 
 def collect_usa_bea_labor_mfg() -> DataFrame:
@@ -1799,7 +1788,7 @@ def collect_usa_bea_labor_mfg() -> DataFrame:
     _df_nipa = extract_usa_bea_from_url(URL)
     df = pd.concat(
         [
-            extract_usa_bea_from_loaded(_df_nipa, series_id)
+            retrieve_usa_bea_from_cached(_df_nipa, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -2012,7 +2001,7 @@ def collect_version_a() -> tuple[DataFrame]:
         [
             pd.concat(
                 [
-                    extract_usa_bea_from_loaded(
+                    retrieve_usa_bea_from_cached(
                         extract_usa_bea_from_url(url), series_id)
                     for url, series_id in zip(URLS[::-1], SERIES_IDS)
                 ],
@@ -2084,7 +2073,7 @@ def collect_version_b() -> tuple[DataFrame]:
             # =================================================================
             # Fixed Assets: kcn31gd1es00, 1925--2016, Table 4.2. Chain-Type Quantity Indexes for Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
             # =================================================================
-            extract_usa_bea_from_loaded(_df_sfat, SERIES_ID),
+            retrieve_usa_bea_from_cached(_df_sfat, SERIES_ID),
             # =================================================================
             # Manufacturing Labor Series: _4313C0, 1929--2020
             # =================================================================

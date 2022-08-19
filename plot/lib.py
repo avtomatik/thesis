@@ -23,8 +23,8 @@ from pandas.plotting import (
 )
 from collect.lib import transform_cobb_douglas
 from extract.lib import (
-    extract_series_ids,
-    extract_usa_census_description,
+    retrieve_series_ids,
+    retrieve_usa_census_description,
     extract_usa_hist,
     extract_usa_nber,
     extract_worldbank,
@@ -367,7 +367,7 @@ def plot_uscb_commodities(series_ids: tuple[str]) -> None:
     df = DataFrame()
     for series_id in series_ids:
         chunk = extract_usa_hist(ARCHIVE_NAME, series_id)
-        descr = extract_usa_census_description(ARCHIVE_NAME, series_id)
+        descr = retrieve_usa_census_description(ARCHIVE_NAME, series_id)
         print(f'<{series_id}> {descr}')
         df = pd.concat(
             [
@@ -585,7 +585,7 @@ def plot_uscb_finance() -> None:
     for _, series_id in enumerate(SERIES_IDS, start=1):
         df = extract_usa_hist(ARCHIVE_NAME, series_id)
         df = df.div(df.iloc[0, :]).mul(100)
-        descr = extract_usa_census_description(ARCHIVE_NAME, series_id)
+        descr = retrieve_usa_census_description(ARCHIVE_NAME, series_id)
         plt.figure(_)
         plt.plot(df, label=series_id)
         plt.title('{}, {}$-${}'.format(descr, *df.index[[0, -1]]))
@@ -1405,7 +1405,7 @@ def plot_douglas(
     -------
     None
     '''
-    _MAP_SERIES = extract_series_ids(archive_name)
+    _MAP_SERIES = retrieve_series_ids(archive_name)
     _SERIES_IDS = tuple(_MAP_SERIES.keys())
     if not legends is None:
         for _n, (_lw, _up, _tt, _mr, _lb) in enumerate(
