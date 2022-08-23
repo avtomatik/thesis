@@ -12,6 +12,7 @@ import re
 import sqlite3
 from zipfile import ZipFile
 from functools import cache
+from typing import Iterable
 import pandas as pd
 import requests
 from pandas import DataFrame
@@ -614,3 +615,41 @@ def filter_data_frame(df: DataFrame, query: dict[str]) -> DataFrame:
     for column, criterion in query['filter'].items():
         df = df[df.iloc[:, column] == criterion]
     return df
+
+
+def build_summed_data_frame(df: DataFrame, series_ids: Iterable[str]) -> DataFrame:
+    '''
+
+
+    Parameters
+    ----------
+    df : DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Series IDs
+    df.iloc[:, 1]      Values
+    ================== =================================
+    series_ids : Iterable[str]
+        DESCRIPTION.
+
+    Returns
+    -------
+    DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Sum of <series_ids>
+    ================== =================================
+    '''
+    assert df.shape[1] == 2
+    df = df[df.iloc[:, 0].isin(series_ids)]
+    df.iloc[:, 1] = pd.to_numeric(df.iloc[:, 1], errors='coerce')
+    df = pd.concat(
+        [
+            df[df.iloc[:, 0] == series_id].iloc[:, [1]]
+            for series_id in series_ids
+        ],
+        axis=1
+    )
+    df.columns = series_ids
+    df['sum'] = df.sum(axis=1)
+    return df.iloc[:, [-1]]

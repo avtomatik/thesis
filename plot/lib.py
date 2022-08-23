@@ -24,7 +24,7 @@ from pandas.plotting import (
 from collect.lib import transform_cobb_douglas
 from extract.lib import (
     retrieve_series_ids,
-    retrieve_usa_census_description,
+    retrieve_uscb_description,
     extract_usa_hist,
     extract_usa_nber,
     extract_worldbank,
@@ -367,7 +367,7 @@ def plot_uscb_commodities(series_ids: tuple[str]) -> None:
     df = DataFrame()
     for series_id in series_ids:
         chunk = extract_usa_hist(ARCHIVE_NAME, series_id)
-        descr = retrieve_usa_census_description(ARCHIVE_NAME, series_id)
+        descr = retrieve_uscb_description(series_id)
         print(f'<{series_id}> {descr}')
         df = pd.concat(
             [
@@ -585,7 +585,7 @@ def plot_uscb_finance() -> None:
     for _, series_id in enumerate(SERIES_IDS, start=1):
         df = extract_usa_hist(ARCHIVE_NAME, series_id)
         df = df.div(df.iloc[0, :]).mul(100)
-        descr = retrieve_usa_census_description(ARCHIVE_NAME, series_id)
+        descr = retrieve_uscb_description(series_id)
         plt.figure(_)
         plt.plot(df, label=series_id)
         plt.title('{}, {}$-${}'.format(descr, *df.index[[0, -1]]))
