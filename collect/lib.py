@@ -28,7 +28,6 @@ from extract.lib import extract_usa_hist
 from extract.lib import extract_usa_mcconnel
 from extract.lib import retrieve_can
 from extract.lib import retrieve_can_capital_series_ids
-from extract.lib import retrieve_can_capital_series_ids_archived
 from extract.lib import retrieve_can_quarter
 from extract.lib import retrieve_usa_bea_from_cached
 from toolkit.lib import price_inverse_single
@@ -63,6 +62,8 @@ URLS_UTILISED = (
 
 
 def collect_can():
+    archive_id = 36100096
+    params = (2012, "Straight-line end-year net stock", "industrial")
     # =========================================================================
     # '''A. Fixed Assets Block: `Industrial buildings`, `Industrial machinery`\
     # for `Newfoundland and Labrador`, `Prince Edward Island`, `Nova Scotia`, \
@@ -111,6 +112,8 @@ def collect_can():
 
 
 def collect_can():
+    archive_id = 310004
+    params = (2007, "Geometric (infinite) end-year net stock", "industrial")
     df = pd.concat(
         [
             # =================================================================
@@ -124,7 +127,7 @@ def collect_can():
             #     `v43976010`,  `v43976426`, `v43976842`, `v43977258`
             # =================================================================
             extract_can_fixed_assets(
-                retrieve_can_capital_series_ids_archived()),
+                retrieve_can_capital_series_ids()),
             # =================================================================
             # B. Labor Block: `v2523012`, Preferred Over `v3437501` Which Is Quarterly
             # `v2523012` - 282-0012 Labour Force Survey Estimates (LFS), employment by class of worker, North American Industry Classification System (NAICS)\
@@ -240,8 +243,10 @@ def collect_can():
     #     'v43979962', 'v43980378', 'v43975802', 'v43976218', 'v43976634',
     #     'v43977050',
     # )
+    archive_id = 310004
+    params = (2007, "Geometric (infinite) end-year net stock", "industrial")
     capital = extract_can_fixed_assets(
-        retrieve_can_capital_series_ids_archived())
+        retrieve_can_capital_series_ids())
     # =========================================================================
     # 3.i. Production Block: `v65201809`, Preferred Over `v65201536` Which Is Quarterly
     # 3.0. Production Block: `v65201809`

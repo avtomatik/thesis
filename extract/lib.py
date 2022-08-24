@@ -8,10 +8,10 @@ Created on Sun Jun 12 00:44:36 2022
 
 import io
 import os
-import re
 import sqlite3
 from zipfile import ZipFile
 from functools import cache
+from pathlib import Path
 from typing import Iterable
 import pandas as pd
 import requests
@@ -438,67 +438,39 @@ def extract_worldbank() -> DataFrame:
             return df.rename_axis('period')
 
 
-def retrieve_can_capital_series_ids_archived() -> list[str]:
+def retrieve_can_capital_series_ids(df: DataFrame, params: tuple[int, str]) -> list[str]:
     '''
-    Fetch <SERIES_IDS> from CANSIM Table 031-0004: Flows and stocks of fixed
-    non-residential capital, total all industries, by asset, provinces and
-    territories, annual (dollars x 1,000,000)
+    Retrieves Series IDs from Statistics Canada -- Fixed Assets Tables
+
+    Parameters
+    ----------
+    df : DataFrame
+    params : tuple[int, str]
+        param : BASE_YEAR : Basic Price Year.
+        param : CATEGORY : Estimate Basis.
+        param : COMPONENT : Search Key Word
+
+    Returns
+    -------
+    list[str]
+        SERIES_IDS.
     '''
-    ARCHIVE_NAME = "dataset_can_00310004-eng.zip"
-    _df = pd.read_csv(
-        ARCHIVE_NAME,
-        usecols=("PRICES", "CATEGORY", "COMPONENT", "Vector", )
-    )
-    with sqlite3.connect("/home/alexander/science/capital.db") as conn:
+    DIR = Path("/home/alexander/science")
+    DBNAME = "capital"
+    stmt = f"""
+    SELECT series_id FROM {DBNAME}
+    WHERE
+        prices LIKE '%{params[0]} constant prices%'
+        AND category = '{params[1]}'
+        AND lower(component) LIKE '%{params[-1]}%'
+    ;
+    """
+    with sqlite3.connect(DIR.joinpath(f"{DBNAME}.db")) as conn:
         cursor = conn.cursor()
-        _df.to_sql("capital", conn, if_exists="replace", index=False)
-        stmt = """
-        SELECT Vector FROM capital
-        WHERE
-            PRICES LIKE '%2007 constant prices%'
-            AND CATEGORY = 'Geometric (infinite) end-year net stock'
-            AND lower(COMPONENT) LIKE '%industrial%'
-            ;
-        """
+        df.to_sql(DBNAME, conn, if_exists="replace", index=False)
         cursor = conn.execute(stmt)
         rows = cursor.fetchall()
         return sorted(set(_[0] for _ in rows))
-
-
-def retrieve_can_capital_series_ids(df: DataFrame) -> list[str]:
-    '''
-    Fetch <SERIES_IDS> from Statistics Canada. Table: 36-10-0238-01\
-    (formerly CANSIM 031-0004): Flows and stocks of fixed non-residential\
-    capital, total all industries, by asset, provinces and territories, annual\
-    (dollars x 1,000,000)
-    '''
-    # =========================================================================
-    # ?: 36100096-eng.zip'
-    # =========================================================================
-    # =========================================================================
-    # usecols = (3, 5, 6, 11)
-    # =========================================================================
-    query = (df.iloc[:, 0].str.contains('2007 constant prices')) &\
-            (df.iloc[:, 1] == 'Straight-line end-year net stock') &\
-            (df.iloc[:, 2].str.contains('Industrial'))
-    df = df[query]
-    return sorted(set(df.iloc[:, -1]))
-
-
-def retrieve_can_capital_series_ids() -> list[str]:
-    '''
-    Fetch <SERIES_IDS> from Statistics Canada. Table: 36-10-0238-01 (formerly
-    CANSIM 031-0004): Flows and stocks of fixed non-residential capital, total
-    all industries, by asset, provinces and territories, annual
-    (dollars x 1,000,000)
-    '''
-    URL = 'https://www150.statcan.gc.ca/n1/en/tbl/csv/36100096-eng.zip'
-    df = extract_can_from_url(URL, usecols=(3, 4, 5, 11))
-    query = (df.iloc[:, 0].str.contains('2012 constant prices')) & \
-            (df.iloc[:, 1].str.contains('manufacturing', flags=re.IGNORECASE)) & \
-            (df.iloc[:, 2] == 'Linear end-year net stock')
-    df = df[query]
-    return sorted(set(df.iloc[:, -1]))
 
 
 def retrieve_can(_df: DataFrame, series_id: str) -> DataFrame:
