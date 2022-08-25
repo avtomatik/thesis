@@ -11,12 +11,16 @@ Created on Sun Jun 12 16:24:57 2022
 # Stores Unused or Test Codes
 # =============================================================================
 import os
+import sqlite3
 import pandas as pd
 from pandas import DataFrame
 from extract.lib import (
-    extract_can_quarter,
     extract_usa_bea,
+    extract_usa_bea_from_url,
+    read_pull_can_quarter,
+    retrieve_usa_bea_from_cached,
 )
+
 
 # =============================================================================
 # Separate Chunk of Code
@@ -409,7 +413,7 @@ def collect_usa_xlsm() -> DataFrame:
         [
             pd.concat(
                 [
-                    extract_usa_bea_from_loaded(_df, series_id)
+                    retrieve_usa_bea_from_cached(_df, series_id)
                     for series_id in SERIES_IDS
                 ],
                 axis=1
@@ -506,5 +510,5 @@ _df_semi_d = pd.concat(
 extract_can_group_a(7931814471809016759, skiprows=241)
 extract_can_group_a(8448814858763853126, skiprows=81)
 extract_can_group_b(5245628780870031920, skiprows=3)
-extract_can_quarter(3800068, 'v62143969')
-extract_can_quarter(3800068, 'v62143990')
+read_pull_can_quarter(3800068, 'v62143969')
+read_pull_can_quarter(3800068, 'v62143990')

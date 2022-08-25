@@ -8,14 +8,16 @@ Created on Sun Jun 12 12:19:54 2022
 
 
 from functools import partial
-from pandas import DataFrame
 import pandas as pd
-from extract.lib import extract_can_annual
-from extract.lib import extract_can_quarter
+from pandas import DataFrame
+from pandas.plotting import autocorrelation_plot
 from extract.lib import extract_usa_bea
 from extract.lib import extract_usa_bls
-from extract.lib import extract_usa_census
-from extract.lib import extract_usa_classic
+from extract.lib import extract_usa_hist
+from extract.lib import pull_can_annual
+from extract.lib import read_manager_can_annual
+from extract.lib import read_pull_can_quarter
+from plot.lib import plot_can_test
 
 
 ARCHIVE_NAMES_UTILISED = (
@@ -51,7 +53,7 @@ def options():
         'DT63AS03',
     )
     [
-        print(extract_usa_classic(ARCHIVE_NAME, series_id))
+        print(extract_usa_hist(ARCHIVE_NAME, series_id))
         for series_id in SERIES_IDS
     ]
 
@@ -93,14 +95,15 @@ def test_data_consistency_a():
         [
             pd.concat(
                 [
-                    extract_can_quarter(*_args) for _args in ARGS[:3]
+                    read_pull_can_quarter(*_args) for _args in ARGS[:3]
                 ],
                 axis=1,
                 sort=True
             ),
             pd.concat(
                 [
-                    extract_can_annual(*_args) for _args in ARGS[3:]
+                    pull_can_annual(read_manager_can_annual(_args[0]), _args[1])
+                    for _args in ARGS[3:]
                 ],
                 axis=1,
                 sort=True
@@ -291,8 +294,8 @@ def test_douglas() -> None:
     )
     df = pd.concat(
         [
-            partial(extract_usa_census, **_kwargs[0])(),
-            partial(extract_usa_classic, **_kwargs[1])(),
+            partial(extract_usa_hist, **_kwargs[0])(),
+            partial(extract_usa_hist, **_kwargs[1])(),
         ],
         axis=1
     )
@@ -316,7 +319,7 @@ def test_douglas() -> None:
     )
     df = pd.concat(
         [
-            partial(extract_usa_classic, **kwargs)() for kwargs in _kwargs
+            partial(extract_usa_hist, **kwargs)() for kwargs in _kwargs
         ],
         axis=1
     )

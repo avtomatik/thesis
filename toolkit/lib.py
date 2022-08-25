@@ -15,7 +15,7 @@ from scipy.interpolate import UnivariateSpline
 import scipy.optimize as optimization
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
-from extract.lib import extract_can_from_url
+from extract.lib import read_from_url_can
 
 
 def calculate_capital(df: DataFrame, p_i: tuple[float], p_t: tuple[float], ratio: float):
@@ -881,7 +881,7 @@ def build_load_data_frame(file_name: str, blueprint: dict) -> None:
     '''
     df = DataFrame()
     for item in blueprint:
-        _df = extract_can_from_url(
+        _df = read_from_url_can(
             string_to_url(item['file_name']),
             index_col=0,
             usecols=range(14),

@@ -8,29 +8,30 @@ Thesis Project
 '''
 
 
+import itertools
 import os
 from collect.lib import collect_archived
-from collect.lib import collect_can
-from collect.lib import collect_uscb_production
-from collect.lib import collect_uscb_cap
-from collect.lib import collect_uscb_cap_deflator
-from collect.lib import collect_uscb_metals
-from collect.lib import collect_uscb_immigration
-from collect.lib import collect_uscb_employment
-from collect.lib import collect_uscb_gnp
-from collect.lib import collect_uscb_trade
-from collect.lib import collect_uscb_trade_gold_silver
-from collect.lib import collect_uscb_trade_by_countries
-from collect.lib import collect_uscb_money_stock
 from collect.lib import collect_cobb_douglas
 from collect.lib import collect_combined
 from collect.lib import collect_combined_archived
 from collect.lib import collect_douglas
 from collect.lib import collect_updated
 from collect.lib import collect_usa_mcconnel
+from collect.lib import collect_uscb_cap
+from collect.lib import collect_uscb_cap_deflator
+from collect.lib import collect_uscb_employment
+from collect.lib import collect_uscb_gnp
+from collect.lib import collect_uscb_immigration
+from collect.lib import collect_uscb_metals
+from collect.lib import collect_uscb_money_stock
+from collect.lib import collect_uscb_production
+from collect.lib import collect_uscb_trade
+from collect.lib import collect_uscb_trade_by_countries
+from collect.lib import collect_uscb_trade_gold_silver
 from collect.lib import collect_version_a
 from collect.lib import collect_version_b
 from collect.lib import collect_version_c
+from collect.lib import construct_can
 from collect.lib import transform_a
 from collect.lib import transform_b
 from collect.lib import transform_c
@@ -45,22 +46,7 @@ from plot.lib import plot_approx_log_linear
 from plot.lib import plot_b
 from plot.lib import plot_c
 from plot.lib import plot_capital_modelling
-from plot.lib import plot_uscb_production
-from plot.lib import plot_uscb_cap
-from plot.lib import plot_uscb_cap_deflator
-from plot.lib import plot_uscb_metals
 from plot.lib import plot_census_complex
-from plot.lib import plot_uscb_commodities
-from plot.lib import plot_uscb_immigration
-from plot.lib import plot_uscb_unemployment_hours_worked
-from plot.lib import plot_uscb_employment_conflicts
-from plot.lib import plot_uscb_gnp
-from plot.lib import plot_uscb_farm_lands
-from plot.lib import plot_uscb_trade
-from plot.lib import plot_uscb_trade_gold_silver
-from plot.lib import plot_uscb_trade_by_countries
-from plot.lib import plot_uscb_money_stock
-from plot.lib import plot_uscb_finance
 from plot.lib import plot_cobb_douglas
 from plot.lib import plot_cobb_douglas_3d
 from plot.lib import plot_cobb_douglas_complex
@@ -75,6 +61,21 @@ from plot.lib import plot_kol_zur_filter
 from plot.lib import plot_kurenkov
 from plot.lib import plot_pearson_r_test
 from plot.lib import plot_rolling_mean_filter
+from plot.lib import plot_uscb_cap
+from plot.lib import plot_uscb_cap_deflator
+from plot.lib import plot_uscb_commodities
+from plot.lib import plot_uscb_employment_conflicts
+from plot.lib import plot_uscb_farm_lands
+from plot.lib import plot_uscb_finance
+from plot.lib import plot_uscb_gnp
+from plot.lib import plot_uscb_immigration
+from plot.lib import plot_uscb_metals
+from plot.lib import plot_uscb_money_stock
+from plot.lib import plot_uscb_production
+from plot.lib import plot_uscb_trade
+from plot.lib import plot_uscb_trade_by_countries
+from plot.lib import plot_uscb_trade_gold_silver
+from plot.lib import plot_uscb_unemployment_hours_worked
 from toolkit.lib import calculate_power_function_fit_params_a
 from toolkit.lib import calculate_power_function_fit_params_b
 from toolkit.lib import calculate_power_function_fit_params_c
@@ -243,7 +244,7 @@ def main():
         'fg_e': 'Chart V Relative Final Productivities of Labor and Capital',
         'year_price': 2007,
     }
-    _df = collect_can()
+    _df = construct_can()
     _df = _df.div(_df.iloc[0, :])
     plot_cobb_douglas(
         *transform_cobb_douglas(_df),

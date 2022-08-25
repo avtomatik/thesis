@@ -8,7 +8,7 @@ Created on Wed Sep  1 21:22:23 2021
 
 import os
 import pandas as pd
-from extract.lib import extract_can_from_url
+from extract.lib import read_from_url_can
 
 
 def url_to_file_name(_url: str) -> str:
@@ -66,7 +66,7 @@ def main():
 
     with open(os.path.join(DIR, 'stat_can_dump.txt'), 'w') as f:
         for url in sorted(urls_to_check):
-            _df = extract_can_from_url(url)
+            _df = read_from_url_can(url)
             print(url, file=f)
             print(f"Periods Length: {len(set(_df['REF_DATE'])):3};", file=f)
             print(_df['REF_DATE'].unique(), file=f)

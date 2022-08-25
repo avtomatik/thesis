@@ -6,7 +6,7 @@ Created on Sat Jun 18 11:29:40 2022
 @author: alexander
 """
 
-from collect.lib import collect_can
+from collect.lib import construct_can
 from collect.lib import transform_cobb_douglas
 from plot.lib import plot_cobb_douglas
 from plot.lib import plot_cobb_douglas_3d
@@ -25,7 +25,7 @@ def main():
         'year_price': 2007,
     }
 
-    _df = collect_can()
+    _df = construct_can()
     plot_cobb_douglas(
         *transform_cobb_douglas(_df),
         MAP_FIG

@@ -10,25 +10,26 @@ import os
 import itertools
 import numpy as np
 import pandas as pd
+from patlib import Path
 from pandas import DataFrame
 from scipy import signal
-from sklearn.linear_model import Lasso
-from sklearn.linear_model import LassoCV
+# from sklearn.linear_model import Lasso
+# from sklearn.linear_model import LassoCV
 from sklearn.linear_model import LinearRegression
-from sklearn.linear_model import Ridge
-from extract.lib import extract_can_annual
-from extract.lib import extract_can_capital
-from extract.lib import extract_can_fixed_assets
-from extract.lib import extract_can_from_url
-from extract.lib import extract_can_quarter
+# from sklearn.linear_model import Ridge
 from extract.lib import extract_usa_bea_from_url
 from extract.lib import extract_usa_frb_ms
 from extract.lib import extract_usa_fred
 from extract.lib import extract_usa_hist
 from extract.lib import extract_usa_mcconnel
-from extract.lib import retrieve_can
-from extract.lib import retrieve_can_capital_series_ids
-from extract.lib import retrieve_can_quarter
+from extract.lib import read_manager_can
+from extract.lib import read_manager_can_annual
+from extract.lib import read_pull_can_quarter
+from extract.lib import pull_can
+from extract.lib import pull_can_annual
+from extract.lib import pull_can_capital
+from extract.lib import pull_can_capital_former
+from extract.lib import pull_can_quarter
 from extract.lib import retrieve_usa_bea_from_cached
 from toolkit.lib import price_inverse_single
 from toolkit.lib import strip_cumulated_deflator
@@ -55,224 +56,104 @@ URLS_UTILISED = (
     'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
     'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
     'https://www.federalreserve.gov/datadownload/Output.aspx?rel=g17&filetype=zip',
-    'https://www150.statcan.gc.ca/n1/en/tbl/csv/36100096-eng.zip',
-    'https://www150.statcan.gc.ca/n1/tbl/csv/14100027-eng.zip',
-    'https://www150.statcan.gc.ca/n1/tbl/csv/36100434-eng.zip',
 )
 
 
-def collect_can():
-    archive_id = 36100096
-    params = (2012, "Straight-line end-year net stock", "industrial")
-    # =========================================================================
-    # '''A. Fixed Assets Block: `Industrial buildings`, `Industrial machinery`\
-    # for `Newfoundland and Labrador`, `Prince Edward Island`, `Nova Scotia`, \
-    # `New Brunswick`, `Quebec`, `Ontario`, `Manitoba`, `Saskatchewan`, `Alberta`, \
-    # `British Columbia`, `Yukon`, `Northwest Territories`, `Nunavut`'''
-    # '''2007 constant prices'''
-    # '''Geometric (infinite) end-year net stock'''
-    # '''Industrial buildings (x 1,000,000): `v43975603`, `v43977683`, `v43978099`, \
-    # `v43978515`, `v43978931`, `v43979347`, `v43979763`, `v43980179`, `v43980595`, \
-    # `v43976019`, `v43976435`, `v43976851`, `v43977267`'''
-    # '''Industrial machinery (x 1,000,000): `v43975594`, `v43977674`, `v43978090`, \
-    # `v43978506`, `v43978922`, `v43979338`, `v43979754`, `v43980170`, `v43980586`, \
-    # `v43976010`, `v43976426`, `v43976842`, `v43977258`'''
-    # '''Table: 36-10-0238-01 (formerly CANSIM 031-0004): Flows and stocks of\
-    # fixed non-residential capital, total all industries, by asset, provinces\
-    # and territories, annual (dollars x 1,000,000)'''
-    # =========================================================================
-    URL = 'https://www150.statcan.gc.ca/n1/en/tbl/csv/36100096-eng.zip'
-    capital = extract_can_from_url(URL, index_col=0, usecols=range(13))
-    capital = extract_can_capital(retrieve_can_capital_series_ids())
-    # =========================================================================
-    # '''B. Labor Block: `v2523012`, Preferred Over `v3437501` Which Is Quarterly'''
-    # '''`v2523012` - Table: 14-10-0027-01 (formerly CANSIM 282-0012): Employment\
-    # by class of worker, annual (x 1,000)'''
-    # =========================================================================
-    URL = 'https://www150.statcan.gc.ca/n1/tbl/csv/14100027-eng.zip'
-    labor = extract_can_from_url(URL, index_col=0, usecols=range(13))
-    labor = retrieve_can(labor, 'v2523012')
-    # =========================================================================
-    # '''C. Production Block: `v65201809`'''
-    # '''`v65201809` - Table: 36-10-0434-01 (formerly CANSIM 379-0031): Gross\
-    # domestic product (GDP) at basic prices, by industry, monthly (x 1,000,000)'''
-    # =========================================================================
-    URL = 'https://www150.statcan.gc.ca/n1/tbl/csv/36100434-eng.zip'
-    product = extract_can_from_url(
-        URL,
-        index_col=0,
-        usecols=range(13),
-        parse_dates=True
-    )
-    product = retrieve_can_quarter(product, 'v65201809')
-    df = pd.concat([capital, labor, product], axis=1, sort=True)
-    # df = df.dropna(axis=0)
-    df.columns = ('capital', 'labor', 'product',)
+def construct_can():
+    DIR = Path("/home/alexander/science")
+    ARCHIVE_IDS = {
+        # =====================================================================
+        # Capital
+        # =====================================================================
+        36100096: (
+            2012,
+            "Manufacturing",
+            "Linear end-year net stock",
+            (
+                "Non-residential buildings",
+                "Engineering construction",
+                "Machinery and equipment"
+            )
+        ),
+        # =====================================================================
+        # Labor : "v2523012", Preferred Over "v3437501" Which Is Quarterly
+        # =====================================================================
+        14100027: 'v2523012',
+        # =====================================================================
+        # Production
+        # =====================================================================
+        36100434: 'v65201809',
+    }
+    if Path(DIR).joinpath(f'{tuple(ARCHIVE_IDS)[0]}_preloaded.csv').is_file():
+        _df = pd.read_csv(
+            Path(DIR).joinpath(f'{tuple(ARCHIVE_IDS)[0]}_preloaded.csv'),
+            index_col=0
+        )
+    else:
+        _df = read_manager_can(tuple(ARCHIVE_IDS)[0])
+        # =====================================================================
+        # WARNING : VERY EXPENSIVE OPERATION !
+        # =====================================================================
+        _df = pull_can_capital(_df, ARCHIVE_IDS.get(tuple(ARCHIVE_IDS)[0]))
+        # =====================================================================
+        # Kludge
+        # =====================================================================
+        _df = _df.set_index(_df.iloc[:, 0]).loc[:, _df.columns[1:]]
+    df = pd.concat(
+        [
+            transform_sum(_df.loc[:, ('series_id', 'value')]),
+            pull_can(
+                read_manager_can(tuple(ARCHIVE_IDS)[1]),
+                ARCHIVE_IDS.get(tuple(ARCHIVE_IDS)[1])
+            ),
+            pull_can_quarter(
+                read_manager_can(tuple(ARCHIVE_IDS)[-1]),
+                ARCHIVE_IDS.get(tuple(ARCHIVE_IDS)[-1])
+            )
+        ],
+        axis=1
+    ).dropna(axis=0)
+    df.columns = ('capital', 'labor', 'product')
     return df.div(df.iloc[0, :])
 
 
-def collect_can():
-    archive_id = 310004
-    params = (2007, "Geometric (infinite) end-year net stock", "industrial")
+def construct_can_former():
+    ARCHIVE_IDS = {
+        # =====================================================================
+        # Capital
+        # =====================================================================
+        310004: (2007, "Geometric (infinite) end-year net stock", "industrial"),
+        # =====================================================================
+        # Labor : "v2523012", Preferred Over "v3437501" Which Is Quarterly
+        # =====================================================================
+        2820012: 'v2523012',
+        # =====================================================================
+        # Production
+        # =====================================================================
+        3790031: 'v65201809',
+    }
+    _df = read_manager_can_annual(tuple(ARCHIVE_IDS)[0])
+    _df = pull_can_capital_former(_df, ARCHIVE_IDS.get(tuple(ARCHIVE_IDS)[0]))
+    # =========================================================================
+    # Kludge
+    # =========================================================================
+    _df = _df.set_index(_df.iloc[:, 0]).loc[:, _df.columns[1:]]
     df = pd.concat(
         [
-            # =================================================================
-            # A. Fixed Assets Block: `Industrial buildings`, `Industrial machinery` for `Newfoundland and Labrador`, `Prince Edward Island`, `Nova Scotia`, `New Brunswick`, \
-            #     `Quebec`, `Ontario`, `Manitoba`, `Saskatchewan`, `Alberta`, `British Columbia`, `Yukon`, `Northwest Territories`, `Nunavut`
-            # 2007 constant prices
-            # Geometric (infinite) end-year net stock
-            # Industrial buildings (x 1,000,000): `v43975603`, `v43977683`, `v43978099`, `v43978515`, `v43978931`, `v43979347`, `v43979763`, `v43980179`, `v43980595`, \
-            #     `v43976019`, `v43976435`, `v43976851`, `v43977267`
-            # Industrial machinery (x 1,000,000): `v43975594`, `v43977674`, `v43978090`, `v43978506`, `v43978922`, `v43979338`, `v43979754`, `v43980170`, `v43980586`, \
-            #     `v43976010`,  `v43976426`, `v43976842`, `v43977258`
-            # =================================================================
-            extract_can_fixed_assets(
-                retrieve_can_capital_series_ids()),
-            # =================================================================
-            # B. Labor Block: `v2523012`, Preferred Over `v3437501` Which Is Quarterly
-            # `v2523012` - 282-0012 Labour Force Survey Estimates (LFS), employment by class of worker, North American Industry Classification System (NAICS)\
-            # and sex; Canada; Total employed, all class of workers; Manufacturing; Both sexes (x 1,000) (annual, 1987 to 2017)
-            # =================================================================
-            extract_can_annual(2820012, 'v2523012'),
-            # =================================================================
-            # C. Production Block: `v65201809`
-            # `v65201809` - 379-0031 Gross domestic product (GDP) at basic prices, by North American Industry Classification System (NAICS); Canada; Trading-day\
-            # adjusted; 2007 constant prices; Manufacturing (x 1,000,000) (monthly, 1997-01-01 to 2017-10-01)
-            # =================================================================
-            extract_can_quarter(3790031, 'v65201809'),
+            transform_sum(_df.loc[:, ('series_id', 'value')]),
+            pull_can_annual(
+                read_manager_can_annual(tuple(ARCHIVE_IDS)[1]),
+                ARCHIVE_IDS.get(tuple(ARCHIVE_IDS)[1])
+            ),
+            read_pull_can_quarter(
+                tuple(ARCHIVE_IDS)[-1],
+                ARCHIVE_IDS.get(tuple(ARCHIVE_IDS)[-1])
+            ),
         ],
-        axis=1,
-        sort=True
+        axis=1
     ).dropna(axis=0)
-    df.columns = ('capital', 'labor', 'product',)
-    return df
-
-
-def collect_can():
-    # =========================================================================
-    # Number 1. CANSIM Table 282-0012 Labour Force Survey Estimates (LFS), employment by class of worker, North American Industry Classification\
-    # System (NAICS) and sex
-    # Number 2. CANSIM Table 03790031
-    # Title: Gross domestic product (GDP) at basic prices, by North American Industry Classification System (NAICS)
-    # Measure: monthly (dollars x 1,000,000)
-    # Number 3. CANSIM Table 03800068
-    # Title: Gross fixed capital formation
-    # Measure: quarterly (dollars x 1,000,000)
-    # Number 4. CANSIM Table 031-0004: Flows and stocks of fixed non-residential capital, total all industries, by asset, provinces and territories, \
-    # annual (dollars x 1,000,000)
-    # Number 5. CANSIM Table 03790028
-    # Title: Gross domestic product (GDP) at basic prices, by North American Industry Classification System (NAICS), provinces and territories
-    # Measure: annual (percentage share)
-    # Number 6. CANSIM Table 03800001
-    # Title: Gross domestic product (GDP), income-based, *Terminated*
-    # Measure: quarterly (dollars x 1,000,000)
-    # Number 7. CANSIM Table 03800002
-    # Title: Gross domestic product (GDP), expenditure-based, *Terminated*
-    # Measure: quarterly (dollars x 1,000,000)
-    # Number 8. CANSIM Table 03800063
-    # Title: Gross domestic product, income-based
-    # Measure: quarterly (dollars x 1,000,000)
-    # Number 9. CANSIM Table 03800064
-    # Title: Gross domestic product, expenditure-based
-    # Measure: quarterly (dollars x 1,000,000)
-    # Number 10. CANSIM Table 03800069
-    # Title: Investment in inventories
-    # Measure: quarterly (dollars unless otherwise noted)
-    # =========================================================================
-    # =========================================================================
-    # 1.0. Labor Block: `v2523012`, Preferred Over `v3437501` Which Is Quarterly
-    # `v2523012` - 282-0012 Labour Force Survey Estimates (LFS), employment by class of worker, North American Industry Classification System (NAICS)\
-    # and sex; Canada; Total employed, all class of workers; Manufacturing; Both sexes (x 1,000) (annual, 1987 to 2017)
-    labor = extract_can_annual(2820012, 'v2523012')
-    # 1.1. Labor Block, Alternative Option Not Used
-    # `v3437501` - 282-0011 Labour Force Survey estimates (LFS), employment by class of worker, North American Industry Classification System (NAICS)\
-    # and sex, unadjusted for seasonality; Canada; Total employed, all classes of workers; Manufacturing; Both sexes (x 1,000) (monthly, 1987-01-01 to\
-    # 2017-12-01)
-    # =========================================================================
-    # =========================================================================
-    # extract_can_quarter(2820011, 'v3437501')
-    # =========================================================================
-    # =========================================================================
-    # 2.i. Fixed Assets Block: `Industrial buildings`, `Industrial machinery` for `Newfoundland and Labrador`, `Prince Edward Island`, `Nova Scotia`, `New Brunswick`, \
-    # `Quebec`, `Ontario`, `Manitoba`, `Saskatchewan`, `Alberta`, `British Columbia`, `Yukon`, `Northwest Territories`, `Nunavut`
-    # 2.0. 2007 constant prices
-    # Geometric (infinite) end-year net stock
-    # Industrial buildings (x 1,000,000): `v43975603`, `v43977683`, `v43978099`, `v43978515`, `v43978931`, `v43979347`, `v43979763`, `v43980179`, `v43980595`, \
-    # `v43976019`, `v43976435`, `v43976851`, `v43977267`
-    # Industrial machinery (x 1,000,000): `v43975594`, `v43977674`, `v43978090`, `v43978506`, `v43978922`, `v43979338`, `v43979754`, `v43980170`, `v43980586`, \
-    # `v43976010`, `v43976426`, `v43976842`, `v43977258`
-    # =========================================================================
-    SERIES_IDS = (
-        'v43975603', 'v43977683', 'v43978099', 'v43978515', 'v43978931',
-        'v43979347', 'v43979763', 'v43980179', 'v43980595', 'v43976019',
-        'v43976435', 'v43976851', 'v43977267', 'v43975594', 'v43977674',
-        'v43978090', 'v43978506', 'v43978922', 'v43979338', 'v43979754',
-        'v43980170', 'v43980586', 'v43976010', 'v43976426', 'v43976842',
-        'v43977258',
-    )
-    # =========================================================================
-    # 2.1. Fixed Assets Block, Alternative Option Not Used
-    # 2.1.1. Chained (2007) dollars
-    # Geometric (infinite) end-year net stock
-    # Industrial buildings (x 1,000,000): `v43980803`, `v43981843`, `v43982051`, `v43982259`, `v43982467`, `v43982675`, `v43982883`, `v43983091`, `v43983299`, \
-    # `v43981011`, `v43981219`, `v43981427`, `v43981635`
-    # Industrial machinery (x 1,000,000): `v43980794`, `v43981834`, `v43982042`, `v43982250`, `v43982458`, `v43982666`, `v43982874`, `v43983082`, `v43983290`, \
-    # `v43981002`, `v43981210`, `v43981418`, `v43981626`
-    # =========================================================================
-    # SERIES_IDS = (
-    #     'v43980803', 'v43981843', 'v43982051', 'v43982259', 'v43982467',
-    #     'v43982675', 'v43982883', 'v43983091', 'v43983299', 'v43981011',
-    #     'v43981219', 'v43981427', 'v43981635', 'v43980794', 'v43981834',
-    #     'v43982042', 'v43982250', 'v43982458', 'v43982666', 'v43982874',
-    #     'v43983082', 'v43983290', 'v43981002', 'v43981210', 'v43981418',
-    #     'v43981626',
-    # )
-    # =========================================================================
-    # 2.1.2. Current prices
-    # Geometric (infinite) end-year net stock
-    # Industrial buildings (x 1,000,000): `v43975395`, `v43977475`, `v43977891`, `v43978307`, `v43978723`, `v43979139`, `v43979555`, `v43979971`, `v43980387`, \
-    # `v43975811`, `v43976227`, `v43976643`, `v43977059`
-    # Industrial machinery (x 1,000,000): `v43975386`, `v43977466`, `v43977882`, `v43978298`, `v43978714`, `v43979130`, `v43979546`, `v43979962`, `v43980378`, \
-    # `v43975802`, `v43976218`, `v43976634`, `v43977050`
-    # =========================================================================
-    # SERIES_IDS = (
-    #     'v43975395', 'v43977475', 'v43977891', 'v43978307', 'v43978723',
-    #     'v43979139', 'v43979555', 'v43979971', 'v43980387', 'v43975811',
-    #     'v43976227', 'v43976643', 'v43977059', 'v43975386', 'v43977466',
-    #     'v43977882', 'v43978298', 'v43978714', 'v43979130', 'v43979546',
-    #     'v43979962', 'v43980378', 'v43975802', 'v43976218', 'v43976634',
-    #     'v43977050',
-    # )
-    archive_id = 310004
-    params = (2007, "Geometric (infinite) end-year net stock", "industrial")
-    capital = extract_can_fixed_assets(
-        retrieve_can_capital_series_ids())
-    # =========================================================================
-    # 3.i. Production Block: `v65201809`, Preferred Over `v65201536` Which Is Quarterly
-    # 3.0. Production Block: `v65201809`
-    # `v65201809` - 379-0031 Gross domestic product (GDP) at basic prices, by North American Industry Classification System (NAICS); Canada; Trading-day\
-    # adjusted; 2007 constant prices; Manufacturing (x 1,000,000) (monthly, 1997-01-01 to 2017-10-01)
-    # =========================================================================
-    product = extract_can_quarter(3790031, 'v65201809')
-    # =========================================================================
-    # 3.1. Production Block: `v65201536`, Alternative Option Not Used
-    # `v65201536` - 379-0031 Gross domestic product (GDP) at basic prices, by North American Industry Classification System (NAICS); Canada; Seasonnaly\
-    # adjusted at annual rates; 2007 constant prices; Manufacturing (x 1,000,000) (monthly, 1997-01-01 to 2017-10-01)
-    # =========================================================================
-    # =========================================================================
-    # extract_can_quarter(3790031, 'v65201536')
-    # =========================================================================
-    df = pd.concat(
-        [
-            capital,
-            labor,
-            product
-        ],
-        axis=1,
-        sort=True
-    ).dropna(axis=0)
-    df.columns = ('capital', 'labor', 'product',)
-    return df
+    df.columns = ('capital', 'labor', 'product')
+    return df.div(df.iloc[0, :])
 
 
 def collect_can_price_a():
@@ -2554,3 +2435,47 @@ def transform_kurenkov(data_testing: DataFrame) -> tuple[DataFrame]:
         sort=True
     )
     return data_a, data_b, data_c, data_d
+
+
+def transform_sum(df: DataFrame) -> DataFrame:
+    '''
+
+
+    Parameters
+    ----------
+    df : DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Series IDs
+    df.iloc[:, 1]      Values
+    ================== =================================
+    series_ids : Iterable[str]
+        DESCRIPTION.
+
+    Returns
+    -------
+    DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Sum of <series_ids>
+    ================== =================================
+    '''
+    assert df.shape[1] == 2
+    series_ids = sorted(set(df.iloc[:, 0]))
+    df.iloc[:, 1] = pd.to_numeric(df.iloc[:, 1], errors='coerce')
+    df = pd.concat(
+        [
+            df[df.iloc[:, 0] == series_id].iloc[:, [1]]
+            for series_id in series_ids
+        ],
+        axis=1
+    )
+    df.columns = series_ids
+    df['sum'] = df.sum(axis=1)
+    return df.iloc[:, [-1]]
+
+
+def filter_data_frame(df: DataFrame, query: dict[str]) -> DataFrame:
+    for column, criterion in query['filter'].items():
+        df = df[df.iloc[:, column] == criterion]
+    return df
