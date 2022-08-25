@@ -17,20 +17,20 @@ from scipy import signal
 # from sklearn.linear_model import LassoCV
 from sklearn.linear_model import LinearRegression
 # from sklearn.linear_model import Ridge
-from extract.lib import extract_usa_bea_from_url
-from extract.lib import extract_usa_frb_ms
-from extract.lib import extract_usa_fred
-from extract.lib import extract_usa_hist
-from extract.lib import extract_usa_mcconnel
+from extract.lib import read_from_url_usa_bea
 from extract.lib import read_manager_can
 from extract.lib import read_manager_can_annual
 from extract.lib import read_pull_can_quarter
+from extract.lib import read_pull_usa_frb_ms
+from extract.lib import read_pull_usa_fred
+from extract.lib import read_pull_usa_hist
+from extract.lib import read_pull_usa_mcconnel
 from extract.lib import pull_can
 from extract.lib import pull_can_annual
 from extract.lib import pull_can_capital
 from extract.lib import pull_can_capital_former
 from extract.lib import pull_can_quarter
-from extract.lib import retrieve_usa_bea_from_cached
+from extract.lib import pull_from_cached_usa_bea
 from toolkit.lib import price_inverse_single
 from toolkit.lib import strip_cumulated_deflator
 
@@ -213,16 +213,16 @@ def collect_archived() -> DataFrame:
         # =====================================================================
         'K10070',
     )
-    _df_nipa = extract_usa_bea_from_url(URL)
+    _df_nipa = read_from_url_usa_bea(URL)
     _df = pd.concat(
         [
             # =================================================================
             # Producer Price Index
             # =================================================================
-            extract_usa_fred(SERIES_ID),
+            read_pull_usa_fred(SERIES_ID),
             pd.concat(
                 [
-                    retrieve_usa_bea_from_cached(_df_nipa, series_id)
+                    pull_from_cached_usa_bea(_df_nipa, series_id)
                     for series_id in SERIES_IDS
                 ],
                 axis=1
@@ -298,10 +298,10 @@ def collect_bea_gdp() -> DataFrame:
         # =====================================================================
         'A191RX',
     )
-    _df_nipa = extract_usa_bea_from_url(URL)
+    _df_nipa = read_from_url_usa_bea(URL)
     return pd.concat(
         [
-            retrieve_usa_bea_from_cached(_df_nipa, series_id)
+            pull_from_cached_usa_bea(_df_nipa, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1
@@ -311,7 +311,7 @@ def collect_bea_gdp() -> DataFrame:
 def collect_brown() -> DataFrame:
     # =========================================================================
     # Fetch Data from `Reference RU Brown M. 0597_088.pdf`, Page 193
-    # Dependent on `extract_usa_hist`
+    # Dependent on `read_pull_usa_hist`
     # Out of Kendrick J.W. Data & Table 2. of `Reference RU Brown M. 0597_088.pdf`
     # =========================================================================
     # =========================================================================
@@ -331,7 +331,7 @@ def collect_brown() -> DataFrame:
     }
     _b_frame = pd.concat(
         [
-            extract_usa_hist(ARCHIVE_NAMES[0], series_id)
+            read_pull_usa_hist(ARCHIVE_NAMES[0], series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -357,7 +357,7 @@ def collect_brown() -> DataFrame:
     SERIES_IDS = ('KTA03S07', 'KTA03S08', 'KTA10S08', 'KTA15S07', 'KTA15S08',)
     _k_frame = pd.concat(
         [
-            extract_usa_hist(ARCHIVE_NAMES[1], series_id)
+            read_pull_usa_hist(ARCHIVE_NAMES[1], series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -430,12 +430,12 @@ def collect_capital_combined_archived() -> DataFrame:
         # =====================================================================
         'K10070',
     )
-    _df_nipa = extract_usa_bea_from_url(URL)
+    _df_nipa = read_from_url_usa_bea(URL)
     return pd.concat(
         [
             pd.concat(
                 [
-                    retrieve_usa_bea_from_cached(_df_nipa, series_id)
+                    pull_from_cached_usa_bea(_df_nipa, series_id)
                     for series_id in SERIES_IDS
                 ],
                 axis=1
@@ -487,7 +487,7 @@ def collect_capital_purchases() -> DataFrame:
     }
     df = pd.concat(
         [
-            extract_usa_hist(archive_name, series_id).mul(factor)
+            read_pull_usa_hist(archive_name, series_id).mul(factor)
             for series_id, (archive_name, factor, _) in SERIES_IDS.items()
         ],
         axis=1,
@@ -531,7 +531,7 @@ def collect_uscb_production() -> tuple[DataFrame, int]:
     }
     df = pd.concat(
         [
-            extract_usa_hist(archive_name, series_id)
+            read_pull_usa_hist(archive_name, series_id)
             for series_id, archive_name in SERIES_IDS.items()
         ],
         axis=1
@@ -564,7 +564,7 @@ def collect_uscb_cap(smoothing: bool = False) -> DataFrame:
     }
     df = pd.concat(
         [
-            extract_usa_hist(archive_name, series_id).mul(factor)
+            read_pull_usa_hist(archive_name, series_id).mul(factor)
             for series_id, (archive_name, factor, _) in SERIES_IDS.items()
         ],
         axis=1,
@@ -605,7 +605,7 @@ def collect_uscb_cap_deflator() -> DataFrame:
     }
     _df = pd.concat(
         [
-            extract_usa_hist(archive_name, series_id)
+            read_pull_usa_hist(archive_name, series_id)
             for series_id, (archive_name, *_) in SERIES_IDS.items()
         ],
         axis=1,
@@ -644,7 +644,7 @@ def collect_uscb_metals() -> tuple[DataFrame, tuple[int]]:
     }
     df = pd.concat(
         [
-            extract_usa_hist(ARCHIVE_NAME, series_id)
+            read_pull_usa_hist(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1
@@ -668,7 +668,7 @@ def collect_uscb_immigration() -> DataFrame:
     SERIES_IDS = tuple(f'C{_id:04n}' for _id in ids)
     df = pd.concat(
         [
-            extract_usa_hist(ARCHIVE_NAME, series_id)
+            read_pull_usa_hist(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -697,7 +697,7 @@ def collect_uscb_employment() -> DataFrame:
     )
     df = pd.concat(
         [
-            extract_usa_hist(ARCHIVE_NAME, series_id)
+            read_pull_usa_hist(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -719,7 +719,7 @@ def collect_uscb_gnp() -> DataFrame:
     SERIES_IDS = ('F0003', 'F0004',)
     df = pd.concat(
         [
-            extract_usa_hist(ARCHIVE_NAME, series_id)
+            read_pull_usa_hist(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -734,7 +734,7 @@ def collect_uscb_trade() -> DataFrame:
     SERIES_IDS = ('U0001', 'U0008', 'U0015',)
     return pd.concat(
         [
-            extract_usa_hist(ARCHIVE_NAME, series_id)
+            read_pull_usa_hist(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -748,7 +748,7 @@ def collect_uscb_trade_gold_silver() -> DataFrame:
     SERIES_IDS = ('U0187', 'U0188', 'U0189',)
     return pd.concat(
         [
-            extract_usa_hist(ARCHIVE_NAME, series_id)
+            read_pull_usa_hist(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -770,7 +770,7 @@ def collect_uscb_trade_by_countries() -> DataFrame:
     SERIES_IDS = tuple(f'U{_id:04n}' for _id in ids)
     df = pd.concat(
         [
-            extract_usa_hist(ARCHIVE_NAME, series_id)
+            read_pull_usa_hist(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -800,7 +800,7 @@ def collect_uscb_money_stock() -> DataFrame:
     SERIES_IDS = ('X0410', 'X0414', 'X0415',)
     df = pd.concat(
         [
-            extract_usa_hist(ARCHIVE_NAME, series_id)
+            read_pull_usa_hist(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -814,7 +814,7 @@ def collect_uscb_cap_prices() -> DataFrame:
     SERIES_IDS = ('P0107', 'P0110')
     df = pd.concat(
         [
-            extract_usa_hist(ARCHIVE_NAME, series_id)
+            read_pull_usa_hist(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1
@@ -897,7 +897,7 @@ def collect_cobb_douglas_deflator() -> DataFrame:
     # =========================================================================
     # Bureau of Economic Analysis
     # =========================================================================
-    _df_sfat = extract_usa_bea_from_url(URL)
+    _df_sfat = read_from_url_usa_bea(URL)
     df = pd.concat(
         [
             # =================================================================
@@ -905,7 +905,7 @@ def collect_cobb_douglas_deflator() -> DataFrame:
             # =================================================================
             pd.concat(
                 [
-                    extract_usa_hist(
+                    read_pull_usa_hist(
                         archive_name, series_id).truncate(before=year)
                     for series_id, (archive_name, year) in SERIES_IDS_CS.items()
                 ],
@@ -917,7 +917,7 @@ def collect_cobb_douglas_deflator() -> DataFrame:
             # =================================================================
             pd.concat(
                 [
-                    retrieve_usa_bea_from_cached(_df_sfat, series_id)
+                    pull_from_cached_usa_bea(_df_sfat, series_id)
                     for series_id in SERIES_IDS_BE[:2]
                 ],
                 axis=1,
@@ -1063,7 +1063,7 @@ def collect_cobb_douglas_extension_labor() -> DataFrame:
         [
             pd.concat(
                 [
-                    extract_usa_hist(archive_name, series_id)
+                    read_pull_usa_hist(archive_name, series_id)
                     for series_id, archive_name in SERIES_IDS.items()
                 ],
                 axis=1
@@ -1110,7 +1110,7 @@ def collect_cobb_douglas_extension_product() -> DataFrame:
         [
             pd.concat(
                 [
-                    extract_usa_hist(archive_name, series_id)
+                    read_pull_usa_hist(archive_name, series_id)
                     for series_id, archive_name in SERIES_IDS.items()
                 ],
                 axis=1
@@ -1147,7 +1147,7 @@ def collect_cobb_douglas_price() -> DataFrame:
     SERIES_IDS = ('CDT2S1', 'CDT2S3')
     df = pd.concat(
         [
-            extract_usa_hist(ARCHIVE_NAME, series_id)
+            read_pull_usa_hist(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1
@@ -1200,7 +1200,7 @@ def collect_cobb_douglas(series_number: int = 3) -> DataFrame:
     }
     df = pd.concat(
         [
-            extract_usa_hist(archive_name, series_id)
+            read_pull_usa_hist(archive_name, series_id)
             for series_id, (archive_name, _) in SERIES_IDS.items()
         ],
         axis=1,
@@ -1296,15 +1296,15 @@ def collect_combined() -> DataFrame:
         # =====================================================================
         'kcptotl1es00',
     )
-    _df_nipa = extract_usa_bea_from_url(URLS[0])
-    _df_sfat = extract_usa_bea_from_url(URLS[-1])
+    _df_nipa = read_from_url_usa_bea(URLS[0])
+    _df_sfat = read_from_url_usa_bea(URLS[-1])
     return pd.concat(
         [
             pd.concat(
                 [
                     pd.concat(
                         [
-                            retrieve_usa_bea_from_cached(_df_nipa, series_id)
+                            pull_from_cached_usa_bea(_df_nipa, series_id)
                             for series_id in SERIES_IDS_NIPA[:8]
                         ],
                         axis=1
@@ -1312,7 +1312,7 @@ def collect_combined() -> DataFrame:
                     collect_usa_bea_labor_mfg(),
                     pd.concat(
                         [
-                            retrieve_usa_bea_from_cached(_df_nipa, series_id)
+                            pull_from_cached_usa_bea(_df_nipa, series_id)
                             for series_id in SERIES_IDS_NIPA[8:]
                         ],
                         axis=1
@@ -1325,14 +1325,14 @@ def collect_combined() -> DataFrame:
             # =================================================================
             pd.concat(
                 [
-                    retrieve_usa_bea_from_cached(_df_sfat, series_id)
+                    pull_from_cached_usa_bea(_df_sfat, series_id)
                     for series_id in SERIES_IDS_SFAT
                 ],
                 axis=1
             ),
-            extract_usa_frb_ms(),
-            extract_usa_frb_ms(),
-            extract_usa_frb_ms(),
+            read_pull_usa_frb_ms(),
+            read_pull_usa_frb_ms(),
+            read_pull_usa_frb_ms(),
             pd.read_csv(FILE_NAME, index_col=0),
         ],
         axis=1
@@ -1426,15 +1426,15 @@ def collect_combined_archived() -> DataFrame:
         # =====================================================================
         'kcptotl1es00',
     )
-    _df_nipa = extract_usa_bea_from_url(URLS[0])
-    _df_sfat = extract_usa_bea_from_url(URLS[-1])
+    _df_nipa = read_from_url_usa_bea(URLS[0])
+    _df_sfat = read_from_url_usa_bea(URLS[-1])
     return pd.concat(
         [
             pd.concat(
                 [
                     pd.concat(
                         [
-                            retrieve_usa_bea_from_cached(_df_nipa, series_id)
+                            pull_from_cached_usa_bea(_df_nipa, series_id)
                             for series_id in SERIES_IDS_NIPA[:8]
                         ],
                         axis=1
@@ -1442,7 +1442,7 @@ def collect_combined_archived() -> DataFrame:
                     collect_usa_bea_labor_mfg(),
                     pd.concat(
                         [
-                            retrieve_usa_bea_from_cached(_df_nipa, series_id)
+                            pull_from_cached_usa_bea(_df_nipa, series_id)
                             for series_id in SERIES_IDS_NIPA[8:]
                         ],
                         axis=1
@@ -1455,14 +1455,14 @@ def collect_combined_archived() -> DataFrame:
             # =================================================================
             pd.concat(
                 [
-                    retrieve_usa_bea_from_cached(_df_sfat, series_id)
+                    pull_from_cached_usa_bea(_df_sfat, series_id)
                     for series_id in SERIES_IDS_SFAT
                 ],
                 axis=1
             ),
-            extract_usa_frb_ms(),
-            extract_usa_frb_ms(),
-            extract_usa_hist(ARCHIVE_NAME, SERIES_ID),
+            read_pull_usa_frb_ms(),
+            read_pull_usa_frb_ms(),
+            read_pull_usa_hist(ARCHIVE_NAME, SERIES_ID),
             pd.read_csv(FILE_NAME, index_col=0),
         ],
         axis=1
@@ -1515,15 +1515,15 @@ def collect_common_archived() -> DataFrame:
         # =====================================================================
         'k3n31gd1es00',
     )
-    _df_nipa = extract_usa_bea_from_url(URLS[0])
-    _df_sfat = extract_usa_bea_from_url(URLS[-1])
+    _df_nipa = read_from_url_usa_bea(URLS[0])
+    _df_sfat = read_from_url_usa_bea(URLS[-1])
     return pd.concat(
         [
             pd.concat(
                 [
                     (
-                        retrieve_usa_bea_from_cached(_df_nipa, series_id),
-                        retrieve_usa_bea_from_cached(
+                        pull_from_cached_usa_bea(_df_nipa, series_id),
+                        pull_from_cached_usa_bea(
                             _df_nipa, series_id).rdiv(100)
                     )[series_id == 'A191RD']
                     for series_id in SERIES_IDS_NIPA
@@ -1532,7 +1532,7 @@ def collect_common_archived() -> DataFrame:
             ),
             pd.concat(
                 [
-                    retrieve_usa_bea_from_cached(_df_sfat, series_id)
+                    pull_from_cached_usa_bea(_df_sfat, series_id)
                     for series_id in SERIES_IDS_SFAT
                 ],
                 axis=1
@@ -1557,7 +1557,7 @@ def collect_douglas() -> DataFrame:
     SERIES_IDS = ('DT19AS03', 'DT19AS02', 'DT19AS01',)
     df = pd.concat(
         [
-            extract_usa_hist(ARCHIVE_NAME, series_id)
+            read_pull_usa_hist(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -1587,20 +1587,20 @@ def collect_updated() -> DataFrame:
         # =====================================================================
         'kcn31gd1es00',
     )
-    _df_nipa = extract_usa_bea_from_url(URLS[0])
-    _df_sfat = extract_usa_bea_from_url(URLS[-1])
+    _df_nipa = read_from_url_usa_bea(URLS[0])
+    _df_sfat = read_from_url_usa_bea(URLS[-1])
     df = pd.concat(
         [
             pd.concat(
                 [
-                    retrieve_usa_bea_from_cached(_df_nipa, series_id)
+                    pull_from_cached_usa_bea(_df_nipa, series_id)
                     for series_id in SERIES_IDS_NIPA
                 ],
                 axis=1
             ),
             pd.concat(
                 [
-                    retrieve_usa_bea_from_cached(_df_sfat, series_id)
+                    pull_from_cached_usa_bea(_df_sfat, series_id)
                     for series_id in SERIES_IDS_SFAT
                 ],
                 axis=1
@@ -1636,8 +1636,8 @@ def collect_usa_bea_labor() -> DataFrame:
     # =========================================================================
     URL = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
     SERIES_ID = 'A4601C'
-    _df_nipa = extract_usa_bea_from_url(URL)
-    return retrieve_usa_bea_from_cached(_df_nipa, SERIES_ID)
+    _df_nipa = read_from_url_usa_bea(URL)
+    return pull_from_cached_usa_bea(_df_nipa, SERIES_ID)
 
 
 def collect_usa_bea_labor_mfg() -> DataFrame:
@@ -1671,10 +1671,10 @@ def collect_usa_bea_labor_mfg() -> DataFrame:
         # =====================================================================
         'N4313C',
     )
-    _df_nipa = extract_usa_bea_from_url(URL)
+    _df_nipa = read_from_url_usa_bea(URL)
     df = pd.concat(
         [
-            retrieve_usa_bea_from_cached(_df_nipa, series_id)
+            pull_from_cached_usa_bea(_df_nipa, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -1714,7 +1714,7 @@ def collect_usa_capital() -> DataFrame:
         [
             pd.concat(
                 [
-                    extract_usa_hist(archive_name, series_id)
+                    read_pull_usa_hist(archive_name, series_id)
                     for series_id, archive_name in SERIES_IDS.items()
                 ],
                 axis=1,
@@ -1816,7 +1816,7 @@ def collect_usa_frb_ip() -> DataFrame:
 
 def collect_usa_mcconnel(series_ids: tuple[str]) -> DataFrame:
     return pd.concat(
-        [extract_usa_mcconnel(series_id) for series_id in series_ids],
+        [read_pull_usa_mcconnel(series_id) for series_id in series_ids],
         axis=1
     ).truncate(before=1980)
 
@@ -1887,8 +1887,8 @@ def collect_version_a() -> tuple[DataFrame]:
         [
             pd.concat(
                 [
-                    retrieve_usa_bea_from_cached(
-                        extract_usa_bea_from_url(url), series_id)
+                    pull_from_cached_usa_bea(
+                        read_from_url_usa_bea(url), series_id)
                     for url, series_id in zip(URLS[::-1], SERIES_IDS)
                 ],
                 axis=1
@@ -1953,13 +1953,13 @@ def collect_version_b() -> tuple[DataFrame]:
     '''
     URL = 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt'
     SERIES_ID = 'kcn31gd1es00'
-    _df_sfat = extract_usa_bea_from_url(URL)
+    _df_sfat = read_from_url_usa_bea(URL)
     _df = pd.concat(
         [
             # =================================================================
             # Fixed Assets: kcn31gd1es00, 1925--2016, Table 4.2. Chain-Type Quantity Indexes for Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
             # =================================================================
-            retrieve_usa_bea_from_cached(_df_sfat, SERIES_ID),
+            pull_from_cached_usa_bea(_df_sfat, SERIES_ID),
             # =================================================================
             # Manufacturing Labor Series: _4313C0, 1929--2020
             # =================================================================

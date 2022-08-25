@@ -11,12 +11,12 @@ from functools import partial
 import pandas as pd
 from pandas import DataFrame
 from pandas.plotting import autocorrelation_plot
-from extract.lib import extract_usa_bea
-from extract.lib import extract_usa_bls
-from extract.lib import extract_usa_hist
 from extract.lib import pull_can_annual
 from extract.lib import read_manager_can_annual
 from extract.lib import read_pull_can_quarter
+from extract.lib import read_pull_usa_bea
+from extract.lib import read_pull_usa_bls
+from extract.lib import read_pull_usa_hist
 from plot.lib import plot_can_test
 
 
@@ -53,7 +53,7 @@ def options():
         'DT63AS03',
     )
     [
-        print(extract_usa_hist(ARCHIVE_NAME, series_id))
+        print(read_pull_usa_hist(ARCHIVE_NAME, series_id))
         for series_id in SERIES_IDS
     ]
 
@@ -157,7 +157,7 @@ def test_data_consistency_b():
     )
     df = pd.concat(
         [
-            extract_usa_bea(ARCHIVE_NAME, WB_NAME, sh, series_id)
+            read_pull_usa_bea(ARCHIVE_NAME, WB_NAME, sh, series_id)
             for sh, series_id in zip(SH_NAMES, SERIES_IDS)
         ],
         axis=1,
@@ -184,7 +184,7 @@ def test_data_consistency_c():
         'PCUOMFG--OMFG',
     )
     [
-        print(extract_usa_bls(file_name, series_id))
+        print(read_pull_usa_bls(file_name, series_id))
         for file_name, series_id in zip(FILE_NAMES, SERIES_IDS)
     ]
 
@@ -294,8 +294,8 @@ def test_douglas() -> None:
     )
     df = pd.concat(
         [
-            partial(extract_usa_hist, **_kwargs[0])(),
-            partial(extract_usa_hist, **_kwargs[1])(),
+            partial(read_pull_usa_hist, **_kwargs[0])(),
+            partial(read_pull_usa_hist, **_kwargs[1])(),
         ],
         axis=1
     )
@@ -319,7 +319,7 @@ def test_douglas() -> None:
     )
     df = pd.concat(
         [
-            partial(extract_usa_hist, **kwargs)() for kwargs in _kwargs
+            partial(read_pull_usa_hist, **kwargs)() for kwargs in _kwargs
         ],
         axis=1
     )
@@ -330,7 +330,7 @@ def test_douglas() -> None:
 def test_procedure(kwargs_list: list[dict]) -> None:
     df = pd.concat(
         [
-            extract_usa_bea(**_kwargs) for _kwargs in kwargs_list
+            read_pull_usa_bea(**_kwargs) for _kwargs in kwargs_list
         ],
         axis=1,
         sort=True
@@ -377,7 +377,7 @@ def test_usa_bea_sfat_series() -> DataFrame:
     )
     test_frame = pd.concat(
         [
-            extract_usa_bea(ARCHIVE_NAME, WB_NAME, SH_NAME, series_id)
+            read_pull_usa_bea(ARCHIVE_NAME, WB_NAME, SH_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,

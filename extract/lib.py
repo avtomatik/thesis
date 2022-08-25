@@ -167,7 +167,7 @@ def read_pull_can_quarter(file_id: int, series_id: str) -> DataFrame:
     return _df.groupby(_df.index).mean()
 
 
-def extract_usa_bea(archive_name: str, wb_name: str, sh_name: str, series_id: str) -> DataFrame:
+def read_pull_usa_bea(archive_name: str, wb_name: str, sh_name: str, series_id: str) -> DataFrame:
     '''
     Retrieves DataFrame from Bureau of Economic Analysis Zip Archives
     Parameters
@@ -204,7 +204,7 @@ def extract_usa_bea(archive_name: str, wb_name: str, sh_name: str, series_id: st
 
 
 @cache
-def extract_usa_bea_from_url(url: str) -> DataFrame:
+def read_from_url_usa_bea(url: str) -> DataFrame:
     '''Retrieves U.S. Bureau of Economic Analysis DataFrame from URL'''
     try:
         return pd.read_csv(
@@ -224,7 +224,7 @@ def extract_usa_bea_from_url(url: str) -> DataFrame:
         )
 
 
-def extract_usa_bls(file_name: str, series_id: str) -> DataFrame:
+def read_pull_usa_bls(file_name: str, series_id: str) -> DataFrame:
     '''
     Bureau of Labor Statistics Data Fetch
 
@@ -261,7 +261,7 @@ def extract_usa_bls(file_name: str, series_id: str) -> DataFrame:
     return _df[_q].iloc[:, [-1]]
 
 
-def extract_usa_frb_ms() -> DataFrame:
+def read_pull_usa_frb_ms() -> DataFrame:
     '''
     Money Stock Measures (H.6) Series
     Returns
@@ -285,7 +285,7 @@ def extract_usa_frb_ms() -> DataFrame:
     return _df.groupby(_df.index.year).mean()
 
 
-def extract_usa_fred(series_id: str) -> DataFrame:
+def read_pull_usa_fred(series_id: str) -> DataFrame:
     '''
     ('PPIACO', 'PRIME',)
     Returns
@@ -307,7 +307,7 @@ def extract_usa_fred(series_id: str) -> DataFrame:
     return _df.groupby(_df.index.year).mean()
 
 
-def extract_usa_hist(archive_name: str, series_id: str) -> DataFrame:
+def read_pull_usa_hist(archive_name: str, series_id: str) -> DataFrame:
     '''
     Extract Data from Enumerated Historical Datasets
     Parameters
@@ -355,7 +355,7 @@ def extract_usa_hist(archive_name: str, series_id: str) -> DataFrame:
     return df.sort_index()
 
 
-def extract_usa_mcconnel(series_id: str) -> DataFrame:
+def read_pull_usa_mcconnel(series_id: str) -> DataFrame:
     '''
     Retrieves DataFrame from McConnell C.R. & Brue S.L.
 
@@ -389,7 +389,7 @@ def extract_usa_mcconnel(series_id: str) -> DataFrame:
     return df[df.iloc[:, 0] == MAP[series_id]].iloc[:, [1]].sort_index()
 
 
-def extract_usa_nber(file_name: str, agg: str) -> DataFrame:
+def read_usa_nber(file_name: str, agg: str) -> DataFrame:
     _df = pd.read_csv(file_name)
     _df.drop(_df.columns[0], axis=1, inplace=True)
     if agg == 'mean':
@@ -397,7 +397,7 @@ def extract_usa_nber(file_name: str, agg: str) -> DataFrame:
     return _df.groupby(_df.columns[0]).sum()
 
 
-def extract_worldbank() -> DataFrame:
+def read_worldbank() -> DataFrame:
     URL = 'https://api.worldbank.org/v2/en/indicator/NY.GDP.MKTP.CD?downloadformat=csv'
     with ZipFile(io.BytesIO(requests.get(URL).content)) as archive:
         _map = {_.file_size: _.filename for _ in archive.filelist}
@@ -546,19 +546,19 @@ def pull_can_quarter(df: DataFrame, series_id: str) -> DataFrame:
     return df.groupby(df.index.year).sum()
 
 
-def retrieve_series_ids(archive_name: str) -> dict[str]:
+def pull_series_ids(archive_name: str) -> dict[str]:
     '''Returns Dictionary for Series from Douglas's & Kendrick's Databases'''
     df = pd.read_csv(archive_name, usecols=(3, 4, ))
     return dict(zip(df.iloc[:, 1], df.iloc[:, 0]))
 
 
-def retrieve_usa_bea_from_cached(df: DataFrame, series_id: str) -> DataFrame:
+def pull_from_cached_usa_bea(df: DataFrame, series_id: str) -> DataFrame:
     '''`NipaDataA.txt`: U.S. Bureau of Economic Analysis'''
     _df = df[df.iloc[:, 0] == series_id].iloc[:, [1]]
     return _df.rename(columns={"value": series_id})
 
 
-def retrieve_uscb_description(
+def read_pull_uscb_description(
         series_id: str,
         archive_name: str = 'dataset_usa_census1975.zip'
 ) -> str:

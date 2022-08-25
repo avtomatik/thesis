@@ -23,11 +23,11 @@ from pandas.plotting import (
 )
 from collect.lib import transform_cobb_douglas
 from extract.lib import (
-    retrieve_series_ids,
-    retrieve_uscb_description,
-    extract_usa_hist,
-    extract_usa_nber,
-    extract_worldbank,
+    pull_series_ids,
+    read_pull_usa_hist,
+    read_pull_uscb_description,
+    read_usa_nber,
+    read_worldbank,
 )
 from toolkit.lib import (
     calculate_capital,
@@ -366,8 +366,8 @@ def plot_uscb_commodities(series_ids: tuple[str]) -> None:
     ARCHIVE_NAME = 'dataset_usa_census1975.zip'
     df = DataFrame()
     for series_id in series_ids:
-        chunk = extract_usa_hist(ARCHIVE_NAME, series_id)
-        descr = retrieve_uscb_description(series_id)
+        chunk = read_pull_usa_hist(ARCHIVE_NAME, series_id)
+        descr = read_pull_uscb_description(series_id)
         print(f'<{series_id}> {descr}')
         df = pd.concat(
             [
@@ -467,7 +467,7 @@ def plot_uscb_farm_lands() -> None:
         'series_id': 'K0005',
     }
     plt.figure()
-    plt.plot(extract_usa_hist(**_kwargs))
+    plt.plot(read_pull_usa_hist(**_kwargs))
     plt.title('Land in Farms')
     plt.xlabel('Period')
     plt.ylabel('1,000 acres')
@@ -583,9 +583,9 @@ def plot_uscb_finance() -> None:
     )
     SERIES_IDS = tuple(f'X{_id:04n}' for _id in ids)
     for _, series_id in enumerate(SERIES_IDS, start=1):
-        df = extract_usa_hist(ARCHIVE_NAME, series_id)
+        df = read_pull_usa_hist(ARCHIVE_NAME, series_id)
         df = df.div(df.iloc[0, :]).mul(100)
-        descr = retrieve_uscb_description(series_id)
+        descr = read_pull_uscb_description(series_id)
         plt.figure(_)
         plt.plot(df, label=series_id)
         plt.title('{}, {}$-${}'.format(descr, *df.index[[0, -1]]))
@@ -935,7 +935,7 @@ def plot_built_in() -> None:
         # =====================================================================
         lag_plot,
     )
-    _df = extract_worldbank()
+    _df = read_worldbank()
     for func in FUNCTIONS:
         for _, country in enumerate(_df.columns, start=1):
             chunk = _df.loc[:, [country]].dropna()
@@ -1322,7 +1322,7 @@ def plot_cobb_douglas_tight_layout(df: DataFrame, params: tuple[float], mapping:
     axes[0].set_xlabel('Period')
     axes[0].set_ylabel('Indexes')
     axes[0].set_title(mapping['fg_a'].format(*df.index[[0, -1]],
-                                            mapping['year_price']))
+                                             mapping['year_price']))
     axes[0].legend()
     axes[0].grid(True)
     axes[1].plot(df.iloc[:, [2, 5]], label=[
@@ -1334,13 +1334,13 @@ def plot_cobb_douglas_tight_layout(df: DataFrame, params: tuple[float], mapping:
     axes[1].set_xlabel('Period')
     axes[1].set_ylabel('Production')
     axes[1].set_title(mapping['fg_b'].format(*df.index[[0, -1]],
-                                            mapping['year_price']))
+                                             mapping['year_price']))
     axes[1].legend()
     axes[1].grid(True)
     axes[2].plot(df.iloc[:, [8, 9]],
-                label=[
-                    'Deviations of $P$',
-                    'Deviations of $P\'$',
+                 label=[
+        'Deviations of $P$',
+        'Deviations of $P\'$',
     ],
         # =========================================================================
         #      TODO: ls=['solid','dashed',]
@@ -1360,9 +1360,9 @@ def plot_cobb_douglas_tight_layout(df: DataFrame, params: tuple[float], mapping:
     axes[4].scatter(df.iloc[:, 10], df.iloc[:, 4])
     axes[4].scatter(df.iloc[:, 10], df.iloc[:, 11])
     axes[4].plot(lc, _lab_productivity(lc, *params),
-                label='$\\frac{3}{4}\\frac{P}{L}$')
+                 label='$\\frac{3}{4}\\frac{P}{L}$')
     axes[4].plot(lc, _cap_productivity(lc, *params),
-                label='$\\frac{1}{4}\\frac{P}{C}$')
+                 label='$\\frac{1}{4}\\frac{P}{C}$')
     axes[4].set_xlabel('$\\frac{L}{C}$')
     axes[4].set_ylabel('Indexes')
     axes[4].set_title(mapping['fg_e'])
@@ -1405,7 +1405,7 @@ def plot_douglas(
     -------
     None
     '''
-    _MAP_SERIES = retrieve_series_ids(archive_name)
+    _MAP_SERIES = pull_series_ids(archive_name)
     _SERIES_IDS = tuple(_MAP_SERIES.keys())
     if not legends is None:
         for _n, (_lw, _up, _tt, _mr, _lb) in enumerate(
@@ -1421,7 +1421,7 @@ def plot_douglas(
             plt.figure(_n)
             for _ in range(_lw, _up, skip):
                 plt.plot(
-                    extract_usa_hist(archive_name, _SERIES_IDS[_]),
+                    read_pull_usa_hist(archive_name, _SERIES_IDS[_]),
                     label=_MAP_SERIES[_SERIES_IDS[_]]
                 )
             plt.title(_tt)
@@ -1444,7 +1444,7 @@ def plot_douglas(
             plt.figure(_n)
             for _ in range(_lw, _up, skip):
                 plt.plot(
-                    extract_usa_hist(archive_name, _SERIES_IDS[_]),
+                    read_pull_usa_hist(archive_name, _SERIES_IDS[_]),
                     label=_MAP_SERIES[_SERIES_IDS[_]]
                 )
             plt.title(_tt)
@@ -1951,7 +1951,7 @@ def plot_lab_prod_polynomial(df: DataFrame) -> None:
     # =========================================================================
     _df = DataFrame()
     _df['pow'] = df.iloc[:, -2].pow(k).mul(np.exp(b))
-    _df['p_1'] = df.iloc[:, -2].mul(_p1[0]).add(_p1[1] )
+    _df['p_1'] = df.iloc[:, -2].mul(_p1[0]).add(_p1[1])
     _df['p_2'] = _p2[2] + df.iloc[:, -
                                   2].mul(_p2[1]) + df.iloc[:, -2].pow(2).mul(_p2[0])
     _df['p_3'] = _p3[3] + df.iloc[:, -2].mul(_p3[2]) + df.iloc[:, -2].pow(
@@ -2383,8 +2383,8 @@ def plot_usa_nber_manager() -> None:
     )
     aggs = ('mean', 'sum')
     for _agg in aggs:
-        sic = extract_usa_nber(FILE_NAMES[0], _agg)
-        naics = extract_usa_nber(FILE_NAMES[1], _agg)
+        sic = read_usa_nber(FILE_NAMES[0], _agg)
+        naics = read_usa_nber(FILE_NAMES[1], _agg)
         plot_usa_nber(sic, naics, _agg)
 
 

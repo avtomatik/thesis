@@ -15,10 +15,10 @@ import sqlite3
 import pandas as pd
 from pandas import DataFrame
 from extract.lib import (
-    extract_usa_bea,
-    extract_usa_bea_from_url,
+    pull_from_cached_usa_bea,
+    read_from_url_usa_bea,
     read_pull_can_quarter,
-    retrieve_usa_bea_from_cached,
+    read_pull_usa_bea,
 )
 
 
@@ -125,7 +125,7 @@ def test_data_capital_combined_archived():
         } for series_id in SERIES_IDS
     ]
     _control = pd.concat(
-        [extract_usa_bea(**kwargs) for kwargs in KWARGS],
+        [read_pull_usa_bea(**kwargs) for kwargs in KWARGS],
         axis=1,
         sort=True
     )
@@ -146,7 +146,7 @@ def test_data_capital_combined_archived():
         } for series_id in SERIES_IDS
     ]
     _test = pd.concat(
-        [extract_usa_bea(**kwargs) for kwargs in KWARGS],
+        [read_pull_usa_bea(**kwargs) for kwargs in KWARGS],
         axis=1,
         sort=True
     )
@@ -178,7 +178,7 @@ def test_data_capital_combined_archived():
         } for series_id in SERIES_IDS
     ]
     _control = pd.concat(
-        [extract_usa_bea(**kwargs) for kwargs in KWARGS],
+        [read_pull_usa_bea(**kwargs) for kwargs in KWARGS],
         axis=1,
         sort=True
     )
@@ -199,7 +199,7 @@ def test_data_capital_combined_archived():
         } for series_id in SERIES_IDS
     ]
     _test = pd.concat(
-        [extract_usa_bea(**kwargs) for kwargs in KWARGS],
+        [read_pull_usa_bea(**kwargs) for kwargs in KWARGS],
         axis=1,
         sort=True
     )
@@ -408,12 +408,12 @@ def collect_usa_xlsm() -> DataFrame:
         # =====================================================================
         'A032RC',
     )
-    _df = extract_usa_bea_from_url(URL)
+    _df = read_from_url_usa_bea(URL)
     return pd.concat(
         [
             pd.concat(
                 [
-                    retrieve_usa_bea_from_cached(_df, series_id)
+                    pull_from_cached_usa_bea(_df, series_id)
                     for series_id in SERIES_IDS
                 ],
                 axis=1
@@ -446,7 +446,7 @@ kwargs = {
     'sh_name': '50900 Ann',
     'series_id': 'K160021',
 }
-_df_sub_a = extract_usa_bea(**kwargs)
+_df_sub_a = read_pull_usa_bea(**kwargs)
 
 
 # =============================================================================
@@ -469,7 +469,7 @@ kwargs = {
     'sh_name': '303ES Ann',
     'series_id': 'k3n31gd1es000',
 }
-_df_semi_c = extract_usa_bea(**kwargs)
+_df_semi_c = read_pull_usa_bea(**kwargs)
 KWARGS = (
     # =========================================================================
     # Nominal Gross Domestic Product Series: A191RC1, 1929--1969
@@ -491,7 +491,7 @@ KWARGS = (
     },
 )
 _df_semi_d = pd.concat(
-    [extract_usa_bea(**kwargs) for kwargs in KWARGS],
+    [read_pull_usa_bea(**kwargs) for kwargs in KWARGS],
     sort=True
 ).drop_duplicates()
 # =============================================================================
