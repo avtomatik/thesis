@@ -26,86 +26,6 @@ ARCHIVE_NAMES_UTILISED = (
 )
 
 
-def read_manager_can_annual(archive_id: int) -> DataFrame:
-    '''
-    Collects Summarized Data from CANSIM Table 031-0004: Flows and stocks of
-    fixed non-residential capital, total all industries, by asset, provinces
-    and territories, annual (dollars x 1,000,000) by <SERIES_IDS>
-    Parameters
-    ----------
-    series_ids : list[str]
-        DESCRIPTION.
-    Returns
-    -------
-    DataFrame
-    '''
-    '''
-    Fetch <SERIES_IDS> from CANSIM Table 031-0004: Flows and stocks of fixed
-    non-residential capital, total all industries, by asset, provinces and
-    territories, annual (dollars x 1,000,000)
-    '''
-    '''
-    Retrieves DataFrame from CANSIM Zip Archives
-    '''
-    MAP = {
-        310004: {
-            'ref_date': 0,
-            'prices': 2,
-            'category': 4,
-            'component': 5,
-            'series_id': 6,
-            'value': 8,
-        },
-        2820012: {'ref_date': 0, 'series_id': 5, 'value': 7},
-        3800102: {'ref_date': 0, 'series_id': 4, 'value': 6},
-        3800106: {'ref_date': 0, 'series_id': 3, 'value': 5},
-        3800518: {'ref_date': 0, 'series_id': 4, 'value': 6},
-        3800566: {'ref_date': 0, 'series_id': 3, 'value': 5},
-        3800567: {'ref_date': 0, 'series_id': 4, 'value': 6},
-    }
-    return pd.read_csv(
-        f'dataset_can_{archive_id:08n}-eng.zip',
-        header=0,
-        names=tuple(MAP.get(archive_id).keys()),
-        index_col=0,
-        usecols=tuple(MAP.get(archive_id).values()),
-    )
-
-
-def read_manager_can_quarter(archive_id: int) -> DataFrame:
-    '''
-    Retrieves DataFrame from Quarterly Data within CANSIM Zip Archives
-    Should Be [x 7 columns]
-    '''
-    MAP = {
-        # =====================================================================
-        # MEAN
-        # =====================================================================
-        2820011:
-        {'ref_date': 0, 'geo': 1, 'classofworker': 2,
-            'industry': 3, 'sex': 4, 'series_id': 5, 'value': 7},
-        # =====================================================================
-        # SUM
-        # =====================================================================
-        3790031:
-        {'ref_date': 0, 'geo': 1, 'seas': 2, 'prices': 3,
-            'naics': 4, 'series_id': 5, 'value': 7},
-        # =====================================================================
-        # SUM
-        # =====================================================================
-        3800084:
-        {'ref_date': 0, 'geo': 1, 'seas': 2, 'est': 3, 'series_id': 4, 'value': 6},
-    }
-    return pd.read_csv(
-        f'dataset_can_{archive_id:08n}-eng.zip',
-        header=0,
-        names=tuple(MAP.get(archive_id).keys()),
-        index_col=0,
-        usecols=tuple(MAP.get(archive_id).values()),
-        parse_dates=True
-    )
-
-
 @cache
 def read_manager_can(archive_id: int) -> DataFrame:
     MAP = {
@@ -132,6 +52,58 @@ def read_manager_can(archive_id: int) -> DataFrame:
         'parse_dates': archive_id == 36100434
     }
     return read_from_url_can(url, **kwargs)
+
+
+def read_manager_can_former(archive_id: int) -> DataFrame:
+    '''
+    Retrieves DataFrame from CANSIM Zip Archives
+
+    Parameters
+    ----------
+    archive_id : int
+    Returns
+    -------
+    DataFrame
+    '''
+    MAP = {
+        310004: {
+            'ref_date': 0,
+            'prices': 2,
+            'category': 4,
+            'component': 5,
+            'series_id': 6,
+            'value': 8,
+        },
+        2820011:
+        {
+            'ref_date': 0, 'geo': 1, 'classofworker': 2, 'industry': 3,
+            'sex': 4, 'series_id': 5, 'value': 7
+        },
+        2820012: {'ref_date': 0, 'series_id': 5, 'value': 7},
+        3790031:
+        {
+            'ref_date': 0, 'geo': 1, 'seas': 2, 'prices': 3, 'naics': 4,
+            'series_id': 5, 'value': 7
+        },
+        3800084:
+        {
+            'ref_date': 0, 'geo': 1, 'seas': 2, 'est': 3, 'series_id': 4,
+            'value': 6
+        },
+        3800102: {'ref_date': 0, 'series_id': 4, 'value': 6},
+        3800106: {'ref_date': 0, 'series_id': 3, 'value': 5},
+        3800518: {'ref_date': 0, 'series_id': 4, 'value': 6},
+        3800566: {'ref_date': 0, 'series_id': 3, 'value': 5},
+        3800567: {'ref_date': 0, 'series_id': 4, 'value': 6},
+    }
+    return pd.read_csv(
+        f'dataset_can_{archive_id:08n}-eng.zip',
+        header=0,
+        names=tuple(MAP.get(archive_id).keys()),
+        index_col=0,
+        usecols=tuple(MAP.get(archive_id).values()),
+        parse_dates=archive_id in (2820011, 3790031, 3800084)
+    )
 
 
 @cache

@@ -15,11 +15,11 @@ import sqlite3
 import pandas as pd
 from pandas import DataFrame
 from extract.lib import (
-    pull_from_cached_usa_bea,
+    read_manager_can_former,
     read_from_url_usa_bea,
-    pull_can_quarter_former,
-    read_manager_can_quarter,
     read_pull_usa_bea,
+    pull_can_quarter_former,
+    pull_from_cached_usa_bea,
 )
 
 
@@ -511,5 +511,5 @@ _df_semi_d = pd.concat(
 extract_can_group_a(7931814471809016759, skiprows=241)
 extract_can_group_a(8448814858763853126, skiprows=81)
 extract_can_group_b(5245628780870031920, skiprows=3)
-pull_can_quarter_former(read_manager_can_quarter(3800068), 'v62143969')
-pull_can_quarter_former(read_manager_can_quarter(3800068), 'v62143990')
+pull_can_quarter_former(read_manager_can_former(3800068), 'v62143969')
+pull_can_quarter_former(read_manager_can_former(3800068), 'v62143990')
