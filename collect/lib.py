@@ -17,7 +17,7 @@ from scipy import signal
 # from sklearn.linear_model import LassoCV
 from sklearn.linear_model import LinearRegression
 # from sklearn.linear_model import Ridge
-from extract.lib import pull_can
+from extract.lib import numerify
 from extract.lib import pull_can_capital
 from extract.lib import pull_can_capital_former
 from extract.lib import pull_can_quarter
@@ -101,9 +101,12 @@ def construct_can():
     df = pd.concat(
         [
             transform_sum(_df.loc[:, ('series_id', 'value')]),
-            pull_can(
-                read_manager_can(tuple(ARCHIVE_IDS)[1]),
-                ARCHIVE_IDS.get(tuple(ARCHIVE_IDS)[1])
+            numerify(
+                pull_by_series_id(
+                    read_manager_can(
+                        tuple(ARCHIVE_IDS)[1]),
+                    ARCHIVE_IDS.get(tuple(ARCHIVE_IDS)[1])
+                )
             ),
             pull_can_quarter(
                 read_manager_can(tuple(ARCHIVE_IDS)[-1]),
@@ -140,9 +143,12 @@ def construct_can_former():
     df = pd.concat(
         [
             transform_sum(_df.loc[:, ('series_id', 'value')]),
-            pull_can(
-                read_manager_can_former(tuple(ARCHIVE_IDS)[1]),
-                ARCHIVE_IDS.get(tuple(ARCHIVE_IDS)[1])
+            numerify(
+                pull_by_series_id(
+                    read_manager_can_former(
+                        tuple(ARCHIVE_IDS)[1]),
+                    ARCHIVE_IDS.get(tuple(ARCHIVE_IDS)[1])
+                )
             ),
             pull_can_quarter_former(
                 read_manager_can_former(tuple(ARCHIVE_IDS)[-1]),
@@ -2460,10 +2466,9 @@ def transform_sum(df: DataFrame) -> DataFrame:
     ================== =================================
     '''
     series_ids = sorted(set(df.iloc[:, 0]))
-    df.iloc[:, 1] = pd.to_numeric(df.iloc[:, 1], errors='coerce')
     df = pd.concat(
         [
-            pull_by_series_id(df, series_id)
+            numerify(pull_by_series_id(df, series_id))
             for series_id in series_ids
         ],
         axis=1

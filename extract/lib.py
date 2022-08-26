@@ -26,6 +26,32 @@ ARCHIVE_NAMES_UTILISED = (
 )
 
 
+def numerify(df: DataFrame) -> DataFrame:
+    '''
+
+
+    Parameters
+    ----------
+    df : DataFrame
+    DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Series
+    ================== =================================
+    Returns
+    -------
+    DataFrame
+    DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Series
+    ================== =================================
+    '''
+    assert df.shape[1] == 1
+    df.iloc[:, 0] = pd.to_numeric(df.iloc[:, 0], errors='coerce')
+    return df
+
+
 @cache
 def read_manager_can(archive_id: int) -> DataFrame:
     MAP = {
@@ -96,14 +122,15 @@ def read_manager_can_former(archive_id: int) -> DataFrame:
         3800566: {'ref_date': 0, 'series_id': 3, 'value': 5},
         3800567: {'ref_date': 0, 'series_id': 4, 'value': 6},
     }
-    return pd.read_csv(
-        f'dataset_can_{archive_id:08n}-eng.zip',
-        header=0,
-        names=tuple(MAP.get(archive_id).keys()),
-        index_col=0,
-        usecols=tuple(MAP.get(archive_id).values()),
-        parse_dates=archive_id in (2820011, 3790031, 3800084)
-    )
+    kwargs = {
+        'filepath_or_buffer': f'dataset_can_{archive_id:08n}-eng.zip',
+        'header': 0,
+        'names': tuple(MAP.get(archive_id).keys()),
+        'index_col': 0,
+        'usecols': tuple(MAP.get(archive_id).values()),
+        'parse_dates': archive_id in (2820011, 3790031, 3800084)
+    }
+    return pd.read_csv(**kwargs)
 
 
 @cache
@@ -134,22 +161,16 @@ def read_from_url_can(url: str, **kwargs) -> DataFrame:
 @cache
 def read_from_url_usa_bea(url: str) -> DataFrame:
     '''Retrieves U.S. Bureau of Economic Analysis DataFrame from URL'''
+    kwargs = {
+        'header': 0,
+        'names': ('series_ids', 'period', 'value'),
+        'index_col': 1,
+        'thousands': ','
+    }
     try:
-        return pd.read_csv(
-            io.BytesIO(requests.get(url).content),
-            header=0,
-            names=('series_ids', 'period', 'value'),
-            index_col=1,
-            thousands=',',
-        )
+        return pd.read_csv(io.BytesIO(requests.get(url).content), **kwargs)
     except requests.ConnectionError:
-        return pd.read_csv(
-            url.split('/')[-1],
-            header=0,
-            names=('series_ids', 'period', 'value'),
-            index_col=1,
-            thousands=',',
-        )
+        return pd.read_csv(url.split('/')[-1], **kwargs)
 
 
 def read_usa_nber(file_name: str, agg: str) -> DataFrame:
@@ -168,11 +189,12 @@ def read_worldbank() -> DataFrame:
         # Select Largest File
         # =====================================================================
         with archive.open(_map[max(_map)]) as f:
-            df = pd.read_csv(
-                f,
-                index_col=0,
-                skiprows=4
-            ).dropna(axis=1, how='all').transpose()
+            kwargs = {
+                'filepath_or_buffer': f,
+                'index_col': 0,
+                'skiprows': 4
+            }
+            df = pd.read_csv(**kwargs).dropna(axis=1, how='all').transpose()
             df.drop(df.index[:3], inplace=True)
             return df.rename_axis('period')
 
@@ -203,13 +225,14 @@ def read_pull_usa_bea(archive_name: str, wb_name: str, sh_name: str, series_id: 
         # =====================================================================
         # Re-Load
         # =====================================================================
-        df = pd.read_excel(
-            xl_file,
-            sh_name,
-            index_col=0,
-            usecols=range(2, df.shape[1]),
-            skiprows=7
-        ).dropna(axis=0).transpose()
+        kwargs = {
+            'io': xl_file,
+            'sheet_name': sh_name,
+            'index_col': 0,
+            'usecols': range(2, df.shape[1]),
+            'skiprows': 7
+        }
+        df = pd.read_excel(**kwargs).dropna(axis=0).transpose()
     return df.loc[:, [series_id]]
 
 
@@ -232,15 +255,16 @@ def read_pull_usa_bls(file_name: str, series_id: str) -> DataFrame:
     df.iloc[:, 0]      Series
     ================== =================================
     '''
-    _df = pd.read_csv(
-        file_name,
-        sep='\t',
-        header=0,
-        names=('series_id', 'period', 'sub_period', series_id),
-        index_col=1,
-        usecols=range(4),
-        low_memory=False
-    )
+    kwargs = {
+        'filepath_or_buffer': file_name,
+        'sep': '\t',
+        'header': 0,
+        'names': ('series_id', 'period', 'sub_period', series_id),
+        'index_col': 1,
+        'usecols': range(4),
+        'low_memory': False
+    }
+    _df = pd.read_csv(**kwargs)
     _q = (_df.iloc[:, 0].str.contains(series_id)) & (_df.iloc[:, 1] == 'M13')
     _df.index = pd.to_numeric(
         _df.index.astype(str).to_series().str.slice(stop=4),
@@ -261,16 +285,20 @@ def read_pull_usa_frb_ms() -> DataFrame:
     df.iloc[:, 0]      M1
     ================== =================================
     '''
+    # =========================================================================
+    # hex(3**3 * 23 * 197 * 2039 * 445466883143470280668577791313)
+    # =========================================================================
     URL = 'https://www.federalreserve.gov/datadownload/Output.aspx?rel=H6&series=5398d8d1734b19f731aba3105eb36d47&lastobs=&from=01/01/1959&to=12/31/2018&filetype=csv&label=include&layout=seriescolumn'
-    _df = pd.read_csv(
-        io.BytesIO(requests.get(URL).content),
-        header=0,
-        names=('period', 'm1_m'),
-        index_col=0,
-        usecols=range(2),
-        skiprows=5,
-        parse_dates=True,
-    )
+    kwargs = {
+        'filepath_or_buffer': io.BytesIO(requests.get(URL).content),
+        'header': 0,
+        'names': ('period', 'm1_m'),
+        'index_col': 0,
+        'usecols': range(2),
+        'skiprows': 5,
+        'parse_dates': True
+    }
+    _df = pd.read_csv(**kwargs)
     return _df.groupby(_df.index.year).mean()
 
 
@@ -286,13 +314,14 @@ def read_pull_usa_fred(series_id: str) -> DataFrame:
     ================== =================================
     '''
     URL = f'https://fred.stlouisfed.org/graph/fredgraph.csv?id={series_id}'
-    _df = pd.read_csv(
-        io.BytesIO(requests.get(URL).content),
-        header=0,
-        names=('period', series_id.lower()),
-        index_col=0,
-        parse_dates=True,
-    )
+    kwargs = {
+        'filepath_or_buffer': io.BytesIO(requests.get(URL).content),
+        'header': 0,
+        'names': ('period', series_id.lower()),
+        'index_col': 0,
+        'parse_dates': True
+    }
+    _df = pd.read_csv(**kwargs)
     return _df.groupby(_df.index.year).mean()
 
 
@@ -313,32 +342,33 @@ def read_pull_usa_hist(archive_name: str, series_id: str) -> DataFrame:
     df.iloc[:, 0]      Series
     ================== =================================
     '''
-    USECOLS = {
-        'dataset_douglas.zip': (4, 7,),
-        'dataset_usa_brown.zip': (3, 6,),
-        'dataset_usa_census1949.zip': (8, 11,),
-        'dataset_usa_census1975.zip': (8, 11,),
-        'dataset_usa_cobb-douglas.zip': (5, 8,),
-        'dataset_usa_kendrick.zip': (4, 7,),
+    MAP = {
+        'dataset_douglas.zip': {'series_id': 4, 'period': 5, series_id: 6},
+        'dataset_usa_brown.zip': {'series_id': 3, 'period': 4, series_id: 5},
+        'dataset_usa_census1949.zip': {'series_id': 8, 'period': 9, series_id: 10},
+        'dataset_usa_census1975.zip': {'series_id': 8, 'period': 9, series_id: 10},
+        'dataset_usa_cobb-douglas.zip': {'series_id': 5, 'period': 6, series_id: 7},
+        'dataset_usa_kendrick.zip': {'series_id': 4, 'period': 5, series_id: 6}
     }
-    df = pd.read_csv(
-        archive_name,
-        header=0,
-        names=('series_id', 'period', series_id),
-        index_col=1,
-        skiprows=(0, 4)[archive_name == 'dataset_usa_brown.zip'],
-        usecols=range(*USECOLS[archive_name]),
-        dtype=str,
-    )
+    kwargs = {
+        'filepath_or_buffer': archive_name,
+        'header': 0,
+        'names': tuple(MAP.get(archive_name).keys()),
+        'index_col': 1,
+        'skiprows': (0, 4)[archive_name == 'dataset_usa_brown.zip'],
+        'usecols': tuple(MAP.get(archive_name).values()),
+        'dtype': str
+    }
+    df = pd.read_csv(**kwargs)
     # =========================================================================
     # TODO: Extract to __call__
     # =========================================================================
-    df = df[df.iloc[:, 0] == series_id].iloc[:, [1]]
+    df = pull_by_series_id(df, series_id)
     df.index = pd.to_numeric(
         df.index.astype(str).to_series().str.slice(stop=4),
         downcast='integer'
     )
-    df.iloc[:, 0] = pd.to_numeric(df.iloc[:, 0], errors='coerce')
+    df.iloc[:, -1] = pd.to_numeric(df.iloc[:, -1], errors='coerce')
     if 'census' in archive_name:
         return df.groupby(df.index).mean()
     return df.sort_index()
@@ -361,20 +391,20 @@ def read_pull_usa_mcconnel(series_id: str) -> DataFrame:
     df.iloc[:, 0]      Series
     ================== =================================
     '''
-    ARCHIVE_NAME = 'dataset_usa_mc_connell_brue.zip'
     MAP = {
         'prime_rate': 'Ставка прайм-рейт, %',
         'A006RC1': 'Валовой объем внутренних частных инвестиций, млрд долл. США',
         'A032RC1': 'Национальный доход, млрд долл. США',
         'A191RC1': 'Валовой внутренний продукт, млрд долл. США',
     }
-    df = pd.read_csv(
-        ARCHIVE_NAME,
-        header=0,
-        names=('series_id', 'period', series_id),
-        index_col=1,
-        usecols=range(1, 4)
-    )
+    kwargs = {
+        'filepath_or_buffer': 'dataset_usa_mc_connell_brue.zip',
+        'header': 0,
+        'names': ('series_id', 'period', series_id),
+        'index_col': 1,
+        'usecols': range(1, 4)
+    }
+    df = pd.read_csv(**kwargs)
     return df[df.iloc[:, 0] == MAP[series_id]].iloc[:, [1]].sort_index()
 
 
@@ -399,11 +429,12 @@ def read_pull_uscb_description(
 
     '''
     FLAG = 'no_details'
-    _df = pd.read_csv(
-        archive_name,
-        usecols=tuple(_ for _ in range(9) if _ not in range(2, 9, 5)),
-        low_memory=False
-    )
+    kwargs = {
+        'filepath_or_buffer': archive_name,
+        'usecols': tuple(_ for _ in range(9) if _ not in range(2, 9, 5)),
+        'low_memory': False
+    }
+    _df = pd.read_csv(**kwargs)
     _df = _df[_df.iloc[:, -1] == series_id]
     _df.drop_duplicates(inplace=True)
     if _df.iloc[0, 2] == FLAG:
@@ -432,30 +463,14 @@ def pull_by_series_id(df: DataFrame, series_id: str) -> DataFrame:
     Parameters
     ----------
     df : DataFrame
-        DESCRIPTION.
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Series IDs
+    df.iloc[:, 1]      Values
+    ================== =================================
     series_id : str
         DESCRIPTION.
 
-    Returns
-    -------
-    DataFrame
-        DESCRIPTION.
-
-    '''
-    assert df.shape[1] == 2
-    _df = df[df.iloc[:, 0] == series_id].iloc[:, [1]]
-    return _df.rename(columns={"value": series_id})
-
-
-def pull_can(df: DataFrame, series_id: str) -> DataFrame:
-    '''
-    Retrieves DataFrame from CANSIM Zip Archives
-    Parameters
-    ----------
-    df : DataFrame
-        Retrieved with read_from_url_can().
-    series_id : str
-        DESCRIPTION.
     Returns
     -------
     DataFrame
@@ -464,9 +479,9 @@ def pull_can(df: DataFrame, series_id: str) -> DataFrame:
     df.iloc[:, 0]      Series
     ================== =================================
     '''
-    df = pull_by_series_id(df, series_id)
-    df.iloc[:, -1] = pd.to_numeric(df.iloc[:, -1], errors='coerce')
-    return df
+    assert df.shape[1] == 2
+    _df = df[df.iloc[:, 0] == series_id].iloc[:, [1]]
+    return _df.rename(columns={"value": series_id})
 
 
 def pull_can_capital(df: DataFrame, params: tuple[int, str]) -> DataFrame:
@@ -477,6 +492,7 @@ def pull_can_capital(df: DataFrame, params: tuple[int, str]) -> DataFrame:
     Parameters
     ----------
     df : DataFrame
+        DESCRIPTION.
     params : tuple[int, str]
         param : BASE_YEAR : Basic Price Year.
         param : CATEGORY : Estimate Basis.
@@ -484,8 +500,9 @@ def pull_can_capital(df: DataFrame, params: tuple[int, str]) -> DataFrame:
 
     Returns
     -------
-    list[str]
-        SERIES_IDS.
+    DataFrame
+        DESCRIPTION.
+
     '''
     DIR = Path("/home/alexander/science")
     DBNAME = "capital"
@@ -524,8 +541,8 @@ def pull_can_capital_former(df: DataFrame, params: tuple[int, str]) -> DataFrame
 
     Returns
     -------
-    list[str]
-        SERIES_IDS.
+    DataFrame
+        DESCRIPTION.
     '''
     DIR = Path("/home/alexander/science")
     DBNAME = "capital"
@@ -575,9 +592,8 @@ def pull_can_quarter_former(df: DataFrame, series_id: str) -> DataFrame:
     Should Be [x 7 columns]
     '''
     flag = 'seas' in df.columns
-    df = df.loc[:, ('series_id', 'value')]
-    df = pull_by_series_id(df, series_id)
-    df.iloc[:, -1] = pd.to_numeric(df.iloc[:, -1], errors='coerce')
+    df = numerify(pull_by_series_id(
+        df.loc[:, ('series_id', 'value')], series_id))
     if flag:
         return df.groupby(df.index.year).sum()
     return df.groupby(df.index.year).mean()
