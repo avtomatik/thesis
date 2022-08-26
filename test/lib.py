@@ -13,7 +13,7 @@ from pandas import DataFrame
 from pandas.plotting import autocorrelation_plot
 from extract.lib import pull_can_annual
 from extract.lib import read_manager_can_annual
-from extract.lib import read_pull_can_quarter
+from extract.lib import pull_can_quarter_former, read_manager_can_quarter
 from extract.lib import read_pull_usa_bea
 from extract.lib import read_pull_usa_bls
 from extract.lib import read_pull_usa_hist
@@ -95,14 +95,17 @@ def test_data_consistency_a():
         [
             pd.concat(
                 [
-                    read_pull_can_quarter(*_args) for _args in ARGS[:3]
+                    pull_can_quarter_former(
+                        read_manager_can_quarter(_args[0]), _args[1])
+                    for _args in ARGS[:3]
                 ],
                 axis=1,
                 sort=True
             ),
             pd.concat(
                 [
-                    pull_can_annual(read_manager_can_annual(_args[0]), _args[1])
+                    pull_can_annual(
+                        read_manager_can_annual(_args[0]), _args[1])
                     for _args in ARGS[3:]
                 ],
                 axis=1,

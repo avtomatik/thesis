@@ -72,6 +72,40 @@ def read_manager_can_annual(archive_id: int) -> DataFrame:
     )
 
 
+def read_manager_can_quarter(archive_id: int) -> DataFrame:
+    '''
+    Retrieves DataFrame from Quarterly Data within CANSIM Zip Archives
+    Should Be [x 7 columns]
+    '''
+    MAP = {
+        # =====================================================================
+        # MEAN
+        # =====================================================================
+        2820011:
+        {'ref_date': 0, 'geo': 1, 'classofworker': 2,
+            'industry': 3, 'sex': 4, 'series_id': 5, 'value': 7},
+        # =====================================================================
+        # SUM
+        # =====================================================================
+        3790031:
+        {'ref_date': 0, 'geo': 1, 'seas': 2, 'prices': 3,
+            'naics': 4, 'series_id': 5, 'value': 7},
+        # =====================================================================
+        # SUM
+        # =====================================================================
+        3800084:
+        {'ref_date': 0, 'geo': 1, 'seas': 2, 'est': 3, 'series_id': 4, 'value': 6},
+    }
+    return pd.read_csv(
+        f'dataset_can_{archive_id:08n}-eng.zip',
+        header=0,
+        names=tuple(MAP.get(archive_id).keys()),
+        index_col=0,
+        usecols=tuple(MAP.get(archive_id).values()),
+        parse_dates=True
+    )
+
+
 @cache
 def read_manager_can(archive_id: int) -> DataFrame:
     MAP = {
@@ -169,39 +203,6 @@ def read_worldbank() -> DataFrame:
             ).dropna(axis=1, how='all').transpose()
             df.drop(df.index[:3], inplace=True)
             return df.rename_axis('period')
-
-
-def read_pull_can_quarter(file_id: int, series_id: str) -> DataFrame:
-    '''
-    Retrieves DataFrame from Quarterly Data within CANSIM Zip Archives
-    Should Be [x 7 columns]
-    '''
-    RESERVED_FILE_IDS = (2820011, 2820012, 3790031, 3800068,)
-    RESERVED_COMBINATIONS = (
-        (3790031, 'v65201809',),
-        (3800084, 'v62306938',),
-    )
-    USECOLS = ((4, 6,), (5, 7,),)
-    usecols = (USECOLS[0], USECOLS[1])[file_id in RESERVED_FILE_IDS]
-    _df = pd.read_csv(
-        f'dataset_can_{file_id:08n}-eng.zip',
-        header=0,
-        names=('REF_DATE', 'series_id', series_id),
-        index_col=0,
-        usecols=tuple(0, *usecols),
-    )
-    # =========================================================================
-    # TODO: Extract to __call__
-    # =========================================================================
-    _df = _df[_df.iloc[:, 0] == series_id].iloc[:, [1]]
-    _df.index = pd.to_numeric(
-        _df.index.astype(str).to_series().str.slice(stop=4),
-        downcast='integer'
-    )
-    _df.iloc[:, 0] = pd.to_numeric(_df.iloc[:, 0], errors='coerce')
-    if (file_id, series_id,) in RESERVED_COMBINATIONS:
-        return _df.groupby(_df.index).sum()
-    return _df.groupby(_df.index).mean()
 
 
 def read_pull_usa_bea(archive_name: str, wb_name: str, sh_name: str, series_id: str) -> DataFrame:
@@ -597,6 +598,21 @@ def pull_can_quarter(df: DataFrame, series_id: str) -> DataFrame:
     df = df[df.iloc[:, 0] == series_id].iloc[:, [1]]
     df.rename(columns={"value": series_id}, inplace=True)
     return df.groupby(df.index.year).sum()
+
+
+def pull_can_quarter_former(df: DataFrame, series_id: str) -> DataFrame:
+    '''
+    Retrieves DataFrame from Quarterly Data within CANSIM Zip Archives
+    Should Be [x 7 columns]
+    '''
+    flag = 'seas' in df.columns
+    df = df.loc[:, ('series_id', 'value')]
+    df = df[df.iloc[:, 0] == series_id].iloc[:, [1]]
+    df.rename(columns={"value": series_id}, inplace=True)
+    df.iloc[:, -1] = pd.to_numeric(df.iloc[:, -1], errors='coerce')
+    if flag:
+        return df.groupby(df.index.year).sum()
+    return df.groupby(df.index.year).mean()
 
 
 def pull_series_ids(archive_name: str) -> dict[str]:

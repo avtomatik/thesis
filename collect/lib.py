@@ -20,7 +20,7 @@ from sklearn.linear_model import LinearRegression
 from extract.lib import read_from_url_usa_bea
 from extract.lib import read_manager_can
 from extract.lib import read_manager_can_annual
-from extract.lib import read_pull_can_quarter
+from extract.lib import read_manager_can_quarter
 from extract.lib import read_pull_usa_frb_ms
 from extract.lib import read_pull_usa_fred
 from extract.lib import read_pull_usa_hist
@@ -30,6 +30,7 @@ from extract.lib import pull_can_annual
 from extract.lib import pull_can_capital
 from extract.lib import pull_can_capital_former
 from extract.lib import pull_can_quarter
+from extract.lib import pull_can_quarter_former
 from extract.lib import pull_from_cached_usa_bea
 from toolkit.lib import price_inverse_single
 from toolkit.lib import strip_cumulated_deflator
@@ -145,8 +146,8 @@ def construct_can_former():
                 read_manager_can_annual(tuple(ARCHIVE_IDS)[1]),
                 ARCHIVE_IDS.get(tuple(ARCHIVE_IDS)[1])
             ),
-            read_pull_can_quarter(
-                tuple(ARCHIVE_IDS)[-1],
+            pull_can_quarter_former(
+                read_manager_can_quarter(tuple(ARCHIVE_IDS)[-1]),
                 ARCHIVE_IDS.get(tuple(ARCHIVE_IDS)[-1])
             ),
         ],
