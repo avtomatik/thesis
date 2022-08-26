@@ -18,12 +18,11 @@ from scipy import signal
 from sklearn.linear_model import LinearRegression
 # from sklearn.linear_model import Ridge
 from extract.lib import pull_can
-from extract.lib import pull_can_annual
 from extract.lib import pull_can_capital
 from extract.lib import pull_can_capital_former
 from extract.lib import pull_can_quarter
 from extract.lib import pull_can_quarter_former
-from extract.lib import pull_from_cached_usa_bea
+from extract.lib import pull_by_series_id
 from extract.lib import read_from_url_usa_bea
 from extract.lib import read_manager_can
 from extract.lib import read_manager_can_former
@@ -141,7 +140,7 @@ def construct_can_former():
     df = pd.concat(
         [
             transform_sum(_df.loc[:, ('series_id', 'value')]),
-            pull_can_annual(
+            pull_can(
                 read_manager_can_former(tuple(ARCHIVE_IDS)[1]),
                 ARCHIVE_IDS.get(tuple(ARCHIVE_IDS)[1])
             ),
@@ -222,7 +221,7 @@ def collect_archived() -> DataFrame:
             read_pull_usa_fred(SERIES_ID),
             pd.concat(
                 [
-                    pull_from_cached_usa_bea(_df_nipa, series_id)
+                    pull_by_series_id(_df_nipa, series_id)
                     for series_id in SERIES_IDS
                 ],
                 axis=1
@@ -301,7 +300,7 @@ def collect_bea_gdp() -> DataFrame:
     _df_nipa = read_from_url_usa_bea(URL)
     return pd.concat(
         [
-            pull_from_cached_usa_bea(_df_nipa, series_id)
+            pull_by_series_id(_df_nipa, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1
@@ -435,7 +434,7 @@ def collect_capital_combined_archived() -> DataFrame:
         [
             pd.concat(
                 [
-                    pull_from_cached_usa_bea(_df_nipa, series_id)
+                    pull_by_series_id(_df_nipa, series_id)
                     for series_id in SERIES_IDS
                 ],
                 axis=1
@@ -917,7 +916,7 @@ def collect_cobb_douglas_deflator() -> DataFrame:
             # =================================================================
             pd.concat(
                 [
-                    pull_from_cached_usa_bea(_df_sfat, series_id)
+                    pull_by_series_id(_df_sfat, series_id)
                     for series_id in SERIES_IDS_BE[:2]
                 ],
                 axis=1,
@@ -1304,7 +1303,7 @@ def collect_combined() -> DataFrame:
                 [
                     pd.concat(
                         [
-                            pull_from_cached_usa_bea(_df_nipa, series_id)
+                            pull_by_series_id(_df_nipa, series_id)
                             for series_id in SERIES_IDS_NIPA[:8]
                         ],
                         axis=1
@@ -1312,7 +1311,7 @@ def collect_combined() -> DataFrame:
                     collect_usa_bea_labor_mfg(),
                     pd.concat(
                         [
-                            pull_from_cached_usa_bea(_df_nipa, series_id)
+                            pull_by_series_id(_df_nipa, series_id)
                             for series_id in SERIES_IDS_NIPA[8:]
                         ],
                         axis=1
@@ -1325,7 +1324,7 @@ def collect_combined() -> DataFrame:
             # =================================================================
             pd.concat(
                 [
-                    pull_from_cached_usa_bea(_df_sfat, series_id)
+                    pull_by_series_id(_df_sfat, series_id)
                     for series_id in SERIES_IDS_SFAT
                 ],
                 axis=1
@@ -1434,7 +1433,7 @@ def collect_combined_archived() -> DataFrame:
                 [
                     pd.concat(
                         [
-                            pull_from_cached_usa_bea(_df_nipa, series_id)
+                            pull_by_series_id(_df_nipa, series_id)
                             for series_id in SERIES_IDS_NIPA[:8]
                         ],
                         axis=1
@@ -1442,7 +1441,7 @@ def collect_combined_archived() -> DataFrame:
                     collect_usa_bea_labor_mfg(),
                     pd.concat(
                         [
-                            pull_from_cached_usa_bea(_df_nipa, series_id)
+                            pull_by_series_id(_df_nipa, series_id)
                             for series_id in SERIES_IDS_NIPA[8:]
                         ],
                         axis=1
@@ -1455,7 +1454,7 @@ def collect_combined_archived() -> DataFrame:
             # =================================================================
             pd.concat(
                 [
-                    pull_from_cached_usa_bea(_df_sfat, series_id)
+                    pull_by_series_id(_df_sfat, series_id)
                     for series_id in SERIES_IDS_SFAT
                 ],
                 axis=1
@@ -1522,8 +1521,8 @@ def collect_common_archived() -> DataFrame:
             pd.concat(
                 [
                     (
-                        pull_from_cached_usa_bea(_df_nipa, series_id),
-                        pull_from_cached_usa_bea(
+                        pull_by_series_id(_df_nipa, series_id),
+                        pull_by_series_id(
                             _df_nipa, series_id).rdiv(100)
                     )[series_id == 'A191RD']
                     for series_id in SERIES_IDS_NIPA
@@ -1532,7 +1531,7 @@ def collect_common_archived() -> DataFrame:
             ),
             pd.concat(
                 [
-                    pull_from_cached_usa_bea(_df_sfat, series_id)
+                    pull_by_series_id(_df_sfat, series_id)
                     for series_id in SERIES_IDS_SFAT
                 ],
                 axis=1
@@ -1593,14 +1592,14 @@ def collect_updated() -> DataFrame:
         [
             pd.concat(
                 [
-                    pull_from_cached_usa_bea(_df_nipa, series_id)
+                    pull_by_series_id(_df_nipa, series_id)
                     for series_id in SERIES_IDS_NIPA
                 ],
                 axis=1
             ),
             pd.concat(
                 [
-                    pull_from_cached_usa_bea(_df_sfat, series_id)
+                    pull_by_series_id(_df_sfat, series_id)
                     for series_id in SERIES_IDS_SFAT
                 ],
                 axis=1
@@ -1637,7 +1636,7 @@ def collect_usa_bea_labor() -> DataFrame:
     URL = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
     SERIES_ID = 'A4601C'
     _df_nipa = read_from_url_usa_bea(URL)
-    return pull_from_cached_usa_bea(_df_nipa, SERIES_ID)
+    return pull_by_series_id(_df_nipa, SERIES_ID)
 
 
 def collect_usa_bea_labor_mfg() -> DataFrame:
@@ -1674,7 +1673,7 @@ def collect_usa_bea_labor_mfg() -> DataFrame:
     _df_nipa = read_from_url_usa_bea(URL)
     df = pd.concat(
         [
-            pull_from_cached_usa_bea(_df_nipa, series_id)
+            pull_by_series_id(_df_nipa, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -1887,7 +1886,7 @@ def collect_version_a() -> tuple[DataFrame]:
         [
             pd.concat(
                 [
-                    pull_from_cached_usa_bea(
+                    pull_by_series_id(
                         read_from_url_usa_bea(url), series_id)
                     for url, series_id in zip(URLS[::-1], SERIES_IDS)
                 ],
@@ -1959,7 +1958,7 @@ def collect_version_b() -> tuple[DataFrame]:
             # =================================================================
             # Fixed Assets: kcn31gd1es00, 1925--2016, Table 4.2. Chain-Type Quantity Indexes for Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
             # =================================================================
-            pull_from_cached_usa_bea(_df_sfat, SERIES_ID),
+            pull_by_series_id(_df_sfat, SERIES_ID),
             # =================================================================
             # Manufacturing Labor Series: _4313C0, 1929--2020
             # =================================================================
@@ -2460,12 +2459,11 @@ def transform_sum(df: DataFrame) -> DataFrame:
     df.iloc[:, 0]      Sum of <series_ids>
     ================== =================================
     '''
-    assert df.shape[1] == 2
     series_ids = sorted(set(df.iloc[:, 0]))
     df.iloc[:, 1] = pd.to_numeric(df.iloc[:, 1], errors='coerce')
     df = pd.concat(
         [
-            df[df.iloc[:, 0] == series_id].iloc[:, [1]]
+            pull_by_series_id(df, series_id)
             for series_id in series_ids
         ],
         axis=1

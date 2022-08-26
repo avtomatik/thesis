@@ -425,12 +425,47 @@ def read_pull_uscb_description(
     return _desc
 
 
-def pull_can_annual(df: DataFrame, series_id: str) -> DataFrame:
+def pull_by_series_id(df: DataFrame, series_id: str) -> DataFrame:
+    '''
+
+
+    Parameters
+    ----------
+    df : DataFrame
+        DESCRIPTION.
+    series_id : str
+        DESCRIPTION.
+
+    Returns
+    -------
+    DataFrame
+        DESCRIPTION.
+
+    '''
+    assert df.shape[1] == 2
+    _df = df[df.iloc[:, 0] == series_id].iloc[:, [1]]
+    return _df.rename(columns={"value": series_id})
+
+
+def pull_can(df: DataFrame, series_id: str) -> DataFrame:
     '''
     Retrieves DataFrame from CANSIM Zip Archives
+    Parameters
+    ----------
+    df : DataFrame
+        Retrieved with read_from_url_can().
+    series_id : str
+        DESCRIPTION.
+    Returns
+    -------
+    DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Series
+    ================== =================================
     '''
-    df = df[df.iloc[:, 0] == series_id].iloc[:, [1]]
-    df.iloc[:, 0] = pd.to_numeric(df.iloc[:, 0], errors='coerce')
+    df = pull_by_series_id(df, series_id)
+    df.iloc[:, -1] = pd.to_numeric(df.iloc[:, -1], errors='coerce')
     return df
 
 
@@ -513,42 +548,6 @@ def pull_can_capital_former(df: DataFrame, params: tuple[int, str]) -> DataFrame
         )
 
 
-def pull_can(df: DataFrame, series_id: str) -> DataFrame:
-    '''
-    Retrieves DataFrame from CANSIM Zip Archives
-    Parameters
-    ----------
-    df : DataFrame
-        Retrieved with read_from_url_can().
-    series_id : str
-        DESCRIPTION.
-    Returns
-    -------
-    DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Series
-    ================== =================================
-    '''
-    assert df.shape[1] == 2
-    df = df[df.iloc[:, 0] == series_id].iloc[:, [1]]
-    # =========================================================================
-    # TODO: Extract to __call__
-    # =========================================================================
-    df.index = pd.to_numeric(
-        df.index.astype(str).to_series().str.slice(stop=4),
-        downcast='integer'
-    )
-    df.iloc[:, 0] = pd.to_numeric(df.iloc[:, 0], errors='coerce')
-    return df.rename(columns={"value": series_id})
-
-
-def pull_from_cached_usa_bea(df: DataFrame, series_id: str) -> DataFrame:
-    '''`NipaDataA.txt`: U.S. Bureau of Economic Analysis'''
-    _df = df[df.iloc[:, 0] == series_id].iloc[:, [1]]
-    return _df.rename(columns={"value": series_id})
-
-
 def pull_can_quarter(df: DataFrame, series_id: str) -> DataFrame:
     '''
     DataFrame Fetching from Quarterly Data within CANSIM Zip Archives
@@ -566,9 +565,7 @@ def pull_can_quarter(df: DataFrame, series_id: str) -> DataFrame:
     df.iloc[:, 0]      Series
     ================== =================================
     '''
-    assert df.shape[1] == 2
-    df = df[df.iloc[:, 0] == series_id].iloc[:, [1]]
-    df.rename(columns={"value": series_id}, inplace=True)
+    df = pull_by_series_id(df, series_id)
     return df.groupby(df.index.year).sum()
 
 
@@ -579,8 +576,7 @@ def pull_can_quarter_former(df: DataFrame, series_id: str) -> DataFrame:
     '''
     flag = 'seas' in df.columns
     df = df.loc[:, ('series_id', 'value')]
-    df = df[df.iloc[:, 0] == series_id].iloc[:, [1]]
-    df.rename(columns={"value": series_id}, inplace=True)
+    df = pull_by_series_id(df, series_id)
     df.iloc[:, -1] = pd.to_numeric(df.iloc[:, -1], errors='coerce')
     if flag:
         return df.groupby(df.index.year).sum()

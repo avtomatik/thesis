@@ -11,7 +11,7 @@ from functools import partial
 import pandas as pd
 from pandas import DataFrame
 from pandas.plotting import autocorrelation_plot
-from extract.lib import pull_can_annual
+from extract.lib import pull_can
 from extract.lib import pull_can_quarter_former
 from extract.lib import read_manager_can_former
 from extract.lib import read_pull_usa_bea
@@ -104,7 +104,7 @@ def test_data_consistency_a():
             ),
             pd.concat(
                 [
-                    pull_can_annual(
+                    pull_can(
                         read_manager_can_former(_args[0]), _args[1])
                     for _args in ARGS[3:]
                 ],

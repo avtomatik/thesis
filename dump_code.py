@@ -19,7 +19,7 @@ from extract.lib import (
     read_from_url_usa_bea,
     read_pull_usa_bea,
     pull_can_quarter_former,
-    pull_from_cached_usa_bea,
+    pull_by_series_id,
 )
 
 
@@ -414,7 +414,7 @@ def collect_usa_xlsm() -> DataFrame:
         [
             pd.concat(
                 [
-                    pull_from_cached_usa_bea(_df, series_id)
+                    pull_by_series_id(_df, series_id)
                     for series_id in SERIES_IDS
                 ],
                 axis=1
