@@ -13,7 +13,6 @@ import os
 from collect.lib import collect_archived
 from collect.lib import collect_cobb_douglas
 from collect.lib import collect_combined
-from collect.lib import collect_combined_archived
 from collect.lib import collect_douglas
 from collect.lib import collect_updated
 from collect.lib import collect_usa_mcconnel
@@ -142,7 +141,7 @@ def main():
     # `calculate_power_function_fit_params_b`: Power Function Approximation,
     # `calculate_power_function_fit_params_c`: Power Function Approximation
     # =============================================================================
-    _df = collect_combined_archived()
+    _df = collect_combined()
     plot_approx_linear(_df.iloc[:, [7, 6, 0, 6]].dropna())
     plot_approx_log_linear(_df.iloc[:, [7, 6, 20, 4]].dropna())
     plot_approx_log_linear(_df.iloc[:, [7, 6, 20, 6]].dropna())
@@ -255,7 +254,7 @@ def main():
     # =========================================================================
     # Subproject VI. Elasticity
     # =========================================================================
-    _df = collect_combined_archived()
+    _df = collect_combined()
     df_a = _df.iloc[:, [7, 6, 4]].dropna()
     df_b = _df.iloc[:, [4]].dropna()
     plot_elasticity(df_a)
@@ -316,33 +315,26 @@ def main():
     # =========================================================================
     # Subproject IX. USA BEA
     # =========================================================================
-    _df_a = collect_combined_archived()
-    _df_b = collect_combined()
+    _df_a = collect_combined()
     # =========================================================================
     # Project: Initial Version Dated: 05 October 2012
     # =========================================================================
     df_a_a = transform_a(_df_a)
-    df_a_b = transform_a(_df_b)
     plot_a(df_a_a)
-    plot_a(df_a_b)
     # =========================================================================
     # Project: Initial Version Dated: 23 November 2012
     # =========================================================================
     df_b_a = transform_b(_df_a)
-    df_b_b = transform_b(_df_b)
     plot_b(df_b_a)
-    plot_b(df_b_b)
     # =========================================================================
     # Project: Initial Version Dated: 16 June 2013
     # =========================================================================
     df_c_a = transform_c(_df_a)
-    df_c_b = transform_c(_df_b)
     plot_c(df_c_a)
-    plot_c(df_c_b)
     # =========================================================================
     # Project: Initial Version Dated: 15 June 2015
     # =========================================================================
-    plot_d(transform_d(_df_b))
+    plot_d(transform_d(_df_a))
     # =========================================================================
     # Project: Initial Version Dated: 17 February 2013
     # =========================================================================

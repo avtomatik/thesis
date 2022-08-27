@@ -276,6 +276,22 @@ def read_pull_usa_bls(file_name: str, series_id: str) -> DataFrame:
     return _df[_q].iloc[:, [-1]]
 
 
+def read_pull_usa_frb_cu() -> DataFrame:
+    '''Indexed Capacity Utilization Series: CAPUTL.B50001.A, 1967--2012
+    CAPUTL.B50001.A Fetching'''
+    SERIES_ID = 'CAPUTL.B50001.A'
+    kwargs = {
+        'filepath_or_buffer': 'dataset_usa_frb_g17_all_annual_2013_06_23.csv',
+        'skiprows': 1,
+        'index_col': 0,
+        'usecols': range(5, 100)
+    }
+    df = pd.read_csv(**kwargs).transpose()
+    df.index = pd.to_numeric(df.index, downcast='integer')
+    df.rename_axis('period', inplace=True)
+    return df.loc[:, [SERIES_ID]].dropna(axis=0)
+
+
 def read_pull_usa_frb_ms() -> DataFrame:
     '''
     Money Stock Measures (H.6) Series
@@ -362,15 +378,11 @@ def read_pull_usa_hist(archive_name: str, series_id: str) -> DataFrame:
         'dtype': str
     }
     df = pd.read_csv(**kwargs)
-    # =========================================================================
-    # TODO: Extract to __call__
-    # =========================================================================
-    df = pull_by_series_id(df, series_id)
     df.index = pd.to_numeric(
         df.index.astype(str).to_series().str.slice(stop=4),
         downcast='integer'
     )
-    df.iloc[:, -1] = pd.to_numeric(df.iloc[:, -1], errors='coerce')
+    df = numerify(pull_by_series_id(df, series_id))
     if 'census' in archive_name:
         return df.groupby(df.index).mean()
     return df.sort_index()
@@ -478,8 +490,9 @@ def pull_by_series_id(df: DataFrame, series_id: str) -> DataFrame:
     ================== =================================
     '''
     assert df.shape[1] == 2
-    _df = df[df.iloc[:, 0] == series_id].iloc[:, [1]]
-    return _df.rename(columns={"value": series_id})
+    return df[df.iloc[:, 0] == series_id].iloc[:, [1]].rename(
+        columns={"value": series_id}
+    )
 
 
 def pull_can_capital(df: DataFrame, params: tuple[int, str]) -> DataFrame:
@@ -502,7 +515,7 @@ def pull_can_capital(df: DataFrame, params: tuple[int, str]) -> DataFrame:
         DESCRIPTION.
 
     '''
-    DIR = Path("/home/alexander/science")
+    DIR = "/home/alexander/science"
     DBNAME = "capital"
     stmt = f"""
     SELECT * FROM {DBNAME}
@@ -514,7 +527,7 @@ def pull_can_capital(df: DataFrame, params: tuple[int, str]) -> DataFrame:
         AND component IN {params[-1]}
     ;
     """
-    with sqlite3.connect(DIR.joinpath(f"{DBNAME}.db")) as conn:
+    with sqlite3.connect(Path(DIR).joinpath(f"{DBNAME}.db")) as conn:
         cursor = conn.cursor()
         df.to_sql(DBNAME, conn, if_exists="replace", index=True)
         cursor = conn.execute(stmt)
@@ -542,7 +555,7 @@ def pull_can_capital_former(df: DataFrame, params: tuple[int, str]) -> DataFrame
     DataFrame
         DESCRIPTION.
     '''
-    DIR = Path("/home/alexander/science")
+    DIR = "/home/alexander/science"
     DBNAME = "capital"
     stmt = f"""
     SELECT * FROM {DBNAME}
@@ -552,7 +565,7 @@ def pull_can_capital_former(df: DataFrame, params: tuple[int, str]) -> DataFrame
         AND lower(component) LIKE '%{params[-1]}%'
     ;
     """
-    with sqlite3.connect(DIR.joinpath(f"{DBNAME}.db")) as conn:
+    with sqlite3.connect(Path(DIR).joinpath(f"{DBNAME}.db")) as conn:
         cursor = conn.cursor()
         df.to_sql(DBNAME, conn, if_exists="replace", index=True)
         cursor = conn.execute(stmt)
