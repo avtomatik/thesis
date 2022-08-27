@@ -10,11 +10,11 @@ Thesis Project
 
 import itertools
 import os
-from collect.lib import collect_archived
+from collect.lib import collect_usa
 from collect.lib import collect_cobb_douglas
-from collect.lib import collect_combined
+from collect.lib import collect_usa_general
 from collect.lib import collect_douglas
-from collect.lib import collect_updated
+from collect.lib import collect_usa_investment_turnover
 from collect.lib import collect_usa_mcconnel
 from collect.lib import collect_uscb_cap
 from collect.lib import collect_uscb_cap_deflator
@@ -27,9 +27,9 @@ from collect.lib import collect_uscb_production
 from collect.lib import collect_uscb_trade
 from collect.lib import collect_uscb_trade_by_countries
 from collect.lib import collect_uscb_trade_gold_silver
-from collect.lib import collect_version_a
-from collect.lib import collect_version_b
-from collect.lib import collect_version_c
+from collect.lib import collect_usa_production_two_fold
+from collect.lib import collect_usa_production_three_fold
+from collect.lib import collect_usa_production_latest
 from collect.lib import construct_can
 from collect.lib import transform_a
 from collect.lib import transform_b
@@ -141,7 +141,7 @@ def main():
     # `calculate_power_function_fit_params_b`: Power Function Approximation,
     # `calculate_power_function_fit_params_c`: Power Function Approximation
     # =============================================================================
-    _df = collect_combined()
+    _df = collect_usa_general()
     plot_approx_linear(_df.iloc[:, [7, 6, 0, 6]].dropna())
     plot_approx_log_linear(_df.iloc[:, [7, 6, 20, 4]].dropna())
     plot_approx_log_linear(_df.iloc[:, [7, 6, 20, 6]].dropna())
@@ -179,8 +179,8 @@ def main():
     #
     # }
     # =============================================================================
-    df_a, df_b = collect_archived()
-    df_c, df_d = collect_updated()
+    df_a, df_b = collect_usa()
+    df_c, df_d = collect_usa_investment_turnover()
     plot_capital_modelling(df_a, 2005)
     plot_capital_modelling(df_c, 2012)
     # =============================================================================
@@ -202,8 +202,8 @@ def main():
     # =========================================================================
     # On Expanded Dataset
     # =========================================================================
-    df_d, df_e = collect_version_a()
-    df_f, df_g, df_h = collect_version_b()
+    df_d, df_e = collect_usa_production_two_fold()
+    df_f, df_g, df_h = collect_usa_production_three_fold()
     plot_cobb_douglas_complex(df_a)
     plot_cobb_douglas_complex(df_b)
     plot_cobb_douglas_complex(df_c)
@@ -227,7 +227,7 @@ def main():
     # Option: 1967--2012, Capacity Utilization Adjustment
     # =========================================================================
     plot_cobb_douglas_complex(df_h)
-    # plot_cobb_douglas_complex(collect_version_c())
+    # plot_cobb_douglas_complex(collect_usa_production_latest())
 
     # =========================================================================
     # Subproject V. Cobb--Douglas CAN
@@ -254,7 +254,7 @@ def main():
     # =========================================================================
     # Subproject VI. Elasticity
     # =========================================================================
-    _df = collect_combined()
+    _df = collect_usa_general()
     df_a = _df.iloc[:, [7, 6, 4]].dropna()
     df_b = _df.iloc[:, [4]].dropna()
     plot_elasticity(df_a)
@@ -315,7 +315,7 @@ def main():
     # =========================================================================
     # Subproject IX. USA BEA
     # =========================================================================
-    _df_a = collect_combined()
+    _df_a = collect_usa_general()
     # =========================================================================
     # Project: Initial Version Dated: 05 October 2012
     # =========================================================================

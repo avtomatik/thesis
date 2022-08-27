@@ -21,11 +21,11 @@ def main():
 
     '''
     URL = 'https://unstats.un.org/unsd/amaapi/api/file/2'
-    _df = pd.read_excel(
-        io.BytesIO(requests.get(URL).content),
-        index_col=1,
-        skiprows=2
-    )
+    kwargs = {
+        'usecols': 1,
+        'skiprows': 2,
+    }
+    _df = pd.read_excel(io.BytesIO(requests.get(URL).content), **kwargs)
     _df = _df[_df.iloc[:, 1] == 'Gross Domestic Product (GDP)']
     _df = _df.drop(
         _df.columns[:2],

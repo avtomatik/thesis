@@ -437,6 +437,103 @@ def collect_usa_xlsm() -> DataFrame:
     )
 
 
+def collect_bea_def() -> DataFrame:
+    '''
+    USA BEA Gross Domestic Product Deflator: Cumulative Price Index
+
+    Returns
+    -------
+    DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Gross Domestic Product Deflator
+    ================== =================================
+
+    '''
+    _df = collect_bea_gdp()
+    _df['deflator_gdp'] = _df.iloc[:, 0].div(_df.iloc[:, 1]).mul(100)
+    return _df.iloc[:, [-1]]
+
+
+def collect_bea_gdp() -> DataFrame:
+    '''
+    USA BEA Gross Domestic Product
+
+    Returns
+    -------
+    DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Nominal
+    df.iloc[:, 1]      Real
+    ================== =================================
+    '''
+    SERIES_IDS = {
+        # =====================================================================
+        # Nominal Gross Domestic Product Series: A191RC1
+        # =====================================================================
+        'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        # =====================================================================
+        # Real Gross Domestic Product Series, 2012=100: A191RX1
+        # =====================================================================
+        'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+    }
+    return pd.concat(
+        [
+            pull_by_series_id(read_from_url_usa_bea(url), series_id)
+            for series_id, url in SERIES_IDS.items()
+        ],
+        axis=1
+    )
+
+
+def collect_capital_combined_archived() -> DataFrame:
+    SERIES_IDS = {
+        # =====================================================================
+        # Nominal Investment Series: A006RC, 1929--2021
+        # =====================================================================
+        'A006RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        # =====================================================================
+        # Nominal Gross Domestic Product Series: A191RC, 1929--2021
+        # =====================================================================
+        'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        # =====================================================================
+        # Real Gross Domestic Product Series: A191RX, 1929--2021
+        # =====================================================================
+        'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        # =====================================================================
+        # Fixed Assets Series: k1n31gd1es00, 1925--2020
+        # =====================================================================
+        'k1n31gd1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
+    }
+    return pd.concat(
+        [
+            pd.concat(
+                [
+                    pull_by_series_id(read_from_url_usa_bea(url), series_id)
+                    for series_id, url in SERIES_IDS.items()
+                ],
+                axis=1,
+                sort=True
+            ),
+            # =================================================================
+            # Capacity Utilization Series: CAPUTL.B50001.A, 1967--2012
+            # =================================================================
+            read_pull_usa_frb_cu(),
+            # =================================================================
+            # Manufacturing Labor Series: _4313C0, 1929--2020
+            # =================================================================
+            collect_usa_bea_labor_mfg(),
+            # =================================================================
+            # For Overall Labor Series, See: A4601C0, 1929--2020
+            # =================================================================
+            collect_usa_bea_labor_mfg()
+        ],
+        axis=1,
+        sort=True
+    ).dropna(axis=0)
+
+
 DIR = '/media/alexander/321B-6A94'
 
 os.chdir(DIR)

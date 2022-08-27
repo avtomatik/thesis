@@ -7,9 +7,9 @@ Created on Sun Mar 15 16:17:13 2020
 
 
 import os
-from collect.lib import collect_version_a
-from collect.lib import collect_version_b
-from collect.lib import collect_version_c
+from collect.lib import collect_usa_production_two_fold
+from collect.lib import collect_usa_production_three_fold
+from collect.lib import collect_usa_production_latest
 from collect.lib import collect_cobb_douglas
 from plot.lib import plot_cobb_douglas_complex
 
@@ -28,9 +28,9 @@ def main():
     # =========================================================================
     # On Expanded Dataset
     # =========================================================================
-    _df_d, _df_e = collect_version_a()
-    _df_f, _df_g, _df_h = collect_version_b()
-    _df_i = collect_version_c()
+    _df_d, _df_e = collect_usa_production_two_fold()
+    _df_f, _df_g, _df_h = collect_usa_production_three_fold()
+    _df_i = collect_usa_production_latest()
     plot_cobb_douglas_complex(_df_a)
     plot_cobb_douglas_complex(_df_b)
     plot_cobb_douglas_complex(_df_c)

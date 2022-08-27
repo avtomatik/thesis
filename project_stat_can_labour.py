@@ -9,8 +9,7 @@ Created on Tue Nov  2 21:10:29 2021
 import os
 import pandas as pd
 from pandas import DataFrame
-from collect.lib import collect_cobb_douglas_price
-from collect.lib import collect_uscb_cap_prices
+from collect.lib import construct_cap_deflator
 from collect.lib import collect_can_price_a
 from collect.lib import collect_can_price_b
 
@@ -32,11 +31,20 @@ def main():
     DIR = '/home/alexander/science'
     _DIR = '/media/alexander/321B-6A94'
 
+    SERIES_IDS = {
+        'CDT2S1': 'dataset_usa_cobb-douglas.zip',
+        'CDT2S3': 'dataset_usa_cobb-douglas.zip'
+    }
+    SERIES_IDS = {
+        'P0107': 'dataset_usa_census1975.zip',
+        'P0110': 'dataset_usa_census1975.zip'
+    }
+
     # =============================================================================
     # CALLS = (
     #     # =========================================================================
-    #     # collect_cobb_douglas_price,
-    #     # collect_uscb_cap_prices,
+    #     # construct_cap_deflator,
+    #     # construct_cap_deflator,
     #     # =========================================================================
     #     collect_can_price_a,
     #     collect_can_price_b,

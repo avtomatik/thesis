@@ -7,7 +7,7 @@ Created on Thu Jan  9 21:17:48 2020
 
 
 import os
-from collect.lib import collect_combined
+from collect.lib import collect_usa_general
 from collect.lib import transform_a
 from collect.lib import transform_b
 from collect.lib import transform_c
@@ -26,7 +26,7 @@ def main():
     DIR = '/media/alexander/321B-6A94'
 
     os.chdir(DIR)
-    _df_a = collect_combined()
+    _df_a = collect_usa_general()
     # =========================================================================
     # Project: Initial Version Dated: 05 October 2012
     # =========================================================================

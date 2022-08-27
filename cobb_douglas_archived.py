@@ -6,11 +6,11 @@ Created on Wed Feb  5 22:19:02 2020
 
 
 import os
-from collect.lib import collect_capital_purchases
+from collect.lib import collect_usa_capital_purchases
 from collect.lib import collect_cobb_douglas
-from collect.lib import collect_version_a
-from collect.lib import collect_version_b
-from collect.lib import collect_version_c
+from collect.lib import collect_usa_production_two_fold
+from collect.lib import collect_usa_production_three_fold
+from collect.lib import collect_usa_production_latest
 from collect.lib import transform_cobb_douglas
 from collect.lib import transform_cobb_douglas_alt
 from toolkit.lib import calculate_curve_fit_params
@@ -48,9 +48,9 @@ def main():
     _df_a = df.iloc[:, range(3)]
     _df_b = df.iloc[:, [0, 1, 3]]
     _df_c = df.iloc[:, [0, 1, 4]]
-    _df_d, _df_e = collect_version_a()
-    _df_f, _df_g, _df_h = collect_version_b()
-    _df_i = collect_version_c()
+    _df_d, _df_e = collect_usa_production_two_fold()
+    _df_f, _df_g, _df_h = collect_usa_production_three_fold()
+    _df_i = collect_usa_production_latest()
 
 # =============================================================================
 #     df = transform_cobb_douglas(collect_cobb_douglas())[0].iloc[:, [3, 4]]
@@ -103,7 +103,7 @@ def main():
     # =========================================================================
     # Project III. Scipy Signal Wiener Filter
     # =========================================================================
-    plot_capital_purchases(collect_capital_purchases())
+    plot_capital_purchases(collect_usa_capital_purchases())
 
 
 if __name__ == '__main__':

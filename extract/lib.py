@@ -43,7 +43,7 @@ def numerify(df: DataFrame) -> DataFrame:
 
 
 @cache
-def read_manager_can(archive_id: int) -> DataFrame:
+def read_can(archive_id: int) -> DataFrame:
     '''
 
 
@@ -91,7 +91,7 @@ def read_manager_can(archive_id: int) -> DataFrame:
             return pd.read_csv(f, **kwargs)
 
 
-def read_manager_can_former(archive_id: int) -> DataFrame:
+def read_can_former(archive_id: int) -> DataFrame:
     '''
     Retrieves DataFrame from CANSIM Zip Archives
 

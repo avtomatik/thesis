@@ -7,7 +7,7 @@ import os
 import matplotlib.pyplot as plt
 import pandas as pd
 from collect.lib import collect_version_c
-from collect.lib import collect_common_archived
+from collect.lib import collect_usa_macroeconomics
 from plot.lib import plot_increment
 
 
@@ -105,7 +105,7 @@ def main():
     DIR = '/media/alexander/321B-6A94'
 
     os.chdir(DIR)
-    _df = collect_common_archived()
+    _df = collect_usa_macroeconomics()
     # =========================================================================
     # Deflator, 2009=100
     # =========================================================================
