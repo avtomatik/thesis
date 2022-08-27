@@ -13,8 +13,9 @@ from pandas import DataFrame
 from pandas.plotting import autocorrelation_plot
 from extract.lib import numerify
 from extract.lib import pull_can_quarter_former
+from extract.lib import pull_by_series_id
 from extract.lib import read_manager_can_former
-from extract.lib import read_pull_usa_bea
+from extract.lib import read_usa_bea
 from extract.lib import read_pull_usa_bls
 from extract.lib import read_pull_usa_hist
 from plot.lib import plot_can_test
@@ -159,7 +160,10 @@ def test_data_consistency_b():
     )
     df = pd.concat(
         [
-            read_pull_usa_bea(ARCHIVE_NAME, WB_NAME, sh, series_id)
+            # =================================================================
+            # TODO: UPDATE ACCORDING TO NEW SIGNATURE
+            # =================================================================
+            read_usa_bea(ARCHIVE_NAME, WB_NAME, sh, series_id)
             for sh, series_id in zip(SH_NAMES, SERIES_IDS)
         ],
         axis=1,
@@ -332,7 +336,10 @@ def test_douglas() -> None:
 def test_procedure(kwargs_list: list[dict]) -> None:
     df = pd.concat(
         [
-            read_pull_usa_bea(**_kwargs) for _kwargs in kwargs_list
+            # =================================================================
+            # TODO: UPDATE ACCORDING TO NEW SIGNATURE
+            # =================================================================
+            read_usa_bea(**_kwargs) for _kwargs in kwargs_list
         ],
         axis=1,
         sort=True
@@ -379,7 +386,10 @@ def test_usa_bea_sfat_series() -> DataFrame:
     )
     test_frame = pd.concat(
         [
-            read_pull_usa_bea(ARCHIVE_NAME, WB_NAME, SH_NAME, series_id)
+            # =================================================================
+            # TODO: UPDATE ACCORDING TO NEW SIGNATURE
+            # =================================================================
+            read_usa_bea(ARCHIVE_NAME, WB_NAME, SH_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,

@@ -7,9 +7,9 @@ Created on Sun Jun 12 08:59:10 2022
 """
 
 
-import os
 from functools import partial
 import itertools
+from patlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -1739,7 +1739,7 @@ def plot_increment(df: DataFrame) -> None:
     fig.tight_layout()
     if FLAG:
         fig.savefig(
-            os.path.join(DIR, FILE_NAME),
+            Path(DIR).joinpath(FILE_NAME),
             format='pdf', dpi=900
         )
     else:

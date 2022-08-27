@@ -6,7 +6,6 @@ Created on Sun Jun 12 11:52:01 2022
 @author: alexander
 """
 
-import os
 import itertools
 import numpy as np
 import pandas as pd
@@ -59,7 +58,7 @@ URLS_UTILISED = (
 
 
 def construct_can():
-    DIR = Path("/home/alexander/science")
+    DIR = '/home/alexander/science'
     ARCHIVE_IDS = {
         # =====================================================================
         # Capital
@@ -164,7 +163,7 @@ def construct_can_former():
 def collect_can_price_a():
     DIR = '/home/alexander/science'
     FILE_NAME = 'stat_can_cap.xlsx'
-    _df = pd.read_excel(os.path.join(DIR, FILE_NAME), index_col=0)
+    _df = pd.read_excel(Path(DIR).joinpath(FILE_NAME), index_col=0)
     groups = [
         [[_, 5 + _] for _ in range(5)],
         [[_, 5 + _] for _ in range(35, 39)],
@@ -188,7 +187,7 @@ def collect_can_price_a():
 def collect_can_price_b():
     DIR = '/home/alexander/science'
     FILE_NAME = 'stat_can_cap.xlsx'
-    _df = pd.read_excel(os.path.join(DIR, FILE_NAME), index_col=0)
+    _df = pd.read_excel(Path(DIR).joinpath(FILE_NAME), index_col=0)
     df = DataFrame()
     for _ in range(21, 24):
         chunk = _df.iloc[:, [_]].dropna(axis=0)
@@ -2052,7 +2051,7 @@ def get_mean_for_min_std():
         'v2057818',
         'v2523013',
     )
-    _df = pd.read_excel(os.path.join(DIR, FILE_NAME), index_col=0)
+    _df = pd.read_excel(Path(DIR).joinpath(FILE_NAME), index_col=0)
     df = pd.concat(
         [
             _df.loc[:, [series_id]].dropna(axis=0) for series_id in SERIES_IDS

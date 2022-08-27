@@ -17,7 +17,7 @@ from pandas import DataFrame
 from extract.lib import (
     read_manager_can_former,
     read_from_url_usa_bea,
-    read_pull_usa_bea,
+    read_usa_bea,
     pull_can_quarter_former,
     pull_by_series_id,
 )
@@ -126,7 +126,10 @@ def test_data_capital_combined_archived():
         } for series_id in SERIES_IDS
     ]
     _control = pd.concat(
-        [read_pull_usa_bea(**kwargs) for kwargs in KWARGS],
+        # =====================================================================
+        # TODO: UPDATE ACCORDING TO NEW SIGNATURE
+        # =====================================================================
+        [read_usa_bea(**kwargs) for kwargs in KWARGS],
         axis=1,
         sort=True
     )
@@ -147,7 +150,10 @@ def test_data_capital_combined_archived():
         } for series_id in SERIES_IDS
     ]
     _test = pd.concat(
-        [read_pull_usa_bea(**kwargs) for kwargs in KWARGS],
+        # =====================================================================
+        # TODO: UPDATE ACCORDING TO NEW SIGNATURE
+        # =====================================================================
+        [read_usa_bea(**kwargs) for kwargs in KWARGS],
         axis=1,
         sort=True
     )
@@ -179,7 +185,10 @@ def test_data_capital_combined_archived():
         } for series_id in SERIES_IDS
     ]
     _control = pd.concat(
-        [read_pull_usa_bea(**kwargs) for kwargs in KWARGS],
+        # =====================================================================
+        # TODO: UPDATE ACCORDING TO NEW SIGNATURE
+        # =====================================================================
+        [read_usa_bea(**kwargs) for kwargs in KWARGS],
         axis=1,
         sort=True
     )
@@ -200,7 +209,10 @@ def test_data_capital_combined_archived():
         } for series_id in SERIES_IDS
     ]
     _test = pd.concat(
-        [read_pull_usa_bea(**kwargs) for kwargs in KWARGS],
+        # =====================================================================
+        # TODO: UPDATE ACCORDING TO NEW SIGNATURE
+        # =====================================================================
+        [read_usa_bea(**kwargs) for kwargs in KWARGS],
         axis=1,
         sort=True
     )
@@ -445,10 +457,9 @@ kwargs = {
     'archive_name': 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
     'wb_name': 'Section5ALL_Hist.xls',
     'sh_name': '50900 Ann',
-    'series_id': 'K160021',
 }
-_df_sub_a = read_pull_usa_bea(**kwargs)
-
+SERIES_ID = 'K160021'
+_df_sub_a = read_usa_bea(**kwargs).loc[:, [SERIES_ID]]
 
 # =============================================================================
 # Not Clear
@@ -468,9 +479,9 @@ kwargs = {
     'archive_name': 'dataset_usa_bea-sfat-release-2012-08-15-SectionAll_xls.zip',
     'wb_name': 'Section3ALL_xls.xls',
     'sh_name': '303ES Ann',
-    'series_id': 'k3n31gd1es000',
 }
-_df_semi_c = read_pull_usa_bea(**kwargs)
+SERIES_ID = 'k3n31gd1es000'
+_df_semi_c = read_usa_bea(**kwargs).loc[:, [SERIES_ID]]
 KWARGS = (
     # =========================================================================
     # Nominal Gross Domestic Product Series: A191RC1, 1929--1969
@@ -479,7 +490,6 @@ KWARGS = (
         'archive_name': 'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1929_1969.zip',
         'wb_name': 'Section1ALL_Hist.xls',
         'sh_name': '10105 Ann',
-        'series_id': 'A191RC1',
     },
     # =========================================================================
     # Nominal Gross Domestic Product Series: A191RC1, 1969--2014
@@ -488,11 +498,11 @@ KWARGS = (
         'archive_name': 'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1969_2015.zip',
         'wb_name': 'Section1all_xls.xls',
         'sh_name': '10105 Ann',
-        'series_id': 'A191RC1',
     },
 )
+SERIES_ID = 'A191RC1'
 _df_semi_d = pd.concat(
-    [read_pull_usa_bea(**kwargs) for kwargs in KWARGS],
+    [read_usa_bea(**kwargs).loc[:, [SERIES_ID]] for kwargs in KWARGS],
     sort=True
 ).drop_duplicates()
 # =============================================================================
