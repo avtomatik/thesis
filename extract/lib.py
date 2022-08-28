@@ -23,14 +23,12 @@ def numerify(df: DataFrame) -> DataFrame:
     Parameters
     ----------
     df : DataFrame
-    DataFrame
     ================== =================================
     df.index           Period
     df.iloc[:, 0]      Series
     ================== =================================
     Returns
     -------
-    DataFrame
     DataFrame
     ================== =================================
     df.index           Period
@@ -181,21 +179,21 @@ def read_usa_bea(archive_name: str, wb_name: str, sh_name: str) -> DataFrame:
     TYPE
         DESCRIPTION.
     '''
+    kwargs = {
+        'sheet_name': sh_name,
+        'skiprows': 7
+    }
     with pd.ExcelFile(ZipFile(archive_name, 'r').open(wb_name)) as xl_file:
         # =====================================================================
         # Load
         # =====================================================================
-        df = pd.read_excel(xl_file, sh_name, skiprows=7)
+        kwargs['io'] = xl_file
+        _df = pd.read_excel(**kwargs)
         # =====================================================================
         # Re-Load
         # =====================================================================
-        kwargs = {
-            'io': xl_file,
-            'sheet_name': sh_name,
-            'index_col': 0,
-            'usecols': range(2, df.shape[1]),
-            'skiprows': 7
-        }
+        kwargs['index_col'] = 0
+        kwargs['usecols'] = range(2, _df.shape[1])
         return pd.read_excel(**kwargs).dropna(axis=0).transpose()
 
 
@@ -220,9 +218,9 @@ def read_worldbank() -> DataFrame:
                 'index_col': 0,
                 'skiprows': 4
             }
-            df = pd.read_csv(**kwargs).dropna(axis=1, how='all').transpose()
-            df.drop(df.index[:3], inplace=True)
-            return df.rename_axis('period')
+            _df = pd.read_csv(**kwargs).dropna(axis=1, how='all').transpose()
+            _df.drop(_df.index[:3], inplace=True)
+            return _df.rename_axis('period')
 
 
 def read_pull_usa_bls(file_name: str, series_id: str) -> DataFrame:
@@ -273,10 +271,10 @@ def read_pull_usa_frb_cu() -> DataFrame:
         'index_col': 0,
         'usecols': range(5, 100)
     }
-    df = pd.read_csv(**kwargs).transpose()
-    df.index = pd.to_numeric(df.index, downcast='integer')
-    df.rename_axis('period', inplace=True)
-    return df.loc[:, [SERIES_ID]].dropna(axis=0)
+    _df = pd.read_csv(**kwargs).transpose()
+    _df.index = pd.to_numeric(_df.index, downcast='integer')
+    _df.rename_axis('period', inplace=True)
+    return _df.loc[:, [SERIES_ID]].dropna(axis=0)
 
 
 def read_pull_usa_frb_ms() -> DataFrame:
@@ -348,12 +346,12 @@ def read_pull_usa_hist(archive_name: str, series_id: str) -> DataFrame:
     ================== =================================
     '''
     MAP = {
-        'dataset_douglas.zip': {'series_id': 4, 'period': 5, series_id: 6},
-        'dataset_usa_brown.zip': {'series_id': 3, 'period': 4, series_id: 5},
-        'dataset_usa_census1949.zip': {'series_id': 8, 'period': 9, series_id: 10},
-        'dataset_usa_census1975.zip': {'series_id': 8, 'period': 9, series_id: 10},
-        'dataset_usa_cobb-douglas.zip': {'series_id': 5, 'period': 6, series_id: 7},
-        'dataset_usa_kendrick.zip': {'series_id': 4, 'period': 5, series_id: 6}
+        'dataset_douglas.zip': {'series_id': 4, 'period': 5, 'value': 6},
+        'dataset_usa_brown.zip': {'series_id': 3, 'period': 4, 'value': 5},
+        'dataset_usa_census1949.zip': {'series_id': 8, 'period': 9, 'value': 10},
+        'dataset_usa_census1975.zip': {'series_id': 8, 'period': 9, 'value': 10},
+        'dataset_usa_cobb-douglas.zip': {'series_id': 5, 'period': 6, 'value': 7},
+        'dataset_usa_kendrick.zip': {'series_id': 4, 'period': 5, 'value': 6}
     }
     kwargs = {
         'filepath_or_buffer': archive_name,
@@ -364,15 +362,15 @@ def read_pull_usa_hist(archive_name: str, series_id: str) -> DataFrame:
         'usecols': tuple(MAP.get(archive_name).values()),
         'dtype': str
     }
-    df = pd.read_csv(**kwargs)
-    df.index = pd.to_numeric(
-        df.index.astype(str).to_series().str.slice(stop=4),
+    _df = pd.read_csv(**kwargs)
+    _df.index = pd.to_numeric(
+        _df.index.astype(str).to_series().str.slice(stop=4),
         downcast='integer'
     )
-    df = numerify(pull_by_series_id(df, series_id))
+    _df = numerify(pull_by_series_id(_df, series_id))
     if 'census' in archive_name:
-        return df.groupby(df.index).mean()
-    return df.sort_index()
+        return _df.groupby(_df.index).mean()
+    return _df.sort_index()
 
 
 def read_pull_usa_mcconnel(series_id: str) -> DataFrame:
@@ -392,7 +390,7 @@ def read_pull_usa_mcconnel(series_id: str) -> DataFrame:
     df.iloc[:, 0]      Series
     ================== =================================
     '''
-    MAP = {
+    SERIES_IDS = {
         'prime_rate': 'Ставка прайм-рейт, %',
         'A006RC1': 'Валовой объем внутренних частных инвестиций, млрд долл. США',
         'A032RC1': 'Национальный доход, млрд долл. США',
@@ -405,8 +403,8 @@ def read_pull_usa_mcconnel(series_id: str) -> DataFrame:
         'index_col': 1,
         'usecols': range(1, 4)
     }
-    df = pd.read_csv(**kwargs)
-    return df[df.iloc[:, 0] == MAP[series_id]].iloc[:, [1]].sort_index()
+    _df = pd.read_csv(**kwargs)
+    return _df[_df.iloc[:, 0] == SERIES_IDS[series_id]].iloc[:, [1]].sort_index()
 
 
 def read_pull_uscb_description(
@@ -565,7 +563,7 @@ def pull_can_capital_former(df: DataFrame, params: tuple[int, str]) -> DataFrame
 
 def pull_can_quarter(df: DataFrame, series_id: str) -> DataFrame:
     '''
-    DataFrame Fetching from Quarterly Data within CANSIM Zip Archives
+    Retrieves DataFrame from Quarterly Data within CANSIM Zip Archives
     Parameters
     ----------
     df : DataFrame
@@ -598,4 +596,9 @@ def pull_can_quarter_former(df: DataFrame, series_id: str) -> DataFrame:
 
 def pull_series_ids(archive_name: str) -> dict[str]:
     '''Returns Dictionary for Series from Douglas's & Kendrick's Databases'''
-    return pd.read_csv(archive_name, usecols=(3, 4), index_col=1).to_dict().get('series')
+    kwargs = {
+        'filepath_or_buffer': archive_name,
+        'index_col': 1,
+        'usecols': (3, 4),
+    }
+    return pd.read_csv(**kwargs).to_dict().get('series')
