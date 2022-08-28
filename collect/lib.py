@@ -24,7 +24,6 @@ from extract.lib import pull_can_quarter_former
 from extract.lib import pull_by_series_id
 from extract.lib import read_from_url_usa_bea
 from extract.lib import read_can
-from extract.lib import read_can_former
 from extract.lib import read_pull_usa_frb_cu
 from extract.lib import read_pull_usa_frb_ms
 from extract.lib import read_pull_usa_fred
@@ -129,7 +128,7 @@ def construct_can_former():
         # =====================================================================
         3790031: 'v65201809',
     }
-    _df = read_can_former(tuple(ARCHIVE_IDS)[0])
+    _df = read_can(tuple(ARCHIVE_IDS)[0])
     _df = pull_can_capital_former(_df, ARCHIVE_IDS.get(tuple(ARCHIVE_IDS)[0]))
     # =========================================================================
     # Kludge
@@ -140,13 +139,13 @@ def construct_can_former():
             transform_sum(_df.loc[:, ('series_id', 'value')]),
             numerify(
                 pull_by_series_id(
-                    read_can_former(
+                    read_can(
                         tuple(ARCHIVE_IDS)[1]),
                     ARCHIVE_IDS.get(tuple(ARCHIVE_IDS)[1])
                 )
             ),
             pull_can_quarter_former(
-                read_can_former(tuple(ARCHIVE_IDS)[-1]),
+                read_can(tuple(ARCHIVE_IDS)[-1]),
                 ARCHIVE_IDS.get(tuple(ARCHIVE_IDS)[-1])
             ),
         ],

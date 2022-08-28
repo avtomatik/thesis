@@ -60,71 +60,39 @@ def read_can(archive_id: int) -> DataFrame:
     ================== =================================
     '''
     MAP = {
-        14100027: {'period': 0, 'series_id': 10, 'value': 12},
-        36100096:
-            {
-                'period': 0,
-                'geo': 1,
-                'prices': 3,
-                'industry': 4,
-                'category': 5,
-                'component': 6,
-                'series_id': 11,
-                'value': 13
-        },
-        36100434: {'period': 0, 'series_id': 10, 'value': 12},
-    }
-    url = f'https://www150.statcan.gc.ca/n1/tbl/csv/{archive_id}-eng.zip'
-    kwargs = {
-        'header': 0,
-        'names': tuple(MAP.get(archive_id).keys()),
-        'index_col': 0,
-        'usecols': tuple(MAP.get(archive_id).values()),
-        'parse_dates': archive_id == 36100434
-    }
-    if Path(f'{archive_id}-eng.zip').is_file():
-        with ZipFile(f'{archive_id}-eng.zip', 'r').open(f'{archive_id}.csv') as f:
-            return pd.read_csv(f, **kwargs)
-    else:
-        r = requests.get(url)
-        with ZipFile(io.BytesIO(r.content)).open(f'{archive_id}.csv') as f:
-            return pd.read_csv(f, **kwargs)
-
-
-def read_can_former(archive_id: int) -> DataFrame:
-    '''
-    Retrieves DataFrame from CANSIM Zip Archives
-
-    Parameters
-    ----------
-    archive_id : int
-    Returns
-    -------
-    DataFrame
-    '''
-    MAP = {
         310004: {
             'period': 0,
             'prices': 2,
             'category': 4,
             'component': 5,
             'series_id': 6,
-            'value': 8,
+            'value': 8
         },
-        2820011:
-        {
-            'period': 0, 'geo': 1, 'classofworker': 2, 'industry': 3,
-            'sex': 4, 'series_id': 5, 'value': 7
+        2820011: {
+            'period': 0,
+            'geo': 1,
+            'classofworker': 2,
+            'industry': 3,
+            'sex': 4,
+            'series_id': 5,
+            'value': 7
         },
         2820012: {'period': 0, 'series_id': 5, 'value': 7},
-        3790031:
-        {
-            'period': 0, 'geo': 1, 'seas': 2, 'prices': 3, 'naics': 4,
-            'series_id': 5, 'value': 7
+        3790031: {
+            'period': 0,
+            'geo': 1,
+            'seas': 2,
+            'prices': 3,
+            'naics': 4,
+            'series_id': 5,
+            'value': 7
         },
-        3800084:
-        {
-            'period': 0, 'geo': 1, 'seas': 2, 'est': 3, 'series_id': 4,
+        3800084: {
+            'period': 0,
+            'geo': 1,
+            'seas': 2,
+            'est': 3,
+            'series_id': 4,
             'value': 6
         },
         3800102: {'period': 0, 'series_id': 4, 'value': 6},
@@ -132,16 +100,35 @@ def read_can_former(archive_id: int) -> DataFrame:
         3800518: {'period': 0, 'series_id': 4, 'value': 6},
         3800566: {'period': 0, 'series_id': 3, 'value': 5},
         3800567: {'period': 0, 'series_id': 4, 'value': 6},
+        14100027: {'period': 0, 'series_id': 10, 'value': 12},
+        36100096: {
+            'period': 0,
+            'geo': 1,
+            'prices': 3,
+            'industry': 4,
+            'category': 5,
+            'component': 6,
+            'series_id': 11,
+            'value': 13
+        },
+        36100434: {'period': 0, 'series_id': 10, 'value': 12}
     }
+    _url = f'https://www150.statcan.gc.ca/n1/tbl/csv/{archive_id:08n}-eng.zip'
     kwargs = {
-        'filepath_or_buffer': f'dataset_can_{archive_id:08n}-eng.zip',
         'header': 0,
         'names': tuple(MAP.get(archive_id).keys()),
         'index_col': 0,
         'usecols': tuple(MAP.get(archive_id).values()),
-        'parse_dates': archive_id in (2820011, 3790031, 3800084)
+        'parse_dates': archive_id in (2820011, 3790031, 3800084, 36100434)
     }
-    return pd.read_csv(**kwargs)
+    if archive_id < 10 ** 7:
+        return pd.read_csv(f'dataset_can_{archive_id:08n}-eng.zip', **kwargs)
+    if Path(f'{archive_id:08n}-eng.zip').is_file():
+        with ZipFile(f'{archive_id:08n}-eng.zip', 'r').open(f'{archive_id:08n}.csv') as f:
+            return pd.read_csv(f, **kwargs)
+    else:
+        with ZipFile(io.BytesIO(requests.get(_url).content)).open(f'{archive_id:08n}.csv') as f:
+            return pd.read_csv(f, **kwargs)
 
 
 @cache
@@ -221,8 +208,8 @@ def read_usa_nber(file_name: str, agg: str) -> DataFrame:
 
 
 def read_worldbank() -> DataFrame:
-    URL = 'https://api.worldbank.org/v2/en/indicator/NY.GDP.MKTP.CD?downloadformat=csv'
-    with ZipFile(io.BytesIO(requests.get(URL).content)) as archive:
+    _url = 'https://api.worldbank.org/v2/en/indicator/NY.GDP.MKTP.CD?downloadformat=csv'
+    with ZipFile(io.BytesIO(requests.get(_url).content)) as archive:
         _map = {_.file_size: _.filename for _ in archive.filelist}
         # =====================================================================
         # Select Largest File
@@ -306,9 +293,9 @@ def read_pull_usa_frb_ms() -> DataFrame:
     # =========================================================================
     # hex(3**3 * 23 * 197 * 2039 * 445466883143470280668577791313)
     # =========================================================================
-    URL = 'https://www.federalreserve.gov/datadownload/Output.aspx?rel=H6&series=5398d8d1734b19f731aba3105eb36d47&lastobs=&from=01/01/1959&to=12/31/2018&filetype=csv&label=include&layout=seriescolumn'
+    _url = 'https://www.federalreserve.gov/datadownload/Output.aspx?rel=H6&series=5398d8d1734b19f731aba3105eb36d47&lastobs=&from=01/01/1959&to=12/31/2018&filetype=csv&label=include&layout=seriescolumn'
     kwargs = {
-        'filepath_or_buffer': io.BytesIO(requests.get(URL).content),
+        'filepath_or_buffer': io.BytesIO(requests.get(_url).content),
         'header': 0,
         'names': ('period', 'm1_m'),
         'index_col': 0,
@@ -331,9 +318,9 @@ def read_pull_usa_fred(series_id: str) -> DataFrame:
     df.iloc[:, 0]      Series
     ================== =================================
     '''
-    URL = f'https://fred.stlouisfed.org/graph/fredgraph.csv?id={series_id}'
+    _url = f'https://fred.stlouisfed.org/graph/fredgraph.csv?id={series_id}'
     kwargs = {
-        'filepath_or_buffer': io.BytesIO(requests.get(URL).content),
+        'filepath_or_buffer': io.BytesIO(requests.get(_url).content),
         'header': 0,
         'names': ('period', series_id.lower()),
         'index_col': 0,
