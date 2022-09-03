@@ -8,9 +8,9 @@ Created on Sun Jun 12 00:44:36 2022
 
 import io
 import sqlite3
-from zipfile import ZipFile
 from functools import cache
 from pathlib import Path
+from zipfile import ZipFile
 import pandas as pd
 import requests
 from pandas import DataFrame
@@ -288,20 +288,105 @@ def read_usa_bls(file_name: str) -> DataFrame:
     return _df[_df.loc[:, 'sub_period'] == 'M13'].loc[:, ('series_id', 'value')]
 
 
-def read_pull_usa_frb_cu() -> DataFrame:
-    '''Indexed Capacity Utilization Series: CAPUTL.B50001.A, 1967--2012
-    CAPUTL.B50001.A Fetching'''
-    SERIES_ID = 'CAPUTL.B50001.A'
+def read_usa_frb() -> DataFrame:
+    '''
+
+
+    Returns
+    -------
+    DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, ...]    Series
+    ================== =================================
+    '''
+    kwargs = {
+        'filepath_or_buffer': 'dataset_usa_frb_invest_capital.csv',
+        'skiprows': 4,
+    }
+    # =========================================================================
+    # Load
+    # =========================================================================
+    _df = pd.read_csv(**kwargs)
+    kwargs['header'] = 0
+    kwargs['names'] = ['period', *[int(_) for _ in _df.columns[1:]]]
+    kwargs['index_col'] = 0
+    # =========================================================================
+    # Re-Load
+    # =========================================================================
+    return pd.read_csv(**kwargs).transpose()
+
+
+def read_usa_frb_g17() -> DataFrame:
+    '''
+
+
+    Returns
+    -------
+    DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, ...]    Series
+    ================== =================================
+    '''
+    _start = 5
     kwargs = {
         'filepath_or_buffer': 'dataset_usa_frb_g17_all_annual_2013_06_23.csv',
         'skiprows': 1,
-        'index_col': 0,
-        'usecols': range(5, 100)
     }
-    _df = pd.read_csv(**kwargs).transpose()
-    _df.index = pd.to_numeric(_df.index, downcast='integer')
-    _df.rename_axis('period', inplace=True)
-    return _df.loc[:, [SERIES_ID]].dropna(axis=0)
+    # =========================================================================
+    # Load
+    # =========================================================================
+    _df = pd.read_csv(**kwargs)
+    kwargs['header'] = 0
+    kwargs['names'] = [
+        'period', *[
+            int(float(_)) for _ in _df.columns[1 + _start:_df.shape[1]]
+        ]
+    ]
+    kwargs['index_col'] = 0
+    kwargs['usecols'] = range(_start, _df.shape[1])
+    # =========================================================================
+    # Re-Load
+    # =========================================================================
+    return pd.read_csv(**kwargs).transpose()
+
+
+def read_usa_frb_us3() -> DataFrame:
+    '''
+
+
+    Returns
+    -------
+    DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, ...]    Series
+    ================== =================================
+    '''
+    # =========================================================================
+    # TODO: https://www.federalreserve.gov/datadownload/Output.aspx?rel=g17&filetype=zip
+    # =========================================================================
+    # =========================================================================
+    # with ZipFile('FRB_g17.zip', 'r').open('G17_data.xml') as f:
+    # =========================================================================
+    kwargs = {
+        'filepath_or_buffer': 'dataset_usa_frb_us3_ip_2018_09_02.csv',
+        'skiprows': 7,
+        'parse_dates': True
+    }
+    # =========================================================================
+    # Load
+    # =========================================================================
+    _df = pd.read_csv(**kwargs)
+    kwargs['header'] = 0
+    kwargs['names'] = ['period', *[_.strip() for _ in _df.columns[1:]]]
+    kwargs['index_col'] = 0
+    # =========================================================================
+    # Re-Load
+    # =========================================================================
+    _df = pd.read_csv(**kwargs)
+    return _df.groupby(_df.index.year).mean()
 
 
 def read_pull_usa_frb_ms() -> DataFrame:
@@ -553,8 +638,8 @@ def pull_can_quarter(df: DataFrame, series_id: str) -> DataFrame:
     df.iloc[:, 0]      Series
     ================== =================================
     '''
-    df = pull_by_series_id(df, series_id)
-    return df.groupby(df.index.year).sum()
+    _df = df.pipe(pull_by_series_id, series_id)
+    return _df.groupby(_df.index.year).sum()
 
 
 def pull_can_quarter_former(df: DataFrame, series_id: str) -> DataFrame:
@@ -562,11 +647,11 @@ def pull_can_quarter_former(df: DataFrame, series_id: str) -> DataFrame:
     Retrieves DataFrame from Quarterly Data within CANSIM Zip Archives
     '''
     flag = 'seas' in df.columns
-    df = numerify(pull_by_series_id(
-        df.loc[:, ('series_id', 'value')], series_id))
+    _df = df.loc[:, ('series_id', 'value')].pipe(
+        pull_by_series_id, series_id).pipe(numerify)
     if flag:
-        return df.groupby(df.index.year).sum()
-    return df.groupby(df.index.year).mean()
+        return _df.groupby(_df.index.year).sum()
+    return _df.groupby(_df.index.year).mean()
 
 
 def pull_series_ids(archive_name: str) -> dict[str]:

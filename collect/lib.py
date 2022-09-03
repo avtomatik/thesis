@@ -17,18 +17,20 @@ from scipy import signal
 from sklearn.linear_model import LinearRegression
 # from sklearn.linear_model import Ridge
 from extract.lib import numerify
+from extract.lib import read_can
+from extract.lib import read_from_url_usa_bea
+from extract.lib import read_usa_frb
+from extract.lib import read_usa_frb_g17
+from extract.lib import read_usa_frb_us3
+from extract.lib import read_usa_hist
+from extract.lib import read_pull_usa_frb_ms
+from extract.lib import read_pull_usa_fred
+from extract.lib import read_pull_usa_mcconnel
+from extract.lib import pull_by_series_id
 from extract.lib import pull_can_capital
 from extract.lib import pull_can_capital_former
 from extract.lib import pull_can_quarter
 from extract.lib import pull_can_quarter_former
-from extract.lib import pull_by_series_id
-from extract.lib import read_from_url_usa_bea
-from extract.lib import read_can
-from extract.lib import read_pull_usa_frb_cu
-from extract.lib import read_pull_usa_frb_ms
-from extract.lib import read_pull_usa_fred
-from extract.lib import read_usa_hist
-from extract.lib import read_pull_usa_mcconnel
 from toolkit.lib import price_inverse_single
 from toolkit.lib import strip_cumulated_deflator
 
@@ -77,34 +79,29 @@ def construct_can():
         36100434: 'v65201809',
     }
     if Path(DIR).joinpath(f'{tuple(ARCHIVE_IDS)[0]}_preloaded.csv').is_file():
-        _df = pd.read_csv(
-            Path(DIR).joinpath(f'{tuple(ARCHIVE_IDS)[0]}_preloaded.csv'),
-            index_col=0
-        )
+        kwargs = {
+            'filepath_or_buffer': Path(DIR).joinpath(f'{tuple(ARCHIVE_IDS)[0]}_preloaded.csv'),
+            'index_col': 0,
+        }
+        _df = pd.read_csv(**kwargs)
     else:
-        _df = read_can(tuple(ARCHIVE_IDS)[0])
         # =====================================================================
-        # WARNING : VERY EXPENSIVE OPERATION !
+        # WARNING : pull_can_capital() : VERY EXPENSIVE OPERATION !
         # =====================================================================
-        _df = pull_can_capital(_df, ARCHIVE_IDS.get(tuple(ARCHIVE_IDS)[0]))
+        _df = read_can(tuple(ARCHIVE_IDS)[0]).pipe(
+            pull_can_capital, ARCHIVE_IDS.get(tuple(ARCHIVE_IDS)[0]))
         # =====================================================================
         # Kludge
         # =====================================================================
-        _df = _df.set_index(_df.iloc[:, 0]).loc[:, _df.columns[1:]]
+        _df = _df.set_index(_df.iloc[:, 0]).loc[:, ('series_id', 'value')]
     df = pd.concat(
         [
-            transform_sum(_df.loc[:, ('series_id', 'value')]),
-            numerify(
-                pull_by_series_id(
-                    read_can(
-                        tuple(ARCHIVE_IDS)[1]),
-                    ARCHIVE_IDS.get(tuple(ARCHIVE_IDS)[1])
-                )
-            ),
-            pull_can_quarter(
-                read_can(tuple(ARCHIVE_IDS)[-1]),
-                ARCHIVE_IDS.get(tuple(ARCHIVE_IDS)[-1])
-            )
+            _df.pipe(transform_sum),
+            read_can(tuple(ARCHIVE_IDS)[1]).pipe(
+                pull_by_series_id, ARCHIVE_IDS.get(tuple(ARCHIVE_IDS)[1])).pipe(numerify),
+            read_can(tuple(ARCHIVE_IDS)[-1]).pipe(
+                pull_can_quarter,
+                ARCHIVE_IDS.get(tuple(ARCHIVE_IDS)[-1])),
         ],
         axis=1
     ).dropna(axis=0)
@@ -127,26 +124,20 @@ def construct_can_former():
         # =====================================================================
         3790031: 'v65201809',
     }
-    _df = read_can(tuple(ARCHIVE_IDS)[0])
-    _df = pull_can_capital_former(_df, ARCHIVE_IDS.get(tuple(ARCHIVE_IDS)[0]))
+    _df = read_can(tuple(ARCHIVE_IDS)[0]).pipe(
+        pull_can_capital_former, ARCHIVE_IDS.get(tuple(ARCHIVE_IDS)[0]))
     # =========================================================================
     # Kludge
     # =========================================================================
-    _df = _df.set_index(_df.iloc[:, 0]).loc[:, _df.columns[1:]]
+    _df = _df.set_index(_df.iloc[:, 0]).loc[:, ('series_id', 'value')]
     df = pd.concat(
         [
-            transform_sum(_df.loc[:, ('series_id', 'value')]),
-            numerify(
-                pull_by_series_id(
-                    read_can(
-                        tuple(ARCHIVE_IDS)[1]),
-                    ARCHIVE_IDS.get(tuple(ARCHIVE_IDS)[1])
-                )
-            ),
-            pull_can_quarter_former(
-                read_can(tuple(ARCHIVE_IDS)[-1]),
-                ARCHIVE_IDS.get(tuple(ARCHIVE_IDS)[-1])
-            ),
+            _df.pipe(transform_sum),
+            read_can(tuple(ARCHIVE_IDS)[1]).pipe(
+                pull_by_series_id, ARCHIVE_IDS.get(tuple(ARCHIVE_IDS)[1])).pipe(numerify),
+            read_can(tuple(ARCHIVE_IDS)[-1]).pipe(
+                pull_can_quarter_former,
+                ARCHIVE_IDS.get(tuple(ARCHIVE_IDS)[-1])),
         ],
         axis=1
     ).dropna(axis=0)
@@ -157,7 +148,11 @@ def construct_can_former():
 def collect_can_price_a():
     DIR = '/home/alexander/science'
     FILE_NAME = 'stat_can_cap.xlsx'
-    _df = pd.read_excel(Path(DIR).joinpath(FILE_NAME), index_col=0)
+    kwargs = {
+        'filepath_or_buffer': Path(DIR).joinpath(FILE_NAME),
+        'index_col': 0,
+    }
+    _df = pd.read_excel(**kwargs)
     groups = [
         [[_, 5 + _] for _ in range(5)],
         [[_, 5 + _] for _ in range(35, 39)],
@@ -181,7 +176,11 @@ def collect_can_price_a():
 def collect_can_price_b():
     DIR = '/home/alexander/science'
     FILE_NAME = 'stat_can_cap.xlsx'
-    _df = pd.read_excel(Path(DIR).joinpath(FILE_NAME), index_col=0)
+    kwargs = {
+        'filepath_or_buffer': Path(DIR).joinpath(FILE_NAME),
+        'index_col': 0,
+    }
+    _df = pd.read_excel(**kwargs)
     df = DataFrame()
     for _ in range(21, 24):
         chunk = _df.iloc[:, [_]].dropna(axis=0)
@@ -215,7 +214,8 @@ def collect_usa_investment_turnover_bls() -> DataFrame:
             read_pull_usa_fred(SERIES_ID),
             pd.concat(
                 [
-                    pull_by_series_id(read_from_url_usa_bea(url), series_id)
+                    read_from_url_usa_bea(url).pipe(
+                        pull_by_series_id, series_id)
                     for series_id, url in SERIES_IDS.items()
                 ],
                 axis=1
@@ -368,7 +368,8 @@ def collect_usa_capital_purchases() -> DataFrame:
     }
     df = pd.concat(
         [
-            read_usa_hist(archive_name).pipe(pull_by_series_id, series_id).mul(factor)
+            read_usa_hist(archive_name).pipe(
+                pull_by_series_id, series_id).mul(factor)
             for series_id, (archive_name, factor, _) in SERIES_IDS.items()
         ],
         axis=1,
@@ -448,7 +449,8 @@ def collect_uscb_cap(smoothing: bool = False) -> DataFrame:
     }
     df = pd.concat(
         [
-            read_usa_hist(archive_name).pipe(pull_by_series_id, series_id).mul(factor)
+            read_usa_hist(archive_name).pipe(
+                pull_by_series_id, series_id).mul(factor)
             for series_id, (archive_name, factor, _) in SERIES_IDS.items()
         ],
         axis=1,
@@ -798,27 +800,26 @@ def collect_cobb_douglas_deflator() -> DataFrame:
             # =================================================================
             pd.concat(
                 [
-                    read_usa_hist(archive_name).pipe(pull_by_series_id, series_id).truncate(before=year)
+                    read_usa_hist(archive_name).pipe(
+                        pull_by_series_id, series_id).sort_index().truncate(before=year)
                     for series_id, (archive_name, year) in SERIES_IDS_CS.items()
                 ],
-            axis=1,
-            verify_integrity=True,
-            sort=True
+                axis=1,
+                verify_integrity=True,
+                sort=True
             ),
             # =================================================================
             # Bureau of Economic Analysis
             # =================================================================
             pd.concat(
                 [
-                    pull_by_series_id(
-                        read_from_url_usa_bea(SERIES_IDS_BE[series_id]),
-                        series_id
-                    )
+                    read_from_url_usa_bea(SERIES_IDS_BE[series_id]).pipe(
+                        pull_by_series_id, series_id)
                     for series_id in tuple(SERIES_IDS_BE)[:2]
                 ],
-            axis=1,
-            verify_integrity=True,
-            sort=True
+                axis=1,
+                verify_integrity=True,
+                sort=True
             ),
             # =================================================================
             # Federal Reserve Board Data
@@ -925,7 +926,6 @@ def collect_cobb_douglas_extension_labor() -> DataFrame:
     # TODO: Bureau of Labor Statistics
     # TODO: Federal Reserve Board
     # =========================================================================
-    FILE_NAME = 'dataset_usa_reference_ru_kurenkov_yu_v.csv'
     SERIES_IDS = {
         # =====================================================================
         # Cobb C.W., Douglas P.H. Labor Series: Average Number Employed (in thousands)
@@ -956,16 +956,22 @@ def collect_cobb_douglas_extension_labor() -> DataFrame:
         # =====================================================================
         'KTD02S02': 'dataset_usa_kendrick.zip',
     }
+    kwargs = {
+        'filepath_or_buffer': 'dataset_usa_reference_ru_kurenkov_yu_v.csv',
+        'index_col': 0,
+        'usecols': (0, 2)
+    }
     _df = pd.concat(
         [
             pd.concat(
                 [
-                    read_usa_hist(archive_name).pipe(pull_by_series_id, series_id)
+                    read_usa_hist(archive_name).pipe(
+                        pull_by_series_id, series_id)
                     for series_id, archive_name in SERIES_IDS.items()
                 ],
-            axis=1,
-            verify_integrity=True,
-            sort=True
+                axis=1,
+                verify_integrity=True,
+                sort=True
             ),
             # =========================================================================
             # Bureau of Economic Analysis, H4313C & J4313C & A4313C & N4313C
@@ -974,7 +980,7 @@ def collect_cobb_douglas_extension_labor() -> DataFrame:
             # =================================================================
             # Yu.V. Kurenkov
             # =================================================================
-            pd.read_csv(FILE_NAME, index_col=0, usecols=[0, 2]),
+            pd.read_csv(**kwargs),
         ],
         axis=1
     ).truncate(before=1889)
@@ -1015,12 +1021,13 @@ def collect_cobb_douglas_extension_product() -> DataFrame:
         [
             pd.concat(
                 [
-                    read_usa_hist(archive_name).pipe(pull_by_series_id, series_id)
+                    read_usa_hist(archive_name).pipe(
+                        pull_by_series_id, series_id)
                     for series_id, archive_name in SERIES_IDS.items()
                 ],
-            axis=1,
-            verify_integrity=True,
-            sort=True
+                axis=1,
+                verify_integrity=True,
+                sort=True
             ),
             # =================================================================
             # Joseph H. Davis Production Index
@@ -1029,7 +1036,7 @@ def collect_cobb_douglas_extension_product() -> DataFrame:
             # =================================================================
             # Federal Reserve, AIPMASAIX
             # =================================================================
-            collect_usa_frb_ip(),
+            read_usa_frb_us3().loc[:, ['AIPMA_SA_IX']],
         ],
         axis=1
     )
@@ -1107,7 +1114,6 @@ def collect_usa_general() -> DataFrame:
         DESCRIPTION.
 
     '''
-    FILE_NAME = 'dataset_usa_0025_p_r.txt'
     SERIES_ID, ARCHIVE_NAME = 'X0414', 'dataset_uscb.zip'
     SERIES_IDS = {
         # =====================================================================
@@ -1175,16 +1181,18 @@ def collect_usa_general() -> DataFrame:
         # =====================================================================
         'kcptotl1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
     }
+    kwargs = {
+        'filepath_or_buffer': 'dataset_usa_0025_p_r.txt',
+        'index_col': 0,
+    }
     return pd.concat(
         [
             pd.concat(
                 [
                     pd.concat(
                         [
-                            pull_by_series_id(
-                                read_from_url_usa_bea(
-                                    SERIES_IDS[series_id]), series_id
-                            )
+                            read_from_url_usa_bea(SERIES_IDS[series_id]).pipe(
+                                pull_by_series_id, series_id)
                             for series_id in tuple(SERIES_IDS)[:8]
                         ],
                         axis=1
@@ -1192,10 +1200,8 @@ def collect_usa_general() -> DataFrame:
                     collect_usa_bea_labor_mfg(),
                     pd.concat(
                         [
-                            pull_by_series_id(
-                                read_from_url_usa_bea(
-                                    SERIES_IDS[series_id]), series_id
-                            )
+                            read_from_url_usa_bea(SERIES_IDS[series_id]).pipe(
+                                pull_by_series_id, series_id)
                             for series_id in tuple(SERIES_IDS)[8:]
                         ],
                         axis=1
@@ -1206,7 +1212,7 @@ def collect_usa_general() -> DataFrame:
             ),
             read_pull_usa_frb_ms(),
             read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, SERIES_ID),
-            pd.read_csv(FILE_NAME, index_col=0),
+            pd.read_csv(**kwargs),
         ],
         axis=1
     )
@@ -1214,6 +1220,7 @@ def collect_usa_general() -> DataFrame:
 
 def collect_usa_macroeconomics() -> DataFrame:
     '''Data Fetch'''
+    SERIES_ID = 'CAPUTL.B50001.A'
     SERIES_IDS = {
         # =====================================================================
         # Nominal Gross Domestic Product Series: A191RC, 1929--2021
@@ -1254,19 +1261,13 @@ def collect_usa_macroeconomics() -> DataFrame:
     }
     return pd.concat(
         [
-
-
             pd.concat(
                 [
                     (
-                        pull_by_series_id(
-                            read_from_url_usa_bea(url),
-                            series_id
-                        ),
-                        pull_by_series_id(
-                            read_from_url_usa_bea(url),
-                            series_id
-                        ).rdiv(100)
+                        read_from_url_usa_bea(url).pipe(
+                            pull_by_series_id, series_id),
+                        read_from_url_usa_bea(url).pipe(
+                            pull_by_series_id, series_id).rdiv(100)
                     )[series_id == 'A191RD']
                     for series_id, url in SERIES_IDS.items()
                 ],
@@ -1280,7 +1281,7 @@ def collect_usa_macroeconomics() -> DataFrame:
             # =====================================================================
             # Capacity Utilization Series: CAPUTL.B50001.A, 1967--2012
             # =====================================================================
-            read_pull_usa_frb_cu(),
+            read_usa_frb_g17().loc[:, [SERIES_ID]].dropna(axis=0),
         ],
         axis=1,
         sort=True
@@ -1320,7 +1321,7 @@ def collect_usa_investment_turnover() -> DataFrame:
     }
     df = pd.concat(
         [
-            pull_by_series_id(read_from_url_usa_bea(url), series_id)
+            read_from_url_usa_bea(url).pipe(pull_by_series_id, series_id)
             for series_id, url in SERIES_IDS.items()
         ],
         axis=1,
@@ -1353,7 +1354,7 @@ def collect_usa_bea_labor() -> DataFrame:
     Labor Series: A4601C0, 1929--2013
     '''
     SERIES_ID, URL = 'A4601C', 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
-    return pull_by_series_id(read_from_url_usa_bea(URL), SERIES_ID)
+    return read_from_url_usa_bea(URL).pipe(pull_by_series_id, SERIES_ID)
 
 
 def collect_usa_bea_labor_mfg() -> DataFrame:
@@ -1388,7 +1389,7 @@ def collect_usa_bea_labor_mfg() -> DataFrame:
     }
     df = pd.concat(
         [
-            pull_by_series_id(read_from_url_usa_bea(url), series_id)
+            read_from_url_usa_bea(url).pipe(pull_by_series_id, series_id)
             for series_id, url in SERIES_IDS.items()
         ],
         axis=1,
@@ -1428,12 +1429,13 @@ def collect_usa_capital() -> DataFrame:
         [
             pd.concat(
                 [
-                    read_usa_hist(archive_name).pipe(pull_by_series_id, series_id)
+                    read_usa_hist(archive_name).pipe(
+                        pull_by_series_id, series_id)
                     for series_id, archive_name in SERIES_IDS.items()
                 ],
-            axis=1,
-            verify_integrity=True,
-            sort=True
+                axis=1,
+                verify_integrity=True,
+                sort=True
             ).truncate(before=1869),
             # =================================================================
             # FRB Data
@@ -1458,13 +1460,7 @@ def collect_usa_frb_fa() -> DataFrame:
     df.iloc[:, 1]      Real
     ================== =================================
     '''
-    kwargs = {
-        'filepath_or_buffer': 'dataset_usa_frb_invest_capital.csv',
-        'index_col': 0,
-        'skiprows': 4,
-    }
-    df = pd.read_csv(**kwargs).transpose()
-    df.index = df.index.astype(int)
+    df = read_usa_frb()
     df['frb_nominal'] = ((df.iloc[:, 1].mul(df.iloc[:, 2]).div(df.iloc[:, 0])).add(
         df.iloc[:, 4].mul(df.iloc[:, 5]).div(df.iloc[:, 3]))).div(1000)
     df['frb_real'] = df.iloc[:, [2, 5]].sum(axis=1).div(1000)
@@ -1483,47 +1479,10 @@ def collect_usa_frb_fa_def() -> DataFrame:
     df.iloc[:, 0]      Deflator
     ================== =================================
     '''
-    kwargs = {
-        'filepath_or_buffer': 'dataset_usa_frb_invest_capital.csv',
-        'index_col': 0,
-        'skiprows': 4,
-    }
-    df = pd.read_csv(**kwargs).transpose()
-    df.index = df.index.astype(int)
+    df = read_usa_frb()
     df['fa_def_frb'] = (df.iloc[:, [1, 4]].sum(axis=1)).div(
         df.iloc[:, [0, 3]].sum(axis=1))
     return df.iloc[:, [-1]]
-
-
-def collect_usa_frb_ip() -> DataFrame:
-    '''
-    Manufacturing Series: FRB G17 IP, AIPMA_SA_IX, 1919--2018
-
-    Returns
-    -------
-    DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      AIPMA_SA_IX
-    ================== =================================
-    '''
-    # =========================================================================
-    # TODO: https://www.federalreserve.gov/datadownload/Output.aspx?rel=g17&filetype=zip
-    # =========================================================================
-    # =========================================================================
-    # with ZipFile('FRB_g17.zip', 'r').open('G17_data.xml') as f:
-    # =========================================================================
-    SERIES_ID = 'AIPMA_SA_IX'
-    kwargs = {
-        'filepath_or_buffer': 'dataset_usa_frb_us3_ip_2018_09_02.csv',
-        'index_col': 0,
-        'skiprows': 7,
-        'parse_dates': True
-    }
-    _df = pd.read_csv(**kwargs)
-    _df.rename_axis('period', inplace=True)
-    _df.columns = tuple(column_name.strip() for column_name in _df.columns)
-    return _df.groupby(_df.index.year).mean().loc[:, [SERIES_ID]]
 
 
 def collect_usa_mcconnel(series_ids: tuple[str]) -> DataFrame:
@@ -1585,6 +1544,7 @@ def collect_usa_production_two_fold() -> tuple[DataFrame]:
     df.iloc[:, 2]      Product Series Adjusted to Capacity Utilisation
     ================== =================================
     '''
+    SERIES_ID = 'CAPUTL.B50001.A'
     SERIES_IDS = {
         # =================================================================
         # Fixed Assets: kcn31gd1es00, 1925--2020, Table 4.2. Chain-Type Quantity Indexes for Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
@@ -1599,7 +1559,8 @@ def collect_usa_production_two_fold() -> tuple[DataFrame]:
         [
             pd.concat(
                 [
-                    pull_by_series_id(read_from_url_usa_bea(url), series_id)
+                    read_from_url_usa_bea(url).pipe(
+                        pull_by_series_id, series_id)
                     for series_id, url in SERIES_IDS.items()
                 ],
                 axis=1,
@@ -1622,7 +1583,7 @@ def collect_usa_production_two_fold() -> tuple[DataFrame]:
             # =================================================================
             # Capacity Utilization Series: CAPUTL.B50001.A, 1967--2012
             # =================================================================
-            read_pull_usa_frb_cu(),
+            read_usa_frb_g17().loc[:, [SERIES_ID]].dropna(axis=0),
         ],
         axis=1
     ).dropna(axis=0)
@@ -1669,7 +1630,7 @@ def collect_usa_production_three_fold() -> tuple[DataFrame]:
             # =================================================================
             # Fixed Assets: kcn31gd1es00, 1925--2016, Table 4.2. Chain-Type Quantity Indexes for Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
             # =================================================================
-            pull_by_series_id(read_from_url_usa_bea(URL), SERIES_ID),
+            read_from_url_usa_bea(URL).pipe(pull_by_series_id, SERIES_ID),
             # =================================================================
             # Manufacturing Labor Series: _4313C0, 1929--2020
             # =================================================================
@@ -1677,17 +1638,18 @@ def collect_usa_production_three_fold() -> tuple[DataFrame]:
             # =================================================================
             # Manufacturing Series: FRB G17 IP, AIPMA_SA_IX, 1919--2018
             # =================================================================
-            collect_usa_frb_ip(),
+            read_usa_frb_us3().loc[:, ['AIPMA_SA_IX']],
         ],
         axis=1
     ).dropna(axis=0)
+    SERIES_ID = 'CAPUTL.B50001.A'
     _df_adjusted = pd.concat(
         [
             _df.copy(),
             # =================================================================
             # Capacity Utilization Series: CAPUTL.B50001.A, 1967--2012
             # =================================================================
-            read_pull_usa_frb_cu(),
+            read_usa_frb_g17().loc[:, [SERIES_ID]].dropna(axis=0),
         ],
         axis=1
     ).dropna(axis=0)
@@ -1747,6 +1709,10 @@ def get_mean_for_min_std():
     '''
     DIR = '/home/alexander/science'
     FILE_NAME = 'stat_can_lab.xlsx'
+    kwargs = {
+        'filepath_or_buffer': Path(DIR).joinpath(FILE_NAME),
+        'index_col': 0,
+    }
     # =========================================================================
     # Base Vectors
     # =========================================================================
@@ -1757,7 +1723,7 @@ def get_mean_for_min_std():
         'v2057818',
         'v2523013',
     )
-    _df = pd.read_excel(Path(DIR).joinpath(FILE_NAME), index_col=0)
+    _df = pd.read_excel(**kwargs)
     df = pd.concat(
         [
             _df.loc[:, [series_id]].dropna(axis=0) for series_id in SERIES_IDS
@@ -2093,8 +2059,12 @@ def transform_cobb_douglas_sklearn(df: DataFrame) -> DataFrame:
 
 def transform_kurenkov(data_testing: DataFrame) -> tuple[DataFrame]:
     '''Returns Four DataFrames with Comparison of data_testing: DataFrame and Yu.V. Kurenkov Data'''
-    FILE_NAME = 'dataset_usa_reference_ru_kurenkov_yu_v.csv'
-    data_control = pd.read_csv(FILE_NAME, index_col=0)
+    kwargs = {
+        'filepath_or_buffer': 'dataset_usa_reference_ru_kurenkov_yu_v.csv',
+        'index_col': 0,
+    }
+    SERIES_ID = 'CAPUTL.B50001.A'
+    data_control = pd.read_csv(**kwargs)
     # =========================================================================
     # Production
     # =========================================================================
@@ -2102,7 +2072,7 @@ def transform_kurenkov(data_testing: DataFrame) -> tuple[DataFrame]:
         [
             data_control.iloc[:, [0]],
             data_testing.loc[:, ['A191RX']],
-            collect_usa_frb_ip(),
+            read_usa_frb_us3().loc[:, ['AIPMA_SA_IX']],
         ],
         axis=1,
         sort=True
@@ -2137,7 +2107,7 @@ def transform_kurenkov(data_testing: DataFrame) -> tuple[DataFrame]:
     data_d = pd.concat(
         [
             data_control.iloc[:, [3]],
-            read_pull_usa_frb_cu(),
+            read_usa_frb_g17().loc[:, [SERIES_ID]].dropna(axis=0),
         ],
         axis=1,
         sort=True
@@ -2171,7 +2141,7 @@ def transform_sum(df: DataFrame) -> DataFrame:
     series_ids = sorted(set(df.iloc[:, 0]))
     df = pd.concat(
         [
-            numerify(pull_by_series_id(df, series_id))
+            df.pipe(pull_by_series_id, series_id).pipe(numerify)
             for series_id in series_ids
         ],
         axis=1
