@@ -10,7 +10,7 @@ Thesis Project
 
 import itertools
 import os
-from collect.lib import collect_usa
+from collect.lib import collect_usa_investment_turnover_bls
 from collect.lib import collect_cobb_douglas
 from collect.lib import collect_usa_general
 from collect.lib import collect_douglas
@@ -179,7 +179,7 @@ def main():
     #
     # }
     # =============================================================================
-    df_a, df_b = collect_usa()
+    df_a, df_b = collect_usa_investment_turnover_bls()
     df_c, df_d = collect_usa_investment_turnover()
     plot_capital_modelling(df_a, 2005)
     plot_capital_modelling(df_c, 2012)

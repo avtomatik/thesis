@@ -16,8 +16,8 @@ from extract.lib import pull_can_quarter_former
 from extract.lib import pull_by_series_id
 from extract.lib import read_manager_can_former
 from extract.lib import read_usa_bea
-from extract.lib import read_pull_usa_bls
-from extract.lib import read_pull_usa_hist
+from extract.lib import read_usa_bls
+from extract.lib import read_usa_hist
 from plot.lib import plot_can_test
 
 
@@ -54,7 +54,10 @@ def options():
         'DT63AS03',
     )
     [
-        print(read_pull_usa_hist(ARCHIVE_NAME, series_id))
+        print(read_usa_hist(ARCHIVE_NAME, series_id))
+# =============================================================================
+#         read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, SERIES_ID)
+# =============================================================================
         for series_id in SERIES_IDS
     ]
 
@@ -190,7 +193,7 @@ def test_data_consistency_c():
         'PCUOMFG--OMFG',
     )
     [
-        print(read_pull_usa_bls(file_name, series_id))
+        print(read_usa_bls(file_name).pipe(pull_by_series_id, series_id))
         for file_name, series_id in zip(FILE_NAMES, SERIES_IDS)
     ]
 
@@ -300,8 +303,11 @@ def test_douglas() -> None:
     )
     df = pd.concat(
         [
-            partial(read_pull_usa_hist, **_kwargs[0])(),
-            partial(read_pull_usa_hist, **_kwargs[1])(),
+            partial(read_usa_hist, **_kwargs[0])(),
+            partial(read_usa_hist, **_kwargs[1])(),
+# =============================================================================
+#             read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, SERIES_ID)
+# =============================================================================
         ],
         axis=1
     )
@@ -325,7 +331,10 @@ def test_douglas() -> None:
     )
     df = pd.concat(
         [
-            partial(read_pull_usa_hist, **kwargs)() for kwargs in _kwargs
+            partial(read_usa_hist, **kwargs)() for kwargs in _kwargs
+# =============================================================================
+#             read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, SERIES_ID)
+# =============================================================================
         ],
         axis=1
     )

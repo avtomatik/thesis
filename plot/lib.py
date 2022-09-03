@@ -24,7 +24,8 @@ from pandas.plotting import (
 from collect.lib import transform_cobb_douglas
 from extract.lib import (
     pull_series_ids,
-    read_pull_usa_hist,
+    pull_by_series_id,
+    read_usa_hist,
     read_pull_uscb_description,
     read_usa_nber,
     read_worldbank,
@@ -366,7 +367,7 @@ def plot_uscb_commodities(series_ids: tuple[str]) -> None:
     ARCHIVE_NAME = 'dataset_usa_census1975.zip'
     df = DataFrame()
     for series_id in series_ids:
-        chunk = read_pull_usa_hist(ARCHIVE_NAME, series_id)
+        chunk = read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
         descr = read_pull_uscb_description(series_id)
         print(f'<{series_id}> {descr}')
         df = pd.concat(
@@ -467,7 +468,10 @@ def plot_uscb_farm_lands() -> None:
         'series_id': 'K0005',
     }
     plt.figure()
-    plt.plot(read_pull_usa_hist(**_kwargs))
+    plt.plot(read_usa_hist(**_kwargs))
+# =============================================================================
+#     read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
+# =============================================================================
     plt.title('Land in Farms')
     plt.xlabel('Period')
     plt.ylabel('1,000 acres')
@@ -583,7 +587,10 @@ def plot_uscb_finance() -> None:
     )
     SERIES_IDS = tuple(f'X{_id:04n}' for _id in ids)
     for _, series_id in enumerate(SERIES_IDS, start=1):
-        df = read_pull_usa_hist(ARCHIVE_NAME, series_id)
+        df = read_usa_hist(ARCHIVE_NAME, series_id)
+# =============================================================================
+#         read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
+# =============================================================================
         df = df.div(df.iloc[0, :]).mul(100)
         descr = read_pull_uscb_description(series_id)
         plt.figure(_)
@@ -1421,7 +1428,10 @@ def plot_douglas(
             plt.figure(_n)
             for _ in range(_lw, _up, skip):
                 plt.plot(
-                    read_pull_usa_hist(archive_name, _SERIES_IDS[_]),
+                    read_usa_hist(archive_name, _SERIES_IDS[_]),
+# =============================================================================
+#                     read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
+# =============================================================================
                     label=_MAP_SERIES[_SERIES_IDS[_]]
                 )
             plt.title(_tt)
@@ -1444,7 +1454,10 @@ def plot_douglas(
             plt.figure(_n)
             for _ in range(_lw, _up, skip):
                 plt.plot(
-                    read_pull_usa_hist(archive_name, _SERIES_IDS[_]),
+                    read_usa_hist(archive_name, _SERIES_IDS[_]),
+# =============================================================================
+#                     read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
+# =============================================================================
                     label=_MAP_SERIES[_SERIES_IDS[_]]
                 )
             plt.title(_tt)

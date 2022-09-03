@@ -124,9 +124,8 @@ def read_can(archive_id: int) -> DataFrame:
     if Path(f'{archive_id:08n}-eng.zip').is_file():
         with ZipFile(f'{archive_id:08n}-eng.zip', 'r').open(f'{archive_id:08n}.csv') as f:
             return pd.read_csv(f, **kwargs)
-    else:
-        with ZipFile(io.BytesIO(requests.get(_url).content)).open(f'{archive_id:08n}.csv') as f:
-            return pd.read_csv(f, **kwargs)
+    with ZipFile(io.BytesIO(requests.get(_url).content)).open(f'{archive_id:08n}.csv') as f:
+        return pd.read_csv(f, **kwargs)
 
 
 @cache
@@ -197,6 +196,39 @@ def read_usa_bea(archive_name: str, wb_name: str, sh_name: str) -> DataFrame:
         return pd.read_excel(**kwargs).dropna(axis=0).transpose()
 
 
+@cache
+def read_usa_hist(archive_name: str) -> DataFrame:
+    '''
+    Extract Data from Enumerated Historical Datasets
+    Parameters
+    ----------
+    archive_name : str
+    Returns
+    -------
+    DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Series
+    ================== =================================
+    '''
+    MAP = {
+        'dataset_douglas.zip': {'series_id': 4, 'period': 5, 'value': 6},
+        'dataset_usa_brown.zip': {'series_id': 3, 'period': 4, 'value': 5},
+        'dataset_uscb.zip': {'series_id': 9, 'period': 10, 'value': 11},
+        'dataset_usa_cobb-douglas.zip': {'series_id': 5, 'period': 6, 'value': 7},
+        'dataset_usa_kendrick.zip': {'series_id': 4, 'period': 5, 'value': 6}
+    }
+    kwargs = {
+        'filepath_or_buffer': archive_name,
+        'header': 0,
+        'names': tuple(MAP.get(archive_name).keys()),
+        'index_col': 1,
+        'skiprows': (0, 4)[archive_name == 'dataset_usa_brown.zip'],
+        'usecols': tuple(MAP.get(archive_name).values()),
+    }
+    return pd.read_csv(**kwargs)
+
+
 def read_usa_nber(file_name: str, agg: str) -> DataFrame:
     _df = pd.read_csv(file_name)
     _df.drop(_df.columns[0], axis=1, inplace=True)
@@ -223,7 +255,7 @@ def read_worldbank() -> DataFrame:
             return _df.rename_axis('period')
 
 
-def read_pull_usa_bls(file_name: str, series_id: str) -> DataFrame:
+def read_usa_bls(file_name: str) -> DataFrame:
     '''
     Bureau of Labor Statistics Data Fetch
 
@@ -246,19 +278,14 @@ def read_pull_usa_bls(file_name: str, series_id: str) -> DataFrame:
         'filepath_or_buffer': file_name,
         'sep': '\t',
         'header': 0,
-        'names': ('series_id', 'period', 'sub_period', series_id),
+        'names': ('series_id', 'period', 'sub_period', 'value'),
         'index_col': 1,
         'usecols': range(4),
         'low_memory': False
     }
     _df = pd.read_csv(**kwargs)
-    _q = (_df.iloc[:, 0].str.contains(series_id)) & (_df.iloc[:, 1] == 'M13')
-    _df.index = pd.to_numeric(
-        _df.index.astype(str).to_series().str.slice(stop=4),
-        downcast='integer'
-    )
-    _df.iloc[:, -1] = pd.to_numeric(_df.iloc[:, -1], errors='coerce')
-    return _df[_q].iloc[:, [-1]]
+    _df.loc[:, 'series_id'] = _df.loc[:, 'series_id'].str.strip()
+    return _df[_df.loc[:, 'sub_period'] == 'M13'].loc[:, ('series_id', 'value')]
 
 
 def read_pull_usa_frb_cu() -> DataFrame:
@@ -328,51 +355,6 @@ def read_pull_usa_fred(series_id: str) -> DataFrame:
     return _df.groupby(_df.index.year).mean()
 
 
-def read_pull_usa_hist(archive_name: str, series_id: str) -> DataFrame:
-    '''
-    Extract Data from Enumerated Historical Datasets
-    Parameters
-    ----------
-    archive_name : str
-        DESCRIPTION.
-    series_id : str
-        DESCRIPTION.
-    Returns
-    -------
-    DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Series
-    ================== =================================
-    '''
-    MAP = {
-        'dataset_douglas.zip': {'series_id': 4, 'period': 5, 'value': 6},
-        'dataset_usa_brown.zip': {'series_id': 3, 'period': 4, 'value': 5},
-        'dataset_usa_census1949.zip': {'series_id': 8, 'period': 9, 'value': 10},
-        'dataset_usa_census1975.zip': {'series_id': 8, 'period': 9, 'value': 10},
-        'dataset_usa_cobb-douglas.zip': {'series_id': 5, 'period': 6, 'value': 7},
-        'dataset_usa_kendrick.zip': {'series_id': 4, 'period': 5, 'value': 6}
-    }
-    kwargs = {
-        'filepath_or_buffer': archive_name,
-        'header': 0,
-        'names': tuple(MAP.get(archive_name).keys()),
-        'index_col': 1,
-        'skiprows': (0, 4)[archive_name == 'dataset_usa_brown.zip'],
-        'usecols': tuple(MAP.get(archive_name).values()),
-        'dtype': str
-    }
-    _df = pd.read_csv(**kwargs)
-    _df.index = pd.to_numeric(
-        _df.index.astype(str).to_series().str.slice(stop=4),
-        downcast='integer'
-    )
-    _df = numerify(pull_by_series_id(_df, series_id))
-    if 'census' in archive_name:
-        return _df.groupby(_df.index).mean()
-    return _df.sort_index()
-
-
 def read_pull_usa_mcconnel(series_id: str) -> DataFrame:
     '''
     Retrieves DataFrame from McConnell C.R. & Brue S.L.
@@ -407,10 +389,7 @@ def read_pull_usa_mcconnel(series_id: str) -> DataFrame:
     return _df[_df.iloc[:, 0] == SERIES_IDS[series_id]].iloc[:, [1]].sort_index()
 
 
-def read_pull_uscb_description(
-        series_id: str,
-        archive_name: str = 'dataset_usa_census1975.zip'
-) -> str:
+def read_pull_uscb_description(series_id: str) -> str:
     '''
     Retrieves Series Description U.S. Bureau of the Census
 
@@ -418,9 +397,6 @@ def read_pull_uscb_description(
     ----------
     series_id : str
         DESCRIPTION.
-    archive_name : ('dataset_usa_census1949.zip' | 'dataset_usa_census1975.zip'), optional
-        DESCRIPTION. The default is 'dataset_usa_census1975.zip': str.
-
     Returns
     -------
     str
@@ -434,21 +410,20 @@ def read_pull_uscb_description(
         'group1': 4,
         'group2': 5,
         'group3': 6,
-        'series_id': 8
+        'series_id': 9
     }
-    lookup_columns = ('group1', 'group2', 'group3', 'note')
-    FLAG = 'no_details'
     kwargs = {
-        'filepath_or_buffer': archive_name,
+        'filepath_or_buffer': 'dataset_uscb.zip',
         'header': 0,
         'names': tuple(MAP.keys()),
         'usecols': tuple(MAP.values()),
         'low_memory': False
     }
     _df = pd.read_csv(**kwargs)
+    lookup_columns = ('group1', 'group2', 'group3', 'note')
     _df = _df[_df.loc[:, 'series_id'] == series_id].loc[:, lookup_columns]
     _df.drop_duplicates(inplace=True)
-    return '\n'.join(v for k, v in dict(_df.iloc[0, :]).items() if v != FLAG)
+    return '\n'.join(_ for _ in dict(_df.iloc[0, :]).values() if isinstance(_, str))
 
 
 def pull_by_series_id(df: DataFrame, series_id: str) -> DataFrame:

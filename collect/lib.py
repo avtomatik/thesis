@@ -27,7 +27,7 @@ from extract.lib import read_can
 from extract.lib import read_pull_usa_frb_cu
 from extract.lib import read_pull_usa_frb_ms
 from extract.lib import read_pull_usa_fred
-from extract.lib import read_pull_usa_hist
+from extract.lib import read_usa_hist
 from extract.lib import read_pull_usa_mcconnel
 from toolkit.lib import price_inverse_single
 from toolkit.lib import strip_cumulated_deflator
@@ -36,8 +36,7 @@ from toolkit.lib import strip_cumulated_deflator
 ARCHIVE_NAMES_UTILISED = (
     'dataset_douglas.zip',
     'dataset_usa_brown.zip',
-    'dataset_usa_census1949.zip',
-    'dataset_usa_census1975.zip',
+    'dataset_uscb.zip',
     'dataset_usa_cobb-douglas.zip',
     'dataset_usa_infcf16652007.zip',
     'dataset_usa_kendrick.zip',
@@ -172,9 +171,9 @@ def collect_can_price_a():
         for pair in pairs:
             chunk = _df.iloc[:, pair].dropna(axis=0)
             chunk['deflator'] = chunk.iloc[:, 0].div(chunk.iloc[:, 1])
-            chunk['prc'] = chunk.iloc[:, 2].div(
-                chunk.iloc[:, 2].shift(1)).sub(1)
-            df = pd.concat([df, chunk.iloc[:, [3]].dropna(axis=0)], axis=1)
+            chunk['prc'] = chunk.iloc[:, -1].div(
+                chunk.iloc[:, -1].shift(1)).sub(1)
+            df = pd.concat([df, chunk.iloc[:, [-1]].dropna(axis=0)], axis=1)
             df.plot(grid=True)
     # return df
 
@@ -192,7 +191,7 @@ def collect_can_price_b():
     return df
 
 
-def collect_usa() -> DataFrame:
+def collect_usa_investment_turnover_bls() -> DataFrame:
     SERIES_ID = 'PPIACO'
     SERIES_IDS = {
         # =====================================================================
@@ -253,7 +252,7 @@ def collect_usa() -> DataFrame:
 def collect_brown() -> DataFrame:
     # =========================================================================
     # Fetch Data from `Reference RU Brown M. 0597_088.pdf`, Page 193
-    # Dependent on `read_pull_usa_hist`
+    # Dependent on `read_usa_hist`
     # Out of Kendrick J.W. Data & Table 2. of `Reference RU Brown M. 0597_088.pdf`
     # =========================================================================
     # =========================================================================
@@ -274,10 +273,11 @@ def collect_brown() -> DataFrame:
     }
     _b_frame = pd.concat(
         [
-            read_pull_usa_hist(ARCHIVE_NAMES[0], series_id)
+            read_usa_hist(ARCHIVE_NAMES[0]).pipe(pull_by_series_id, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
+        verify_integrity=True,
         sort=True
     )
     _b_frame.columns = SERIES_IDS.values()
@@ -300,10 +300,11 @@ def collect_brown() -> DataFrame:
     SERIES_IDS = ('KTA03S07', 'KTA03S08', 'KTA10S08', 'KTA15S07', 'KTA15S08',)
     _k_frame = pd.concat(
         [
-            read_pull_usa_hist(ARCHIVE_NAMES[1], series_id)
+            read_usa_hist(ARCHIVE_NAMES[1]).pipe(pull_by_series_id, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
+        verify_integrity=True,
         sort=True
     )
     df = pd.concat(
@@ -345,32 +346,33 @@ def collect_usa_capital_purchases() -> DataFrame:
         'DT63AS01': ('dataset_douglas.zip', 1, '1880=100, millions'),
         'DT63AS02': ('dataset_douglas.zip', 1, 'DO_NOT_USE_nominal, millions'),
         'DT63AS03': ('dataset_douglas.zip', 1, 'DO_NOT_USE_nominal, millions'),
-        'J0149': ('dataset_usa_census1949.zip', 1, 'nominal, millions',),
-        'J0150': ('dataset_usa_census1949.zip', 1, 'nominal, millions',),
-        'J0151': ('dataset_usa_census1949.zip', 1, 'nominal, millions',),
-        'P0107': ('dataset_usa_census1975.zip', 1000, 'nominal, billions',),
-        'P0108': ('dataset_usa_census1975.zip', 1000, 'nominal, billions',),
-        'P0109': ('dataset_usa_census1975.zip', 1000, 'nominal, billions',),
-        'P0110': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
-        'P0111': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
-        'P0112': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
-        'P0113': ('dataset_usa_census1975.zip', 1000, 'nominal, billions',),
-        'P0114': ('dataset_usa_census1975.zip', 1000, 'nominal, billions',),
-        'P0115': ('dataset_usa_census1975.zip', 1000, 'nominal, billions',),
-        'P0116': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
-        'P0117': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
-        'P0118': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
-        'P0119': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
-        'P0120': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
-        'P0121': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
-        'P0122': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
+        'J0149': ('dataset_uscb.zip', 1, 'nominal, millions',),
+        'J0150': ('dataset_uscb.zip', 1, 'nominal, millions',),
+        'J0151': ('dataset_uscb.zip', 1, 'nominal, millions',),
+        'P0107': ('dataset_uscb.zip', 1000, 'nominal, billions',),
+        'P0108': ('dataset_uscb.zip', 1000, 'nominal, billions',),
+        'P0109': ('dataset_uscb.zip', 1000, 'nominal, billions',),
+        'P0110': ('dataset_uscb.zip', 1000, '1958=100, billions',),
+        'P0111': ('dataset_uscb.zip', 1000, '1958=100, billions',),
+        'P0112': ('dataset_uscb.zip', 1000, '1958=100, billions',),
+        'P0113': ('dataset_uscb.zip', 1000, 'nominal, billions',),
+        'P0114': ('dataset_uscb.zip', 1000, 'nominal, billions',),
+        'P0115': ('dataset_uscb.zip', 1000, 'nominal, billions',),
+        'P0116': ('dataset_uscb.zip', 1000, '1958=100, billions',),
+        'P0117': ('dataset_uscb.zip', 1000, '1958=100, billions',),
+        'P0118': ('dataset_uscb.zip', 1000, '1958=100, billions',),
+        'P0119': ('dataset_uscb.zip', 1000, '1958=100, billions',),
+        'P0120': ('dataset_uscb.zip', 1000, '1958=100, billions',),
+        'P0121': ('dataset_uscb.zip', 1000, '1958=100, billions',),
+        'P0122': ('dataset_uscb.zip', 1000, '1958=100, billions',),
     }
     df = pd.concat(
         [
-            read_pull_usa_hist(archive_name, series_id).mul(factor)
+            read_usa_hist(archive_name).pipe(pull_by_series_id, series_id).mul(factor)
             for series_id, (archive_name, factor, _) in SERIES_IDS.items()
         ],
         axis=1,
+        verify_integrity=True,
         sort=True
     ).truncate(before=1875)
     df['total'] = signal.wiener(
@@ -399,22 +401,24 @@ def collect_uscb_production() -> tuple[DataFrame, int]:
         # =====================================================================
         # Bureau of the Census, 1949, Page 179, J13: National Bureau of Economic Research Index of Physical Output, All Manufacturing Industries.
         # =====================================================================
-        'J0013': 'dataset_usa_census1949.zip',
+        'J0013': 'dataset_uscb.zip',
         # =====================================================================
         # Bureau of the Census, 1949, Page 179, J14: Warren M. Persons, Index of Physical Production of Manufacturing
         # =====================================================================
-        'J0014': 'dataset_usa_census1949.zip',
+        'J0014': 'dataset_uscb.zip',
         # =====================================================================
         # HSUS 1975 Page 667, P17: Edwin Frickey Series, Indexes of Manufacturing Production
         # =====================================================================
-        'P0017': 'dataset_usa_census1975.zip',
+        'P0017': 'dataset_uscb.zip',
     }
     df = pd.concat(
         [
-            read_pull_usa_hist(archive_name, series_id)
+            read_usa_hist(archive_name).pipe(pull_by_series_id, series_id)
             for series_id, archive_name in SERIES_IDS.items()
         ],
-        axis=1
+        axis=1,
+        verify_integrity=True,
+        sort=True
     )
     return df.div(df.loc[1899, :]).mul(100), df.index.get_loc(1899)
 
@@ -422,32 +426,33 @@ def collect_uscb_production() -> tuple[DataFrame, int]:
 def collect_uscb_cap(smoothing: bool = False) -> DataFrame:
     '''Returns Nominal Million-Dollar Capital, Including Structures & Equipment, Series'''
     SERIES_IDS = {
-        'J0149': ('dataset_usa_census1949.zip', 1, 'nominal, millions',),
-        'J0150': ('dataset_usa_census1949.zip', 1, 'nominal, millions',),
-        'J0151': ('dataset_usa_census1949.zip', 1, 'nominal, millions',),
-        'P0107': ('dataset_usa_census1975.zip', 1000, 'nominal, billions',),
-        'P0108': ('dataset_usa_census1975.zip', 1000, 'nominal, billions',),
-        'P0109': ('dataset_usa_census1975.zip', 1000, 'nominal, billions',),
-        'P0110': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
-        'P0111': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
-        'P0112': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
-        'P0113': ('dataset_usa_census1975.zip', 1000, 'nominal, billions',),
-        'P0114': ('dataset_usa_census1975.zip', 1000, 'nominal, billions',),
-        'P0115': ('dataset_usa_census1975.zip', 1000, 'nominal, billions',),
-        'P0116': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
-        'P0117': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
-        'P0118': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
-        'P0119': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
-        'P0120': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
-        'P0121': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
-        'P0122': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
+        'J0149': ('dataset_uscb.zip', 1, 'nominal, millions',),
+        'J0150': ('dataset_uscb.zip', 1, 'nominal, millions',),
+        'J0151': ('dataset_uscb.zip', 1, 'nominal, millions',),
+        'P0107': ('dataset_uscb.zip', 1000, 'nominal, billions',),
+        'P0108': ('dataset_uscb.zip', 1000, 'nominal, billions',),
+        'P0109': ('dataset_uscb.zip', 1000, 'nominal, billions',),
+        'P0110': ('dataset_uscb.zip', 1000, '1958=100, billions',),
+        'P0111': ('dataset_uscb.zip', 1000, '1958=100, billions',),
+        'P0112': ('dataset_uscb.zip', 1000, '1958=100, billions',),
+        'P0113': ('dataset_uscb.zip', 1000, 'nominal, billions',),
+        'P0114': ('dataset_uscb.zip', 1000, 'nominal, billions',),
+        'P0115': ('dataset_uscb.zip', 1000, 'nominal, billions',),
+        'P0116': ('dataset_uscb.zip', 1000, '1958=100, billions',),
+        'P0117': ('dataset_uscb.zip', 1000, '1958=100, billions',),
+        'P0118': ('dataset_uscb.zip', 1000, '1958=100, billions',),
+        'P0119': ('dataset_uscb.zip', 1000, '1958=100, billions',),
+        'P0120': ('dataset_uscb.zip', 1000, '1958=100, billions',),
+        'P0121': ('dataset_uscb.zip', 1000, '1958=100, billions',),
+        'P0122': ('dataset_uscb.zip', 1000, '1958=100, billions',),
     }
     df = pd.concat(
         [
-            read_pull_usa_hist(archive_name, series_id).mul(factor)
+            read_usa_hist(archive_name).pipe(pull_by_series_id, series_id).mul(factor)
             for series_id, (archive_name, factor, _) in SERIES_IDS.items()
         ],
         axis=1,
+        verify_integrity=True,
         sort=True
     ).truncate(before=1875)
     if smoothing:
@@ -470,25 +475,26 @@ def collect_uscb_cap(smoothing: bool = False) -> DataFrame:
 def collect_uscb_cap_deflator() -> DataFrame:
     '''Returns Census Fused Capital Deflator'''
     SERIES_IDS = {
-        'P0107': ('dataset_usa_census1975.zip', 1000, 'nominal, billions',),
-        'P0108': ('dataset_usa_census1975.zip', 1000, 'nominal, billions',),
-        'P0109': ('dataset_usa_census1975.zip', 1000, 'nominal, billions',),
-        'P0110': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
-        'P0111': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
-        'P0112': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
-        'P0113': ('dataset_usa_census1975.zip', 1000, 'nominal, billions',),
-        'P0114': ('dataset_usa_census1975.zip', 1000, 'nominal, billions',),
-        'P0115': ('dataset_usa_census1975.zip', 1000, 'nominal, billions',),
-        'P0116': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
-        'P0117': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
-        'P0118': ('dataset_usa_census1975.zip', 1000, '1958=100, billions',),
+        'P0107': ('dataset_uscb.zip', 1000, 'nominal, billions',),
+        'P0108': ('dataset_uscb.zip', 1000, 'nominal, billions',),
+        'P0109': ('dataset_uscb.zip', 1000, 'nominal, billions',),
+        'P0110': ('dataset_uscb.zip', 1000, '1958=100, billions',),
+        'P0111': ('dataset_uscb.zip', 1000, '1958=100, billions',),
+        'P0112': ('dataset_uscb.zip', 1000, '1958=100, billions',),
+        'P0113': ('dataset_uscb.zip', 1000, 'nominal, billions',),
+        'P0114': ('dataset_uscb.zip', 1000, 'nominal, billions',),
+        'P0115': ('dataset_uscb.zip', 1000, 'nominal, billions',),
+        'P0116': ('dataset_uscb.zip', 1000, '1958=100, billions',),
+        'P0117': ('dataset_uscb.zip', 1000, '1958=100, billions',),
+        'P0118': ('dataset_uscb.zip', 1000, '1958=100, billions',),
     }
     _df = pd.concat(
         [
-            read_pull_usa_hist(archive_name, series_id)
+            read_usa_hist(archive_name).pipe(pull_by_series_id, series_id)
             for series_id, (archive_name, *_) in SERIES_IDS.items()
         ],
         axis=1,
+        verify_integrity=True,
         sort=True
     ).truncate(before=1879)
     _df['purchases_total'] = _df.iloc[:, 0].div(_df.iloc[:, 3])
@@ -510,7 +516,7 @@ def collect_uscb_cap_deflator() -> DataFrame:
 
 def collect_uscb_metals() -> tuple[DataFrame, tuple[int]]:
     '''Census Primary Metals & Railroad-Related Products Manufacturing Series'''
-    ARCHIVE_NAME = 'dataset_usa_census1975.zip'
+    ARCHIVE_NAME = 'dataset_uscb.zip'
     SERIES_IDS = {
         'P0262': 1875,
         'P0265': 1875,
@@ -524,10 +530,12 @@ def collect_uscb_metals() -> tuple[DataFrame, tuple[int]]:
     }
     df = pd.concat(
         [
-            read_pull_usa_hist(ARCHIVE_NAME, series_id)
+            read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
             for series_id in SERIES_IDS
         ],
-        axis=1
+        axis=1,
+        verify_integrity=True,
+        sort=True
     )
     for series_id, year in SERIES_IDS.items():
         df.loc[:, series_id] = df.loc[:, [series_id]].div(
@@ -538,7 +546,7 @@ def collect_uscb_metals() -> tuple[DataFrame, tuple[int]]:
 
 def collect_uscb_immigration() -> DataFrame:
     '''Census Total Immigration Series'''
-    ARCHIVE_NAME = 'dataset_usa_census1975.zip'
+    ARCHIVE_NAME = 'dataset_uscb.zip'
     ids = itertools.chain(
         range(91, 102),
         range(103, 110),
@@ -548,10 +556,11 @@ def collect_uscb_immigration() -> DataFrame:
     SERIES_IDS = tuple(f'C{_id:04n}' for _id in ids)
     df = pd.concat(
         [
-            read_pull_usa_hist(ARCHIVE_NAME, series_id)
+            read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
+        verify_integrity=True,
         sort=True
     )
     df['C89'] = df.sum(1)
@@ -560,7 +569,7 @@ def collect_uscb_immigration() -> DataFrame:
 
 def collect_uscb_employment() -> DataFrame:
     '''Census Employment Series'''
-    ARCHIVE_NAME = 'dataset_usa_census1975.zip'
+    ARCHIVE_NAME = 'dataset_uscb.zip'
     SERIES_IDS = (
         # =====================================================================
         # Unemployment
@@ -577,10 +586,11 @@ def collect_uscb_employment() -> DataFrame:
     )
     df = pd.concat(
         [
-            read_pull_usa_hist(ARCHIVE_NAME, series_id)
+            read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
+        verify_integrity=True,
         sort=True
     )
     df['workers'] = df.iloc[:, 0].div(df.iloc[:, 1]).mul(100)
@@ -595,14 +605,15 @@ def collect_uscb_employment() -> DataFrame:
 
 def collect_uscb_gnp() -> DataFrame:
     '''Census Gross National Product Series'''
-    ARCHIVE_NAME = 'dataset_usa_census1975.zip'
+    ARCHIVE_NAME = 'dataset_uscb.zip'
     SERIES_IDS = ('F0003', 'F0004',)
     df = pd.concat(
         [
-            read_pull_usa_hist(ARCHIVE_NAME, series_id)
+            read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
+        verify_integrity=True,
         sort=True
     ).truncate(before=1889)
     return df.div(df.iloc[0, :]).mul(100)
@@ -610,35 +621,37 @@ def collect_uscb_gnp() -> DataFrame:
 
 def collect_uscb_trade() -> DataFrame:
     '''Census Foreign Trade Series'''
-    ARCHIVE_NAME = 'dataset_usa_census1975.zip'
+    ARCHIVE_NAME = 'dataset_uscb.zip'
     SERIES_IDS = ('U0001', 'U0008', 'U0015',)
     return pd.concat(
         [
-            read_pull_usa_hist(ARCHIVE_NAME, series_id)
+            read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
+        verify_integrity=True,
         sort=True
     )
 
 
 def collect_uscb_trade_gold_silver() -> DataFrame:
     '''Census Foreign Trade Series'''
-    ARCHIVE_NAME = 'dataset_usa_census1975.zip'
+    ARCHIVE_NAME = 'dataset_uscb.zip'
     SERIES_IDS = ('U0187', 'U0188', 'U0189',)
     return pd.concat(
         [
-            read_pull_usa_hist(ARCHIVE_NAME, series_id)
+            read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
+        verify_integrity=True,
         sort=True
     )
 
 
 def collect_uscb_trade_by_countries() -> DataFrame:
     '''Census Foreign Trade Series'''
-    ARCHIVE_NAME = 'dataset_usa_census1975.zip'
+    ARCHIVE_NAME = 'dataset_uscb.zip'
     ids = itertools.chain(
         range(319, 324),
         range(325, 329),
@@ -650,10 +663,11 @@ def collect_uscb_trade_by_countries() -> DataFrame:
     SERIES_IDS = tuple(f'U{_id:04n}' for _id in ids)
     df = pd.concat(
         [
-            read_pull_usa_hist(ARCHIVE_NAME, series_id)
+            read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
+        verify_integrity=True,
         sort=True
     )
 
@@ -676,14 +690,15 @@ def collect_uscb_trade_by_countries() -> DataFrame:
 def collect_uscb_money_stock() -> DataFrame:
     '''Census Money Supply Aggregates'''
     YEAR_BASE = 1915
-    ARCHIVE_NAME = 'dataset_usa_census1975.zip'
+    ARCHIVE_NAME = 'dataset_uscb.zip'
     SERIES_IDS = ('X0410', 'X0414', 'X0415',)
     df = pd.concat(
         [
-            read_pull_usa_hist(ARCHIVE_NAME, series_id)
+            read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
+        verify_integrity=True,
         sort=True
     )
     return df.div(df.loc[YEAR_BASE, :]).mul(100)
@@ -692,10 +707,12 @@ def collect_uscb_money_stock() -> DataFrame:
 def construct_cap_deflator(series_ids: dict[str]) -> DataFrame:
     df = pd.concat(
         [
-            read_pull_usa_hist(archive_name, series_id)
+            read_usa_hist(archive_name).pipe(pull_by_series_id, series_id)
             for series_id, archive_name in series_ids.items()
         ],
-        axis=1
+        axis=1,
+        verify_integrity=True,
+        sort=True
     )
     df['deflator'] = df.iloc[:, 0].div(df.iloc[:, 1])
     df['prc'] = df.iloc[:, -1].div(df.iloc[:, -1].shift(1)).sub(1)
@@ -739,14 +756,14 @@ def collect_cobb_douglas_deflator() -> DataFrame:
     # Correlation Test Result: kendall & pearson & spearman: L2, L15, E7, E23, E40, E68
     # =========================================================================
     SERIES_IDS_CS = {
-        'L0002': ('dataset_usa_census1949.zip', None),
-        'L0015': ('dataset_usa_census1949.zip', None),
-        'E0007': ('dataset_usa_census1975.zip', None),
-        'E0023': ('dataset_usa_census1975.zip', None),
-        'E0040': ('dataset_usa_census1975.zip', None),
-        'E0068': ('dataset_usa_census1975.zip', None),
-        'P0107': ('dataset_usa_census1975.zip', 1885),
-        'P0110': ('dataset_usa_census1975.zip', 1885),
+        'L0002': ('dataset_uscb.zip', None),
+        'L0015': ('dataset_uscb.zip', None),
+        'E0007': ('dataset_uscb.zip', None),
+        'E0023': ('dataset_uscb.zip', None),
+        'E0040': ('dataset_uscb.zip', None),
+        'E0068': ('dataset_uscb.zip', None),
+        'P0107': ('dataset_uscb.zip', 1885),
+        'P0110': ('dataset_uscb.zip', 1885),
     }
     # =========================================================================
     # Bureau of Economic Analysis
@@ -781,12 +798,12 @@ def collect_cobb_douglas_deflator() -> DataFrame:
             # =================================================================
             pd.concat(
                 [
-                    read_pull_usa_hist(
-                        archive_name, series_id).truncate(before=year)
+                    read_usa_hist(archive_name).pipe(pull_by_series_id, series_id).truncate(before=year)
                     for series_id, (archive_name, year) in SERIES_IDS_CS.items()
                 ],
-                axis=1,
-                sort=True
+            axis=1,
+            verify_integrity=True,
+            sort=True
             ),
             # =================================================================
             # Bureau of Economic Analysis
@@ -799,8 +816,9 @@ def collect_cobb_douglas_deflator() -> DataFrame:
                     )
                     for series_id in tuple(SERIES_IDS_BE)[:2]
                 ],
-                axis=1,
-                sort=True
+            axis=1,
+            verify_integrity=True,
+            sort=True
             ),
             # =================================================================
             # Federal Reserve Board Data
@@ -916,23 +934,23 @@ def collect_cobb_douglas_extension_labor() -> DataFrame:
         # =====================================================================
         # Census Bureau 1949, D69
         # =====================================================================
-        'D0069': 'dataset_usa_census1949.zip',
+        'D0069': 'dataset_uscb.zip',
         # =====================================================================
         # Census Bureau 1949, J4
         # =====================================================================
-        'J0004': 'dataset_usa_census1949.zip',
+        'J0004': 'dataset_uscb.zip',
         # =====================================================================
         # Census Bureau 1975, D130
         # =====================================================================
-        'D0130': 'dataset_usa_census1975.zip',
+        'D0130': 'dataset_uscb.zip',
         # =====================================================================
         # Census Bureau 1975, P5
         # =====================================================================
-        'P0005': 'dataset_usa_census1975.zip',
+        'P0005': 'dataset_uscb.zip',
         # =====================================================================
         # Census Bureau 1975, P62
         # =====================================================================
-        'P0062': 'dataset_usa_census1975.zip',
+        'P0062': 'dataset_uscb.zip',
         # =====================================================================
         # J.W. Kendrick, Productivity Trends in the United States, Table D-II, `Persons Engaged` Column, pp. 465--466
         # =====================================================================
@@ -942,10 +960,12 @@ def collect_cobb_douglas_extension_labor() -> DataFrame:
         [
             pd.concat(
                 [
-                    read_pull_usa_hist(archive_name, series_id)
+                    read_usa_hist(archive_name).pipe(pull_by_series_id, series_id)
                     for series_id, archive_name in SERIES_IDS.items()
                 ],
-                axis=1
+            axis=1,
+            verify_integrity=True,
+            sort=True
             ),
             # =========================================================================
             # Bureau of Economic Analysis, H4313C & J4313C & A4313C & N4313C
@@ -977,15 +997,15 @@ def collect_cobb_douglas_extension_product() -> DataFrame:
         # =====================================================================
         # Bureau of the Census, 1949, Page 179, J13: National Bureau of Economic Research Index of Physical Output, All Manufacturing Industries.
         # =====================================================================
-        'J0013': 'dataset_usa_census1949.zip',
+        'J0013': 'dataset_uscb.zip',
         # =====================================================================
         # Bureau of the Census, 1949, Page 179, J14: Warren M. Persons, Index of Physical Production of Manufacturing
         # =====================================================================
-        'J0014': 'dataset_usa_census1949.zip',
+        'J0014': 'dataset_uscb.zip',
         # =====================================================================
         # Bureau of the Census, 1975, Page 667, P17: Edwin Frickey Index of Manufacturing Production
         # =====================================================================
-        'P0017': 'dataset_usa_census1975.zip',
+        'P0017': 'dataset_uscb.zip',
         # =====================================================================
         # The Revised Index of Physical Production for All Manufacturing In the United States, 1899--1926
         # =====================================================================
@@ -995,10 +1015,12 @@ def collect_cobb_douglas_extension_product() -> DataFrame:
         [
             pd.concat(
                 [
-                    read_pull_usa_hist(archive_name, series_id)
+                    read_usa_hist(archive_name).pipe(pull_by_series_id, series_id)
                     for series_id, archive_name in SERIES_IDS.items()
                 ],
-                axis=1
+            axis=1,
+            verify_integrity=True,
+            sort=True
             ),
             # =================================================================
             # Joseph H. Davis Production Index
@@ -1052,11 +1074,11 @@ def collect_cobb_douglas(series_number: int = 3) -> DataFrame:
         # =====================================================================
         # Bureau of the Census, 1949, Page 179, J14: Warren M. Persons, Index of Physical Production of Manufacturing
         # =====================================================================
-        'J0014': ('dataset_usa_census1949.zip', 'product', ),
+        'J0014': ('dataset_uscb.zip', 'product', ),
         # =====================================================================
         # Bureau of the Census, 1949, Page 179, J13: National Bureau of Economic Research Index of Physical Output, All Manufacturing Industries.
         # =====================================================================
-        'J0013': ('dataset_usa_census1949.zip', 'product_nber', ),
+        'J0013': ('dataset_uscb.zip', 'product_nber', ),
         # =====================================================================
         # The Revised Index of Physical Production for All Manufacturing In the United States, 1899--1926
         # =====================================================================
@@ -1064,10 +1086,11 @@ def collect_cobb_douglas(series_number: int = 3) -> DataFrame:
     }
     df = pd.concat(
         [
-            read_pull_usa_hist(archive_name, series_id)
+            read_usa_hist(archive_name).pipe(pull_by_series_id, series_id)
             for series_id, (archive_name, _) in SERIES_IDS.items()
         ],
         axis=1,
+        verify_integrity=True,
         sort=True
     ).dropna(axis=0)
     df.columns = tuple(column_name for (_, column_name) in SERIES_IDS.values())
@@ -1085,7 +1108,7 @@ def collect_usa_general() -> DataFrame:
 
     '''
     FILE_NAME = 'dataset_usa_0025_p_r.txt'
-    ARCHIVE_NAME, SERIES_ID = 'dataset_usa_census1975.zip', 'X0414'
+    SERIES_ID, ARCHIVE_NAME = 'X0414', 'dataset_uscb.zip'
     SERIES_IDS = {
         # =====================================================================
         # Nominal Investment Series: A006RC
@@ -1182,7 +1205,7 @@ def collect_usa_general() -> DataFrame:
                 sort=True
             ),
             read_pull_usa_frb_ms(),
-            read_pull_usa_hist(ARCHIVE_NAME, SERIES_ID),
+            read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, SERIES_ID),
             pd.read_csv(FILE_NAME, index_col=0),
         ],
         axis=1
@@ -1270,10 +1293,11 @@ def collect_douglas() -> DataFrame:
     SERIES_IDS = ('DT19AS03', 'DT19AS02', 'DT19AS01',)
     df = pd.concat(
         [
-            read_pull_usa_hist(ARCHIVE_NAME, series_id)
+            read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
+        verify_integrity=True,
         sort=True
     )
     return df.div(df.loc[1899, :])
@@ -1328,7 +1352,7 @@ def collect_usa_bea_labor() -> DataFrame:
     '''
     Labor Series: A4601C0, 1929--2013
     '''
-    URL, SERIES_ID = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt', 'A4601C'
+    SERIES_ID, URL = 'A4601C', 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
     return pull_by_series_id(read_from_url_usa_bea(URL), SERIES_ID)
 
 
@@ -1388,9 +1412,9 @@ def collect_usa_capital() -> DataFrame:
         # Total Fixed Capital in 1880 dollars (4)
         # =====================================================================
         'CDT2S4': 'dataset_usa_cobb-douglas.zip',
-        'P0107': 'dataset_usa_census1975.zip',
-        'P0110': 'dataset_usa_census1975.zip',
-        'P0119': 'dataset_usa_census1975.zip',
+        'P0107': 'dataset_uscb.zip',
+        'P0110': 'dataset_uscb.zip',
+        'P0119': 'dataset_uscb.zip',
         # =====================================================================
         # Kendrick J.W., Productivity Trends in the United States, Page 320
         # =====================================================================
@@ -1404,11 +1428,12 @@ def collect_usa_capital() -> DataFrame:
         [
             pd.concat(
                 [
-                    read_pull_usa_hist(archive_name, series_id)
+                    read_usa_hist(archive_name).pipe(pull_by_series_id, series_id)
                     for series_id, archive_name in SERIES_IDS.items()
                 ],
-                axis=1,
-                sort=True
+            axis=1,
+            verify_integrity=True,
+            sort=True
             ).truncate(before=1869),
             # =================================================================
             # FRB Data
@@ -1638,7 +1663,7 @@ def collect_usa_production_three_fold() -> tuple[DataFrame]:
     df.iloc[:, 2]      Product Series Adjusted to Capacity Utilisation
     ================== =================================
     '''
-    URL, SERIES_ID = 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt', 'kcn31gd1es00'
+    SERIES_ID, URL = 'kcn31gd1es00', 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt'
     _df = pd.concat(
         [
             # =================================================================
@@ -1765,9 +1790,7 @@ def get_price_base(df: DataFrame) -> int:
 
     '''
     df['__deflator'] = df.iloc[:, 0].sub(100).abs()
-    _b = df.iloc[:, -1].astype(float).argmin()
-    df.drop(df.columns[-1], axis=1, inplace=True)
-    return int(df.index[_b])
+    return int(df.index[df.iloc[:, -1].astype(float).argmin()])
 
 
 def transform_a(df: DataFrame) -> DataFrame:
