@@ -38,7 +38,8 @@ from collect.lib import transform_cobb_douglas
 from collect.lib import transform_d
 from collect.lib import transform_e
 from collect.lib import transform_kurenkov
-from extract.lib import extract_usa_census
+from extract.lib import read_usa_hist
+from extract.lib import pull_by_series_id
 from plot.lib import plot_a
 from plot.lib import plot_approx_linear
 from plot.lib import plot_approx_log_linear
@@ -100,8 +101,7 @@ ARCHIVE_NAMES_UTILISED = (
     'dataset_usa_bea-sfat-release-2012-08-15-SectionAll_xls.zip',
     'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip',
     'dataset_usa_brown.zip',
-    'dataset_usa_census1949.zip',
-    'dataset_usa_census1975.zip',
+    'dataset_uscb.zip',
     'dataset_usa_cobb-douglas.zip',
     'dataset_usa_infcf16652007.zip',
     'dataset_usa_kendrick.zip',
@@ -146,15 +146,21 @@ def main():
     plot_approx_log_linear(_df.iloc[:, [7, 6, 20, 4]].dropna())
     plot_approx_log_linear(_df.iloc[:, [7, 6, 20, 6]].dropna())
 
-    SERIES_IDS = ('A191RC1',)
+    SERIES_IDS = ('Валовой внутренний продукт, млрд долл. США',)
     calculate_power_function_fit_params_a(
         collect_usa_mcconnel(SERIES_IDS), (2800, 0.01, 0.5,)
     )
-    SERIES_IDS = ('prime_rate', 'A032RC1',)
+    SERIES_IDS = (
+        'Ставка прайм-рейт, %',
+        'Национальный доход, млрд долл. США',
+    )
     calculate_power_function_fit_params_b(
         collect_usa_mcconnel(SERIES_IDS), (4, 12, 9000, 3000, 0.87,)
     )
-    SERIES_IDS = ('prime_rate', 'A006RC1',)
+    SERIES_IDS = (
+        'Ставка прайм-рейт, %',
+        'Валовой объем внутренних частных инвестиций, млрд долл. США',
+    )
     calculate_power_function_fit_params_c(
         collect_usa_mcconnel(SERIES_IDS), (1.5, 19, 1.7, 1760,)
     )
@@ -299,12 +305,13 @@ def main():
     for _, column in enumerate(df.columns):
         plot_census_complex(df.iloc[:, [_]])
 
+    ARCHIVE_NAME = 'dataset_uscb.zip'
     SERIES_IDS = (
         'D0004', 'D0130', 'F0003', 'F0004', 'P0110', 'U0001', 'U0008', 'X0414', 'X0415',
     )
     for series_id in SERIES_IDS:
         print(f'Processing {series_id}')
-        df = extract_usa_census('dataset_usa_census1975.zip', series_id)
+        df = read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
         _df = df.copy()
         plot_pearson_r_test(_df)
         _df = df.copy()
@@ -395,9 +402,9 @@ def main():
     # =========================================================================
     # Subproject XI. USA Census J14
     # =========================================================================
-    ARCHIVE_NAME, SERIES_ID = 'dataset_usa_census1949.zip', 'J0014'
+    SERIES_ID, ARCHIVE_NAME = 'J0014', 'dataset_uscb.zip'
 
-    df = extract_usa_census(ARCHIVE_NAME, SERIES_ID)
+    df = read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, SERIES_ID)
     _df = df.copy()
     plot_growth_elasticity(_df)
     _df = df.copy()

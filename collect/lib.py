@@ -25,7 +25,7 @@ from extract.lib import read_usa_frb_us3
 from extract.lib import read_usa_hist
 from extract.lib import read_pull_usa_frb_ms
 from extract.lib import read_pull_usa_fred
-from extract.lib import read_pull_usa_mcconnel
+from extract.lib import read_usa_mcconnel
 from extract.lib import pull_by_series_id
 from extract.lib import pull_can_capital
 from extract.lib import pull_can_capital_former
@@ -1486,8 +1486,18 @@ def collect_usa_frb_fa_def() -> DataFrame:
 
 
 def collect_usa_mcconnel(series_ids: tuple[str]) -> DataFrame:
+    SERIES_IDS = {
+        'Ставка прайм-рейт, %': 'prime_rate',
+        'Валовой объем внутренних частных инвестиций, млрд долл. США': 'A006RC1',
+        'Национальный доход, млрд долл. США': 'A032RC1',
+        'Валовой внутренний продукт, млрд долл. США': 'A191RC1',
+    }
     return pd.concat(
-        [read_pull_usa_mcconnel(series_id) for series_id in series_ids],
+        [
+            read_usa_mcconnel().pipe(pull_by_series_id, series_id).rename(
+                columns={series_id: SERIES_IDS[series_id]})
+            for series_id in series_ids
+        ],
         axis=1
     ).truncate(before=1980)
 
@@ -1511,9 +1521,8 @@ def collect_usa_sahr_infcf() -> DataFrame:
     # =========================================================================
     df = pd.concat(
         [
-            -price_inverse_single(
-                _df[_df.iloc[:, 0] == series_id].iloc[:, [1]].rdiv(1)
-            )
+            _df[_df.iloc[:, 0] == series_id].iloc[:, [1]].rdiv(
+                1).pipe(price_inverse_single).mul(-1)
             for series_id in _df.iloc[:, 0].unique()[:14]
         ],
         axis=1,

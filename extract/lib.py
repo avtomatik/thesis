@@ -440,14 +440,10 @@ def read_pull_usa_fred(series_id: str) -> DataFrame:
     return _df.groupby(_df.index.year).mean()
 
 
-def read_pull_usa_mcconnel(series_id: str) -> DataFrame:
+@cache
+def read_usa_mcconnel() -> DataFrame:
     '''
     Retrieves DataFrame from McConnell C.R. & Brue S.L.
-
-    Parameters
-    ----------
-    series_id : str
-        DESCRIPTION.
 
     Returns
     -------
@@ -457,21 +453,14 @@ def read_pull_usa_mcconnel(series_id: str) -> DataFrame:
     df.iloc[:, 0]      Series
     ================== =================================
     '''
-    SERIES_IDS = {
-        'prime_rate': 'Ставка прайм-рейт, %',
-        'A006RC1': 'Валовой объем внутренних частных инвестиций, млрд долл. США',
-        'A032RC1': 'Национальный доход, млрд долл. США',
-        'A191RC1': 'Валовой внутренний продукт, млрд долл. США',
-    }
     kwargs = {
         'filepath_or_buffer': 'dataset_usa_mc_connell_brue.zip',
         'header': 0,
-        'names': ('series_id', 'period', series_id),
+        'names': ('series_id', 'period', 'value'),
         'index_col': 1,
         'usecols': range(1, 4)
     }
-    _df = pd.read_csv(**kwargs)
-    return _df[_df.iloc[:, 0] == SERIES_IDS[series_id]].iloc[:, [1]].sort_index()
+    return pd.read_csv(**kwargs).sort_index()
 
 
 def read_pull_uscb_description(series_id: str) -> str:
