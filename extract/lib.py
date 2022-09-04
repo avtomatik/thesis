@@ -610,7 +610,7 @@ def pull_can_capital_former(df: DataFrame, params: tuple[int, str]) -> DataFrame
         )
 
 
-def pull_can_quarter(df: DataFrame, series_id: str) -> DataFrame:
+def pull_can_aggregate(df: DataFrame, series_id: str) -> DataFrame:
     '''
     Retrieves DataFrame from Quarterly Data within CANSIM Zip Archives
     Parameters
@@ -626,14 +626,6 @@ def pull_can_quarter(df: DataFrame, series_id: str) -> DataFrame:
     df.index           Period
     df.iloc[:, 0]      Series
     ================== =================================
-    '''
-    _df = df.pipe(pull_by_series_id, series_id)
-    return _df.groupby(_df.index.year).sum()
-
-
-def pull_can_quarter_former(df: DataFrame, series_id: str) -> DataFrame:
-    '''
-    Retrieves DataFrame from Quarterly Data within CANSIM Zip Archives
     '''
     flag = 'seas' in df.columns
     _df = df.loc[:, ('series_id', 'value')].pipe(

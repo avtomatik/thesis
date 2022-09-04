@@ -29,8 +29,7 @@ from extract.lib import read_usa_mcconnel
 from extract.lib import pull_by_series_id
 from extract.lib import pull_can_capital
 from extract.lib import pull_can_capital_former
-from extract.lib import pull_can_quarter
-from extract.lib import pull_can_quarter_former
+from extract.lib import pull_can_aggregate
 from toolkit.lib import price_inverse_single
 from toolkit.lib import strip_cumulated_deflator
 
@@ -53,43 +52,45 @@ FILE_NAMES_UTILISED = (
 )
 
 
-def construct_can():
+def construct_can(archive_ids: dict) -> DataFrame:
+    '''
+
+
+    Parameters
+    ----------
+    archive_ids : dict
+        DESCRIPTION.
+
+    Returns
+    -------
+    DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Capital
+    df.iloc[:, 1]      Labor
+    df.iloc[:, 2]      Product
+    ================== =================================
+    '''
     DIR = '/home/alexander/science'
-    ARCHIVE_IDS = {
-        # =====================================================================
-        # Capital
-        # =====================================================================
-        36100096: (
-            2012,
-            "Manufacturing",
-            "Linear end-year net stock",
-            (
-                "Non-residential buildings",
-                "Engineering construction",
-                "Machinery and equipment"
-            )
-        ),
-        # =====================================================================
-        # Labor : "v2523012", Preferred Over "v3437501" Which Is Quarterly
-        # =====================================================================
-        14100027: 'v2523012',
-        # =====================================================================
-        # Production
-        # =====================================================================
-        36100434: 'v65201809',
-    }
-    if Path(DIR).joinpath(f'{tuple(ARCHIVE_IDS)[0]}_preloaded.csv').is_file():
+    # =========================================================================
+    # TODO: UPDATE BRANCHES
+    # =========================================================================
+    if Path(DIR).joinpath(f'{tuple(archive_ids)[0]}_preloaded.csv').is_file():
         kwargs = {
-            'filepath_or_buffer': Path(DIR).joinpath(f'{tuple(ARCHIVE_IDS)[0]}_preloaded.csv'),
+            'filepath_or_buffer': Path(DIR).joinpath(f'{tuple(archive_ids)[0]}_preloaded.csv'),
             'index_col': 0,
         }
-        _df = pd.read_csv(**kwargs)
+        _df = pd.read_csv(**kwargs).loc[:, ('series_id', 'value')]
     else:
-        # =====================================================================
-        # WARNING : pull_can_capital() : VERY EXPENSIVE OPERATION !
-        # =====================================================================
-        _df = read_can(tuple(ARCHIVE_IDS)[0]).pipe(
-            pull_can_capital, ARCHIVE_IDS.get(tuple(ARCHIVE_IDS)[0]))
+        if min(archive_ids) < 10 ** 7:
+            function = pull_can_capital_former
+        else:
+            # =================================================================
+            # WARNING : pull_can_capital() : VERY EXPENSIVE OPERATION !
+            # =================================================================
+            function = pull_can_capital
+        _df = read_can(tuple(archive_ids)[0]).pipe(
+            function, archive_ids.get(tuple(archive_ids)[0]))
         # =====================================================================
         # Kludge
         # =====================================================================
@@ -97,47 +98,11 @@ def construct_can():
     df = pd.concat(
         [
             _df.pipe(transform_sum),
-            read_can(tuple(ARCHIVE_IDS)[1]).pipe(
-                pull_by_series_id, ARCHIVE_IDS.get(tuple(ARCHIVE_IDS)[1])).pipe(numerify),
-            read_can(tuple(ARCHIVE_IDS)[-1]).pipe(
-                pull_can_quarter,
-                ARCHIVE_IDS.get(tuple(ARCHIVE_IDS)[-1])),
-        ],
-        axis=1
-    ).dropna(axis=0)
-    df.columns = ('capital', 'labor', 'product')
-    return df.div(df.iloc[0, :])
-
-
-def construct_can_former():
-    ARCHIVE_IDS = {
-        # =====================================================================
-        # Capital
-        # =====================================================================
-        310004: (2007, "Geometric (infinite) end-year net stock", "industrial"),
-        # =====================================================================
-        # Labor : "v2523012", Preferred Over "v3437501" Which Is Quarterly
-        # =====================================================================
-        2820012: 'v2523012',
-        # =====================================================================
-        # Production
-        # =====================================================================
-        3790031: 'v65201809',
-    }
-    _df = read_can(tuple(ARCHIVE_IDS)[0]).pipe(
-        pull_can_capital_former, ARCHIVE_IDS.get(tuple(ARCHIVE_IDS)[0]))
-    # =========================================================================
-    # Kludge
-    # =========================================================================
-    _df = _df.set_index(_df.iloc[:, 0]).loc[:, ('series_id', 'value')]
-    df = pd.concat(
-        [
-            _df.pipe(transform_sum),
-            read_can(tuple(ARCHIVE_IDS)[1]).pipe(
-                pull_by_series_id, ARCHIVE_IDS.get(tuple(ARCHIVE_IDS)[1])).pipe(numerify),
-            read_can(tuple(ARCHIVE_IDS)[-1]).pipe(
-                pull_can_quarter_former,
-                ARCHIVE_IDS.get(tuple(ARCHIVE_IDS)[-1])),
+            read_can(tuple(archive_ids)[1]).pipe(
+                pull_by_series_id, archive_ids.get(tuple(archive_ids)[1])).pipe(numerify),
+            read_can(tuple(archive_ids)[-1]).pipe(
+                pull_can_aggregate,
+                archive_ids.get(tuple(archive_ids)[-1])),
         ],
         axis=1
     ).dropna(axis=0)

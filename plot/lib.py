@@ -40,7 +40,7 @@ from toolkit.lib import (
 
 ARCHIVE_NAMES_UTILISED = (
     'dataset_rus_m1.zip',
-    'dataset_usa_census1975.zip',
+    'dataset_uscb.zip',
 )
 FILE_NAMES_UTILISED = (
     'dataset_rus_grigoriev_v.csv',
@@ -364,18 +364,20 @@ def plot_uscb_metals(df: DataFrame, base: tuple[int]) -> None:
 
 
 def plot_uscb_commodities(series_ids: tuple[str]) -> None:
-    ARCHIVE_NAME = 'dataset_usa_census1975.zip'
+    ARCHIVE_NAME = 'dataset_uscb.zip'
     df = DataFrame()
     for series_id in series_ids:
-        chunk = read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
-        descr = read_pull_uscb_description(series_id)
-        print(f'<{series_id}> {descr}')
+        chunk = read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id).sort_index()
         df = pd.concat(
             [
                 df,
                 chunk.div(chunk.iloc[0, :]).mul(100)
             ],
-            axis=1, sort=True)
+            axis=1,
+            sort=True
+        )
+    for series_id in series_ids:
+        print(f'<{series_id}> {read_pull_uscb_description(series_id)}')
     _title = 'Series P 231$-$300. Physical Output of Selected Manufactured Commodities: {}$-${}'.format(
         *df.index[[0, -1]]
     )
@@ -464,14 +466,14 @@ def plot_uscb_gnp(df: DataFrame) -> None:
 def plot_uscb_farm_lands() -> None:
     '''Census 1975, Land in Farms'''
     _kwargs = {
-        'archive_name': 'dataset_usa_census1975.zip',
+        'archive_name': 'dataset_uscb.zip',
         'series_id': 'K0005',
     }
     plt.figure()
     plt.plot(read_usa_hist(**_kwargs))
-# =============================================================================
-#     read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
-# =============================================================================
+    # =========================================================================
+    # read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
+    # =========================================================================
     plt.title('Land in Farms')
     plt.xlabel('Period')
     plt.ylabel('1,000 acres')
@@ -576,7 +578,7 @@ def plot_uscb_money_stock(df: DataFrame) -> None:
 
 def plot_uscb_finance() -> None:
     '''Census Financial Markets & Institutions Series'''
-    ARCHIVE_NAME = 'dataset_usa_census1975.zip'
+    ARCHIVE_NAME = 'dataset_uscb.zip'
     ids = itertools.chain(
         range(410, 424),
         range(580, 588),
@@ -588,9 +590,9 @@ def plot_uscb_finance() -> None:
     SERIES_IDS = tuple(f'X{_id:04n}' for _id in ids)
     for _, series_id in enumerate(SERIES_IDS, start=1):
         df = read_usa_hist(ARCHIVE_NAME, series_id)
-# =============================================================================
-#         read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
-# =============================================================================
+        # =====================================================================
+        # read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
+        # =====================================================================
         df = df.div(df.iloc[0, :]).mul(100)
         descr = read_pull_uscb_description(series_id)
         plt.figure(_)
@@ -1429,9 +1431,9 @@ def plot_douglas(
             for _ in range(_lw, _up, skip):
                 plt.plot(
                     read_usa_hist(archive_name, _SERIES_IDS[_]),
-# =============================================================================
-#                     read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
-# =============================================================================
+                    # =========================================================
+                    # read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
+                    # =========================================================
                     label=_MAP_SERIES[_SERIES_IDS[_]]
                 )
             plt.title(_tt)
@@ -1455,9 +1457,9 @@ def plot_douglas(
             for _ in range(_lw, _up, skip):
                 plt.plot(
                     read_usa_hist(archive_name, _SERIES_IDS[_]),
-# =============================================================================
-#                     read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
-# =============================================================================
+                    # =========================================================
+                    # read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
+                    # =========================================================
                     label=_MAP_SERIES[_SERIES_IDS[_]]
                 )
             plt.title(_tt)
@@ -1675,12 +1677,14 @@ def plot_fourier_discrete(df: DataFrame, precision: int = 10) -> None:
 
 
 def plot_grigoriev() -> None:
-    FILE_NAME = 'dataset_rus_grigoriev_v.csv'
-    df = pd.read_csv(FILE_NAME, index_col=1, usecols=range(2, 5))
+    kwargs = {
+        'filepath_or_buffer': 'dataset_rus_grigoriev_v.csv',
+        'index_col': 1,
+        'usecols': range(2, 5)
+    }
+    df = pd.read_csv(**kwargs).sort_index()
     for series_id in sorted(set(df.iloc[:, 0])):
-        chunk = df[df.iloc[:, 0] == series_id].iloc[:, [1]].sort_index()
-        chunk.columns = (series_id,)
-        chunk.plot(grid=True)
+        df.pipe(pull_by_series_id, series_id).plot(grid=True)
 
 
 def plot_growth_elasticity(df: DataFrame) -> None:
@@ -1763,14 +1767,14 @@ def plot_is_lm() -> None:
     # =========================================================================
     # Read Data
     # =========================================================================
-    ARCHIVE_NAME = 'dataset_rus_m1.zip'
-    df = pd.read_csv(
-        ARCHIVE_NAME,
-        names=['period', 'prime_rate', 'm1'],
-        index_col=0,
-        skiprows=1,
-        parse_dates=True
-    )
+    kwargs = {
+        'filepath_or_buffer': 'dataset_rus_m1.zip',
+        'names': ('period', 'prime_rate', 'm1'),
+        'index_col': 0,
+        'skiprows': 1,
+        'parse_dates': True
+    }
+    df = pd.read_csv(**kwargs)
     # =========================================================================
     # Plotting
     # =========================================================================
