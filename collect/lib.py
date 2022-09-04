@@ -16,20 +16,19 @@ from scipy import signal
 # from sklearn.linear_model import LassoCV
 from sklearn.linear_model import LinearRegression
 # from sklearn.linear_model import Ridge
-from extract.lib import numerify
-from extract.lib import read_can
-from extract.lib import read_from_url_usa_bea
-from extract.lib import read_usa_frb
-from extract.lib import read_usa_frb_g17
-from extract.lib import read_usa_frb_us3
-from extract.lib import read_usa_hist
-from extract.lib import read_pull_usa_frb_ms
-from extract.lib import read_pull_usa_fred
-from extract.lib import read_usa_mcconnel
-from extract.lib import pull_by_series_id
-from extract.lib import pull_can_capital
-from extract.lib import pull_can_capital_former
-from extract.lib import pull_can_aggregate
+from pull.lib import numerify
+from read.lib import can_cansim
+from read.lib import usa_bea
+from read.lib import usa_frb
+from read.lib import usa_frb_g17
+from read.lib import usa_frb_us3
+from read.lib import usa_hist
+from read.lib import usa_frb_ms
+from read.lib import usa_fred
+from pull.lib import by_series_id
+from pull.lib import cansim_capital
+from pull.lib import cansim_capital_former
+from pull.lib import cansim_aggregate
 from toolkit.lib import price_inverse_single
 from toolkit.lib import strip_cumulated_deflator
 
@@ -83,13 +82,13 @@ def construct_can(archive_ids: dict) -> DataFrame:
         _df = pd.read_csv(**kwargs).loc[:, ('series_id', 'value')]
     else:
         if min(archive_ids) < 10 ** 7:
-            function = pull_can_capital_former
+            function = cansim_capital_former
         else:
             # =================================================================
-            # WARNING : pull_can_capital() : VERY EXPENSIVE OPERATION !
+            # WARNING : cansim_capital() : VERY EXPENSIVE OPERATION !
             # =================================================================
-            function = pull_can_capital
-        _df = read_can(tuple(archive_ids)[0]).pipe(
+            function = cansim_capital
+        _df = can_cansim(tuple(archive_ids)[0]).pipe(
             function, archive_ids.get(tuple(archive_ids)[0]))
         # =====================================================================
         # Kludge
@@ -98,10 +97,10 @@ def construct_can(archive_ids: dict) -> DataFrame:
     df = pd.concat(
         [
             _df.pipe(transform_sum),
-            read_can(tuple(archive_ids)[1]).pipe(
-                pull_by_series_id, archive_ids.get(tuple(archive_ids)[1])).pipe(numerify),
-            read_can(tuple(archive_ids)[-1]).pipe(
-                pull_can_aggregate,
+            can_cansim(tuple(archive_ids)[1]).pipe(
+                by_series_id, archive_ids.get(tuple(archive_ids)[1])).pipe(numerify),
+            can_cansim(tuple(archive_ids)[-1]).pipe(
+                cansim_aggregate,
                 archive_ids.get(tuple(archive_ids)[-1])),
         ],
         axis=1
@@ -176,11 +175,11 @@ def collect_usa_investment_turnover_bls() -> DataFrame:
             # =================================================================
             # Producer Price Index
             # =================================================================
-            read_pull_usa_fred(SERIES_ID),
+            usa_fred(SERIES_ID),
             pd.concat(
                 [
-                    read_from_url_usa_bea(url).pipe(
-                        pull_by_series_id, series_id)
+                    usa_bea(url).pipe(
+                        by_series_id, series_id)
                     for series_id, url in SERIES_IDS.items()
                 ],
                 axis=1
@@ -217,7 +216,7 @@ def collect_usa_investment_turnover_bls() -> DataFrame:
 def collect_brown() -> DataFrame:
     # =========================================================================
     # Fetch Data from `Reference RU Brown M. 0597_088.pdf`, Page 193
-    # Dependent on `read_usa_hist`
+    # Dependent on `usa_hist`
     # Out of Kendrick J.W. Data & Table 2. of `Reference RU Brown M. 0597_088.pdf`
     # =========================================================================
     # =========================================================================
@@ -238,7 +237,7 @@ def collect_brown() -> DataFrame:
     }
     _b_frame = pd.concat(
         [
-            read_usa_hist(ARCHIVE_NAMES[0]).pipe(pull_by_series_id, series_id)
+            usa_hist(ARCHIVE_NAMES[0]).pipe(by_series_id, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -265,7 +264,7 @@ def collect_brown() -> DataFrame:
     SERIES_IDS = ('KTA03S07', 'KTA03S08', 'KTA10S08', 'KTA15S07', 'KTA15S08',)
     _k_frame = pd.concat(
         [
-            read_usa_hist(ARCHIVE_NAMES[1]).pipe(pull_by_series_id, series_id)
+            usa_hist(ARCHIVE_NAMES[1]).pipe(by_series_id, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -333,8 +332,8 @@ def collect_usa_capital_purchases() -> DataFrame:
     }
     df = pd.concat(
         [
-            read_usa_hist(archive_name).pipe(
-                pull_by_series_id, series_id).mul(factor)
+            usa_hist(archive_name).pipe(
+                by_series_id, series_id).mul(factor)
             for series_id, (archive_name, factor, _) in SERIES_IDS.items()
         ],
         axis=1,
@@ -379,7 +378,7 @@ def collect_uscb_production() -> tuple[DataFrame, int]:
     }
     df = pd.concat(
         [
-            read_usa_hist(archive_name).pipe(pull_by_series_id, series_id)
+            usa_hist(archive_name).pipe(by_series_id, series_id)
             for series_id, archive_name in SERIES_IDS.items()
         ],
         axis=1,
@@ -414,8 +413,8 @@ def collect_uscb_cap(smoothing: bool = False) -> DataFrame:
     }
     df = pd.concat(
         [
-            read_usa_hist(archive_name).pipe(
-                pull_by_series_id, series_id).mul(factor)
+            usa_hist(archive_name).pipe(
+                by_series_id, series_id).mul(factor)
             for series_id, (archive_name, factor, _) in SERIES_IDS.items()
         ],
         axis=1,
@@ -457,7 +456,7 @@ def collect_uscb_cap_deflator() -> DataFrame:
     }
     _df = pd.concat(
         [
-            read_usa_hist(archive_name).pipe(pull_by_series_id, series_id)
+            usa_hist(archive_name).pipe(by_series_id, series_id)
             for series_id, (archive_name, *_) in SERIES_IDS.items()
         ],
         axis=1,
@@ -497,7 +496,7 @@ def collect_uscb_metals() -> tuple[DataFrame, tuple[int]]:
     }
     df = pd.concat(
         [
-            read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
+            usa_hist(ARCHIVE_NAME).pipe(by_series_id, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -523,7 +522,7 @@ def collect_uscb_immigration() -> DataFrame:
     SERIES_IDS = tuple(f'C{_id:04n}' for _id in ids)
     df = pd.concat(
         [
-            read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
+            usa_hist(ARCHIVE_NAME).pipe(by_series_id, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -553,7 +552,7 @@ def collect_uscb_employment() -> DataFrame:
     )
     df = pd.concat(
         [
-            read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
+            usa_hist(ARCHIVE_NAME).pipe(by_series_id, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -576,7 +575,7 @@ def collect_uscb_gnp() -> DataFrame:
     SERIES_IDS = ('F0003', 'F0004',)
     df = pd.concat(
         [
-            read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
+            usa_hist(ARCHIVE_NAME).pipe(by_series_id, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -592,7 +591,7 @@ def collect_uscb_trade() -> DataFrame:
     SERIES_IDS = ('U0001', 'U0008', 'U0015',)
     return pd.concat(
         [
-            read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
+            usa_hist(ARCHIVE_NAME).pipe(by_series_id, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -607,7 +606,7 @@ def collect_uscb_trade_gold_silver() -> DataFrame:
     SERIES_IDS = ('U0187', 'U0188', 'U0189',)
     return pd.concat(
         [
-            read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
+            usa_hist(ARCHIVE_NAME).pipe(by_series_id, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -630,7 +629,7 @@ def collect_uscb_trade_by_countries() -> DataFrame:
     SERIES_IDS = tuple(f'U{_id:04n}' for _id in ids)
     df = pd.concat(
         [
-            read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
+            usa_hist(ARCHIVE_NAME).pipe(by_series_id, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -661,7 +660,7 @@ def collect_uscb_money_stock() -> DataFrame:
     SERIES_IDS = ('X0410', 'X0414', 'X0415',)
     df = pd.concat(
         [
-            read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
+            usa_hist(ARCHIVE_NAME).pipe(by_series_id, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -674,7 +673,7 @@ def collect_uscb_money_stock() -> DataFrame:
 def construct_cap_deflator(series_ids: dict[str]) -> DataFrame:
     df = pd.concat(
         [
-            read_usa_hist(archive_name).pipe(pull_by_series_id, series_id)
+            usa_hist(archive_name).pipe(by_series_id, series_id)
             for series_id, archive_name in series_ids.items()
         ],
         axis=1,
@@ -765,8 +764,8 @@ def collect_cobb_douglas_deflator() -> DataFrame:
             # =================================================================
             pd.concat(
                 [
-                    read_usa_hist(archive_name).pipe(
-                        pull_by_series_id, series_id).sort_index().truncate(before=year)
+                    usa_hist(archive_name).pipe(
+                        by_series_id, series_id).sort_index().truncate(before=year)
                     for series_id, (archive_name, year) in SERIES_IDS_CS.items()
                 ],
                 axis=1,
@@ -778,8 +777,8 @@ def collect_cobb_douglas_deflator() -> DataFrame:
             # =================================================================
             pd.concat(
                 [
-                    read_from_url_usa_bea(SERIES_IDS_BE[series_id]).pipe(
-                        pull_by_series_id, series_id)
+                    usa_bea(SERIES_IDS_BE[series_id]).pipe(
+                        by_series_id, series_id)
                     for series_id in tuple(SERIES_IDS_BE)[:2]
                 ],
                 axis=1,
@@ -930,8 +929,8 @@ def collect_cobb_douglas_extension_labor() -> DataFrame:
         [
             pd.concat(
                 [
-                    read_usa_hist(archive_name).pipe(
-                        pull_by_series_id, series_id)
+                    usa_hist(archive_name).pipe(
+                        by_series_id, series_id)
                     for series_id, archive_name in SERIES_IDS.items()
                 ],
                 axis=1,
@@ -986,8 +985,8 @@ def collect_cobb_douglas_extension_product() -> DataFrame:
         [
             pd.concat(
                 [
-                    read_usa_hist(archive_name).pipe(
-                        pull_by_series_id, series_id)
+                    usa_hist(archive_name).pipe(
+                        by_series_id, series_id)
                     for series_id, archive_name in SERIES_IDS.items()
                 ],
                 axis=1,
@@ -1001,7 +1000,7 @@ def collect_cobb_douglas_extension_product() -> DataFrame:
             # =================================================================
             # Federal Reserve, AIPMASAIX
             # =================================================================
-            read_usa_frb_us3().loc[:, ['AIPMA_SA_IX']],
+            usa_frb_us3().loc[:, ['AIPMA_SA_IX']],
         ],
         axis=1
     )
@@ -1058,7 +1057,7 @@ def collect_cobb_douglas(series_number: int = 3) -> DataFrame:
     }
     df = pd.concat(
         [
-            read_usa_hist(archive_name).pipe(pull_by_series_id, series_id)
+            usa_hist(archive_name).pipe(by_series_id, series_id)
             for series_id, (archive_name, _) in SERIES_IDS.items()
         ],
         axis=1,
@@ -1156,8 +1155,8 @@ def collect_usa_general() -> DataFrame:
                 [
                     pd.concat(
                         [
-                            read_from_url_usa_bea(SERIES_IDS[series_id]).pipe(
-                                pull_by_series_id, series_id)
+                            usa_bea(SERIES_IDS[series_id]).pipe(
+                                by_series_id, series_id)
                             for series_id in tuple(SERIES_IDS)[:8]
                         ],
                         axis=1
@@ -1165,8 +1164,8 @@ def collect_usa_general() -> DataFrame:
                     collect_usa_bea_labor_mfg(),
                     pd.concat(
                         [
-                            read_from_url_usa_bea(SERIES_IDS[series_id]).pipe(
-                                pull_by_series_id, series_id)
+                            usa_bea(SERIES_IDS[series_id]).pipe(
+                                by_series_id, series_id)
                             for series_id in tuple(SERIES_IDS)[8:]
                         ],
                         axis=1
@@ -1175,8 +1174,8 @@ def collect_usa_general() -> DataFrame:
                 axis=1,
                 sort=True
             ),
-            read_pull_usa_frb_ms(),
-            read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, SERIES_ID),
+            usa_frb_ms(),
+            usa_hist(ARCHIVE_NAME).pipe(by_series_id, SERIES_ID),
             pd.read_csv(**kwargs),
         ],
         axis=1
@@ -1229,10 +1228,10 @@ def collect_usa_macroeconomics() -> DataFrame:
             pd.concat(
                 [
                     (
-                        read_from_url_usa_bea(url).pipe(
-                            pull_by_series_id, series_id),
-                        read_from_url_usa_bea(url).pipe(
-                            pull_by_series_id, series_id).rdiv(100)
+                        usa_bea(url).pipe(
+                            by_series_id, series_id),
+                        usa_bea(url).pipe(
+                            by_series_id, series_id).rdiv(100)
                     )[series_id == 'A191RD']
                     for series_id, url in SERIES_IDS.items()
                 ],
@@ -1246,7 +1245,7 @@ def collect_usa_macroeconomics() -> DataFrame:
             # =====================================================================
             # Capacity Utilization Series: CAPUTL.B50001.A, 1967--2012
             # =====================================================================
-            read_usa_frb_g17().loc[:, [SERIES_ID]].dropna(axis=0),
+            usa_frb_g17().loc[:, [SERIES_ID]].dropna(axis=0),
         ],
         axis=1,
         sort=True
@@ -1259,7 +1258,7 @@ def collect_douglas() -> DataFrame:
     SERIES_IDS = ('DT19AS03', 'DT19AS02', 'DT19AS01',)
     df = pd.concat(
         [
-            read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
+            usa_hist(ARCHIVE_NAME).pipe(by_series_id, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -1286,7 +1285,7 @@ def collect_usa_investment_turnover() -> DataFrame:
     }
     df = pd.concat(
         [
-            read_from_url_usa_bea(url).pipe(pull_by_series_id, series_id)
+            usa_bea(url).pipe(by_series_id, series_id)
             for series_id, url in SERIES_IDS.items()
         ],
         axis=1,
@@ -1319,7 +1318,7 @@ def collect_usa_bea_labor() -> DataFrame:
     Labor Series: A4601C0, 1929--2013
     '''
     SERIES_ID, URL = 'A4601C', 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
-    return read_from_url_usa_bea(URL).pipe(pull_by_series_id, SERIES_ID)
+    return usa_bea(URL).pipe(by_series_id, SERIES_ID)
 
 
 def collect_usa_bea_labor_mfg() -> DataFrame:
@@ -1354,7 +1353,7 @@ def collect_usa_bea_labor_mfg() -> DataFrame:
     }
     df = pd.concat(
         [
-            read_from_url_usa_bea(url).pipe(pull_by_series_id, series_id)
+            usa_bea(url).pipe(by_series_id, series_id)
             for series_id, url in SERIES_IDS.items()
         ],
         axis=1,
@@ -1394,8 +1393,8 @@ def collect_usa_capital() -> DataFrame:
         [
             pd.concat(
                 [
-                    read_usa_hist(archive_name).pipe(
-                        pull_by_series_id, series_id)
+                    usa_hist(archive_name).pipe(
+                        by_series_id, series_id)
                     for series_id, archive_name in SERIES_IDS.items()
                 ],
                 axis=1,
@@ -1425,7 +1424,7 @@ def collect_usa_frb_fa() -> DataFrame:
     df.iloc[:, 1]      Real
     ================== =================================
     '''
-    df = read_usa_frb()
+    df = usa_frb()
     df['frb_nominal'] = ((df.iloc[:, 1].mul(df.iloc[:, 2]).div(df.iloc[:, 0])).add(
         df.iloc[:, 4].mul(df.iloc[:, 5]).div(df.iloc[:, 3]))).div(1000)
     df['frb_real'] = df.iloc[:, [2, 5]].sum(axis=1).div(1000)
@@ -1444,7 +1443,7 @@ def collect_usa_frb_fa_def() -> DataFrame:
     df.iloc[:, 0]      Deflator
     ================== =================================
     '''
-    df = read_usa_frb()
+    df = usa_frb()
     df['fa_def_frb'] = (df.iloc[:, [1, 4]].sum(axis=1)).div(
         df.iloc[:, [0, 3]].sum(axis=1))
     return df.iloc[:, [-1]]
@@ -1459,7 +1458,7 @@ def collect_usa_mcconnel(series_ids: tuple[str]) -> DataFrame:
     }
     return pd.concat(
         [
-            read_usa_mcconnel().pipe(pull_by_series_id, series_id).rename(
+            usa_hist().sort_index().pipe(by_series_id, series_id).rename(
                 columns={series_id: SERIES_IDS[series_id]})
             for series_id in series_ids
         ],
@@ -1533,8 +1532,8 @@ def collect_usa_production_two_fold() -> tuple[DataFrame]:
         [
             pd.concat(
                 [
-                    read_from_url_usa_bea(url).pipe(
-                        pull_by_series_id, series_id)
+                    usa_bea(url).pipe(
+                        by_series_id, series_id)
                     for series_id, url in SERIES_IDS.items()
                 ],
                 axis=1,
@@ -1557,7 +1556,7 @@ def collect_usa_production_two_fold() -> tuple[DataFrame]:
             # =================================================================
             # Capacity Utilization Series: CAPUTL.B50001.A, 1967--2012
             # =================================================================
-            read_usa_frb_g17().loc[:, [SERIES_ID]].dropna(axis=0),
+            usa_frb_g17().loc[:, [SERIES_ID]].dropna(axis=0),
         ],
         axis=1
     ).dropna(axis=0)
@@ -1604,7 +1603,7 @@ def collect_usa_production_three_fold() -> tuple[DataFrame]:
             # =================================================================
             # Fixed Assets: kcn31gd1es00, 1925--2016, Table 4.2. Chain-Type Quantity Indexes for Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
             # =================================================================
-            read_from_url_usa_bea(URL).pipe(pull_by_series_id, SERIES_ID),
+            usa_bea(URL).pipe(by_series_id, SERIES_ID),
             # =================================================================
             # Manufacturing Labor Series: _4313C0, 1929--2020
             # =================================================================
@@ -1612,7 +1611,7 @@ def collect_usa_production_three_fold() -> tuple[DataFrame]:
             # =================================================================
             # Manufacturing Series: FRB G17 IP, AIPMA_SA_IX, 1919--2018
             # =================================================================
-            read_usa_frb_us3().loc[:, ['AIPMA_SA_IX']],
+            usa_frb_us3().loc[:, ['AIPMA_SA_IX']],
         ],
         axis=1
     ).dropna(axis=0)
@@ -1623,7 +1622,7 @@ def collect_usa_production_three_fold() -> tuple[DataFrame]:
             # =================================================================
             # Capacity Utilization Series: CAPUTL.B50001.A, 1967--2012
             # =================================================================
-            read_usa_frb_g17().loc[:, [SERIES_ID]].dropna(axis=0),
+            usa_frb_g17().loc[:, [SERIES_ID]].dropna(axis=0),
         ],
         axis=1
     ).dropna(axis=0)
@@ -1743,7 +1742,7 @@ def transform_b(df: DataFrame) -> DataFrame:
     return df.iloc[:, [0, 6, 7, 20]].dropna(axis=0)
 
 
-def transform_c(df: DataFrame) -> DataFrame:
+def transform_production_money(df: DataFrame) -> DataFrame:
     df_production = df.iloc[:, [0, 6, 7]].dropna(axis=0)
     df_production = df_production.div(df_production.iloc[0, :])
     df_money = df.iloc[:, range(18, 20)].dropna(how='all')
@@ -2046,7 +2045,7 @@ def transform_kurenkov(data_testing: DataFrame) -> tuple[DataFrame]:
         [
             data_control.iloc[:, [0]],
             data_testing.loc[:, ['A191RX']],
-            read_usa_frb_us3().loc[:, ['AIPMA_SA_IX']],
+            usa_frb_us3().loc[:, ['AIPMA_SA_IX']],
         ],
         axis=1,
         sort=True
@@ -2081,7 +2080,7 @@ def transform_kurenkov(data_testing: DataFrame) -> tuple[DataFrame]:
     data_d = pd.concat(
         [
             data_control.iloc[:, [3]],
-            read_usa_frb_g17().loc[:, [SERIES_ID]].dropna(axis=0),
+            usa_frb_g17().loc[:, [SERIES_ID]].dropna(axis=0),
         ],
         axis=1,
         sort=True
@@ -2115,7 +2114,7 @@ def transform_sum(df: DataFrame) -> DataFrame:
     series_ids = sorted(set(df.iloc[:, 0]))
     df = pd.concat(
         [
-            df.pipe(pull_by_series_id, series_id).pipe(numerify)
+            df.pipe(by_series_id, series_id).pipe(numerify)
             for series_id in series_ids
         ],
         axis=1

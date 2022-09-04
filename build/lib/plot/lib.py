@@ -14,15 +14,15 @@ import pandas as pd
 from pandas import DataFrame
 from toolkit.lib import rolling_mean_filter
 from toolkit.lib import calculate_capital
-from extract.lib import extract_usa_census_description
-from extract.lib import extract_usa_census
+from extract.lib import usa_hist_description
+from extract.lib import usa_hist
 from collect.lib import transform_cobb_douglas
 
 
 ARCHIVE_NAMES_UTILISED = (
     'CHN_TUR_GDP.zip',
     'dataset_rus_m1.zip',
-    'dataset_usa_census1975.zip',
+    'dataset_uscb.zip',
 )
 FILE_NAMES_UTILISED = (
     'datasetAutocorrelation.txt',
@@ -347,11 +347,11 @@ def plot_census_c(df: DataFrame, base: tuple[int]) -> None:
 
 
 def plot_census_d(series_ids: tuple[str]) -> None:
-    ARCHIVE_NAME = 'dataset_usa_census1975.zip'
+    ARCHIVE_NAME = 'dataset_uscb.zip'
     df = DataFrame()
     for series_id in series_ids:
-        chunk = extract_usa_census(ARCHIVE_NAME, series_id)
-        descr = extract_usa_census_description(ARCHIVE_NAME, series_id)
+        chunk = usa_hist(ARCHIVE_NAME, series_id)
+        descr = usa_hist_description(ARCHIVE_NAME, series_id)
         print(f'<{series_id}> {descr}')
         df = pd.concat(
             [
@@ -447,11 +447,11 @@ def plot_census_g(df: DataFrame) -> None:
 def plot_census_h() -> None:
     '''Census 1975, Land in Farms'''
     _kwargs = {
-        'archive_name': 'dataset_usa_census1975.zip',
+        'archive_name': 'dataset_uscb.zip',
         'series_id': 'K0005',
     }
     plt.figure()
-    plt.plot(extract_usa_census(**_kwargs))
+    plt.plot(usa_hist(**_kwargs))
     plt.title('Land in Farms')
     plt.xlabel('Period')
     plt.ylabel('1,000 acres')
@@ -556,7 +556,7 @@ def plot_census_j(df: DataFrame) -> None:
 
 def plot_census_k() -> None:
     '''Census Financial Markets & Institutions Series'''
-    ARCHIVE_NAME = 'dataset_usa_census1975.zip'
+    ARCHIVE_NAME = 'dataset_uscb.zip'
     ids = itertools.chain(
         range(410, 424),
         range(580, 588),
@@ -567,9 +567,9 @@ def plot_census_k() -> None:
     )
     SERIES_IDS = tuple(f'X{_id:04n}' for id in ids)
     for _, series_id in enumerate(SERIES_IDS, start=1):
-        df = extract_usa_census(ARCHIVE_NAME, series_id)
+        df = usa_hist(ARCHIVE_NAME, series_id)
         df = df.div(df.iloc[0, :]).mul(100)
-        descr = extract_usa_census_description(ARCHIVE_NAME, series_id)
+        descr = usa_hist_description(ARCHIVE_NAME, series_id)
         plt.figure(_)
         plt.plot(df, label=series_id)
         plt.title('{}, {}$-${}'.format(descr, *df.index[[0, -1]]))

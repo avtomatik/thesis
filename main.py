@@ -33,13 +33,13 @@ from collect.lib import collect_usa_production_latest
 from collect.lib import construct_can
 from collect.lib import transform_a
 from collect.lib import transform_b
-from collect.lib import transform_c
+from collect.lib import transform_production_money
 from collect.lib import transform_cobb_douglas
 from collect.lib import transform_d
 from collect.lib import transform_e
 from collect.lib import transform_kurenkov
-from extract.lib import read_usa_hist
-from extract.lib import pull_by_series_id
+from read.lib import usa_hist
+from pull.lib import by_series_id
 from plot.lib import plot_a
 from plot.lib import plot_approx_linear
 from plot.lib import plot_approx_log_linear
@@ -347,7 +347,7 @@ def main():
     )
     for series_id in SERIES_IDS:
         print(f'Processing {series_id}')
-        df = read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
+        df = usa_hist(ARCHIVE_NAME).pipe(by_series_id, series_id)
         _df = df.copy()
         plot_pearson_r_test(_df)
         _df = df.copy()
@@ -372,7 +372,7 @@ def main():
     # =========================================================================
     # Project: Initial Version Dated: 16 June 2013
     # =========================================================================
-    df_c_a = transform_c(_df_a)
+    df_c_a = transform_production_money(_df_a)
     plot_c(df_c_a)
     # =========================================================================
     # Project: Initial Version Dated: 15 June 2015
@@ -440,7 +440,7 @@ def main():
     # =========================================================================
     SERIES_ID, ARCHIVE_NAME = 'J0014', 'dataset_uscb.zip'
 
-    df = read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, SERIES_ID)
+    df = usa_hist(ARCHIVE_NAME).pipe(by_series_id, SERIES_ID)
     _df = df.copy()
     plot_growth_elasticity(_df)
     _df = df.copy()

@@ -36,8 +36,8 @@ def main():
         'CDT2S3': 'dataset_usa_cobb-douglas.zip'
     }
     SERIES_IDS = {
-        'P0107': 'dataset_usa_census1975.zip',
-        'P0110': 'dataset_usa_census1975.zip'
+        'P0107': 'dataset_uscb.zip',
+        'P0110': 'dataset_uscb.zip'
     }
 
     # =============================================================================

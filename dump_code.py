@@ -16,10 +16,10 @@ import pandas as pd
 from pandas import DataFrame
 from extract.lib import (
     read_manager_can_former,
-    read_from_url_usa_bea,
-    read_usa_bea,
+    usa_bea,
+    usa_bea_former,
     pull_can_quarter_former,
-    pull_by_series_id,
+    by_series_id,
 )
 
 
@@ -129,7 +129,7 @@ def test_data_capital_combined_archived():
         # =====================================================================
         # TODO: UPDATE ACCORDING TO NEW SIGNATURE
         # =====================================================================
-        [read_usa_bea(**kwargs) for kwargs in KWARGS],
+        [usa_bea_former(**kwargs) for kwargs in KWARGS],
         axis=1,
         sort=True
     )
@@ -153,7 +153,7 @@ def test_data_capital_combined_archived():
         # =====================================================================
         # TODO: UPDATE ACCORDING TO NEW SIGNATURE
         # =====================================================================
-        [read_usa_bea(**kwargs) for kwargs in KWARGS],
+        [usa_bea_former(**kwargs) for kwargs in KWARGS],
         axis=1,
         sort=True
     )
@@ -188,7 +188,7 @@ def test_data_capital_combined_archived():
         # =====================================================================
         # TODO: UPDATE ACCORDING TO NEW SIGNATURE
         # =====================================================================
-        [read_usa_bea(**kwargs) for kwargs in KWARGS],
+        [usa_bea_former(**kwargs) for kwargs in KWARGS],
         axis=1,
         sort=True
     )
@@ -212,7 +212,7 @@ def test_data_capital_combined_archived():
         # =====================================================================
         # TODO: UPDATE ACCORDING TO NEW SIGNATURE
         # =====================================================================
-        [read_usa_bea(**kwargs) for kwargs in KWARGS],
+        [usa_bea_former(**kwargs) for kwargs in KWARGS],
         axis=1,
         sort=True
     )
@@ -421,12 +421,12 @@ def collect_usa_xlsm() -> DataFrame:
         # =====================================================================
         'A032RC',
     )
-    _df = read_from_url_usa_bea(URL)
+    _df = usa_bea(URL)
     return pd.concat(
         [
             pd.concat(
                 [
-                    pull_by_series_id(_df, series_id)
+                    by_series_id(_df, series_id)
                     for series_id in SERIES_IDS
                 ],
                 axis=1
@@ -480,7 +480,7 @@ def collect_bea_gdp() -> DataFrame:
     }
     return pd.concat(
         [
-            pull_by_series_id(read_from_url_usa_bea(url), series_id)
+            by_series_id(usa_bea(url), series_id)
             for series_id, url in SERIES_IDS.items()
         ],
         axis=1
@@ -510,7 +510,7 @@ def collect_capital_combined_archived() -> DataFrame:
         [
             pd.concat(
                 [
-                    pull_by_series_id(read_from_url_usa_bea(url), series_id)
+                    by_series_id(usa_bea(url), series_id)
                     for series_id, url in SERIES_IDS.items()
                 ],
                 axis=1,
@@ -556,7 +556,7 @@ kwargs = {
     'sh_name': '50900 Ann',
 }
 SERIES_ID = 'K160021'
-_df_sub_a = read_usa_bea(**kwargs).loc[:, [SERIES_ID]]
+_df_sub_a = usa_bea_former(**kwargs).loc[:, [SERIES_ID]]
 
 # =============================================================================
 # Not Clear
@@ -578,7 +578,7 @@ kwargs = {
     'sh_name': '303ES Ann',
 }
 SERIES_ID = 'k3n31gd1es000'
-_df_semi_c = read_usa_bea(**kwargs).loc[:, [SERIES_ID]]
+_df_semi_c = usa_bea_former(**kwargs).loc[:, [SERIES_ID]]
 KWARGS = (
     # =========================================================================
     # Nominal Gross Domestic Product Series: A191RC1, 1929--1969
@@ -599,7 +599,7 @@ KWARGS = (
 )
 SERIES_ID = 'A191RC1'
 _df_semi_d = pd.concat(
-    [read_usa_bea(**kwargs).loc[:, [SERIES_ID]] for kwargs in KWARGS],
+    [usa_bea_former(**kwargs).loc[:, [SERIES_ID]] for kwargs in KWARGS],
     sort=True
 ).drop_duplicates()
 # =============================================================================

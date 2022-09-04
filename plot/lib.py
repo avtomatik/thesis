@@ -24,11 +24,11 @@ from pandas.plotting import (
 from collect.lib import transform_cobb_douglas
 from extract.lib import (
     pull_series_ids,
-    pull_by_series_id,
-    read_usa_hist,
-    read_pull_uscb_description,
+    by_series_id,
+    usa_hist,
+    pull_uscb_description,
     read_usa_nber,
-    read_worldbank,
+    worldbank,
 )
 from toolkit.lib import (
     calculate_capital,
@@ -367,7 +367,7 @@ def plot_uscb_commodities(series_ids: tuple[str]) -> None:
     ARCHIVE_NAME = 'dataset_uscb.zip'
     df = DataFrame()
     for series_id in series_ids:
-        chunk = read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id).sort_index()
+        chunk = usa_hist(ARCHIVE_NAME).pipe(by_series_id, series_id).sort_index()
         df = pd.concat(
             [
                 df,
@@ -377,7 +377,7 @@ def plot_uscb_commodities(series_ids: tuple[str]) -> None:
             sort=True
         )
     for series_id in series_ids:
-        print(f'<{series_id}> {read_pull_uscb_description(series_id)}')
+        print(f'<{series_id}> {pull_uscb_description(series_id)}')
     _title = 'Series P 231$-$300. Physical Output of Selected Manufactured Commodities: {}$-${}'.format(
         *df.index[[0, -1]]
     )
@@ -470,9 +470,9 @@ def plot_uscb_farm_lands() -> None:
         'series_id': 'K0005',
     }
     plt.figure()
-    plt.plot(read_usa_hist(**_kwargs))
+    plt.plot(usa_hist(**_kwargs))
     # =========================================================================
-    # read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
+    # usa_hist(ARCHIVE_NAME).pipe(by_series_id, series_id)
     # =========================================================================
     plt.title('Land in Farms')
     plt.xlabel('Period')
@@ -589,12 +589,12 @@ def plot_uscb_finance() -> None:
     )
     SERIES_IDS = tuple(f'X{_id:04n}' for _id in ids)
     for _, series_id in enumerate(SERIES_IDS, start=1):
-        df = read_usa_hist(ARCHIVE_NAME, series_id)
+        df = usa_hist(ARCHIVE_NAME, series_id)
         # =====================================================================
-        # read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
+        # usa_hist(ARCHIVE_NAME).pipe(by_series_id, series_id)
         # =====================================================================
         df = df.div(df.iloc[0, :]).mul(100)
-        descr = read_pull_uscb_description(series_id)
+        descr = pull_uscb_description(series_id)
         plt.figure(_)
         plt.plot(df, label=series_id)
         plt.title('{}, {}$-${}'.format(descr, *df.index[[0, -1]]))
@@ -944,7 +944,8 @@ def plot_built_in() -> None:
         # =====================================================================
         lag_plot,
     )
-    _df = read_worldbank()
+    SOURCE_ID = 'NY.GDP.MKTP.CD'
+    _df = worldbank(SOURCE_ID)
     for func in FUNCTIONS:
         for _, country in enumerate(_df.columns, start=1):
             chunk = _df.loc[:, [country]].dropna()
@@ -1430,9 +1431,9 @@ def plot_douglas(
             plt.figure(_n)
             for _ in range(_lw, _up, skip):
                 plt.plot(
-                    read_usa_hist(archive_name, _SERIES_IDS[_]),
+                    usa_hist(archive_name, _SERIES_IDS[_]),
                     # =========================================================
-                    # read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
+                    # usa_hist(ARCHIVE_NAME).pipe(by_series_id, series_id)
                     # =========================================================
                     label=_MAP_SERIES[_SERIES_IDS[_]]
                 )
@@ -1456,9 +1457,9 @@ def plot_douglas(
             plt.figure(_n)
             for _ in range(_lw, _up, skip):
                 plt.plot(
-                    read_usa_hist(archive_name, _SERIES_IDS[_]),
+                    usa_hist(archive_name, _SERIES_IDS[_]),
                     # =========================================================
-                    # read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
+                    # usa_hist(ARCHIVE_NAME).pipe(by_series_id, series_id)
                     # =========================================================
                     label=_MAP_SERIES[_SERIES_IDS[_]]
                 )
@@ -1684,7 +1685,7 @@ def plot_grigoriev() -> None:
     }
     df = pd.read_csv(**kwargs).sort_index()
     for series_id in sorted(set(df.iloc[:, 0])):
-        df.pipe(pull_by_series_id, series_id).plot(grid=True)
+        df.pipe(by_series_id, series_id).plot(grid=True)
 
 
 def plot_growth_elasticity(df: DataFrame) -> None:

@@ -270,7 +270,7 @@ def test_douglas() -> None:
     '''
     _kwargs = (
         {
-            'archive_name': 'dataset_usa_census1949.zip',
+            'archive_name': 'dataset_uscb.zip',
             'series_id': 'J0014',
         },
         {
@@ -280,7 +280,7 @@ def test_douglas() -> None:
     )
     df = pd.concat(
         [
-            partial(extract_usa_census, **_kwargs[0])(),
+            partial(usa_hist, **_kwargs[0])(),
             partial(extract_usa_classic, **_kwargs[1])(),
         ],
         axis=1

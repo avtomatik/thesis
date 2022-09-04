@@ -10,7 +10,7 @@ import os
 from collect.lib import collect_usa_general
 from collect.lib import transform_a
 from collect.lib import transform_b
-from collect.lib import transform_c
+from collect.lib import transform_production_money
 from collect.lib import transform_d
 from collect.lib import transform_e
 from collect.lib import transform_kurenkov
@@ -40,7 +40,7 @@ def main():
     # =========================================================================
     # Project: Initial Version Dated: 16 June 2013
     # =========================================================================
-    df_c_a = transform_c(_df_a)
+    df_c_a = transform_production_money(_df_a)
     plot_c(df_c_a)
     # =========================================================================
     # Project: Initial Version Dated: 15 June 2015

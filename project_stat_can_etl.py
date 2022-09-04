@@ -8,7 +8,9 @@ Created on Sat Sep 18 22:20:54 2021
 
 import os
 import pandas as pd
-from toolkit.lib import build_load_data_frame
+from pandas import DataFrame
+from extract.lib import extract_can_from_url
+from toolkit.lib import build_load_data_frame, string_to_url
 
 # =============================================================================
 # Capital
@@ -72,24 +74,6 @@ from toolkit.lib import build_load_data_frame
 # =============================================================================
 
 
-def string_to_url(string: str) -> str:
-    '''
-    TODO: Move to Fit Module
-
-    Parameters
-    ----------
-    string : str
-        DESCRIPTION.
-
-    Returns
-    -------
-    str
-        DESCRIPTION.
-
-    '''
-    return f'https://www150.statcan.gc.ca/n1/tbl/csv/{string}'
-
-
 def string_to_numeric(string: str) -> float:
     '''
     TODO: Move to Fit Module
@@ -107,6 +91,38 @@ def string_to_numeric(string: str) -> float:
     '''
     y, m = string.split('-')
     return int(y) + (int(m) - 0.5) / 12
+
+
+def build_load_data_frame(file_name: str, blueprint: dict) -> None:
+    '''
+    Builds DataFrame & Loads It To Excel
+
+    Parameters
+    ----------
+    file_name : str
+        Excel File Name.
+    blueprint : dict
+        DESCRIPTION.
+
+    Returns
+    -------
+    None
+    '''
+    df = DataFrame()
+    for item in blueprint:
+        _df = extract_can_from_url(
+            string_to_url(item['file_name']),
+            index_col=0,
+            usecols=range(14),
+            parse_dates=True
+        )
+        _df = _df[_df['VECTOR'].isin(item['series_ids'])]
+        for series_id in item['series_ids']:
+            chunk = _df[_df['VECTOR'] == series_id][['VALUE']]
+            chunk = chunk.groupby(chunk.index.year).mean()
+            df = pd.concat([df, chunk], axis=1, sort=True)
+        df.columns = item['series_ids']
+    # df.to_excel(file_name)
 
 
 CAPITAL = (
@@ -304,6 +320,8 @@ PRODUCT = (
 
 def main():
     DIR = '/home/alexander/science'
+    DIR = '/home/alexander/Downloads'
+    os.chdir(DIR)
     FILE_NAME = 'stat_can_desc.xlsx'
     FILE_NAMES = (
         'stat_can_cap.xlsx',
@@ -312,14 +330,12 @@ def main():
     )
     _FILE_NAME = 'stat_can_desc.xlsx'
 
-    # =============================================================================
-    # # =============================================================================
-    # # Construct Excel File from Specification
-    # # =============================================================================
-    # MAP_FILES = dict(zip(FILE_NAMES, (CAPITAL, LABOUR, PRODUCT)))
-    # for file_name, criteria in MAP_FILES.items():
-    #     build_load_data_frame(file_name, criteria)
-    # =============================================================================
+    # =========================================================================
+    # Construct Excel File from Specification
+    # =========================================================================
+    MAP_FILES = dict(zip(FILE_NAMES, (CAPITAL, LABOUR, PRODUCT)))
+    for file_name, blueprint in MAP_FILES.items():
+        build_load_data_frame(file_name, blueprint)
 
     # =============================================================================
     # # =============================================================================

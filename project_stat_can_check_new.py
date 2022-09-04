@@ -8,7 +8,7 @@ Created on Wed Sep  1 21:22:23 2021
 
 import os
 import pandas as pd
-from extract.lib import read_manager_can
+from read.lib import read_manager_can
 
 
 def url_to_file_name(_url: str) -> str:

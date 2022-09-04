@@ -7,18 +7,18 @@ Created on Sat Nov 16 20:45:44 2019
 
 
 import os
-from extract.lib import read_usa_hist
-from extract.lib import pull_by_series_id
+from read.lib import usa_hist
+from pull.lib import by_series_id
 from plot.lib import plot_rolling_mean_filter
 from plot.lib import plot_growth_elasticity
 
 
 def main():
     DIR = '/media/alexander/321B-6A94'
-    ARCHIVE_NAME, SERIES_ID = 'dataset_usa_census1949.zip', 'J0014'
+    ARCHIVE_NAME, SERIES_ID = 'dataset_uscb.zip', 'J0014'
 
     os.chdir(DIR)
-    df = read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, SERIES_ID)
+    df = usa_hist(ARCHIVE_NAME).pipe(by_series_id, SERIES_ID)
     plot_growth_elasticity(df)
     plot_rolling_mean_filter(df)
 

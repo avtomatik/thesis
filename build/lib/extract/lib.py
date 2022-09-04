@@ -320,7 +320,7 @@ def extract_usa_bls(file_name, series_id: str) -> DataFrame:
     return df.set_index(df.columns[0])
 
 
-def extract_usa_census(archive_name: str, series_id: str) -> DataFrame:
+def usa_hist(archive_name: str, series_id: str) -> DataFrame:
     '''
     Selected Series by U.S. Bureau of the Census
     U.S. Bureau of the Census, Historical Statistics of the United States,
@@ -337,7 +337,7 @@ def extract_usa_census(archive_name: str, series_id: str) -> DataFrame:
     return df.groupby(df.columns[0]).mean()
 
 
-def extract_usa_census_description(archive_name: str, series_id: str) -> str:
+def usa_hist_description(archive_name: str, series_id: str) -> str:
     '''Retrieve Series Description U.S. Bureau of the Census'''
     FLAG = 'no_details'
     _df = pd.read_csv(
