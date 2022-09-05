@@ -17,7 +17,7 @@ from pandas import DataFrame
 
 
 @cache
-def can_cansim(archive_id: int) -> DataFrame:
+def read_can(archive_id: int) -> DataFrame:
     '''
 
 
@@ -106,7 +106,7 @@ def can_cansim(archive_id: int) -> DataFrame:
 
 
 @cache
-def usa_bea(url: str) -> DataFrame:
+def read_usa_bea(url: str) -> DataFrame:
     '''
     Retrieves U.S. Bureau of Economic Analysis DataFrame from URL
 
@@ -137,7 +137,7 @@ def usa_bea(url: str) -> DataFrame:
 
 
 @cache
-def usa_bea_former(archive_name: str, wb_name: str, sh_name: str) -> DataFrame:
+def read_usa_bea_excel(archive_name: str, wb_name: str, sh_name: str) -> DataFrame:
     '''
     Retrieves DataFrame from Bureau of Economic Analysis Zip Archives
 
@@ -173,7 +173,7 @@ def usa_bea_former(archive_name: str, wb_name: str, sh_name: str) -> DataFrame:
         return pd.read_excel(**kwargs).dropna(axis=0).transpose()
 
 
-def usa_bls(file_name: str) -> DataFrame:
+def read_usa_bls(file_name: str) -> DataFrame:
     '''
     Bureau of Labor Statistics Data Fetch
 
@@ -204,7 +204,7 @@ def usa_bls(file_name: str) -> DataFrame:
     return _df[_df.loc[:, 'sub_period'] == 'M13'].loc[:, ('series_id', 'value')]
 
 
-def usa_frb() -> DataFrame:
+def read_usa_frb() -> DataFrame:
     '''
 
 
@@ -233,7 +233,7 @@ def usa_frb() -> DataFrame:
     return pd.read_csv(**kwargs).transpose()
 
 
-def usa_frb_g17() -> DataFrame:
+def read_usa_frb_g17() -> DataFrame:
     '''
 
 
@@ -268,7 +268,7 @@ def usa_frb_g17() -> DataFrame:
     return pd.read_csv(**kwargs).transpose()
 
 
-def usa_frb_ms() -> DataFrame:
+def read_usa_frb_ms() -> DataFrame:
     '''
     Money Stock Measures (H.6) Series
 
@@ -297,7 +297,7 @@ def usa_frb_ms() -> DataFrame:
     return _df.groupby(_df.index.year).mean()
 
 
-def usa_frb_us3() -> DataFrame:
+def read_usa_frb_us3() -> DataFrame:
     '''
 
 
@@ -334,7 +334,7 @@ def usa_frb_us3() -> DataFrame:
     return _df.groupby(_df.index.year).mean()
 
 
-def usa_fred(series_id: str) -> DataFrame:
+def read_usa_fred(series_id: str) -> DataFrame:
     '''
     ('PPIACO', 'PRIME',)
 
@@ -359,7 +359,7 @@ def usa_fred(series_id: str) -> DataFrame:
 
 
 @cache
-def usa_hist(archive_name: str) -> DataFrame:
+def read_usa_hist(archive_name: str) -> DataFrame:
     '''
     Extract Data from Enumerated Historical Datasets
     Parameters
@@ -402,7 +402,7 @@ def read_usa_nber(file_name: str, agg: str) -> DataFrame:
     return _df.groupby(_df.columns[0]).sum()
 
 
-def worldbank(source_id: str) -> DataFrame:
+def read_worldbank(source_id: str) -> DataFrame:
     _url = f'https://api.worldbank.org/v2/en/indicator/{source_id}?downloadformat=csv'
     with ZipFile(io.BytesIO(requests.get(_url).content)) as archive:
         _map = {_.file_size: _.filename for _ in archive.filelist}
@@ -416,5 +416,4 @@ def worldbank(source_id: str) -> DataFrame:
                 'skiprows': 4
             }
             _df = pd.read_csv(**kwargs).dropna(axis=1, how='all').transpose()
-            _df.drop(_df.index[:3], inplace=True)
-            return _df.rename_axis('period')
+            return _df.drop(_df.index[:3]).rename_axis('period')

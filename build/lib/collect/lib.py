@@ -11,11 +11,11 @@ import numpy as np
 import pandas as pd
 from functools import partial
 from pandas import DataFrame
-from read.lib import usa_hist
-from extract.lib import usa_hist
-from extract.lib import extract_usa_bea
-from extract.lib import extract_usa_bea_from_url
-from extract.lib import extract_usa_bea_from_loaded
+from read.lib import read_usa_hist
+from read.lib import read_usa_hist
+from read.lib import read_usa_bea_excel
+from extract.lib import read_usa_bea
+from extract.lib import pull_by_series_id
 from extract.lib import extract_usa_mcconnel
 from extract.lib import extract_can_annual
 from toolkit.lib import price_inverse_single
@@ -91,7 +91,7 @@ def collect_archived() -> DataFrame:
         [
             pd.concat(
                 [
-                    extract_usa_bea(ARCHIVE_NAMES[0], _wb, _sh, _id)
+                    read_usa_bea_excel(ARCHIVE_NAMES[0], _wb, _sh, _id)
                     for _wb, _sh, _id in zip(tuple(WB_NAMES[2*(_ // 2)] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
                 ],
                 axis=1,
@@ -99,7 +99,7 @@ def collect_archived() -> DataFrame:
             ),
             pd.concat(
                 [
-                    extract_usa_bea(ARCHIVE_NAMES[1], _wb, _sh, _id)
+                    read_usa_bea_excel(ARCHIVE_NAMES[1], _wb, _sh, _id)
                     for _wb, _sh, _id in zip(tuple(WB_NAMES[1 + 2*(_ // 2)] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
                 ],
                 axis=1,
@@ -182,7 +182,7 @@ def collect_bea_gdp():
         [
             pd.concat(
                 [
-                    extract_usa_bea(ARCHIVE_NAMES[0], WB_NAMES[0], sh, _id)
+                    read_usa_bea_excel(ARCHIVE_NAMES[0], WB_NAMES[0], sh, _id)
                     for sh, _id in zip(SH_NAMES, SERIES_IDS)
                 ],
                 axis=1,
@@ -190,7 +190,7 @@ def collect_bea_gdp():
             ),
             pd.concat(
                 [
-                    extract_usa_bea(ARCHIVE_NAMES[1], WB_NAMES[1], sh, _id)
+                    read_usa_bea_excel(ARCHIVE_NAMES[1], WB_NAMES[1], sh, _id)
                     for sh, _id in zip(SH_NAMES, SERIES_IDS)
                 ],
                 axis=1,
@@ -201,11 +201,11 @@ def collect_bea_gdp():
     ).drop_duplicates()
 
 
-def collect_brown() -> DataFrame:
+def collect_usa_brown() -> DataFrame:
     # =========================================================================
-    # Fetch Data from `Reference RU Brown M. 0597_088.pdf`, Page 193
+    # Fetch Data from <reference_ru_brown_m_0597_088.pdf>, Page 193
     # Dependent on `extract_usa_classic`
-    # Out of Kendrick J.W. Data & Table 2. of `Reference RU Brown M. 0597_088.pdf`
+    # Out of Kendrick J.W. Data & Table 2. of <reference_ru_brown_m_0597_088.pdf>
     # =========================================================================
     # =========================================================================
     # FN:Murray Brown
@@ -561,7 +561,7 @@ def collect_capital_combined_archived():
         [
             pd.concat(
                 [
-                    extract_usa_bea(ARCHIVE_NAMES[0], _wb, _sh, _id)
+                    read_usa_bea_excel(ARCHIVE_NAMES[0], _wb, _sh, _id)
                     for _wb, _sh, _id in zip(
                         tuple(WB_NAMES[2*(_ // len(SH_NAMES))]
                               for _ in range(len(SERIES_IDS))),
@@ -575,7 +575,7 @@ def collect_capital_combined_archived():
             ),
             pd.concat(
                 [
-                    extract_usa_bea(ARCHIVE_NAMES[1], _wb, _sh, _id)
+                    read_usa_bea_excel(ARCHIVE_NAMES[1], _wb, _sh, _id)
                     for _wb, _sh, _id in zip(
                         tuple(WB_NAMES[1 + 2*(_ // len(SH_NAMES))]
                               for _ in range(len(SERIES_IDS))),
@@ -653,7 +653,7 @@ def collect_capital_purchases() -> DataFrame:
         )[series_id.startswith('P')] for series_id in SERIES_IDS
     ]
     data_frame_ = pd.concat(
-        [usa_hist(*_[:2]).mul(_[-1]) for _ in _args],
+        [read_usa_hist(*_[:2]).mul(_[-1]) for _ in _args],
         axis=1,
         sort=True
     )
@@ -690,7 +690,7 @@ def collect_census_a():
         'P0017',)
     _args = [tuple((ARCHIVE_NAMES[1], series_id,)) if series_id.startswith(
         'P') else tuple((ARCHIVE_NAMES[0], series_id,)) for series_id in SERIES_IDS]
-    df = pd.concat([usa_hist(*_) for _ in _args], axis=1, sort=True)
+    df = pd.concat([read_usa_hist(*_) for _ in _args], axis=1, sort=True)
     df = df.div(df.loc[1899, :]).mul(100)
     return df, df.index.get_loc(1899)
 
@@ -716,7 +716,7 @@ def collect_census_b_a():
     _args = [(tuple((ARCHIVE_NAMES[0], series_id, 1,)), tuple((ARCHIVE_NAMES[1], series_id, 1000,)))[
         series_id.startswith('P')] for series_id in SERIES_IDS]
     df = pd.concat(
-        [usa_hist(*_[:2]).mul(_[-1]) for _ in _args],
+        [read_usa_hist(*_[:2]).mul(_[-1]) for _ in _args],
         axis=1,
         sort=True
     ).truncate(before=1875)
@@ -747,7 +747,7 @@ def collect_census_b_b():
         'P0118',  # 1958=100
     )
     _df = pd.concat(
-        [usa_hist(ARCHIVE_NAME, series_id)
+        [read_usa_hist(ARCHIVE_NAME, series_id)
          for series_id in SERIES_IDS],
         axis=1,
         sort=True
@@ -785,7 +785,7 @@ def collect_census_c() -> tuple[DataFrame, tuple[int]]:
     BASE_YEARS = (1875, 1875, 1875, 1875, 1875, 1909, 1880, 1875, 1875,)
     df = pd.concat(
         [
-            usa_hist(ARCHIVE_NAME, series_id)
+            read_usa_hist(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -809,7 +809,7 @@ def collect_census_e() -> DataFrame:
     SERIES_IDS = tuple(f'C{_id:04n}' for id in ids)
     df = pd.concat(
         [
-            usa_hist(ARCHIVE_NAME, series_id)
+            read_usa_hist(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -826,7 +826,7 @@ def collect_census_f() -> DataFrame:
     SERIES_IDS = ('D0085', 'D0086', 'D0796', 'D0797', 'D0977', 'D0982',)
     df = pd.concat(
         [
-            usa_hist(ARCHIVE_NAME, series_id)
+            read_usa_hist(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -844,7 +844,7 @@ def collect_census_g() -> DataFrame:
     SERIES_IDS = ('F0003', 'F0004',)
     df = pd.concat(
         [
-            usa_hist(ARCHIVE_NAME, series_id)
+            read_usa_hist(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -859,7 +859,7 @@ def collect_census_i_a() -> DataFrame:
     SERIES_IDS = ('U0001', 'U0008', 'U0015',)
     return pd.concat(
         [
-            usa_hist(ARCHIVE_NAME, series_id)
+            read_usa_hist(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -873,7 +873,7 @@ def collect_census_i_b() -> DataFrame:
     SERIES_IDS = ('U0187', 'U0188', 'U0189',)
     return pd.concat(
         [
-            usa_hist(ARCHIVE_NAME, series_id)
+            read_usa_hist(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -895,7 +895,7 @@ def collect_census_i_c() -> DataFrame:
     SERIES_IDS = tuple(f'U{_id:04n}' for _id in ids)
     df = pd.concat(
         [
-            usa_hist(ARCHIVE_NAME, series_id)
+            read_usa_hist(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -924,7 +924,7 @@ def collect_census_j() -> DataFrame:
     SERIES_IDS = ('X0410', 'X0414', 'X0415',)
     df = pd.concat(
         [
-            usa_hist(ARCHIVE_NAME, series_id)
+            read_usa_hist(ARCHIVE_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,
@@ -938,7 +938,7 @@ def collect_census_price() -> DataFrame:
     SERIES_IDS = ('P0107', 'P0110')
     df = pd.concat(
         [
-            usa_hist(ARCHIVE_NAME, series_id) for series_id in SERIES_IDS
+            read_usa_hist(ARCHIVE_NAME, series_id) for series_id in SERIES_IDS
         ],
         axis=1
     )
@@ -1076,7 +1076,7 @@ def collect_cobb_douglas_deflator():
         [
             pd.concat(
                 [
-                    usa_hist(**{
+                    read_usa_hist(**{
                         'archive_name': archive_name,
                         'series_id': series_id,
                     })
@@ -1087,7 +1087,7 @@ def collect_cobb_douglas_deflator():
             ),
             pd.concat(
                 [
-                    usa_hist(**{
+                    read_usa_hist(**{
                         'archive_name': archive_name,
                         'series_id': series_id,
                     })
@@ -1103,7 +1103,7 @@ def collect_cobb_douglas_deflator():
     # =========================================================================
     # Bureau of Economic Analysis
     # =========================================================================
-    _df = extract_usa_bea_from_url(URL)
+    _df = read_usa_bea(URL)
     df = pd.concat(
         [
             # =================================================================
@@ -1115,7 +1115,7 @@ def collect_cobb_douglas_deflator():
             # =================================================================
             pd.concat(
                 [
-                    extract_usa_bea_from_loaded(**{
+                    pull_by_series_id(**{
                         'df': _df,
                         'series_id': series_id,
                     }
@@ -1220,37 +1220,37 @@ def collect_cobb_douglas_extension_labor():
         # =====================================================================
         'CDT3S1',
         # =====================================================================
-        # Census Bureau 1949, D69
+        # Bureau of the Census 1949, D69
         # =====================================================================
         'D0069',
         # =====================================================================
-        # Census Bureau 1949, J4
+        # Bureau of the Census 1949, J4
         # =====================================================================
         'J0004',
         # =====================================================================
-        # Census Bureau 1975, D130
+        # Bureau of the Census 1975, D130
         # =====================================================================
         'D0130',
         # =====================================================================
-        # Census Bureau 1975, P5
+        # Bureau of the Census 1975, P5
         # =====================================================================
         'P0005',
         # =====================================================================
-        # Census Bureau 1975, P62
+        # Bureau of the Census 1975, P62
         # =====================================================================
         'P0062',
         # =====================================================================
-        # J.W. Kendrick, Productivity Trends in the United States, Table D-II, `Persons Engaged` Column, pp. 465--466
+        # Kendrick J.W., Productivity Trends in the United States, Table D-II, `Persons Engaged` Column, pp. 465--466
         # =====================================================================
         'KTD02S02',
     )
     FUNCTIONS = (
         extract_usa_classic,
-        usa_hist,
-        usa_hist,
-        usa_hist,
-        usa_hist,
-        usa_hist,
+        read_usa_hist,
+        read_usa_hist,
+        read_usa_hist,
+        read_usa_hist,
+        read_usa_hist,
         extract_usa_classic,
     )
     df = pd.concat(
@@ -1265,7 +1265,7 @@ def collect_cobb_douglas_extension_labor():
     # =========================================================================
     # Bureau of Economic Analysis, H4313C & J4313C & A4313C & N4313C
     # =========================================================================
-    _df = extract_usa_bea_from_url(URL)
+    _df = read_usa_bea(URL)
     SERIES_IDS = (
         'H4313C',
         'J4313C',
@@ -1274,7 +1274,7 @@ def collect_cobb_douglas_extension_labor():
     )
     data_nipa = pd.concat(
         [
-            extract_usa_bea_from_loaded(_df, series_id) for series_id in SERIES_IDS
+            pull_by_series_id(_df, series_id) for series_id in SERIES_IDS
         ],
         axis=1,
         sort=True
@@ -1286,7 +1286,7 @@ def collect_cobb_douglas_extension_labor():
             df,
             data_nipa,
             # =================================================================
-            # Yu.V. Kurenkov
+            # Kurenkov Yu.V.
             # =================================================================
             pd.read_csv(FILE_NAME, index_col=0, usecols=[0, 2]),
         ],
@@ -1324,9 +1324,9 @@ def collect_cobb_douglas_extension_product():
         'DT24AS01',
     )
     FUNCTIONS = (
-        usa_hist,
-        usa_hist,
-        usa_hist,
+        read_usa_hist,
+        read_usa_hist,
+        read_usa_hist,
         extract_usa_classic,
     )
     df = pd.concat(
@@ -1412,8 +1412,8 @@ def collect_cobb_douglas(series_number: int = 3) -> DataFrame:
     FUNCTIONS = (
         extract_usa_classic,
         extract_usa_classic,
-        usa_hist,
-        usa_hist,
+        read_usa_hist,
+        read_usa_hist,
         extract_usa_classic,
     )
     df = pd.concat(
@@ -1435,7 +1435,7 @@ def collect_combined():
     # TODO: Refactor It
     # =========================================================================
     URL = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
-    _data = extract_usa_bea_from_url(URL)
+    _data = read_usa_bea(URL)
     SERIES_IDS = (
         'A006RC',
         'A006RD',
@@ -1450,7 +1450,7 @@ def collect_combined():
     )
     _data_nipa = pd.concat(
         [
-            extract_usa_bea_from_loaded(_data, _id) for _id in SERIES_IDS
+            pull_by_series_id(_data, _id) for _id in SERIES_IDS
         ],
         axis=1,
         sort=True
@@ -1463,7 +1463,7 @@ def collect_combined():
     )
     _labor_frame = pd.concat(
         [
-            extract_usa_bea_from_loaded(_data, _id) for _id in SERIES_IDS
+            pull_by_series_id(_data, _id) for _id in SERIES_IDS
         ],
         axis=1,
         sort=True
@@ -1484,7 +1484,7 @@ def collect_combined():
     # =========================================================================
     _data_sfat = pd.concat(
         [
-            extract_usa_bea(_archive, _wb, SH_NAME, SERIES_ID) for _archive, _wb in zip(ARCHIVE_NAMES, WB_NAMES)
+            read_usa_bea_excel(_archive, _wb, SH_NAME, SERIES_ID) for _archive, _wb in zip(ARCHIVE_NAMES, WB_NAMES)
         ],
         sort=True
     ).drop_duplicates()
@@ -1527,7 +1527,7 @@ def collect_combined():
     )
     _data_sfat_ = pd.concat(
         [
-            extract_usa_bea(ARCHIVE_NAME, _wb, _sh, _id) for _wb, _sh, _id in zip(
+            read_usa_bea_excel(ARCHIVE_NAME, _wb, _sh, _id) for _wb, _sh, _id in zip(
                 tuple(WB_NAMES[_ // 3] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
         ],
         axis=1,
@@ -1626,7 +1626,7 @@ def collect_combined_archived():
         [
             pd.concat(
                 [
-                    extract_usa_bea(ARCHIVE_NAMES[0], _wb, _sh, _id) for _wb, _sh, _id in zip(
+                    read_usa_bea_excel(ARCHIVE_NAMES[0], _wb, _sh, _id) for _wb, _sh, _id in zip(
                         tuple(WB_NAMES[2*(_ // 8)] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
                 ],
                 axis=1,
@@ -1634,7 +1634,7 @@ def collect_combined_archived():
             ),
             pd.concat(
                 [
-                    extract_usa_bea(ARCHIVE_NAMES[1], _wb, _sh, _id) for _wb, _sh, _id in zip(
+                    read_usa_bea_excel(ARCHIVE_NAMES[1], _wb, _sh, _id) for _wb, _sh, _id in zip(
                         tuple(WB_NAMES[1 + 2*(_ // 8)] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
                 ],
                 axis=1,
@@ -1679,7 +1679,7 @@ def collect_combined_archived():
     )
     _data_sfat = pd.concat(
         [
-            extract_usa_bea(ARCHIVE_NAME, _wb, _sh, _id) for _wb, _sh, _id in zip(
+            read_usa_bea_excel(ARCHIVE_NAME, _wb, _sh, _id) for _wb, _sh, _id in zip(
                 tuple(WB_NAMES[_ // 3] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
         ],
         axis=1,
@@ -1707,7 +1707,7 @@ def collect_combined_archived():
             # Labor Series
             # =================================================================
             collect_usa_bea_labor_mfg(),
-            usa_hist(ARCHIVE_NAME, SERIES_ID),
+            read_usa_hist(ARCHIVE_NAME, SERIES_ID),
             extract_usa_frb_ms(),
         ],
         axis=1,
@@ -1761,7 +1761,7 @@ def collect_common_archived():
         [
             pd.concat(
                 [
-                    extract_usa_bea(ARCHIVE_NAMES[0], _wb, _sh, _id) for _wb, _sh, _id in zip(
+                    read_usa_bea_excel(ARCHIVE_NAMES[0], _wb, _sh, _id) for _wb, _sh, _id in zip(
                         tuple(WB_NAMES[2*(_ // 4)] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
                 ],
                 axis=1,
@@ -1769,7 +1769,7 @@ def collect_common_archived():
             ),
             pd.concat(
                 [
-                    extract_usa_bea(ARCHIVE_NAMES[1], _wb, _sh, _id) for _wb, _sh, _id in zip(
+                    read_usa_bea_excel(ARCHIVE_NAMES[1], _wb, _sh, _id) for _wb, _sh, _id in zip(
                         tuple(WB_NAMES[1 + 2*(_ // 4)] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
                 ],
                 axis=1,
@@ -1812,7 +1812,7 @@ def collect_common_archived():
     )
     _data_sfat = pd.concat(
         [
-            extract_usa_bea(ARCHIVE_NAME, _wb, _sh, _id) for _wb, _sh, _id in zip(
+            read_usa_bea_excel(ARCHIVE_NAME, _wb, _sh, _id) for _wb, _sh, _id in zip(
                 tuple(WB_NAMES[_ // 2] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)
         ],
         axis=1,
@@ -1888,13 +1888,13 @@ def collect_local():
     _data_nipa = pd.concat(
         [
             pd.concat(
-                [extract_usa_bea(ARCHIVE_NAMES[0], _wb, _sh, _id)
+                [read_usa_bea_excel(ARCHIVE_NAMES[0], _wb, _sh, _id)
                  for _wb, _sh, _id in zip(tuple(WB_NAMES[2*(_ // 3)] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)],
                 axis=1,
                 sort=True,
             ),
             pd.concat(
-                [extract_usa_bea(ARCHIVE_NAMES[1], _wb, _sh, _id)
+                [read_usa_bea_excel(ARCHIVE_NAMES[1], _wb, _sh, _id)
                  for _wb, _sh, _id in zip(tuple(WB_NAMES[1 + 2*(_ // 3)] for _ in range(len(SERIES_IDS))), SH_NAMES, SERIES_IDS)],
                 axis=1,
                 sort=True,
@@ -1952,7 +1952,7 @@ def collect() -> DataFrame:
 
 def collect_updated():
     URL = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
-    _data = extract_usa_bea_from_url(URL)
+    _data = read_usa_bea(URL)
     SERIES_IDS = (
         'A006RC',
         'A006RD',
@@ -1961,7 +1961,7 @@ def collect_updated():
     )
     _data_nipa = pd.concat(
         [
-            extract_usa_bea_from_loaded(_data, _id) for _id in SERIES_IDS
+            pull_by_series_id(_data, _id) for _id in SERIES_IDS
         ],
         axis=1,
         sort=True
@@ -1984,7 +1984,7 @@ def collect_updated():
     )
     _data_sfat = pd.concat(
         [
-            extract_usa_bea(ARCHIVE_NAME, WB_NAME, _sh, _id) for _sh, _id in zip(SH_NAMES, SERIES_IDS)
+            read_usa_bea_excel(ARCHIVE_NAME, WB_NAME, _sh, _id) for _sh, _id in zip(SH_NAMES, SERIES_IDS)
         ],
         axis=1,
         sort=True
@@ -2047,7 +2047,7 @@ def collect_usa_bea_labor():
     SERIES_ID = 'A4601C0'
     df = pd.concat(
         [
-            extract_usa_bea(archive_name, wb, sh, SERIES_ID)
+            read_usa_bea_excel(archive_name, wb, sh, SERIES_ID)
             for archive_name, wb, sh in zip(ARCHIVE_NAMES, WB_NAMES, SH_NAMES)
         ],
         axis=1,
@@ -2095,7 +2095,7 @@ def collect_usa_bea_labor_mfg():
     )
     df = pd.concat(
         [
-            extract_usa_bea(archive_name, wb, sh, _id)
+            read_usa_bea_excel(archive_name, wb, sh, _id)
             for archive_name, wb, sh, _id in zip(ARCHIVE_NAMES, WB_NAMES, SH_NAMES, SERIES_IDS)
         ],
         axis=1,
@@ -2154,7 +2154,7 @@ def collect_usa_capital():
         axis=1,
         sort=True
     )
-    _df = extract_usa_bea_from_url(URL)
+    _df = read_usa_bea(URL)
     SERIES_IDS = (
         # =====================================================================
         # Fixed Assets: k1n31gd1es00, 1925--2019, Table 4.1. Current-Cost Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
@@ -2170,7 +2170,7 @@ def collect_usa_capital():
             df,
             pd.concat(
                 [
-                    extract_usa_bea_from_loaded(_df, series_id) for series_id in SERIES_IDS
+                    pull_by_series_id(_df, series_id) for series_id in SERIES_IDS
                 ],
                 axis=1,
                 sort=True
@@ -2200,9 +2200,9 @@ def collect_usa_capital():
         'DT63AS01',
     )
     FUNCTIONS = (
-        usa_hist,
-        usa_hist,
-        usa_hist,
+        read_usa_hist,
+        read_usa_hist,
+        read_usa_hist,
         extract_usa_classic,
         extract_usa_classic,
     )
@@ -2379,13 +2379,13 @@ def collect_usa_xlsm():
     _data = pd.concat(
         [
             pd.concat(
-                [extract_usa_bea(ARCHIVE_NAMES[0], WB_NAMES[0], _sh, _id)
+                [read_usa_bea_excel(ARCHIVE_NAMES[0], WB_NAMES[0], _sh, _id)
                  for _sh, _id in zip(SH_NAMES, SERIES_IDS)],
                 axis=1,
                 sort=True
             ),
             pd.concat(
-                [extract_usa_bea(ARCHIVE_NAMES[1], WB_NAMES[1], _sh, _id)
+                [read_usa_bea_excel(ARCHIVE_NAMES[1], WB_NAMES[1], _sh, _id)
                  for _sh, _id in zip(SH_NAMES, SERIES_IDS)],
                 axis=1,
                 sort=True
@@ -2428,7 +2428,7 @@ def collect_version_a():
             # =================================================================
             # Fixed Assets: kcn31gd1es000, 1925--2016, Table 4.2. Chain-Type Quantity Indexes for Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
             # =================================================================
-            extract_usa_bea(**KWARGS),
+            read_usa_bea_excel(**KWARGS),
             # =================================================================
             # Labor
             # =================================================================
@@ -2438,7 +2438,7 @@ def collect_version_a():
             # =================================================================
             pd.concat(
                 [
-                    extract_usa_bea(_archive_name, _wb, SH_NAME, SERIES_ID) for _archive_name, _wb in zip(ARCHIVE_NAMES, WB_NAMES)
+                    read_usa_bea_excel(_archive_name, _wb, SH_NAME, SERIES_ID) for _archive_name, _wb in zip(ARCHIVE_NAMES, WB_NAMES)
                 ],
                 sort=True).drop_duplicates(),
         ],
@@ -2448,7 +2448,7 @@ def collect_version_a():
             # =================================================================
             # Fixed Assets: kcn31gd1es000, 1925--2016, Table 4.2. Chain-Type Quantity Indexes for Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
             # =================================================================
-            extract_usa_bea(**KWARGS),
+            read_usa_bea_excel(**KWARGS),
             # =================================================================
             # Labor
             # =================================================================
@@ -2458,7 +2458,7 @@ def collect_version_a():
             # =================================================================
             pd.concat(
                 [
-                    extract_usa_bea(_archive_name, _wb, SH_NAME, SERIES_ID) for _archive_name, _wb in zip(ARCHIVE_NAMES, WB_NAMES)
+                    read_usa_bea_excel(_archive_name, _wb, SH_NAME, SERIES_ID) for _archive_name, _wb in zip(ARCHIVE_NAMES, WB_NAMES)
                 ],
                 sort=True).drop_duplicates(),
             # =================================================================
@@ -2490,7 +2490,7 @@ def collect_version_b() -> tuple[DataFrame]:
             # =================================================================
             # Fixed Assets: kcn31gd1es000, 1925--2016, Table 4.2. Chain-Type Quantity Indexes for Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
             # =================================================================
-            extract_usa_bea(**KWARGS),
+            read_usa_bea_excel(**KWARGS),
             # =================================================================
             # Labor
             # =================================================================
@@ -2509,7 +2509,7 @@ def collect_version_b() -> tuple[DataFrame]:
             # =================================================================
             # Fixed Assets: kcn31gd1es000, 1925--2016, Table 4.2. Chain-Type Quantity Indexes for Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
             # =================================================================
-            extract_usa_bea(**KWARGS),
+            read_usa_bea_excel(**KWARGS),
             # =================================================================
             # Labor
             # =================================================================
@@ -2653,7 +2653,7 @@ def transform_d(df: DataFrame) -> DataFrame:
 def transform_e(df: DataFrame) -> tuple[DataFrame]:
     assert df.shape[1] == 21, 'Works on DataFrame Produced with `collect_combined_archived()`'
     # =========================================================================
-    # `Real` Investment
+    # "Real" Investment
     # =========================================================================
     df['investment'] = df.iloc[:, 0].mul(df.iloc[:, 7]).div(df.iloc[:, 6])
     # =========================================================================
@@ -2898,7 +2898,7 @@ def transform_cobb_douglas_alt(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
 
 
 def transform_kurenkov(data_testing: DataFrame) -> tuple[DataFrame]:
-    '''Returns Four DataFrames with Comparison of data_testing: DataFrame and Yu.V. Kurenkov Data'''
+    '''Returns Four DataFrames with Comparison of data_testing: DataFrame and Kurenkov Yu.V. Data'''
     FILE_NAME = 'dataset_usa_reference_ru_kurenkov_yu_v.csv'
     data_control = pd.read_csv(FILE_NAME, index_col=0)
     # =============================================================================

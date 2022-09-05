@@ -13,11 +13,11 @@ from pandas import DataFrame
 from pandas.plotting import autocorrelation_plot
 from pull.lib import numerify
 from pull.lib import pull_can_quarter_former
-from pull.lib import by_series_id
+from pull.lib import pull_by_series_id
 from read.lib import read_manager_can_former
-from read.lib import usa_bea_former
-from read.lib import usa_bls
-from read.lib import usa_hist
+from read.lib import read_usa_bea_excel
+from read.lib import read_usa_bls
+from read.lib import read_usa_hist
 from plot.lib import plot_can_test
 
 
@@ -54,9 +54,9 @@ def options():
         'DT63AS03',
     )
     [
-        print(usa_hist(ARCHIVE_NAME, series_id))
+        print(read_usa_hist(ARCHIVE_NAME, series_id))
 # =============================================================================
-#         usa_hist(ARCHIVE_NAME).pipe(by_series_id, SERIES_ID)
+#         read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, SERIES_ID)
 # =============================================================================
         for series_id in SERIES_IDS
     ]
@@ -108,7 +108,7 @@ def test_data_consistency_a():
             ),
             pd.concat(
                 [
-                    numerify(by_series_id(read_manager_can_former(_args[0]), _args[1]))
+                    numerify(pull_by_series_id(read_manager_can_former(_args[0]), _args[1]))
                     for _args in ARGS[3:]
                 ],
                 axis=1,
@@ -166,7 +166,7 @@ def test_data_consistency_b():
             # =================================================================
             # TODO: UPDATE ACCORDING TO NEW SIGNATURE
             # =================================================================
-            usa_bea_former(ARCHIVE_NAME, WB_NAME, sh, series_id)
+            read_usa_bea_excel(ARCHIVE_NAME, WB_NAME, sh, series_id)
             for sh, series_id in zip(SH_NAMES, SERIES_IDS)
         ],
         axis=1,
@@ -193,7 +193,7 @@ def test_data_consistency_c():
         'PCUOMFG--OMFG',
     )
     [
-        print(usa_bls(file_name).pipe(by_series_id, series_id))
+        print(read_usa_bls(file_name).pipe(pull_by_series_id, series_id))
         for file_name, series_id in zip(FILE_NAMES, SERIES_IDS)
     ]
 
@@ -265,7 +265,7 @@ def test_data_consistency_d():
     # =========================================================================
     # Fixed Assets Data Tests
     # =========================================================================
-    df = test_usa_bea_sfat_series()
+    df = test_read_usa_bea_sfat_series()
     # =========================================================================
     # Tested: `k3n31gd1es000` = `k3n31gd1eq000` + `k3n31gd1ip000` + `k3n31gd1st000`
     # =========================================================================
@@ -303,10 +303,10 @@ def test_douglas() -> None:
     )
     df = pd.concat(
         [
-            partial(usa_hist, **_kwargs[0])(),
-            partial(usa_hist, **_kwargs[1])(),
+            partial(read_usa_hist, **_kwargs[0])(),
+            partial(read_usa_hist, **_kwargs[1])(),
 # =============================================================================
-#             usa_hist(ARCHIVE_NAME).pipe(by_series_id, SERIES_ID)
+#             read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, SERIES_ID)
 # =============================================================================
         ],
         axis=1
@@ -331,9 +331,9 @@ def test_douglas() -> None:
     )
     df = pd.concat(
         [
-            partial(usa_hist, **kwargs)() for kwargs in _kwargs
+            partial(read_usa_hist, **kwargs)() for kwargs in _kwargs
 # =============================================================================
-#             usa_hist(ARCHIVE_NAME).pipe(by_series_id, SERIES_ID)
+#             read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, SERIES_ID)
 # =============================================================================
         ],
         axis=1
@@ -348,7 +348,7 @@ def test_procedure(kwargs_list: list[dict]) -> None:
             # =================================================================
             # TODO: UPDATE ACCORDING TO NEW SIGNATURE
             # =================================================================
-            usa_bea_former(**_kwargs) for _kwargs in kwargs_list
+            read_usa_bea_excel(**_kwargs) for _kwargs in kwargs_list
         ],
         axis=1,
         sort=True
@@ -371,7 +371,7 @@ def test_substitute_b(df: DataFrame):
     df.iloc[:, [-1]].plot(grid=True)
 
 
-def test_usa_bea_sfat_series() -> DataFrame:
+def test_read_usa_bea_sfat_series() -> DataFrame:
     ARCHIVE_NAME = 'dataset_usa_bea-nipa-selected.zip'
     SERIES_ID = 'k3n31gd1es000'
     _df = pd.read_csv(ARCHIVE_NAME, index_col=2, usecols=[0, *range(8, 11)])
@@ -398,7 +398,7 @@ def test_usa_bea_sfat_series() -> DataFrame:
             # =================================================================
             # TODO: UPDATE ACCORDING TO NEW SIGNATURE
             # =================================================================
-            usa_bea_former(ARCHIVE_NAME, WB_NAME, SH_NAME, series_id)
+            read_usa_bea_excel(ARCHIVE_NAME, WB_NAME, SH_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,

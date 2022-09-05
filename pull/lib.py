@@ -38,7 +38,7 @@ def numerify(df: DataFrame) -> DataFrame:
     return df
 
 
-def by_series_id(df: DataFrame, series_id: str) -> DataFrame:
+def pull_by_series_id(df: DataFrame, series_id: str) -> DataFrame:
     '''
 
 
@@ -66,7 +66,7 @@ def by_series_id(df: DataFrame, series_id: str) -> DataFrame:
     )
 
 
-def cansim_aggregate(df: DataFrame, series_id: str) -> DataFrame:
+def pull_can_aggregate(df: DataFrame, series_id: str) -> DataFrame:
     '''
     Retrieves DataFrame from Quarterly Data within CANSIM Zip Archives
     Parameters
@@ -84,13 +84,13 @@ def cansim_aggregate(df: DataFrame, series_id: str) -> DataFrame:
     '''
     flag = 'seas' in df.columns
     _df = df.loc[:, ('series_id', 'value')].pipe(
-        by_series_id, series_id).pipe(numerify)
+        pull_by_series_id, series_id).pipe(numerify)
     if flag:
         return _df.groupby(_df.index.year).sum()
     return _df.groupby(_df.index.year).mean()
 
 
-def cansim_capital(df: DataFrame, params: tuple[int, str]) -> DataFrame:
+def pull_can_capital(df: DataFrame, params: tuple[int, str]) -> DataFrame:
     '''
     WARNING: VERY EXPENSIVE OPERATION !
     Retrieves Series IDs from Statistics Canada -- Fixed Assets Tables
@@ -133,7 +133,7 @@ def cansim_capital(df: DataFrame, params: tuple[int, str]) -> DataFrame:
         )
 
 
-def cansim_capital_former(df: DataFrame, params: tuple[int, str]) -> DataFrame:
+def pull_can_capital_former(df: DataFrame, params: tuple[int, str]) -> DataFrame:
     '''
     Retrieves Series IDs from Statistics Canada -- Fixed Assets Tables
 

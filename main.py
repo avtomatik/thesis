@@ -38,8 +38,8 @@ from collect.lib import transform_cobb_douglas
 from collect.lib import transform_d
 from collect.lib import transform_e
 from collect.lib import transform_kurenkov
-from read.lib import usa_hist
-from pull.lib import by_series_id
+from read.lib import read_usa_hist
+from pull.lib import pull_by_series_id
 from plot.lib import plot_a
 from plot.lib import plot_approx_linear
 from plot.lib import plot_approx_log_linear
@@ -347,7 +347,7 @@ def main():
     )
     for series_id in SERIES_IDS:
         print(f'Processing {series_id}')
-        df = usa_hist(ARCHIVE_NAME).pipe(by_series_id, series_id)
+        df = read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
         _df = df.copy()
         plot_pearson_r_test(_df)
         _df = df.copy()
@@ -440,7 +440,7 @@ def main():
     # =========================================================================
     SERIES_ID, ARCHIVE_NAME = 'J0014', 'dataset_uscb.zip'
 
-    df = usa_hist(ARCHIVE_NAME).pipe(by_series_id, SERIES_ID)
+    df = read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, SERIES_ID)
     _df = df.copy()
     plot_growth_elasticity(_df)
     _df = df.copy()

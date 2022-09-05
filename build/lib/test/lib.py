@@ -143,7 +143,7 @@ def test_data_consistency_b():
     )
     df = pd.concat(
         [
-            extract_usa_bea(ARCHIVE_NAME, WB_NAME, sh, _id)
+            extract_read_usa_bea(ARCHIVE_NAME, WB_NAME, sh, _id)
             for sh, _id in zip(SH_NAMES, SERIES_IDS)
         ],
         axis=1,
@@ -242,7 +242,7 @@ def test_data_consistency_d():
     # =========================================================================
     # Fixed Assets Data Tests
     # =========================================================================
-    df = test_usa_bea_sfat_series()
+    df = test_read_usa_bea_sfat_series()
     # =========================================================================
     # Tested: `k3n31gd1es000` = `k3n31gd1eq000` + `k3n31gd1ip000` + `k3n31gd1st000`
     # =========================================================================
@@ -280,7 +280,7 @@ def test_douglas() -> None:
     )
     df = pd.concat(
         [
-            partial(usa_hist, **_kwargs[0])(),
+            partial(read_usa_hist, **_kwargs[0])(),
             partial(extract_usa_classic, **_kwargs[1])(),
         ],
         axis=1
@@ -316,7 +316,7 @@ def test_douglas() -> None:
 def test_procedure(kwargs_list: list[dict]) -> None:
     df = pd.concat(
         [
-            extract_usa_bea(**_kwargs) for _kwargs in kwargs_list
+            extract_read_usa_bea(**_kwargs) for _kwargs in kwargs_list
         ],
         axis=1,
         sort=True
@@ -339,7 +339,7 @@ def test_sub_b(df: DataFrame):
     df.iloc[:, [-1]].plot(grid=True)
 
 
-def test_usa_bea_sfat_series() -> DataFrame:
+def test_read_usa_bea_sfat_series() -> DataFrame:
     ARCHIVE_NAME = 'dataset_usa_bea-nipa-selected.zip'
     SERIES_ID = 'k3n31gd1es000'
     _df = pd.read_csv(ARCHIVE_NAME, usecols=[0, *range(8, 11)])
@@ -362,7 +362,7 @@ def test_usa_bea_sfat_series() -> DataFrame:
                   'k3n31gd1ip000', 'k3n31gd1st000',)
     test_frame = pd.concat(
         [
-            extract_usa_bea(ARCHIVE_NAME, WB_NAME, SH_NAME, series_id)
+            extract_read_usa_bea(ARCHIVE_NAME, WB_NAME, SH_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,

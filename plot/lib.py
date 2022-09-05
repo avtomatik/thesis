@@ -9,7 +9,7 @@ Created on Sun Jun 12 08:59:10 2022
 
 from functools import partial
 import itertools
-from patlib import Path
+from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -24,11 +24,11 @@ from pandas.plotting import (
 from collect.lib import transform_cobb_douglas
 from extract.lib import (
     pull_series_ids,
-    by_series_id,
-    usa_hist,
+    pull_by_series_id,
+    read_usa_hist,
     pull_uscb_description,
     read_usa_nber,
-    worldbank,
+    read_worldbank,
 )
 from toolkit.lib import (
     calculate_capital,
@@ -61,7 +61,7 @@ def plot_a(df: DataFrame) -> None:
     '''
     _df = df.copy()
     # =========================================================================
-    # `Real` Investment
+    # "Real" Investment
     # =========================================================================
     _df['investment'] = _df.iloc[:, 0].mul(_df.iloc[:, 3]).div(_df.iloc[:, 2])
     # =========================================================================
@@ -105,7 +105,7 @@ def plot_b(df: DataFrame) -> None:
     '''
     _df = df.copy()
     # =========================================================================
-    # `Real` Investment
+    # "Real" Investment
     # =========================================================================
     _df['investment'] = _df.iloc[:, 0].mul(_df.iloc[:, 2]).div(_df.iloc[:, 1])
     plt.figure()
@@ -132,7 +132,7 @@ def plot_c(df: DataFrame) -> None:
     ================== =================================
     '''
     # =========================================================================
-    # `Real` Investment
+    # "Real" Investment
     # =========================================================================
     df['investment'] = df.iloc[:, 0].mul(df.iloc[:, 2]).div(df.iloc[:, 1])
     plt.figure()
@@ -367,7 +367,7 @@ def plot_uscb_commodities(series_ids: tuple[str]) -> None:
     ARCHIVE_NAME = 'dataset_uscb.zip'
     df = DataFrame()
     for series_id in series_ids:
-        chunk = usa_hist(ARCHIVE_NAME).pipe(by_series_id, series_id).sort_index()
+        chunk = read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id).sort_index()
         df = pd.concat(
             [
                 df,
@@ -470,9 +470,9 @@ def plot_uscb_farm_lands() -> None:
         'series_id': 'K0005',
     }
     plt.figure()
-    plt.plot(usa_hist(**_kwargs))
+    plt.plot(read_usa_hist(**_kwargs))
     # =========================================================================
-    # usa_hist(ARCHIVE_NAME).pipe(by_series_id, series_id)
+    # read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
     # =========================================================================
     plt.title('Land in Farms')
     plt.xlabel('Period')
@@ -589,9 +589,9 @@ def plot_uscb_finance() -> None:
     )
     SERIES_IDS = tuple(f'X{_id:04n}' for _id in ids)
     for _, series_id in enumerate(SERIES_IDS, start=1):
-        df = usa_hist(ARCHIVE_NAME, series_id)
+        df = read_usa_hist(ARCHIVE_NAME, series_id)
         # =====================================================================
-        # usa_hist(ARCHIVE_NAME).pipe(by_series_id, series_id)
+        # read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
         # =====================================================================
         df = df.div(df.iloc[0, :]).mul(100)
         descr = pull_uscb_description(series_id)
@@ -945,7 +945,7 @@ def plot_built_in() -> None:
         lag_plot,
     )
     SOURCE_ID = 'NY.GDP.MKTP.CD'
-    _df = worldbank(SOURCE_ID)
+    _df = read_worldbank(SOURCE_ID)
     for func in FUNCTIONS:
         for _, country in enumerate(_df.columns, start=1):
             chunk = _df.loc[:, [country]].dropna()
@@ -1431,9 +1431,9 @@ def plot_douglas(
             plt.figure(_n)
             for _ in range(_lw, _up, skip):
                 plt.plot(
-                    usa_hist(archive_name, _SERIES_IDS[_]),
+                    read_usa_hist(archive_name, _SERIES_IDS[_]),
                     # =========================================================
-                    # usa_hist(ARCHIVE_NAME).pipe(by_series_id, series_id)
+                    # read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
                     # =========================================================
                     label=_MAP_SERIES[_SERIES_IDS[_]]
                 )
@@ -1457,9 +1457,9 @@ def plot_douglas(
             plt.figure(_n)
             for _ in range(_lw, _up, skip):
                 plt.plot(
-                    usa_hist(archive_name, _SERIES_IDS[_]),
+                    read_usa_hist(archive_name, _SERIES_IDS[_]),
                     # =========================================================
-                    # usa_hist(ARCHIVE_NAME).pipe(by_series_id, series_id)
+                    # read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
                     # =========================================================
                     label=_MAP_SERIES[_SERIES_IDS[_]]
                 )
@@ -1685,7 +1685,7 @@ def plot_grigoriev() -> None:
     }
     df = pd.read_csv(**kwargs).sort_index()
     for series_id in sorted(set(df.iloc[:, 0])):
-        df.pipe(by_series_id, series_id).plot(grid=True)
+        df.pipe(pull_by_series_id, series_id).plot(grid=True)
 
 
 def plot_growth_elasticity(df: DataFrame) -> None:

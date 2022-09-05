@@ -81,7 +81,7 @@ def extract_can_capital_series_ids(df: DataFrame) -> list[str]:
     Fetch <SERIES_IDS> from Statistics Canada. Table: 36-10-0238-01\
     (formerly CANSIM 031-0004): Flows and stocks of fixed non-residential\
     capital, total all industries, by asset, provinces and territories, annual\
-    (dollars x 1,000,000)    
+    (dollars x 1,000,000)
     '''
     # =========================================================================
     # ?: 36100096-eng.zip'
@@ -179,7 +179,7 @@ def extract_can_group_a(file_id: int, skiprows) -> DataFrame:
     # =========================================================================
     # Not Used Anywhere
     # =========================================================================
-    df = pd.read_csv(f'dataset_can_cansim{file_id:n}.csv', skiprows=skiprows)
+    df = pd.read_csv(f'dataset_read_can{file_id:n}.csv', skiprows=skiprows)
     if file_id == 7931814471809016759:
         df.columns = [column[:7] for column in df.columns]
         df.iloc[:, -1] = pd.to_numeric(df.iloc[:, -1].str.replace(';', ''))
@@ -194,7 +194,7 @@ def extract_can_group_b(file_id: int, skiprows) -> DataFrame:
     # =========================================================================
     # Not Used Anywhere
     # =========================================================================
-    df = pd.read_csv(f'dataset_can_cansim{file_id:n}.csv', skiprows=skiprows)
+    df = pd.read_csv(f'dataset_read_can{file_id:n}.csv', skiprows=skiprows)
     df[['month', 'period', ]] = df.iloc[:, 0].str.split('-', expand=True)
     return df.groupby(df.columns[-1]).mean()
 
@@ -234,7 +234,7 @@ def extract_can_quarter(file_id, series_id: str) -> DataFrame:
         return df.groupby(df.columns[-2]).mean()
 
 
-def extract_usa_bea(archive_name: str, wb_name: str, sh_name: str, series_id: str) -> DataFrame:
+def extract_read_usa_bea(archive_name: str, wb_name: str, sh_name: str, series_id: str) -> DataFrame:
     '''
     Data Frame Fetching from Bureau of Economic Analysis Zip Archives
 
@@ -274,7 +274,7 @@ def extract_usa_bea(archive_name: str, wb_name: str, sh_name: str, series_id: st
     return df.loc[:, [series_id]]
 
 
-def extract_usa_bea_filter(series_id: str) -> DataFrame:
+def extract_read_usa_bea_filter(series_id: str) -> DataFrame:
     '''
     Retrieve Yearly Data for BEA Series' Code
     '''
@@ -294,14 +294,14 @@ def extract_usa_bea_filter(series_id: str) -> DataFrame:
     return df
 
 
-def extract_usa_bea_from_loaded(df: DataFrame, series_id: str) -> DataFrame:
+def pull_by_series_id(df: DataFrame, series_id: str) -> DataFrame:
     '''`NipaDataA.txt`: U.S. Bureau of Economic Analysis'''
     df = df[df.iloc[:, 0] == series_id].iloc[:, [1, 2]]
     df.columns = [df.columns[0].lower(), series_id]
     return df.set_index(df.columns[0], verify_integrity=True)
 
 
-def extract_usa_bea_from_url(url: str) -> DataFrame:
+def read_usa_bea(url: str) -> DataFrame:
     '''Retrieves U.S. Bureau of Economic Analysis DataFrame from URL'''
     return pd.read_csv(io.BytesIO(requests.get(url).content), thousands=',')
 
@@ -320,7 +320,7 @@ def extract_usa_bls(file_name, series_id: str) -> DataFrame:
     return df.set_index(df.columns[0])
 
 
-def usa_hist(archive_name: str, series_id: str) -> DataFrame:
+def read_usa_hist(archive_name: str, series_id: str) -> DataFrame:
     '''
     Selected Series by U.S. Bureau of the Census
     U.S. Bureau of the Census, Historical Statistics of the United States,

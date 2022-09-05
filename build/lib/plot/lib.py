@@ -15,7 +15,7 @@ from pandas import DataFrame
 from toolkit.lib import rolling_mean_filter
 from toolkit.lib import calculate_capital
 from extract.lib import usa_hist_description
-from extract.lib import usa_hist
+from extract.lib import read_usa_hist
 from collect.lib import transform_cobb_douglas
 
 
@@ -44,7 +44,7 @@ def plot_a(df: DataFrame) -> None:
     '''
     _df = df.copy()
     # =========================================================================
-    # `Real` Investment
+    # "Real" Investment
     # =========================================================================
     _df['investment'] = _df.iloc[:, 0].mul(_df.iloc[:, 3]).div(_df.iloc[:, 2])
     # =========================================================================
@@ -88,7 +88,7 @@ def plot_b(df: DataFrame) -> None:
     '''
     _df = df.copy()
     # =========================================================================
-    # `Real` Investment
+    # "Real" Investment
     # =========================================================================
     _df['investment'] = _df.iloc[:, 0].mul(_df.iloc[:, 2]).div(_df.iloc[:, 1])
     plt.figure()
@@ -115,7 +115,7 @@ def plot_c(df: DataFrame) -> None:
     ================== =================================
     '''
     # =========================================================================
-    # `Real` Investment
+    # "Real" Investment
     # =========================================================================
     df['investment'] = df.iloc[:, 0].mul(df.iloc[:, 2]).div(df.iloc[:, 1])
     plt.figure()
@@ -350,7 +350,7 @@ def plot_census_d(series_ids: tuple[str]) -> None:
     ARCHIVE_NAME = 'dataset_uscb.zip'
     df = DataFrame()
     for series_id in series_ids:
-        chunk = usa_hist(ARCHIVE_NAME, series_id)
+        chunk = read_usa_hist(ARCHIVE_NAME, series_id)
         descr = usa_hist_description(ARCHIVE_NAME, series_id)
         print(f'<{series_id}> {descr}')
         df = pd.concat(
@@ -451,7 +451,7 @@ def plot_census_h() -> None:
         'series_id': 'K0005',
     }
     plt.figure()
-    plt.plot(usa_hist(**_kwargs))
+    plt.plot(read_usa_hist(**_kwargs))
     plt.title('Land in Farms')
     plt.xlabel('Period')
     plt.ylabel('1,000 acres')
@@ -567,7 +567,7 @@ def plot_census_k() -> None:
     )
     SERIES_IDS = tuple(f'X{_id:04n}' for id in ids)
     for _, series_id in enumerate(SERIES_IDS, start=1):
-        df = usa_hist(ARCHIVE_NAME, series_id)
+        df = read_usa_hist(ARCHIVE_NAME, series_id)
         df = df.div(df.iloc[0, :]).mul(100)
         descr = usa_hist_description(ARCHIVE_NAME, series_id)
         plt.figure(_)
