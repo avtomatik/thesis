@@ -8,7 +8,7 @@ Created on Wed Sep  1 21:22:23 2021
 
 import os
 import pandas as pd
-from read.lib import read_manager_can
+from read.lib import read_can
 
 
 def url_to_file_name(_url: str) -> str:
@@ -69,7 +69,7 @@ def main():
             # =================================================================
             # TODO: UPDATE ACCORDING TO NEW SIGNATURE
             # =================================================================
-            _df = read_manager_can(url)
+            _df = read_can(url)
             print(url, file=f)
             print(f"Periods Length: {len(set(_df['REF_DATE'])):3};", file=f)
             print(_df['REF_DATE'].unique(), file=f)

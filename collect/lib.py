@@ -74,23 +74,23 @@ def collect_cobb_douglas(series_number: int = 3) -> DataFrame:
         # =====================================================================
         # Cobb C.W., Douglas P.H. Capital Series: Total Fixed Capital in 1880 dollars (4)
         # =====================================================================
-        'CDT2S4': ('dataset_usa_cobb-douglas.zip', 'capital', ),
+        'CDT2S4': ('dataset_usa_cobb-douglas.zip', 'capital'),
         # =====================================================================
         # Cobb C.W., Douglas P.H. Labor Series: Average Number Employed (in thousands)
         # =====================================================================
-        'CDT3S1': ('dataset_usa_cobb-douglas.zip', 'labor',),
+        'CDT3S1': ('dataset_usa_cobb-douglas.zip', 'labor'),
         # =====================================================================
         # Bureau of the Census, 1949, Page 179, J14: Warren M. Persons, Index of Physical Production of Manufacturing
         # =====================================================================
-        'J0014': ('dataset_uscb.zip', 'product', ),
+        'J0014': ('dataset_uscb.zip', 'product'),
         # =====================================================================
         # Bureau of the Census, 1949, Page 179, J13: National Bureau of Economic Research Index of Physical Output, All Manufacturing Industries.
         # =====================================================================
-        'J0013': ('dataset_uscb.zip', 'product_nber', ),
+        'J0013': ('dataset_uscb.zip', 'product_nber'),
         # =====================================================================
         # The Revised Index of Physical Production for All Manufacturing In the United States, 1899--1926
         # =====================================================================
-        'DT24AS01': ('dataset_douglas.zip', 'product_rev',),
+        'DT24AS01': ('dataset_douglas.zip', 'product_rev'),
     }
     df = pd.concat(
         [
@@ -141,7 +141,7 @@ def collect_cobb_douglas_deflator() -> DataFrame:
     # `df.corr(method='spearman')`
     # Correlation Test Result: kendall & pearson & spearman: L2, L15, E7, E23, E40, E68
     # =========================================================================
-    SERIES_IDS_CS = {
+    SERIES_IDS_CB = {
         'L0002': ('dataset_uscb.zip', None),
         'L0015': ('dataset_uscb.zip', None),
         'E0007': ('dataset_uscb.zip', None),
@@ -154,7 +154,7 @@ def collect_cobb_douglas_deflator() -> DataFrame:
     # =========================================================================
     # Bureau of Economic Analysis
     # =========================================================================
-    SERIES_IDS_BE = {
+    SERIES_IDS_EA = {
         # =====================================================================
         # Fixed Assets: k1n31gd1es00, 1925--2019, Table 4.1. Current-Cost Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
         # =====================================================================
@@ -163,20 +163,7 @@ def collect_cobb_douglas_deflator() -> DataFrame:
         # Fixed Assets: kcn31gd1es00, 1925--2019, Table 4.2. Chain-Type Quantity Indexes for Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
         # =====================================================================
         'kcn31gd1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
-        # =====================================================================
-        # Not Used: Fixed Assets: k3n31gd1es00, 1925--2019, Table 4.3. Historical-Cost Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
-        # Not Used: Fixed Assets: k3ntotl1si00, 1925--2019, Table 2.3. Historical-Cost Net Stock of Private Fixed Assets, Equipment, Structures, and Intellectual Property Products by Type
-        # Not Used: mcn31gd1es00, 1925--2019, Table 4.5. Chain-Type Quantity Indexes for Depreciation of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
-        # Not Used: mcntotl1si00, 1925--2019, Table 2.5. Chain-Type Quantity Indexes for Depreciation of Private Fixed Assets, Equipment, Structures, and Intellectual Property Products by Type
-        # =====================================================================
-        'k3n31gd1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
-        'k3ntotl1si00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
-        'mcn31gd1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
-        'mcntotl1si00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
     }
-    # =========================================================================
-    # Bureau of Economic Analysis
-    # =========================================================================
     df = pd.concat(
         [
             # =================================================================
@@ -186,7 +173,7 @@ def collect_cobb_douglas_deflator() -> DataFrame:
                 [
                     read_usa_hist(archive_name).pipe(
                         pull_by_series_id, series_id).sort_index().truncate(before=year)
-                    for series_id, (archive_name, year) in SERIES_IDS_CS.items()
+                    for series_id, (archive_name, year) in SERIES_IDS_CB.items()
                 ],
                 axis=1,
                 verify_integrity=True,
@@ -197,9 +184,8 @@ def collect_cobb_douglas_deflator() -> DataFrame:
             # =================================================================
             pd.concat(
                 [
-                    read_usa_bea(SERIES_IDS_BE[series_id]).pipe(
-                        pull_by_series_id, series_id)
-                    for series_id in tuple(SERIES_IDS_BE)[:2]
+                    read_usa_bea(url).pipe(pull_by_series_id, series_id)
+                    for series_id, url in SERIES_IDS_EA.items()
                 ],
                 axis=1,
                 verify_integrity=True,
@@ -213,13 +199,14 @@ def collect_cobb_douglas_deflator() -> DataFrame:
         axis=1,
         sort=True
     ).truncate(before=1794)
-    SERIES_IDS_CS = tuple(SERIES_IDS_CS)
-    df['fa_def_cs'] = df.loc[:, SERIES_IDS_CS[-2]].div(
-        df.loc[:, SERIES_IDS_CS[-1]])
-    df['ppi_bea'] = df.loc[:, SERIES_IDS_BE[0]].div(
-        df.loc[:, SERIES_IDS_BE[1]]).div(df.loc[2012, SERIES_IDS_BE[0]]).mul(100)
+    SERIES_IDS_CB = tuple(SERIES_IDS_CB)
+    SERIES_IDS_EA = tuple(SERIES_IDS_EA)
+    df['fa_def_cs'] = df.loc[:, SERIES_IDS_CB[-2]].div(
+        df.loc[:, SERIES_IDS_CB[-1]])
+    df['ppi_bea'] = df.loc[:, SERIES_IDS_EA[0]].div(
+        df.loc[:, SERIES_IDS_EA[1]]).div(df.loc[2012, SERIES_IDS_EA[0]]).mul(100)
     df.drop(
-        [*SERIES_IDS_CS[-2:], *SERIES_IDS_BE[:2]],
+        [*SERIES_IDS_CB[-2:], *SERIES_IDS_EA],
         axis=1,
         inplace=True
     )
@@ -228,8 +215,8 @@ def collect_cobb_douglas_deflator() -> DataFrame:
     # =========================================================================
     result = pd.concat(
         [
-            strip_cumulated_deflator(df.iloc[:, [_]])
-            for _ in range(df.shape[1])
+            strip_cumulated_deflator(df.loc[:, column])
+            for column in df.columns
         ],
         axis=1
     )
@@ -644,25 +631,25 @@ def collect_usa_capital_purchases() -> DataFrame:
         'DT63AS01': ('dataset_douglas.zip', 1, '1880=100, millions'),
         'DT63AS02': ('dataset_douglas.zip', 1, 'DO_NOT_USE_nominal, millions'),
         'DT63AS03': ('dataset_douglas.zip', 1, 'DO_NOT_USE_nominal, millions'),
-        'J0149': ('dataset_uscb.zip', 1, 'nominal, millions',),
-        'J0150': ('dataset_uscb.zip', 1, 'nominal, millions',),
-        'J0151': ('dataset_uscb.zip', 1, 'nominal, millions',),
-        'P0107': ('dataset_uscb.zip', 1000, 'nominal, billions',),
-        'P0108': ('dataset_uscb.zip', 1000, 'nominal, billions',),
-        'P0109': ('dataset_uscb.zip', 1000, 'nominal, billions',),
-        'P0110': ('dataset_uscb.zip', 1000, '1958=100, billions',),
-        'P0111': ('dataset_uscb.zip', 1000, '1958=100, billions',),
-        'P0112': ('dataset_uscb.zip', 1000, '1958=100, billions',),
-        'P0113': ('dataset_uscb.zip', 1000, 'nominal, billions',),
-        'P0114': ('dataset_uscb.zip', 1000, 'nominal, billions',),
-        'P0115': ('dataset_uscb.zip', 1000, 'nominal, billions',),
-        'P0116': ('dataset_uscb.zip', 1000, '1958=100, billions',),
-        'P0117': ('dataset_uscb.zip', 1000, '1958=100, billions',),
-        'P0118': ('dataset_uscb.zip', 1000, '1958=100, billions',),
-        'P0119': ('dataset_uscb.zip', 1000, '1958=100, billions',),
-        'P0120': ('dataset_uscb.zip', 1000, '1958=100, billions',),
-        'P0121': ('dataset_uscb.zip', 1000, '1958=100, billions',),
-        'P0122': ('dataset_uscb.zip', 1000, '1958=100, billions',),
+        'J0149': ('dataset_uscb.zip', 1, 'nominal, millions'),
+        'J0150': ('dataset_uscb.zip', 1, 'nominal, millions'),
+        'J0151': ('dataset_uscb.zip', 1, 'nominal, millions'),
+        'P0107': ('dataset_uscb.zip', 1000, 'nominal, billions'),
+        'P0108': ('dataset_uscb.zip', 1000, 'nominal, billions'),
+        'P0109': ('dataset_uscb.zip', 1000, 'nominal, billions'),
+        'P0110': ('dataset_uscb.zip', 1000, '1958=100, billions'),
+        'P0111': ('dataset_uscb.zip', 1000, '1958=100, billions'),
+        'P0112': ('dataset_uscb.zip', 1000, '1958=100, billions'),
+        'P0113': ('dataset_uscb.zip', 1000, 'nominal, billions'),
+        'P0114': ('dataset_uscb.zip', 1000, 'nominal, billions'),
+        'P0115': ('dataset_uscb.zip', 1000, 'nominal, billions'),
+        'P0116': ('dataset_uscb.zip', 1000, '1958=100, billions'),
+        'P0117': ('dataset_uscb.zip', 1000, '1958=100, billions'),
+        'P0118': ('dataset_uscb.zip', 1000, '1958=100, billions'),
+        'P0119': ('dataset_uscb.zip', 1000, '1958=100, billions'),
+        'P0120': ('dataset_uscb.zip', 1000, '1958=100, billions'),
+        'P0121': ('dataset_uscb.zip', 1000, '1958=100, billions'),
+        'P0122': ('dataset_uscb.zip', 1000, '1958=100, billions'),
     }
     df = pd.concat(
         [
@@ -789,17 +776,9 @@ def collect_usa_general() -> DataFrame:
         # =====================================================================
         'icptotl1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
         # =====================================================================
-        # Current-Cost Net Stock of Fixed Assets, Private, k1ptotl1es00
-        # =====================================================================
-        'k1ptotl1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
-        # =====================================================================
         # Historical-Cost Net Stock of Private Fixed Assets, Private Fixed Assets, k3ptotl1es00
         # =====================================================================
         'k3ptotl1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
-        # =====================================================================
-        # Chain-Type Quantity Indexes for Net Stock of Fixed Assets, Private, kcptotl1es00
-        # =====================================================================
-        'kcptotl1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
     }
     kwargs = {
         'filepath_or_buffer': 'dataset_usa_0025_p_r.txt',
@@ -1242,25 +1221,25 @@ def collect_usa_sahr_infcf() -> DataFrame:
 def collect_uscb_cap(smoothing: bool = False) -> DataFrame:
     '''Returns Nominal Million-Dollar Capital, Including Structures & Equipment, Series'''
     SERIES_IDS = {
-        'J0149': ('dataset_uscb.zip', 1, 'nominal, millions',),
-        'J0150': ('dataset_uscb.zip', 1, 'nominal, millions',),
-        'J0151': ('dataset_uscb.zip', 1, 'nominal, millions',),
-        'P0107': ('dataset_uscb.zip', 1000, 'nominal, billions',),
-        'P0108': ('dataset_uscb.zip', 1000, 'nominal, billions',),
-        'P0109': ('dataset_uscb.zip', 1000, 'nominal, billions',),
-        'P0110': ('dataset_uscb.zip', 1000, '1958=100, billions',),
-        'P0111': ('dataset_uscb.zip', 1000, '1958=100, billions',),
-        'P0112': ('dataset_uscb.zip', 1000, '1958=100, billions',),
-        'P0113': ('dataset_uscb.zip', 1000, 'nominal, billions',),
-        'P0114': ('dataset_uscb.zip', 1000, 'nominal, billions',),
-        'P0115': ('dataset_uscb.zip', 1000, 'nominal, billions',),
-        'P0116': ('dataset_uscb.zip', 1000, '1958=100, billions',),
-        'P0117': ('dataset_uscb.zip', 1000, '1958=100, billions',),
-        'P0118': ('dataset_uscb.zip', 1000, '1958=100, billions',),
-        'P0119': ('dataset_uscb.zip', 1000, '1958=100, billions',),
-        'P0120': ('dataset_uscb.zip', 1000, '1958=100, billions',),
-        'P0121': ('dataset_uscb.zip', 1000, '1958=100, billions',),
-        'P0122': ('dataset_uscb.zip', 1000, '1958=100, billions',),
+        'J0149': ('dataset_uscb.zip', 1, 'nominal, millions'),
+        'J0150': ('dataset_uscb.zip', 1, 'nominal, millions'),
+        'J0151': ('dataset_uscb.zip', 1, 'nominal, millions'),
+        'P0107': ('dataset_uscb.zip', 1000, 'nominal, billions'),
+        'P0108': ('dataset_uscb.zip', 1000, 'nominal, billions'),
+        'P0109': ('dataset_uscb.zip', 1000, 'nominal, billions'),
+        'P0110': ('dataset_uscb.zip', 1000, '1958=100, billions'),
+        'P0111': ('dataset_uscb.zip', 1000, '1958=100, billions'),
+        'P0112': ('dataset_uscb.zip', 1000, '1958=100, billions'),
+        'P0113': ('dataset_uscb.zip', 1000, 'nominal, billions'),
+        'P0114': ('dataset_uscb.zip', 1000, 'nominal, billions'),
+        'P0115': ('dataset_uscb.zip', 1000, 'nominal, billions'),
+        'P0116': ('dataset_uscb.zip', 1000, '1958=100, billions'),
+        'P0117': ('dataset_uscb.zip', 1000, '1958=100, billions'),
+        'P0118': ('dataset_uscb.zip', 1000, '1958=100, billions'),
+        'P0119': ('dataset_uscb.zip', 1000, '1958=100, billions'),
+        'P0120': ('dataset_uscb.zip', 1000, '1958=100, billions'),
+        'P0121': ('dataset_uscb.zip', 1000, '1958=100, billions'),
+        'P0122': ('dataset_uscb.zip', 1000, '1958=100, billions'),
     }
     df = pd.concat(
         [
@@ -1292,18 +1271,18 @@ def collect_uscb_cap(smoothing: bool = False) -> DataFrame:
 def collect_uscb_cap_deflator() -> DataFrame:
     '''Returns Census Fused Capital Deflator'''
     SERIES_IDS = {
-        'P0107': ('dataset_uscb.zip', 1000, 'nominal, billions',),
-        'P0108': ('dataset_uscb.zip', 1000, 'nominal, billions',),
-        'P0109': ('dataset_uscb.zip', 1000, 'nominal, billions',),
-        'P0110': ('dataset_uscb.zip', 1000, '1958=100, billions',),
-        'P0111': ('dataset_uscb.zip', 1000, '1958=100, billions',),
-        'P0112': ('dataset_uscb.zip', 1000, '1958=100, billions',),
-        'P0113': ('dataset_uscb.zip', 1000, 'nominal, billions',),
-        'P0114': ('dataset_uscb.zip', 1000, 'nominal, billions',),
-        'P0115': ('dataset_uscb.zip', 1000, 'nominal, billions',),
-        'P0116': ('dataset_uscb.zip', 1000, '1958=100, billions',),
-        'P0117': ('dataset_uscb.zip', 1000, '1958=100, billions',),
-        'P0118': ('dataset_uscb.zip', 1000, '1958=100, billions',),
+        'P0107': ('dataset_uscb.zip', 1000, 'nominal, billions'),
+        'P0108': ('dataset_uscb.zip', 1000, 'nominal, billions'),
+        'P0109': ('dataset_uscb.zip', 1000, 'nominal, billions'),
+        'P0110': ('dataset_uscb.zip', 1000, '1958=100, billions'),
+        'P0111': ('dataset_uscb.zip', 1000, '1958=100, billions'),
+        'P0112': ('dataset_uscb.zip', 1000, '1958=100, billions'),
+        'P0113': ('dataset_uscb.zip', 1000, 'nominal, billions'),
+        'P0114': ('dataset_uscb.zip', 1000, 'nominal, billions'),
+        'P0115': ('dataset_uscb.zip', 1000, 'nominal, billions'),
+        'P0116': ('dataset_uscb.zip', 1000, '1958=100, billions'),
+        'P0117': ('dataset_uscb.zip', 1000, '1958=100, billions'),
+        'P0118': ('dataset_uscb.zip', 1000, '1958=100, billions'),
     }
     _df = pd.concat(
         [
@@ -1890,7 +1869,7 @@ def transform_cobb_douglas_alt(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
     df['_prod_comp_roll'] = df.iloc[:, -
                                     1].rolling(window=3, center=True).mean()
     df['_prod_comp_roll_sub'] = df.iloc[:, -2].sub(df.iloc[:, -1])
-    return df, (k, np.exp(b),), (_k, np.exp(_b),)
+    return df, (k, np.exp(b)), (_k, np.exp(_b),)
 
 
 def transform_cobb_douglas_sklearn(df: DataFrame) -> DataFrame:

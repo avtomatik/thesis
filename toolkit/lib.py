@@ -15,7 +15,7 @@ from scipy.interpolate import UnivariateSpline
 import scipy.optimize as optimization
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
-from read.lib import read_manager_can
+from read.lib import read_can
 
 
 def calculate_capital(df: DataFrame, p_i: tuple[float], p_t: tuple[float], ratio: float):
@@ -881,7 +881,7 @@ def build_load_data_frame(file_name: str, blueprint: dict) -> None:
     '''
     df = DataFrame()
     for item in blueprint:
-        _df = read_manager_can(
+        _df = read_can(
             # =================================================================
             # TODO: UPDATE ACCORDING TO NEW SIGNATURE
             # =================================================================
