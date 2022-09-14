@@ -201,7 +201,7 @@ def collect_cobb_douglas_deflator() -> DataFrame:
     ).truncate(before=1794)
     SERIES_IDS_CB = tuple(SERIES_IDS_CB)
     SERIES_IDS_EA = tuple(SERIES_IDS_EA)
-    df['fa_def_cs'] = df.loc[:, SERIES_IDS_CB[-2]].div(
+    df['fa_def_cb'] = df.loc[:, SERIES_IDS_CB[-2]].div(
         df.loc[:, SERIES_IDS_CB[-1]])
     df['ppi_bea'] = df.loc[:, SERIES_IDS_EA[0]].div(
         df.loc[:, SERIES_IDS_EA[1]]).div(df.loc[2012, SERIES_IDS_EA[0]]).mul(100)
@@ -1293,12 +1293,12 @@ def collect_uscb_cap_deflator() -> DataFrame:
         verify_integrity=True,
         sort=True
     ).truncate(before=1879)
-    _df['purchases_total'] = _df.iloc[:, 0].div(_df.iloc[:, 3])
-    _df['purchases_struc'] = _df.iloc[:, 1].div(_df.iloc[:, 4])
-    _df['purchases_equip'] = _df.iloc[:, 2].div(_df.iloc[:, 5])
-    _df['depreciat_total'] = _df.iloc[:, 6].div(_df.iloc[:, 9])
-    _df['depreciat_struc'] = _df.iloc[:, 7].div(_df.iloc[:, 10])
-    _df['depreciat_equip'] = _df.iloc[:, 8].div(_df.iloc[:, 11])
+    _df['total_purchases'] = _df.iloc[:, 0].div(_df.iloc[:, 3])
+    _df['struc_purchases'] = _df.iloc[:, 1].div(_df.iloc[:, 4])
+    _df['equip_purchases'] = _df.iloc[:, 2].div(_df.iloc[:, 5])
+    _df['total_depreciat'] = _df.iloc[:, 6].div(_df.iloc[:, 9])
+    _df['struc_depreciat'] = _df.iloc[:, 7].div(_df.iloc[:, 10])
+    _df['equip_depreciat'] = _df.iloc[:, 8].div(_df.iloc[:, 11])
     df = pd.concat(
         [
             price_inverse_single(
@@ -1310,40 +1310,64 @@ def collect_uscb_cap_deflator() -> DataFrame:
     return df.iloc[:, [-1]]
 
 
-def collect_uscb_employment() -> DataFrame:
+def collect_uscb_unemployment_hours_worked() -> DataFrame:
     '''Census Employment Series'''
-    ARCHIVE_NAME = 'dataset_uscb.zip'
-    SERIES_IDS = (
+    SERIES_IDS = {
         # =====================================================================
         # Unemployment
         # =====================================================================
-        'D0085', 'D0086',
+        'D0085': 'dataset_uscb.zip',
+        'D0086': 'dataset_uscb.zip',
         # =====================================================================
         # Hours Worked
         # =====================================================================
-        'D0796', 'D0797',
-        # =====================================================================
-        # Stoppages & Workers Involved
-        # =====================================================================
-        'D0977', 'D0982',
-    )
+        'D0796': 'dataset_uscb.zip',
+        'D0797': 'dataset_uscb.zip',
+    }
     df = pd.concat(
         [
-            read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
-            for series_id in SERIES_IDS
+            read_usa_hist(archive_name).pipe(pull_by_series_id, series_id)
+            for series_id, archive_name in SERIES_IDS.items()
         ],
         axis=1,
         verify_integrity=True,
         sort=True
     )
     df['workers'] = df.iloc[:, 0].div(df.iloc[:, 1]).mul(100)
-    df.loc[:, SERIES_IDS[-2:]] = df.loc[:, SERIES_IDS[-2:]].fillna(
+    return df
+
+
+def collect_uscb_employment_conflicts() -> DataFrame:
+    SERIES_IDS = {
+        # =====================================================================
+        # Stoppages
+        # =====================================================================
+        'D0977': 'dataset_uscb.zip',
+        # =====================================================================
+        # Workers Involved
+        # =====================================================================
+        'D0982': 'dataset_uscb.zip',
+    }
+    YEAR = 1906
+    df = pd.concat(
+        [
+            read_usa_hist(archive_name).pipe(pull_by_series_id, series_id)
+            for series_id, archive_name in SERIES_IDS.items()
+        ],
+        axis=1,
+        verify_integrity=True,
+        sort=True
+    )
+    # =========================================================================
+    # Fill the Gaps
+    # =========================================================================
+    df = df.reindex(range(df.index[0], 1 + df.index[-1]))
+    return df.fillna(
         {
-            series_id: df.loc[:1906, series_id].mean()
-            for series_id in SERIES_IDS[-2:]
+            series_id: df.loc[:YEAR, series_id].mean()
+            for series_id in SERIES_IDS
         }
     )
-    return df
 
 
 def collect_uscb_gnp() -> DataFrame:

@@ -18,7 +18,8 @@ from collect.lib import collect_usa_investment_turnover
 from collect.lib import collect_usa_mcconnel
 from collect.lib import collect_uscb_cap
 from collect.lib import collect_uscb_cap_deflator
-from collect.lib import collect_uscb_employment
+from collect.lib import collect_uscb_unemployment_hours_worked
+from collect.lib import collect_uscb_employment_conflicts
 from collect.lib import collect_uscb_gnp
 from collect.lib import collect_uscb_immigration
 from collect.lib import collect_uscb_metals
@@ -424,9 +425,8 @@ def main():
 
     plot_uscb_commodities(SERIES_IDS)
     plot_uscb_immigration(collect_uscb_immigration())
-    df = collect_uscb_employment()
-    plot_uscb_unemployment_hours_worked(df)
-    plot_uscb_employment_conflicts(df)
+    plot_uscb_unemployment_hours_worked(collect_uscb_unemployment_hours_worked())
+    plot_uscb_employment_conflicts(collect_uscb_employment_conflicts())
     plot_uscb_gnp(collect_uscb_gnp())
     plot_uscb_farm_lands()
     plot_uscb_trade(collect_uscb_trade())

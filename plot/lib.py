@@ -416,7 +416,7 @@ def plot_uscb_unemployment_hours_worked(df: DataFrame) -> None:
     plt.grid(True)
     plt.legend()
     plt.figure(3)
-    plt.plot(df.iloc[:, 6])
+    plt.plot(df.iloc[:, 4])
     plt.title('Implicit Number of Workers')
     plt.xlabel('Period')
     plt.ylabel('Persons')
@@ -429,7 +429,7 @@ def plot_uscb_employment_conflicts(df: DataFrame) -> None:
     color = 'tab:red'
     _axes_stoppages.set_xlabel('Period')
     _axes_stoppages.set_ylabel('Number', color=color)
-    _axes_stoppages.plot(df.iloc[:, 4], color=color, label='Stoppages')
+    _axes_stoppages.plot(df.iloc[:, 0], color=color, label='Stoppages')
     _axes_stoppages.set_title('Work Conflicts')
     _axes_stoppages.grid(True)
     _axes_stoppages.legend(loc=2)
@@ -437,7 +437,7 @@ def plot_uscb_employment_conflicts(df: DataFrame) -> None:
     _axes_workers = _axes_stoppages.twinx()
     color = 'tab:blue'
     _axes_workers.set_ylabel('1,000 People', color=color)
-    _axes_workers.plot(df.iloc[:, 5], color=color, label='Workers Involved')
+    _axes_workers.plot(df.iloc[:, 1], color=color, label='Workers Involved')
     _axes_workers.legend(loc=1)
     _axes_workers.tick_params(axis='y', labelcolor=color)
     fig.tight_layout()

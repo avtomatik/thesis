@@ -752,12 +752,12 @@ def collect_census_b_b():
         axis=1,
         sort=True
     ).truncate(before=1879)
-    _df['purchases_total'] = _df.iloc[:, 0].div(_df.iloc[:, 3])
-    _df['purchases_struc'] = _df.iloc[:, 1].div(_df.iloc[:, 4])
-    _df['purchases_equip'] = _df.iloc[:, 2].div(_df.iloc[:, 5])
-    _df['depreciat_total'] = _df.iloc[:, 6].div(_df.iloc[:, 9])
-    _df['depreciat_struc'] = _df.iloc[:, 7].div(_df.iloc[:, 10])
-    _df['depreciat_equip'] = _df.iloc[:, 8].div(_df.iloc[:, 11])
+    _df['total_purchases'] = _df.iloc[:, 0].div(_df.iloc[:, 3])
+    _df['struc_purchases'] = _df.iloc[:, 1].div(_df.iloc[:, 4])
+    _df['equip_purchases'] = _df.iloc[:, 2].div(_df.iloc[:, 5])
+    _df['total_depreciat'] = _df.iloc[:, 6].div(_df.iloc[:, 9])
+    _df['struc_depreciat'] = _df.iloc[:, 7].div(_df.iloc[:, 10])
+    _df['equip_depreciat'] = _df.iloc[:, 8].div(_df.iloc[:, 11])
     df = pd.concat(
         [
             price_inverse_single(
@@ -1133,7 +1133,7 @@ def collect_cobb_douglas_deflator():
         axis=1,
         sort=True
     ).truncate(before=1794)
-    df['fa_def_cs'] = df.loc[:, CS_SERIES_IDS[-2]].div(
+    df['fa_def_cb'] = df.loc[:, CS_SERIES_IDS[-2]].div(
         df.loc[:, CS_SERIES_IDS[-1]])
     df['ppi_bea'] = df.loc[:, BE_SERIES_IDS[0]].div(
         df.loc[:, BE_SERIES_IDS[1]]).div(df.loc[2012, BE_SERIES_IDS[0]]).mul(100)
