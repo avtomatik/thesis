@@ -32,7 +32,7 @@ FILE_NAMES_UTILISED = (
 )
 
 
-def plot_a(df: DataFrame) -> None:
+def plot_investment_production(df: DataFrame) -> None:
     '''
     ================== =================================
     df.index           Period
@@ -76,7 +76,7 @@ def plot_a(df: DataFrame) -> None:
     plt.show()
 
 
-def plot_b(df: DataFrame) -> None:
+def plot_investment(df: DataFrame) -> None:
     '''
     ================== =================================
     df.index           Period
@@ -710,7 +710,7 @@ def plot_approx_log_linear(df: DataFrame) -> None:
     plt.show()
 
 
-def plot_block_zer(df: DataFrame) -> None:
+def plot_lab_cap_inty_lab_prty_closure(df: DataFrame) -> None:
     '''
     Plotting
 
@@ -738,15 +738,15 @@ def plot_block_zer(df: DataFrame) -> None:
     # Labor Productivity
     # =========================================================================
     df['lab_product'] = df.iloc[:, 2].div(df.iloc[:, 1])
-    plot_simple_linear(
+    plot_lab_cap_inty_lab_prty(
         *simple_linear_regression(df.iloc[:, -2:])
     )
-    plot_simple_log(
+    plot_lab_cap_inty_lab_prty(
         *simple_linear_regression(np.log(df.iloc[:, -2:]))
     )
 
 
-def plot_block_one(df: DataFrame) -> None:
+def plot_lab_cap_inty(df: DataFrame) -> None:
     '''
     Plotting
 
@@ -835,7 +835,7 @@ def plot_block_one(df: DataFrame) -> None:
     plt.show()
 
 
-def plot_block_two(df: DataFrame) -> None:
+def plot_lab_prty(df: DataFrame) -> None:
     '''
     Plotting
 
@@ -1283,9 +1283,9 @@ def plot_cobb_douglas_complex(df: DataFrame) -> None:
     )
     plot_cobb_douglas_3d(df.iloc[:, range(3)])
     plot_lab_prod_polynomial(df)
-    plot_block_zer(df)
-    plot_block_one(df)
-    plot_block_two(df)
+    plot_lab_cap_inty_lab_prty_closure(df)
+    plot_lab_cap_inty(df)
+    plot_lab_prty(df)
     plot_turnover(df.iloc[:, [0, 2]])
 
 
@@ -2124,7 +2124,7 @@ def plot_rolling_mean_filter(df: DataFrame) -> None:
     plt.show()
 
 
-def plot_simple_linear(df: DataFrame, params: tuple[float]) -> None:
+def plot_lab_cap_inty_lab_prty(df: DataFrame, params: tuple[float]) -> None:
     '''
     Labor Productivity on Labor Capital Intensity Plot;
     Predicted Labor Productivity Plot
@@ -2136,7 +2136,7 @@ def plot_simple_linear(df: DataFrame, params: tuple[float]) -> None:
         label='Original'
     )
     plt.title(
-        '$Labor\ Capital\ Intensity$, $Labor\ Productivity$ Relation, {}$-${}'.format(
+        r'$\mathbf{{Labor\ Capital\ Intensity}}$, $\mathbf{{Labor\ Productivity}}$ Relation, {}$-${}'.format(
             *df.index[[0, -1]]
         )
     )
@@ -2149,7 +2149,7 @@ def plot_simple_linear(df: DataFrame, params: tuple[float]) -> None:
         df.iloc[:, 2],
         # =====================================================================
         # TODO:
-        # label='$\\frac{{Y}{Y_{0}} = {{:,.4f}}\\frac{{L}{L_{0}}+{{:,.4f}}\\frac{{K}{K_{0}}$'.format(
+        label=r'$\frac{{Y}}{{Y_{{0}}}} = {:,.4f}\frac{{L}}{{L_{{0}}}}+{:,.4f}\frac{{C}}{{C_{{0}}}}
         #     *params[::-1]
         # )
         # =====================================================================
@@ -2168,7 +2168,247 @@ def plot_simple_linear(df: DataFrame, params: tuple[float]) -> None:
     plt.show()
 
 
-def plot_simple_log(df: DataFrame, params: tuple[float]) -> None:
+def plot_lab_cap_inty_lab_prty(df: DataFrame, params: tuple[float]) -> None:
+    '''
+    Log Labor Productivity on Log Labor Capital Intensity Plot;
+    Predicted Log Labor Productivity Plot
+    '''
+    plt.figure(1)
+    plt.plot(
+        df.iloc[:, 0],
+        df.iloc[:, 1],
+        label='Logarithm'
+    )
+    plt.title(
+        '$\\ln(Labor\ Capital\ Intensity), \\ln(Labor\ Productivity)$ Relation, {}$-${}'.format(
+            *df.index[[0, -1]]
+        )
+    )
+    plt.xlabel('$\\ln(Labor\ Capital\ Intensity)$')
+    plt.ylabel('$\\ln(Labor\ Productivity)$')
+    plt.grid(True)
+    plt.legend()
+    plt.figure(2)
+    plt.plot(
+        df.iloc[:, 2],
+        # =====================================================================
+        # TODO
+        # =====================================================================
+        label='$\\ln(\\frac{Y}{Y_{0}}) = %f+%f\\ln(\\frac{K}{K_{0}})+%f\\ln(\\frac{L}{L_{0}})$' % (
+            *params[::-1],
+            1 - params[0]
+        )
+    )
+    plt.title('Model: $\\ln(\\hat Y) = {:.4f}+{:.4f}\\times \\ln(X)$, {}$-${}'.format(
+        *params[::-1],
+        *df.index[[0, -1]]
+    )
+    )
+    plt.xlabel('Period')
+    plt.ylabel(
+        '$\\hat Y = \\ln(Labor\ Productivity)$, $X = \\ln(Labor\ Capital\ Intensity)$'
+    )
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+
+
+def plot_turnover(df: DataFrame) -> None:
+    '''Static Fixed Assets Turnover Approximation
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Capital
+    df.iloc[:, 1]      Product
+    ================== =================================
+    '''
+    # =========================================================================
+    # TODO: Use Feed from transform_cobb_douglas()
+    # =========================================================================
+    # =========================================================================
+    # Fixed Assets Turnover
+    # =========================================================================
+    df['c_turnover'] = df.iloc[:, 1].div(df.iloc[:, 0])
+    # =========================================================================
+    # Linear: Fixed Assets Turnover
+    # =========================================================================
+    _lin = np.polyfit(df.index, df.iloc[:, -1], deg=1)
+    # =========================================================================
+    # Exponential: Fixed Assets Turnover
+    # =========================================================================
+    _exp = np.polyfit(df.index, np.log(df.iloc[:, -1]), deg=1)
+    df['c_turnover_lin'] = df.index.to_series().mul(_lin[0]).add(_lin[1])
+    df['c_turnover_exp'] = np.exp(
+        df.index.to_series().mul(_exp[0]).add(_exp[1]))
+    # =========================================================================
+    # Deltas
+    # =========================================================================
+    df['d_lin'] = df.iloc[:, -2].div(df.iloc[:, -3]).sub(1).abs()
+    df['d_exp'] = df.iloc[:, -2].div(df.iloc[:, -4]).sub(1).abs()
+    plt.figure(1)
+    plt.plot(df.iloc[:, 2], df.iloc[:, 0])
+    plt.title(
+        'Fixed Assets Volume to Fixed Assets Turnover, {}$-${}'.format(
+            *df.index[[0, -1]]
+        )
+    )
+    plt.xlabel('Fixed Assets Turnover')
+    plt.ylabel('Fixed Assets Volume')
+    plt.grid(True)
+    plt.figure(2)
+    plt.scatter(
+        df.index,
+        df.iloc[:, -5],
+        label='Fixed Assets Turnover'
+    )
+    plt.plot(
+        df.iloc[:, [-4]],
+        label='$\\hat K_{{l}} = {:.2f} {:.2f} t, R^2 = {:.4f}$'.format(
+            *_lin[::-1],
+            r2_score(df.iloc[:, -5], df.iloc[:, -4])
+        )
+    )
+    plt.plot(
+        df.iloc[:, [-3]],
+        label='$\\hat K_{{e}} = \\exp ({:.2f} {:.2f} t), R^2 = {:.4f}$'.format(
+            *_exp[::-1],
+            r2_score(df.iloc[:, -5], df.iloc[:, -3])
+        )
+    )
+    plt.title(
+        'Fixed Assets Turnover Approximation, {}$-${}'.format(
+            *df.index[[0, -1]]
+        )
+    )
+    plt.xlabel('Period')
+    plt.ylabel('Index')
+    plt.grid(True)
+    plt.legend()
+    plt.figure(3)
+    plt.plot(
+        df.iloc[:, [-2]],
+        ':',
+        label='$\\|\\frac{{\\hat K_{{l}}-K}}{{K}}\\|, \\bar S = {:.4%}$'.format(
+            df.iloc[:, -2].mean()
+        )
+    )
+    plt.plot(
+        df.iloc[:, [-1]],
+        ':',
+        label='$\\|\\frac{{\\hat K_{{e}}-K}}{{K}}\\|, \\bar S = {:.4%}$'.format(
+            df.iloc[:, -1].mean()
+        )
+    )
+    plt.title(
+        'Deltas of Fixed Assets Turnover Approximation, {}$-${}'.format(
+            *df.index[[0, -1]]
+        )
+    )
+    plt.xlabel('Period')
+    plt.ylabel('Index')
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+
+
+def plot_usa_nber(df_sic: DataFrame, df_naics: DataFrame, agg: str) -> None:
+    '''Project V: USA NBER Data Plotting'''
+    for _, (sic_id, naics_id) in enumerate(zip(df_sic.columns, df_naics.columns)):
+        # =====================================================================
+        # Ensures Columns in Two DataFrames Are in the Same Ordering
+        # =====================================================================
+        series_id = tuple(set((sic_id, naics_id)))
+        plt.plot(df_sic.iloc[:, _], label='sic_{}'.format(*series_id))
+        plt.plot(df_naics.iloc[:, _], label='naics_{}'.format(*series_id))
+        plt.title('NBER CES: {} {}'.format(*series_id, agg))
+        plt.xlabel('Period')
+        plt.ylabel('Dimension')
+        plt.grid(True)
+        plt.legend()
+        plt.show()
+
+
+def plot_usa_nber_manager() -> None:
+    FILE_NAMES = (
+        'dataset_usa_nber_ces_mid_sic5811.csv',
+        'dataset_usa_nber_ces_mid_naics5811.csv',
+    )
+    aggs = ('mean', 'sum')
+    for _agg in aggs:
+        sic = extract_usa_nber(FILE_NAMES[0], _agg)
+        naics = extract_usa_nber(FILE_NAMES[1], _agg)
+        plot_usa_nber(sic, naics, _agg)
+
+
+def plot_capital_acquisition(df: DataFrame) -> None:
+    '''
+    Interactive Shell for Processing Capital Acquisitions
+
+    Parameters
+    ----------
+    df : DataFrame
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Nominal Investment
+    df.iloc[:, 1]      Nominal Production
+    df.iloc[:, 2]      Real Production
+    df.iloc[:, 3]      Maximum Real Production
+    df.iloc[:, 4]      Nominal Capital
+    df.iloc[:, 5]      Labor
+    ================== =================================
+
+    Returns
+    -------
+    None
+        Draws matplotlib.pyplot Plots.
+
+    '''
+    _df = df.copy()
+    _df.reset_index(level=0, inplace=True)
+    _df.columns = ['period', *_df.columns[1:]]
+    # =========================================================================
+    # TODO: Separate Basic Year Function
+    # =========================================================================
+    _df['__deflator'] = _df.iloc[:, 2].div(_df.iloc[:, 3]).sub(1).abs()
+    _b = _df.iloc[:, -1].astype(float).argmin()
+    _df.drop(_df.columns[-1], axis=1, inplace=True)
+    # =========================================================================
+    # Calculate Static Values
+    # =========================================================================
+    # =========================================================================
+    # Fixed Assets Turnover Ratio
+    # =========================================================================
+    _df['c_turnover'] = _df.iloc[:, 3].div(_df.iloc[:, 5])
+    # =========================================================================
+    # Investment to Gross Domestic Product Ratio, (I/Y)/(I_0/Y_0)
+    # =========================================================================
+    _df['inv_to_gdp'] = _df.iloc[:, 1].div(_df.iloc[:, 3])
+    # =========================================================================
+    # Labor Capital Intensity
+    # =========================================================================
+    _df['lab_cap_int'] = _df.iloc[:, 5].div(_df.iloc[:, 6])
+    # =========================================================================
+    # Labor Productivity
+    # =========================================================================
+.format(
+        #     *params[::-1]
+        # )
+        # =====================================================================
+        label='TBA'
+    )
+    plt.title(
+        'Model: $\\hat Y = {:.4f}+{:.4f}\\times X$, {}$-${}'.format(
+            *params[::-1],
+            *df.index[[0, -1]]
+        )
+    )
+    plt.xlabel('Period')
+    plt.ylabel('$\\hat Y = Labor\ Productivity$, $X = Labor\ Capital\ Intensity$')
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+
+
+def plot_lab_cap_inty_lab_prty(df: DataFrame, params: tuple[float]) -> None:
     '''
     Log Labor Productivity on Log Labor Capital Intensity Plot;
     Predicted Log Labor Productivity Plot

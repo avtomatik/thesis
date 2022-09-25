@@ -1095,4 +1095,4 @@ def simple_linear_regression(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
         _tss,
         _r
     ))
-    return df, params
+    return df, tuple(params)

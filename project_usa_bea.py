@@ -14,8 +14,8 @@ from collect.lib import transform_production_money
 from collect.lib import transform_d
 from collect.lib import transform_e
 from collect.lib import transform_kurenkov
-from plot.lib import plot_a
-from plot.lib import plot_b
+from plot.lib import plot_investment_production
+from plot.lib import plot_investment
 from plot.lib import plot_c
 from plot.lib import plot_d
 from plot.lib import plot_e
@@ -31,12 +31,12 @@ def main():
     # Project: Initial Version Dated: 05 October 2012
     # =========================================================================
     df_a_a = transform_a(_df_a)
-    plot_a(df_a_a)
+    plot_investment_production(df_a_a)
     # =========================================================================
     # Project: Initial Version Dated: 23 November 2012
     # =========================================================================
     df_b_a = transform_b(_df_a)
-    plot_b(df_b_a)
+    plot_investment(df_b_a)
     # =========================================================================
     # Project: Initial Version Dated: 16 June 2013
     # =========================================================================

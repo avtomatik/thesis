@@ -49,7 +49,15 @@ FILE_NAMES_UTILISED = (
 )
 
 
-def plot_a(df: DataFrame) -> None:
+def _lab_productivity(array: np.array, k: float = 0.25, b: float = 1.01) -> np.array:
+    return np.multiply(np.power(array, -k), b)
+
+
+def _cap_productivity(array: np.array, k: float = 0.25, b: float = 1.01) -> np.array:
+    return np.multiply(np.power(array, 1-k), b)
+
+
+def plot_investment_production(df: DataFrame) -> None:
     '''
     ================== =================================
     df.index           Period
@@ -93,7 +101,7 @@ def plot_a(df: DataFrame) -> None:
     plt.show()
 
 
-def plot_b(df: DataFrame) -> None:
+def plot_investment(df: DataFrame) -> None:
     '''
     ================== =================================
     df.index           Period
@@ -367,7 +375,8 @@ def plot_uscb_commodities(series_ids: tuple[str]) -> None:
     ARCHIVE_NAME = 'dataset_uscb.zip'
     df = DataFrame()
     for series_id in series_ids:
-        chunk = read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id).sort_index()
+        chunk = read_usa_hist(ARCHIVE_NAME).pipe(
+            pull_by_series_id, series_id).sort_index()
         df = pd.concat(
             [
                 df,
@@ -735,7 +744,7 @@ def plot_approx_log_linear(df: DataFrame) -> None:
     plt.show()
 
 
-def plot_block_zer(df: DataFrame) -> None:
+def plot_lab_cap_inty_lab_prty_closure(df: DataFrame) -> None:
     '''
     Plotting
 
@@ -751,15 +760,17 @@ def plot_block_zer(df: DataFrame) -> None:
     -------
     None
     '''
-    plot_simple_linear(
-        *simple_linear_regression(df.iloc[:, -2:])
+    plot_lab_cap_inty_lab_prty(
+        *simple_linear_regression(df.iloc[:, -2:]),
+        'Original'
     )
-    plot_simple_log(
-        *simple_linear_regression(np.log(df.iloc[:, -2:].astype(float)))
+    plot_lab_cap_inty_lab_prty(
+        *simple_linear_regression(np.log(df.iloc[:, -2:].astype(float))),
+        'Logarithm'
     )
 
 
-def plot_block_one(df: DataFrame) -> None:
+def plot_lab_cap_inty(df: DataFrame) -> None:
     '''
     Plotting
 
@@ -836,7 +847,7 @@ def plot_block_one(df: DataFrame) -> None:
     plt.show()
 
 
-def plot_block_two(df: DataFrame) -> None:
+def plot_lab_prty(df: DataFrame) -> None:
     '''
     Plotting
 
@@ -1093,12 +1104,6 @@ def plot_cobb_douglas(df: DataFrame, params: tuple[float], mapping: dict) -> Non
     '''
     assert df.shape[1] == 12
 
-    def _lab_productivity(array: np.array, k: float = 0.25, b: float = 1.01) -> np.array:
-        return np.multiply(np.power(array, -k), b)
-
-    def _cap_productivity(array: np.array, k: float = 0.25, b: float = 1.01) -> np.array:
-        return np.multiply(np.power(array, 1-k), b)
-
     plt.figure(1)
     plt.semilogy(df.iloc[:, range(3)], label=[
         'Fixed Capital',
@@ -1199,12 +1204,6 @@ def plot_cobb_douglas_alt(df: DataFrame, params: tuple[float], mapping: dict) ->
     '''
     assert df.shape[1] == 20
 
-    def _lab_productivity(array: np.array, k: float = 0.25, b: float = 1.01) -> np.array:
-        return np.multiply(np.power(array, -k), b)
-
-    def _cap_productivity(array: np.array, k: float = 0.25, b: float = 1.01) -> np.array:
-        return np.multiply(np.power(array, 1-k), b)
-
     plt.figure(1)
     plt.semilogy(df.iloc[:, range(4)], label=[
         'Fixed Capital',
@@ -1304,9 +1303,9 @@ def plot_cobb_douglas_complex(df: DataFrame) -> None:
     )
     plot_cobb_douglas_3d(df.iloc[:, range(3)])
     plot_lab_prod_polynomial(_df.iloc[:, [3, 4]])
-    plot_block_zer(_df.iloc[:, [3, 4]])
-    plot_block_one(_df.iloc[:, [3]])
-    plot_block_two(_df.iloc[:, [4]])
+    plot_lab_cap_inty_lab_prty_closure(_df.iloc[:, [3, 4]])
+    plot_lab_cap_inty(_df.iloc[:, [3]])
+    plot_lab_prty(_df.iloc[:, [4]])
     plot_turnover(_df.iloc[:, [6]])
 
 
@@ -1315,12 +1314,6 @@ def plot_cobb_douglas_tight_layout(df: DataFrame, params: tuple[float], mapping:
     Cobb--Douglas Algorithm as per C.W. Cobb, P.H. Douglas. A Theory of Production, 1928;
     '''
     assert df.shape[1] == 12
-
-    def _lab_productivity(array: np.array, k: float = 0.25, b: float = 1.01) -> np.array:
-        return np.multiply(np.power(array, -k), b)
-
-    def _cap_productivity(array: np.array, k: float = 0.25, b: float = 1.01) -> np.array:
-        return np.multiply(np.power(array, 1-k), b)
 
     fig, axes = plt.subplots(5, 1)
     axes[0].plot(df.iloc[:, range(3)], label=[
@@ -2191,90 +2184,65 @@ def plot_rolling_mean_filter(df: DataFrame) -> None:
     plt.show()
 
 
-def plot_simple_linear(df: DataFrame, params: tuple[float]) -> None:
+def plot_lab_cap_inty_lab_prty(df: DataFrame, params: tuple[float], option: str) -> None:
     '''
-    Labor Productivity on Labor Capital Intensity Plot;
-    Predicted Labor Productivity Plot
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      [Logarithm] Labor Capital Intensity
+    df.iloc[:, 1]      [Logarithm] Labor Productivity
+    df.iloc[:, 2]      [Logarithm] Labor Productivity : Estimate
+    ================== =================================
     '''
+    MAPPING = {
+        'Original': {
+            1: {
+                'title': r'$\mathbf{{Labor\ Capital\ Intensity}}$, $\mathbf{{Labor\ Productivity}}$ Relation, {}$-${}',
+                'xlabel': 'Labor Capital Intensity',
+                'ylabel': 'Labor Productivity',
+            },
+            2: {
+                'label': r'$\frac{{Y}}{{Y_{{0}}}} = {:,.4f}\frac{{L}}{{L_{{0}}}}+{:,.4f}\frac{{C}}{{C_{{0}}}}$',
+                'title': r'Model: $\hat Y = {:.4f}+{:.4f}\times X$, {}$-${}',
+                'xlabel': 'Period',
+                'ylabel': '$\\hat Y = Labor\ Productivity$, $X = Labor\ Capital\ Intensity$',
+            },
+            'params': params[::-1],
+        },
+        'Logarithm': {
+            1: {
+                'title': '$\\ln(Labor\ Capital\ Intensity), \\ln(Labor\ Productivity)$ Relation, {}$-${}',
+                'xlabel': '$\\ln(Labor\ Capital\ Intensity)$',
+                'ylabel': '$\\ln(Labor\ Productivity)$',
+            },
+            2: {
+                'label': r'$\ln(\frac{{Y}}{{Y_{{0}}}}) = {:,.4f}+{:,.4f}\ln(\frac{{C}}{{C_{{0}}}})+{:,.4f}\ln(\frac{{L}}{{L_{{0}}}})$',
+                'title': 'Model: $\\ln(\\hat Y) = {:.4f}+{:.4f}\\times \\ln(X)$, {}$-${}',
+                'xlabel': 'Period',
+                'ylabel': '$\\hat Y = \\ln(Labor\ Productivity)$, $X = \\ln(Labor\ Capital\ Intensity)$',
+            },
+            'params': tuple((*params[::-1], 1 - params[0])),
+        }
+    }
     plt.figure(1)
     plt.plot(
         df.iloc[:, 0],
         df.iloc[:, 1],
-        label='Original'
+        label=option
     )
-    plt.title(
-        '$Labor\ Capital\ Intensity$, $Labor\ Productivity$ Relation, {}$-${}'.format(
-            *df.index[[0, -1]]
-        )
-    )
-    plt.xlabel('Labor Capital Intensity')
-    plt.ylabel('Labor Productivity')
+    plt.title(MAPPING[option][1]['title'].format(*df.index[[0, -1]]))
+    plt.xlabel(MAPPING[option][1]['xlabel'])
+    plt.ylabel(MAPPING[option][1]['ylabel'])
     plt.grid(True)
     plt.legend()
     plt.figure(2)
     plt.plot(
         df.iloc[:, 2],
-        # =====================================================================
-        # TODO:
-        # label='$\\frac{{Y}{Y_{0}} = {{:,.4f}}\\frac{{L}{L_{0}}+{{:,.4f}}\\frac{{K}{K_{0}}$'.format(
-        #     *params[::-1]
-        # )
-        # =====================================================================
-        label='TBA'
+        label=MAPPING[option][2]['label'].format(*MAPPING[option]['params'])
     )
-    plt.title(
-        'Model: $\\hat Y = {:.4f}+{:.4f}\\times X$, {}$-${}'.format(
-            *params[::-1],
-            *df.index[[0, -1]]
-        )
-    )
-    plt.xlabel('Period')
-    plt.ylabel('$\\hat Y = Labor\ Productivity$, $X = Labor\ Capital\ Intensity$')
-    plt.grid(True)
-    plt.legend()
-    plt.show()
-
-
-def plot_simple_log(df: DataFrame, params: tuple[float]) -> None:
-    '''
-    Log Labor Productivity on Log Labor Capital Intensity Plot;
-    Predicted Log Labor Productivity Plot
-    '''
-    plt.figure(1)
-    plt.plot(
-        df.iloc[:, 0],
-        df.iloc[:, 1],
-        label='Logarithm'
-    )
-    plt.title(
-        '$\\ln(Labor\ Capital\ Intensity), \\ln(Labor\ Productivity)$ Relation, {}$-${}'.format(
-            *df.index[[0, -1]]
-        )
-    )
-    plt.xlabel('$\\ln(Labor\ Capital\ Intensity)$')
-    plt.ylabel('$\\ln(Labor\ Productivity)$')
-    plt.grid(True)
-    plt.legend()
-    plt.figure(2)
-    plt.plot(
-        df.iloc[:, 2],
-        # =====================================================================
-        # TODO
-        # =====================================================================
-        label='$\\ln(\\frac{Y}{Y_{0}}) = %f+%f\\ln(\\frac{K}{K_{0}})+%f\\ln(\\frac{L}{L_{0}})$' % (
-            *params[::-1],
-            1 - params[0]
-        )
-    )
-    plt.title('Model: $\\ln(\\hat Y) = {:.4f}+{:.4f}\\times \\ln(X)$, {}$-${}'.format(
-        *params[::-1],
-        *df.index[[0, -1]]
-    )
-    )
-    plt.xlabel('Period')
-    plt.ylabel(
-        '$\\hat Y = \\ln(Labor\ Productivity)$, $X = \\ln(Labor\ Capital\ Intensity)$'
-    )
+    plt.title(MAPPING[option][2]['title'].format(
+        *params[::-1], *df.index[[0, -1]]))
+    plt.xlabel(MAPPING[option][2]['xlabel'])
+    plt.ylabel(MAPPING[option][2]['ylabel'])
     plt.grid(True)
     plt.legend()
     plt.show()
