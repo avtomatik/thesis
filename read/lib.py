@@ -256,9 +256,8 @@ def read_usa_frb_g17() -> DataFrame:
     _df = pd.read_csv(**kwargs)
     kwargs['header'] = 0
     kwargs['names'] = [
-        'period', *[
-            int(float(_)) for _ in _df.columns[1 + _start:_df.shape[1]]
-        ]
+        'period',
+        *[int(float(_)) for _ in _df.columns[1 + _start:_df.shape[1]]]
     ]
     kwargs['index_col'] = 0
     kwargs['usecols'] = range(_start, _df.shape[1])

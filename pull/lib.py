@@ -82,10 +82,9 @@ def pull_can_aggregate(df: DataFrame, series_id: str) -> DataFrame:
     df.iloc[:, 0]      Series
     ================== =================================
     '''
-    flag = 'seas' in df.columns
     _df = df.loc[:, ('series_id', 'value')].pipe(
         pull_by_series_id, series_id).pipe(numerify)
-    if flag:
+    if 'seas' in df.columns:
         return _df.groupby(_df.index.year).sum()
     return _df.groupby(_df.index.year).mean()
 

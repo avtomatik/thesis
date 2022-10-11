@@ -557,17 +557,18 @@ def plot_census_j(df: DataFrame) -> None:
 def plot_census_k() -> None:
     '''Census Financial Markets & Institutions Series'''
     ARCHIVE_NAME = 'dataset_uscb.zip'
-    ids = itertools.chain(
-        range(410, 424),
-        range(580, 588),
-        range(610, 634),
-        range(741, 756),
-        range(879, 933),
-        range(947, 957),
+    SERIES_IDS = tuple(
+        f'X{_id:04n}' for _id in itertools.chain(
+            range(410, 424),
+            range(580, 588),
+            range(610, 634),
+            range(741, 756),
+            range(879, 933),
+            range(947, 957),
+        )
     )
-    SERIES_IDS = tuple(f'X{_id:04n}' for id in ids)
     for _, series_id in enumerate(SERIES_IDS, start=1):
-        df = read_usa_hist(ARCHIVE_NAME, series_id)
+        df = read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
         df = df.div(df.iloc[0, :]).mul(100)
         descr = usa_hist_description(ARCHIVE_NAME, series_id)
         plt.figure(_)

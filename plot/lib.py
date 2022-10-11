@@ -304,9 +304,10 @@ def plot_uscb_cap(df: DataFrame) -> None:
     '''Census Manufacturing Fixed Assets Series'''
     plt.figure()
     plt.semilogy(df, label=['Total', 'Structures', 'Equipment'])
-    plt.title('Census Manufacturing Fixed Assets, {}$-${}'.format(
-        *df.index[[0, -1]]
-    )
+    plt.title(
+        'Census Manufacturing Fixed Assets, {}$-${}'.format(
+            *df.index[[0, -1]]
+        )
     )
     plt.xlabel('Period')
     plt.ylabel('Millions of Dollars')
@@ -319,9 +320,10 @@ def plot_uscb_cap_deflator(df: DataFrame) -> None:
     '''Census Manufacturing Fixed Assets Deflator Series'''
     plt.figure()
     plt.plot(df)
-    plt.title('Census Fused Fixed Assets Deflator, {}$-${}'.format(
-        *df.index[[0, -1]]
-    )
+    plt.title(
+        'Census Fused Fixed Assets Deflator, {}$-${}'.format(
+            *df.index[[0, -1]]
+        )
     )
     plt.xlabel('Period')
     plt.ylabel('Index')
@@ -455,10 +457,12 @@ def plot_uscb_employment_conflicts(df: DataFrame) -> None:
 
 def plot_uscb_gnp(df: DataFrame) -> None:
     plt.figure()
-    plt.plot(df, label=[
-        'Gross National Product',
-        'Gross National Product Per Capita',
-    ]
+    plt.plot(
+        df,
+        label=[
+            'Gross National Product',
+            'Gross National Product Per Capita',
+        ]
     )
     plt.title(
         'Gross National Product, Prices {}=100, {}=100'.format(
@@ -474,15 +478,9 @@ def plot_uscb_gnp(df: DataFrame) -> None:
 
 def plot_uscb_farm_lands() -> None:
     '''Census 1975, Land in Farms'''
-    _kwargs = {
-        'archive_name': 'dataset_uscb.zip',
-        'series_id': 'K0005',
-    }
+    ARCHIVE_NAME, SERIES_ID = 'dataset_uscb.zip', 'K0005'
     plt.figure()
-    plt.plot(read_usa_hist(**_kwargs))
-    # =========================================================================
-    # read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
-    # =========================================================================
+    plt.plot(read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, SERIES_ID))
     plt.title('Land in Farms')
     plt.xlabel('Period')
     plt.ylabel('1,000 acres')
@@ -492,11 +490,13 @@ def plot_uscb_farm_lands() -> None:
 
 def plot_uscb_trade(df: DataFrame) -> None:
     plt.figure()
-    plt.plot(df, label=[
-        'Exports, U1',
-        'Imports, U8',
-        'Net Exports, U15',
-    ]
+    plt.plot(
+        df,
+        label=[
+            'Exports, U1',
+            'Imports, U8',
+            'Net Exports, U15',
+        ]
     )
     plt.title(
         'Exports & Imports of Goods and Services, {}$-${}'.format(
@@ -512,11 +512,13 @@ def plot_uscb_trade(df: DataFrame) -> None:
 
 def plot_uscb_trade_gold_silver(df: DataFrame) -> None:
     plt.figure()
-    plt.plot(df, label=[
-        'Exports, U187',
-        'Imports, U188',
-        'Net Exports, U189',
-    ]
+    plt.plot(
+        df,
+        label=[
+            'Exports, U187',
+            'Imports, U188',
+            'Net Exports, U189',
+        ]
     )
     plt.title(
         'Total Merchandise, Gold and Silver, {}$-${}'.format(
@@ -588,20 +590,18 @@ def plot_uscb_money_stock(df: DataFrame) -> None:
 def plot_uscb_finance() -> None:
     '''Census Financial Markets & Institutions Series'''
     ARCHIVE_NAME = 'dataset_uscb.zip'
-    ids = itertools.chain(
-        range(410, 424),
-        range(580, 588),
-        range(610, 634),
-        range(741, 756),
-        range(879, 933),
-        range(947, 957),
+    SERIES_IDS = tuple(
+        f'X{_id:04n}' for _id in itertools.chain(
+            range(410, 424),
+            range(580, 588),
+            range(610, 634),
+            range(741, 756),
+            range(879, 933),
+            range(947, 957),
+        )
     )
-    SERIES_IDS = tuple(f'X{_id:04n}' for _id in ids)
     for _, series_id in enumerate(SERIES_IDS, start=1):
-        df = read_usa_hist(ARCHIVE_NAME, series_id)
-        # =====================================================================
-        # read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
-        # =====================================================================
+        df = read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
         df = df.div(df.iloc[0, :]).mul(100)
         descr = pull_uscb_description(series_id)
         plt.figure(_)
@@ -1105,11 +1105,13 @@ def plot_cobb_douglas(df: DataFrame, params: tuple[float], mapping: dict) -> Non
     assert df.shape[1] == 12
 
     plt.figure(1)
-    plt.semilogy(df.iloc[:, range(3)], label=[
-        'Fixed Capital',
-        'Labor Force',
-        'Physical Product',
-    ]
+    plt.semilogy(
+        df.iloc[:, range(3)],
+        label=[
+            'Fixed Capital',
+            'Labor Force',
+            'Physical Product',
+        ]
     )
     plt.xlabel('Period')
     plt.ylabel('Indexes')
@@ -1118,14 +1120,16 @@ def plot_cobb_douglas(df: DataFrame, params: tuple[float], mapping: dict) -> Non
     plt.legend()
     plt.grid(True)
     plt.figure(2)
-    plt.semilogy(df.iloc[:, [2, 9]], label=[
-        'Actual Product',
-        'Computed Product, $P\' = {:,.4f}L^{{{:,.4f}}}C^{{{:,.4f}}}$'.format(
-            params[1],
-            1-params[0],
-            params[0],
-        ),
-    ]
+    plt.semilogy(
+        df.iloc[:, [2, 9]],
+        label=[
+            'Actual Product',
+            'Computed Product, $P\' = {:,.4f}L^{{{:,.4f}}}C^{{{:,.4f}}}$'.format(
+                params[1],
+                1-params[0],
+                params[0],
+            ),
+        ]
     )
     plt.xlabel('Period')
     plt.ylabel('Production')
@@ -1134,13 +1138,15 @@ def plot_cobb_douglas(df: DataFrame, params: tuple[float], mapping: dict) -> Non
     plt.legend()
     plt.grid(True)
     plt.figure(3)
-    plt.plot(df.iloc[:, [8, 11]], label=[
-        'Deviations of $P$',
-        'Deviations of $P\'$',
-        # =========================================================================
-        #      TODO: ls=['solid','dashed',]
-        # =========================================================================
-    ]
+    plt.plot(
+        df.iloc[:, [8, 11]],
+        label=[
+            'Deviations of $P$',
+            'Deviations of $P\'$',
+            # =================================================================
+            # TODO: ls=['solid','dashed',]
+            # =================================================================
+        ]
     )
     plt.xlabel('Period')
     plt.ylabel('Percentage Deviation')
@@ -1154,13 +1160,19 @@ def plot_cobb_douglas(df: DataFrame, params: tuple[float], mapping: dict) -> Non
     plt.title(mapping['fg_d'].format(*df.index[[0, -1]]))
     plt.grid(True)
     plt.figure(5, figsize=(5, 8))
-    lc = np.arange(0.2, 1.0, 0.005)
     plt.scatter(df.iloc[:, 5], df.iloc[:, 4])
     plt.scatter(df.iloc[:, 5], df.iloc[:, 6])
-    plt.plot(lc, _lab_productivity(lc, *params),
-             label='$\\frac{3}{4}\\frac{P}{L}$')
-    plt.plot(lc, _cap_productivity(lc, *params),
-             label='$\\frac{1}{4}\\frac{P}{C}$')
+    lc = np.arange(0.2, 1.0, 0.005)
+    plt.plot(
+        lc,
+        _lab_productivity(lc, *params),
+        label='$\\frac{3}{4}\\frac{P}{L}$'
+    )
+    plt.plot(
+        lc,
+        _cap_productivity(lc, *params),
+        label='$\\frac{1}{4}\\frac{P}{C}$'
+    )
     plt.xlabel('$\\frac{L}{C}$')
     plt.ylabel('Indexes')
     plt.title(mapping['fg_e'])
@@ -1205,12 +1217,14 @@ def plot_cobb_douglas_alt(df: DataFrame, params: tuple[float], mapping: dict) ->
     assert df.shape[1] == 20
 
     plt.figure(1)
-    plt.semilogy(df.iloc[:, range(4)], label=[
-        'Fixed Capital',
-        'Labor Force',
-        'Physical Product',
-        'Physical Product, Alternative',
-    ]
+    plt.semilogy(
+        df.iloc[:, range(4)],
+        label=[
+            'Fixed Capital',
+            'Labor Force',
+            'Physical Product',
+            'Physical Product, Alternative',
+        ]
     )
     plt.xlabel('Period')
     plt.ylabel('Indexes')
@@ -1219,14 +1233,16 @@ def plot_cobb_douglas_alt(df: DataFrame, params: tuple[float], mapping: dict) ->
     plt.legend()
     plt.grid(True)
     plt.figure(2)
-    plt.plot(df.iloc[:, [3, 17]], label=[
-        'Actual Product',
-        'Computed Product, $P\' = {:,.4f}L^{{{:,.4f}}}C^{{{:,.4f}}}$'.format(
-            params[1],
-            1-params[0],
-            params[0],
-        ),
-    ]
+    plt.plot(
+        df.iloc[:, [3, 17]],
+        label=[
+            'Actual Product',
+            'Computed Product, $P\' = {:,.4f}L^{{{:,.4f}}}C^{{{:,.4f}}}$'.format(
+                params[1],
+                1-params[0],
+                params[0],
+            ),
+        ]
     )
     plt.xlabel('Period')
     plt.ylabel('Production')
@@ -1235,13 +1251,15 @@ def plot_cobb_douglas_alt(df: DataFrame, params: tuple[float], mapping: dict) ->
     plt.legend()
     plt.grid(True)
     plt.figure(3)
-    plt.plot(df.iloc[:, [15, 18]], label=[
-        'Deviations of $P$',
-        'Deviations of $P\'$',
-        # =========================================================================
-        #      TODO: ls=['solid','dashed',]
-        # =========================================================================
-    ]
+    plt.plot(
+        df.iloc[:, [15, 18]],
+        label=[
+            'Deviations of $P$',
+            'Deviations of $P\'$',
+            # =================================================================
+            # TODO: ls=['solid','dashed',]
+            # =================================================================
+        ]
     )
     plt.xlabel('Period')
     plt.ylabel('Percentage Deviation')
@@ -1255,13 +1273,19 @@ def plot_cobb_douglas_alt(df: DataFrame, params: tuple[float], mapping: dict) ->
     plt.title(mapping['fg_d'].format(*df.index[[0, -1]]))
     plt.grid(True)
     plt.figure(5, figsize=(5, 8))
-    lc = np.arange(0.2, 1.0, 0.005)
     plt.scatter(df.iloc[:, 6], df.iloc[:, 13])
     plt.scatter(df.iloc[:, 6], df.iloc[:, 14])
-    plt.plot(lc, _lab_productivity(lc, *params),
-             label='$\\frac{3}{4}\\frac{P}{L}$')
-    plt.plot(lc, _cap_productivity(lc, *params),
-             label='$\\frac{1}{4}\\frac{P}{C}$')
+    lc = np.arange(0.2, 1.0, 0.005)
+    plt.plot(
+        lc,
+        _lab_productivity(lc, *params),
+        label='$\\frac{3}{4}\\frac{P}{L}$'
+    )
+    plt.plot(
+        lc,
+        _cap_productivity(lc, *params),
+        label='$\\frac{1}{4}\\frac{P}{C}$'
+    )
     plt.xlabel('$\\frac{L}{C}$')
     plt.ylabel('Indexes')
     plt.title(mapping['fg_e'])
@@ -1316,11 +1340,13 @@ def plot_cobb_douglas_tight_layout(df: DataFrame, params: tuple[float], mapping:
     assert df.shape[1] == 12
 
     fig, axes = plt.subplots(5, 1)
-    axes[0].plot(df.iloc[:, range(3)], label=[
-        'Fixed Capital',
-        'Labor Force',
-        'Physical Product',
-    ]
+    axes[0].plot(
+        df.iloc[:, range(3)],
+        label=[
+            'Fixed Capital',
+            'Labor Force',
+            'Physical Product',
+        ]
     )
     axes[0].set_xlabel('Period')
     axes[0].set_ylabel('Indexes')
@@ -1328,11 +1354,13 @@ def plot_cobb_douglas_tight_layout(df: DataFrame, params: tuple[float], mapping:
                                              mapping['year_price']))
     axes[0].legend()
     axes[0].grid(True)
-    axes[1].plot(df.iloc[:, [2, 5]], label=[
-        'Actual Product',
-        'Computed Product, $P\' = {:,.4f}L^{{{:,.4f}}}C^{{{:,.4f}}}$'.format(
-            params[1], 1-params[0], params[0]),
-    ]
+    axes[1].plot(
+        df.iloc[:, [2, 5]],
+        label=[
+            'Actual Product',
+            'Computed Product, $P\' = {:,.4f}L^{{{:,.4f}}}C^{{{:,.4f}}}$'.format(
+                params[1], 1-params[0], params[0]),
+        ]
     )
     axes[1].set_xlabel('Period')
     axes[1].set_ylabel('Production')
@@ -1340,14 +1368,15 @@ def plot_cobb_douglas_tight_layout(df: DataFrame, params: tuple[float], mapping:
                                              mapping['year_price']))
     axes[1].legend()
     axes[1].grid(True)
-    axes[2].plot(df.iloc[:, [8, 9]],
-                 label=[
-        'Deviations of $P$',
-        'Deviations of $P\'$',
-    ],
-        # =========================================================================
-        #      TODO: ls=['solid','dashed',]
-        # =========================================================================
+    axes[2].plot(
+        df.iloc[:, [8, 9]],
+        label=[
+            'Deviations of $P$',
+            'Deviations of $P\'$',
+        ],
+        # =====================================================================
+        # TODO: ls=['solid','dashed',]
+        # =====================================================================
     )
     axes[2].set_xlabel('Period')
     axes[2].set_ylabel('Percentage Deviation')
@@ -1359,13 +1388,19 @@ def plot_cobb_douglas_tight_layout(df: DataFrame, params: tuple[float], mapping:
     axes[3].set_ylabel('Percentage Deviation')
     axes[3].set_title(mapping['fg_d'].format(*df.index[[0, -1]]))
     axes[3].grid(True)
-    lc = np.arange(0.2, 1.0, 0.005)
     axes[4].scatter(df.iloc[:, 10], df.iloc[:, 4])
     axes[4].scatter(df.iloc[:, 10], df.iloc[:, 11])
-    axes[4].plot(lc, _lab_productivity(lc, *params),
-                 label='$\\frac{3}{4}\\frac{P}{L}$')
-    axes[4].plot(lc, _cap_productivity(lc, *params),
-                 label='$\\frac{1}{4}\\frac{P}{C}$')
+    lc = np.arange(0.2, 1.0, 0.005)
+    axes[4].plot(
+        lc,
+        _lab_productivity(lc, *params),
+        label='$\\frac{3}{4}\\frac{P}{L}$'
+    )
+    axes[4].plot(
+        lc,
+        _cap_productivity(lc, *params),
+        label='$\\frac{1}{4}\\frac{P}{C}$'
+    )
     axes[4].set_xlabel('$\\frac{L}{C}$')
     axes[4].set_ylabel('Indexes')
     axes[4].set_title(mapping['fg_e'])
@@ -2193,7 +2228,7 @@ def plot_lab_cap_inty_lab_prty(df: DataFrame, params: tuple[float], option: str)
     df.iloc[:, 2]      [Logarithm] Labor Productivity : Estimate
     ================== =================================
     '''
-    MAPPING = {
+    MAP = {
         'Original': {
             1: {
                 'title': r'$\mathbf{{Labor\ Capital\ Intensity}}$, $\mathbf{{Labor\ Productivity}}$ Relation, {}$-${}',
@@ -2229,20 +2264,20 @@ def plot_lab_cap_inty_lab_prty(df: DataFrame, params: tuple[float], option: str)
         df.iloc[:, 1],
         label=option
     )
-    plt.title(MAPPING[option][1]['title'].format(*df.index[[0, -1]]))
-    plt.xlabel(MAPPING[option][1]['xlabel'])
-    plt.ylabel(MAPPING[option][1]['ylabel'])
+    plt.title(MAP[option][1]['title'].format(*df.index[[0, -1]]))
+    plt.xlabel(MAP[option][1]['xlabel'])
+    plt.ylabel(MAP[option][1]['ylabel'])
     plt.grid(True)
     plt.legend()
     plt.figure(2)
     plt.plot(
         df.iloc[:, 2],
-        label=MAPPING[option][2]['label'].format(*MAPPING[option]['params'])
+        label=MAP[option][2]['label'].format(*MAP[option]['params'])
     )
-    plt.title(MAPPING[option][2]['title'].format(
+    plt.title(MAP[option][2]['title'].format(
         *params[::-1], *df.index[[0, -1]]))
-    plt.xlabel(MAPPING[option][2]['xlabel'])
-    plt.ylabel(MAPPING[option][2]['ylabel'])
+    plt.xlabel(MAP[option][2]['xlabel'])
+    plt.ylabel(MAP[option][2]['ylabel'])
     plt.grid(True)
     plt.legend()
     plt.show()
