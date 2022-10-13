@@ -52,7 +52,7 @@ FILE_NAMES_UTILISED = (
 
 
 def collect_cobb_douglas(series_number: int = 3) -> DataFrame:
-    '''
+    """
     Original Cobb--Douglas Data Preprocessing Extension
 
     Parameters
@@ -69,7 +69,7 @@ def collect_cobb_douglas(series_number: int = 3) -> DataFrame:
     df.iloc[:, 1]      Labor
     df.iloc[:, 2]      Product
     ================== =================================
-    '''
+    """
     SERIES_IDS = {
         # =====================================================================
         # Cobb C.W., Douglas P.H. Capital Series: Total Fixed Capital in 1880 dollars (4)
@@ -106,7 +106,7 @@ def collect_cobb_douglas(series_number: int = 3) -> DataFrame:
 
 
 def collect_cobb_douglas_deflator() -> DataFrame:
-    '''Fixed Assets Deflator, 2009=100'''
+    """Fixed Assets Deflator, 2009=100"""
     # =========================================================================
     # TODO: Change Name; Be Careful with Usage Due to Change in Behavior
     # =========================================================================
@@ -282,7 +282,7 @@ def collect_cobb_douglas_extension_capital() -> DataFrame:
 
 
 def collect_cobb_douglas_extension_labor() -> DataFrame:
-    '''
+    """
     Manufacturing Laborers` Series Comparison
 
     Returns
@@ -292,7 +292,7 @@ def collect_cobb_douglas_extension_labor() -> DataFrame:
     df.index           Period
     df.iloc[:, 0]      Labor Series
     ================== =================================
-    '''
+    """
     # =========================================================================
     # TODO: Bureau of Labor Statistics
     # TODO: Federal Reserve Board
@@ -422,7 +422,7 @@ def collect_cobb_douglas_extension_product() -> DataFrame:
 
 
 def collect_douglas() -> DataFrame:
-    '''Douglas Data Preprocessing'''
+    """Douglas Data Preprocessing"""
     ARCHIVE_NAME = 'dataset_douglas.zip'
     SERIES_IDS = ('DT19AS03', 'DT19AS02', 'DT19AS01',)
     df = pd.concat(
@@ -438,15 +438,15 @@ def collect_douglas() -> DataFrame:
 
 
 def collect_usa_bea_labor() -> DataFrame:
-    '''
+    """
     Labor Series: A4601C0, 1929--2013
-    '''
+    """
     SERIES_ID, URL = 'A4601C', 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
     return read_usa_bea(URL).pipe(pull_by_series_id, SERIES_ID)
 
 
 def collect_usa_bea_labor_mfg() -> DataFrame:
-    '''
+    """
     Manufacturing Labor Series
 
     Returns
@@ -456,7 +456,7 @@ def collect_usa_bea_labor_mfg() -> DataFrame:
     df.index           Period
     df.iloc[:, 0]      Labor Series
     ================== =================================
-    '''
+    """
     SERIES_IDS = {
         # =====================================================================
         # Manufacturing Labor Series: H4313C, 1929--1948
@@ -674,7 +674,7 @@ def collect_usa_capital_purchases() -> DataFrame:
 
 
 def collect_usa_frb_fa() -> DataFrame:
-    '''
+    """
     Retrieves DataFrame for Manufacturing Fixed Assets Series, Billion USD
 
     Returns
@@ -685,7 +685,7 @@ def collect_usa_frb_fa() -> DataFrame:
     df.iloc[:, 0]      Nominal
     df.iloc[:, 1]      Real
     ================== =================================
-    '''
+    """
     df = read_usa_frb()
     df['frb_nominal'] = ((df.iloc[:, 1].mul(df.iloc[:, 2]).div(df.iloc[:, 0])).add(
         df.iloc[:, 4].mul(df.iloc[:, 5]).div(df.iloc[:, 3]))).div(1000)
@@ -694,7 +694,7 @@ def collect_usa_frb_fa() -> DataFrame:
 
 
 def collect_usa_frb_fa_def() -> DataFrame:
-    '''
+    """
     Retrieves DataFrame for Deflator for Manufacturing Fixed Assets Series
 
     Returns
@@ -704,7 +704,7 @@ def collect_usa_frb_fa_def() -> DataFrame:
     df.index           Period
     df.iloc[:, 0]      Deflator
     ================== =================================
-    '''
+    """
     df = read_usa_frb()
     df['fa_def_frb'] = (df.iloc[:, [1, 4]].sum(axis=1)).div(
         df.iloc[:, [0, 3]].sum(axis=1))
@@ -712,7 +712,7 @@ def collect_usa_frb_fa_def() -> DataFrame:
 
 
 def collect_usa_general() -> DataFrame:
-    '''
+    """
 
 
     Returns
@@ -720,7 +720,7 @@ def collect_usa_general() -> DataFrame:
     DataFrame
         DESCRIPTION.
 
-    '''
+    """
     SERIES_ID, ARCHIVE_NAME = 'X0414', 'dataset_uscb.zip'
     SERIES_IDS = {
         # =====================================================================
@@ -922,7 +922,7 @@ def collect_usa_investment_turnover_bls() -> DataFrame:
 
 
 def collect_usa_macroeconomics() -> DataFrame:
-    '''Data Fetch'''
+    """Data Fetch"""
     SERIES_ID = 'CAPUTL.B50001.A'
     SERIES_IDS = {
         # =====================================================================
@@ -1009,7 +1009,7 @@ def collect_usa_mcconnel(series_ids: tuple[str]) -> DataFrame:
 
 
 def collect_usa_production_two_fold() -> tuple[DataFrame]:
-    '''
+    """
     Data Fetch Archived
 
     Returns
@@ -1028,7 +1028,7 @@ def collect_usa_production_two_fold() -> tuple[DataFrame]:
     df.iloc[:, 1]      Labor Series
     df.iloc[:, 2]      Product Series Adjusted to Capacity Utilisation
     ================== =================================
-    '''
+    """
     SERIES_ID = 'CAPUTL.B50001.A'
     SERIES_IDS = {
         # =================================================================
@@ -1082,7 +1082,7 @@ def collect_usa_production_two_fold() -> tuple[DataFrame]:
 
 
 def collect_usa_production_three_fold() -> tuple[DataFrame]:
-    '''
+    """
     Data Fetch Revised
 
     Returns
@@ -1108,7 +1108,7 @@ def collect_usa_production_three_fold() -> tuple[DataFrame]:
     df.iloc[:, 1]      Labor Series
     df.iloc[:, 2]      Product Series Adjusted to Capacity Utilisation
     ================== =================================
-    '''
+    """
     SERIES_ID, URL = 'kcn31gd1es00', 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt'
     _df = pd.concat(
         [
@@ -1150,7 +1150,7 @@ def collect_usa_production_three_fold() -> tuple[DataFrame]:
 
 
 def collect_usa_production_latest() -> DataFrame:
-    '''Data Fetch'''
+    """Data Fetch"""
     # =========================================================================
     # TODO: Update Accodring to Change in collect_cobb_douglas_deflator()
     # =========================================================================
@@ -1189,13 +1189,13 @@ def collect_usa_production_latest() -> DataFrame:
 
 
 def collect_usa_sahr_infcf() -> DataFrame:
-    '''
+    """
     Retrieve Yearly Price Rates from `dataset_usa_infcf16652007.zip`
 
     Returns
     -------
     DataFrame
-    '''
+    """
     kwargs = {
         'filepath_or_buffer': 'dataset_usa_infcf16652007.zip',
         'index_col': 1,
@@ -1219,7 +1219,7 @@ def collect_usa_sahr_infcf() -> DataFrame:
 
 
 def collect_uscb_cap(smoothing: bool = False) -> DataFrame:
-    '''Returns Nominal Million-Dollar Capital, Including Structures & Equipment, Series'''
+    """Returns Nominal Million-Dollar Capital, Including Structures & Equipment, Series"""
     SERIES_IDS = {
         'J0149': ('dataset_uscb.zip', 1, 'nominal, millions'),
         'J0150': ('dataset_uscb.zip', 1, 'nominal, millions'),
@@ -1269,7 +1269,7 @@ def collect_uscb_cap(smoothing: bool = False) -> DataFrame:
 
 
 def collect_uscb_cap_deflator() -> DataFrame:
-    '''Returns Census Fused Capital Deflator'''
+    """Returns Census Fused Capital Deflator"""
     SERIES_IDS = {
         'P0107': ('dataset_uscb.zip', 1000, 'nominal, billions'),
         'P0108': ('dataset_uscb.zip', 1000, 'nominal, billions'),
@@ -1311,7 +1311,7 @@ def collect_uscb_cap_deflator() -> DataFrame:
 
 
 def collect_uscb_unemployment_hours_worked() -> DataFrame:
-    '''Census Employment Series'''
+    """Census Employment Series"""
     SERIES_IDS = {
         # =====================================================================
         # Unemployment
@@ -1371,7 +1371,7 @@ def collect_uscb_employment_conflicts() -> DataFrame:
 
 
 def collect_uscb_gnp() -> DataFrame:
-    '''Census Gross National Product Series'''
+    """Census Gross National Product Series"""
     ARCHIVE_NAME = 'dataset_uscb.zip'
     SERIES_IDS = ('F0003', 'F0004',)
     df = pd.concat(
@@ -1387,7 +1387,7 @@ def collect_uscb_gnp() -> DataFrame:
 
 
 def collect_uscb_immigration() -> DataFrame:
-    '''Census Total Immigration Series'''
+    """Census Total Immigration Series"""
     ARCHIVE_NAME = 'dataset_uscb.zip'
     ids = itertools.chain(
         range(91, 102),
@@ -1410,7 +1410,7 @@ def collect_uscb_immigration() -> DataFrame:
 
 
 def collect_uscb_metals() -> tuple[DataFrame, tuple[int]]:
-    '''Census Primary Metals & Railroad-Related Products Manufacturing Series'''
+    """Census Primary Metals & Railroad-Related Products Manufacturing Series"""
     ARCHIVE_NAME = 'dataset_uscb.zip'
     SERIES_IDS = {
         'P0262': 1875,
@@ -1440,7 +1440,7 @@ def collect_uscb_metals() -> tuple[DataFrame, tuple[int]]:
 
 
 def collect_uscb_money_stock() -> DataFrame:
-    '''Census Money Supply Aggregates'''
+    """Census Money Supply Aggregates"""
     YEAR_BASE = 1915
     ARCHIVE_NAME = 'dataset_uscb.zip'
     SERIES_IDS = ('X0410', 'X0414', 'X0415',)
@@ -1457,7 +1457,7 @@ def collect_uscb_money_stock() -> DataFrame:
 
 
 def collect_uscb_production() -> tuple[DataFrame, int]:
-    '''
+    """
     Census Manufacturing Indexes, 1899=100
 
     Returns
@@ -1465,7 +1465,7 @@ def collect_uscb_production() -> tuple[DataFrame, int]:
     tuple[DataFrame, int]
         DESCRIPTION.
 
-    '''
+    """
     SERIES_IDS = {
         # =====================================================================
         # Bureau of the Census, 1949, Page 179, J13: National Bureau of Economic Research Index of Physical Output, All Manufacturing Industries.
@@ -1493,7 +1493,7 @@ def collect_uscb_production() -> tuple[DataFrame, int]:
 
 
 def collect_uscb_trade() -> DataFrame:
-    '''Census Foreign Trade Series'''
+    """Census Foreign Trade Series"""
     ARCHIVE_NAME = 'dataset_uscb.zip'
     SERIES_IDS = ('U0001', 'U0008', 'U0015',)
     return pd.concat(
@@ -1508,7 +1508,7 @@ def collect_uscb_trade() -> DataFrame:
 
 
 def collect_uscb_trade_by_countries() -> DataFrame:
-    '''Census Foreign Trade Series'''
+    """Census Foreign Trade Series"""
     ARCHIVE_NAME = 'dataset_uscb.zip'
     ids = itertools.chain(
         range(319, 324),
@@ -1546,7 +1546,7 @@ def collect_uscb_trade_by_countries() -> DataFrame:
 
 
 def collect_uscb_trade_gold_silver() -> DataFrame:
-    '''Census Foreign Trade Series'''
+    """Census Foreign Trade Series"""
     ARCHIVE_NAME = 'dataset_uscb.zip'
     SERIES_IDS = ('U0187', 'U0188', 'U0189',)
     return pd.concat(
@@ -1561,7 +1561,7 @@ def collect_uscb_trade_gold_silver() -> DataFrame:
 
 
 def construct_can(archive_ids: dict) -> DataFrame:
-    '''
+    """
 
 
     Parameters
@@ -1578,7 +1578,7 @@ def construct_can(archive_ids: dict) -> DataFrame:
     df.iloc[:, 1]      Labor
     df.iloc[:, 2]      Product
     ================== =================================
-    '''
+    """
     DIR = '/home/alexander/science'
     if Path(DIR).joinpath(f'{tuple(archive_ids)[0]}_preloaded.csv').is_file():
         kwargs = {
@@ -1637,9 +1637,9 @@ def filter_data_frame(df: DataFrame, query: dict[str]) -> DataFrame:
 
 
 def get_mean_for_min_std():
-    '''
+    """
     Determine Year & Mean Value for Base Vectors for Year with Minimum StandardError
-    '''
+    """
     DIR = '/home/alexander/science'
     FILE_NAME = 'stat_can_lab.xlsx'
     kwargs = {
@@ -1671,7 +1671,7 @@ def get_mean_for_min_std():
 
 
 def get_price_base(df: DataFrame) -> int:
-    '''
+    """
     Determine Base Year
 
     Parameters
@@ -1687,7 +1687,7 @@ def get_price_base(df: DataFrame) -> int:
     int
         Base Year.
 
-    '''
+    """
     df['__deflator'] = df.iloc[:, 0].sub(100).abs()
     return int(df.index[df.iloc[:, -1].astype(float).argmin()])
 
@@ -1748,14 +1748,14 @@ def transform_e(df: DataFrame) -> tuple[DataFrame]:
 
 
 def transform_cobb_douglas(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
-    '''
+    """
     ================== =================================
     df.index           Period
     df.iloc[:, 0]      Capital
     df.iloc[:, 1]      Labor
     df.iloc[:, 2]      Product
     ================== =================================
-    '''
+    """
     # =========================================================================
     # Labor Capital Intensity
     # =========================================================================
@@ -1813,7 +1813,7 @@ def transform_cobb_douglas(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
 
 
 def transform_cobb_douglas_alt(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
-    '''
+    """
     ================== =================================
     df.index           Period
     df.iloc[:, 0]      Capital
@@ -1821,7 +1821,7 @@ def transform_cobb_douglas_alt(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
     df.iloc[:, 2]      Product
     df.iloc[:, 3]      Product Alternative
     ================== =================================
-    '''
+    """
     # =========================================================================
     # Labor Capital Intensity
     # =========================================================================
@@ -1897,7 +1897,7 @@ def transform_cobb_douglas_alt(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
 
 
 def transform_cobb_douglas_sklearn(df: DataFrame) -> DataFrame:
-    '''
+    """
 
 
     Parameters
@@ -1914,7 +1914,7 @@ def transform_cobb_douglas_sklearn(df: DataFrame) -> DataFrame:
     -------
     None.
 
-    '''
+    """
     # =========================================================================
     # Labor Capital Intensity
     # =========================================================================
@@ -1991,7 +1991,7 @@ def transform_cobb_douglas_sklearn(df: DataFrame) -> DataFrame:
 
 
 def transform_kurenkov(data_testing: DataFrame) -> tuple[DataFrame]:
-    '''Returns Four DataFrames with Comparison of data_testing: DataFrame and Kurenkov Yu.V. Data'''
+    """Returns Four DataFrames with Comparison of data_testing: DataFrame and Kurenkov Yu.V. Data"""
     kwargs = {
         'filepath_or_buffer': 'dataset_usa_reference_ru_kurenkov_yu_v.csv',
         'index_col': 0,
@@ -2049,7 +2049,7 @@ def transform_kurenkov(data_testing: DataFrame) -> tuple[DataFrame]:
 
 
 def transform_sum(df: DataFrame) -> DataFrame:
-    '''
+    """
 
 
     Parameters
@@ -2070,7 +2070,7 @@ def transform_sum(df: DataFrame) -> DataFrame:
     df.index           Period
     df.iloc[:, 0]      Sum of <series_ids>
     ================== =================================
-    '''
+    """
     series_ids = sorted(set(df.iloc[:, 0]))
     df = pd.concat(
         [

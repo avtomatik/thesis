@@ -63,7 +63,7 @@ def options():
 
 
 def test_data_consistency_a():
-    '''Project I: Canada Gross Domestic Product Data Comparison'''
+    """Project I: Canada Gross Domestic Product Data Comparison"""
     # =========================================================================
     # Expenditure-Based Gross Domestic Product Series Used
     # Income-Based Gross Domestic Product Series Not Used
@@ -143,7 +143,7 @@ def test_data_consistency_a():
 
 
 def test_data_consistency_b():
-    '''Project II: USA Fixed Assets Data Comparison'''
+    """Project II: USA Fixed Assets Data Comparison"""
     # =========================================================================
     # Fixed Assets Series: k1ntotl1si000, 1925--2016
     # Fixed Assets Series: kcntotl1si000, 1925--2016
@@ -176,7 +176,7 @@ def test_data_consistency_b():
 
 
 def test_data_consistency_c():
-    '''Project III: USA BLS Unemployment Rate & Producer Price Index Manufacturing'''
+    """Project III: USA BLS Unemployment Rate & Producer Price Index Manufacturing"""
     FILE_NAMES = (
         'dataset_usa_bls-2015-02-23-ln.data.1.AllData',
         'dataset_usa_bls-2017-07-06-ln.data.1.AllData',
@@ -199,7 +199,7 @@ def test_data_consistency_c():
 
 
 def test_data_consistency_d():
-    '''Project IV: USA Macroeconomic & Fixed Assets Data Tests'''
+    """Project IV: USA Macroeconomic & Fixed Assets Data Tests"""
     # =========================================================================
     # Macroeconomic Data Tests
     # =========================================================================
@@ -283,14 +283,14 @@ def test_data_consistency_d():
 
 
 def test_douglas() -> None:
-    '''
+    """
     Data Consistency Test
 
     Returns
     -------
     None
 
-    '''
+    """
     _kwargs = (
         {
             'archive_name': 'dataset_uscb.zip',

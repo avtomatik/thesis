@@ -18,7 +18,7 @@ from pandas import DataFrame
 
 @cache
 def read_can(archive_id: int) -> DataFrame:
-    '''
+    """
 
 
     Parameters
@@ -33,7 +33,7 @@ def read_can(archive_id: int) -> DataFrame:
     ...                ...
     df.iloc[:, -1]     Values
     ================== =================================
-    '''
+    """
     MAP = {
         310004: {
             'period': 0,
@@ -107,7 +107,7 @@ def read_can(archive_id: int) -> DataFrame:
 
 @cache
 def read_usa_bea(url: str) -> DataFrame:
-    '''
+    """
     Retrieves U.S. Bureau of Economic Analysis DataFrame from URL
 
     Parameters
@@ -122,7 +122,7 @@ def read_usa_bea(url: str) -> DataFrame:
     df.iloc[:, 0]      Series IDs
     df.iloc[:, 1]      Values
     ================== =================================
-    '''
+    """
     kwargs = {
         'header': 0,
         'names': ('series_ids', 'period', 'value'),
@@ -138,7 +138,7 @@ def read_usa_bea(url: str) -> DataFrame:
 
 @cache
 def read_usa_bea_excel(archive_name: str, wb_name: str, sh_name: str) -> DataFrame:
-    '''
+    """
     Retrieves DataFrame from Bureau of Economic Analysis Zip Archives
 
     Parameters
@@ -154,7 +154,7 @@ def read_usa_bea_excel(archive_name: str, wb_name: str, sh_name: str) -> DataFra
     df.index           Period
     df.iloc[:, ...]    Series
     ================== =================================
-    '''
+    """
     kwargs = {
         'sheet_name': sh_name,
         'skiprows': 7
@@ -174,7 +174,7 @@ def read_usa_bea_excel(archive_name: str, wb_name: str, sh_name: str) -> DataFra
 
 
 def read_usa_bls(file_name: str) -> DataFrame:
-    '''
+    """
     Bureau of Labor Statistics Data Fetch
 
     Parameters
@@ -189,7 +189,7 @@ def read_usa_bls(file_name: str) -> DataFrame:
     df.iloc[:, 0]      Series IDs
     df.iloc[:, 1]      Values
     ================== =================================
-    '''
+    """
     kwargs = {
         'filepath_or_buffer': file_name,
         'sep': '\t',
@@ -205,7 +205,7 @@ def read_usa_bls(file_name: str) -> DataFrame:
 
 
 def read_usa_frb() -> DataFrame:
-    '''
+    """
 
 
     Returns
@@ -215,7 +215,7 @@ def read_usa_frb() -> DataFrame:
     df.index           Period
     df.iloc[:, ...]    Series
     ================== =================================
-    '''
+    """
     kwargs = {
         'filepath_or_buffer': 'dataset_usa_frb_invest_capital.csv',
         'skiprows': 4,
@@ -234,7 +234,7 @@ def read_usa_frb() -> DataFrame:
 
 
 def read_usa_frb_g17() -> DataFrame:
-    '''
+    """
 
 
     Returns
@@ -244,7 +244,7 @@ def read_usa_frb_g17() -> DataFrame:
     df.index           Period
     df.iloc[:, ...]    Series
     ================== =================================
-    '''
+    """
     _start = 5
     kwargs = {
         'filepath_or_buffer': 'dataset_usa_frb_g17_all_annual_2013_06_23.csv',
@@ -268,7 +268,7 @@ def read_usa_frb_g17() -> DataFrame:
 
 
 def read_usa_frb_ms() -> DataFrame:
-    '''
+    """
     Money Stock Measures (H.6) Series
 
     Returns
@@ -278,7 +278,7 @@ def read_usa_frb_ms() -> DataFrame:
     df.index           Period
     df.iloc[:, 0]      M1
     ================== =================================
-    '''
+    """
     # =========================================================================
     # hex(3**3 * 23 * 197 * 2039 * 445466883143470280668577791313)
     # =========================================================================
@@ -297,7 +297,7 @@ def read_usa_frb_ms() -> DataFrame:
 
 
 def read_usa_frb_us3() -> DataFrame:
-    '''
+    """
 
 
     Returns
@@ -307,7 +307,7 @@ def read_usa_frb_us3() -> DataFrame:
     df.index           Period
     df.iloc[:, ...]    Series
     ================== =================================
-    '''
+    """
     # =========================================================================
     # TODO: https://www.federalreserve.gov/datadownload/Output.aspx?rel=g17&filetype=zip
     # =========================================================================
@@ -334,7 +334,7 @@ def read_usa_frb_us3() -> DataFrame:
 
 
 def read_usa_fred(series_id: str) -> DataFrame:
-    '''
+    """
     ('PPIACO', 'PRIME',)
 
     Returns
@@ -344,7 +344,7 @@ def read_usa_fred(series_id: str) -> DataFrame:
     df.index           Period
     df.iloc[:, 0]      Series
     ================== =================================
-    '''
+    """
     _url = f'https://fred.stlouisfed.org/graph/fredgraph.csv?id={series_id}'
     kwargs = {
         'filepath_or_buffer': io.BytesIO(requests.get(_url).content),
@@ -359,7 +359,7 @@ def read_usa_fred(series_id: str) -> DataFrame:
 
 @cache
 def read_usa_hist(archive_name: str) -> DataFrame:
-    '''
+    """
     Extract Data from Enumerated Historical Datasets
     Parameters
     ----------
@@ -373,7 +373,7 @@ def read_usa_hist(archive_name: str) -> DataFrame:
     df.iloc[:, 0]      Series IDs
     df.iloc[:, 1]      Values
     ================== =================================
-    '''
+    """
     MAP = {
         'dataset_douglas.zip': {'series_id': 4, 'period': 5, 'value': 6},
         'dataset_usa_brown.zip': {'series_id': 3, 'period': 4, 'value': 5},

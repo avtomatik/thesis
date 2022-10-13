@@ -58,7 +58,7 @@ def _cap_productivity(array: np.array, k: float = 0.25, b: float = 1.01) -> np.a
 
 
 def plot_investment_production(df: DataFrame) -> None:
-    '''
+    """
     ================== =================================
     df.index           Period
     df.iloc[:, 0]      Gross Domestic Investment
@@ -66,7 +66,7 @@ def plot_investment_production(df: DataFrame) -> None:
     df.iloc[:, 2]      Nominal Gross Domestic Product
     df.iloc[:, 3]      Real Gross Domestic Product
     ================== =================================
-    '''
+    """
     _df = df.copy()
     # =========================================================================
     # "Real" Investment
@@ -102,7 +102,7 @@ def plot_investment_production(df: DataFrame) -> None:
 
 
 def plot_investment(df: DataFrame) -> None:
-    '''
+    """
     ================== =================================
     df.index           Period
     df.iloc[:, 0]      Gross Domestic Investment
@@ -110,7 +110,7 @@ def plot_investment(df: DataFrame) -> None:
     df.iloc[:, 2]      Real Gross Domestic Product
     df.iloc[:, 3]      Prime Rate
     ================== =================================
-    '''
+    """
     _df = df.copy()
     # =========================================================================
     # "Real" Investment
@@ -130,7 +130,7 @@ def plot_investment(df: DataFrame) -> None:
 
 
 def plot_c(df: DataFrame) -> None:
-    '''
+    """
     ================== =================================
     df.index           Period
     df.iloc[:, 0]      Gross Domestic Investment
@@ -138,7 +138,7 @@ def plot_c(df: DataFrame) -> None:
     df.iloc[:, 2]      Real Gross Domestic Product
     df.iloc[:, 3]      M1
     ================== =================================
-    '''
+    """
     # =========================================================================
     # "Real" Investment
     # =========================================================================
@@ -159,7 +159,7 @@ def plot_c(df: DataFrame) -> None:
 
 
 def plot_d(df: DataFrame) -> None:
-    '''
+    """
     ================== =================================
     df.index           Period
     df.iloc[:, 0]      Gross Domestic Investment
@@ -168,7 +168,7 @@ def plot_d(df: DataFrame) -> None:
     df.iloc[:, 3]      Fixed Investment Price Index
     df.iloc[:, 4]      Real Gross Domestic Product
     ================== =================================
-    '''
+    """
     # =========================================================================
     # Basic Year
     # =========================================================================
@@ -227,14 +227,14 @@ def plot_d(df: DataFrame) -> None:
 
 
 def plot_e(df: DataFrame) -> None:
-    '''
+    """
     ================== =================================
     df.index           Period
     df.iloc[:, 0]      Investment
     df.iloc[:, 1]      Production
     df.iloc[:, 2]      Capital
     ================== =================================
-    '''
+    """
     # =========================================================================
     # Investment to Production Ratio
     # =========================================================================
@@ -301,7 +301,7 @@ def plot_uscb_production(df: DataFrame, base: int) -> None:
 
 
 def plot_uscb_cap(df: DataFrame) -> None:
-    '''Census Manufacturing Fixed Assets Series'''
+    """Census Manufacturing Fixed Assets Series"""
     plt.figure()
     plt.semilogy(df, label=['Total', 'Structures', 'Equipment'])
     plt.title(
@@ -317,7 +317,7 @@ def plot_uscb_cap(df: DataFrame) -> None:
 
 
 def plot_uscb_cap_deflator(df: DataFrame) -> None:
-    '''Census Manufacturing Fixed Assets Deflator Series'''
+    """Census Manufacturing Fixed Assets Deflator Series"""
     plt.figure()
     plt.plot(df)
     plt.title(
@@ -477,7 +477,7 @@ def plot_uscb_gnp(df: DataFrame) -> None:
 
 
 def plot_uscb_farm_lands() -> None:
-    '''Census 1975, Land in Farms'''
+    """Census 1975, Land in Farms"""
     ARCHIVE_NAME, SERIES_ID = 'dataset_uscb.zip', 'K0005'
     plt.figure()
     plt.plot(read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, SERIES_ID))
@@ -588,7 +588,7 @@ def plot_uscb_money_stock(df: DataFrame) -> None:
 
 
 def plot_uscb_finance() -> None:
-    '''Census Financial Markets & Institutions Series'''
+    """Census Financial Markets & Institutions Series"""
     ARCHIVE_NAME = 'dataset_uscb.zip'
     SERIES_IDS = tuple(
         f'X{_id:04n}' for _id in itertools.chain(
@@ -615,7 +615,7 @@ def plot_uscb_finance() -> None:
 
 
 def plot_approx_linear(df: DataFrame) -> None:
-    '''
+    """
     ================== =================================
     df.index           Period
     df.iloc[:, 0]      Real Values for Price Deflator
@@ -623,7 +623,7 @@ def plot_approx_linear(df: DataFrame) -> None:
     df.iloc[:, 2]      Regressor
     df.iloc[:, 3]      Regressand
     ================== =================================
-    '''
+    """
     df.iloc[:, -1] = pd.to_numeric(df.iloc[:, -1], errors='coerce')
     df.dropna(inplace=True)
     # =========================================================================
@@ -677,7 +677,7 @@ def plot_approx_linear(df: DataFrame) -> None:
 
 
 def plot_approx_log_linear(df: DataFrame) -> None:
-    '''
+    """
     ================== =================================
     df.index           Period
     df.iloc[:, 0]      Real Values for Price Deflator
@@ -685,7 +685,7 @@ def plot_approx_log_linear(df: DataFrame) -> None:
     df.iloc[:, 2]      Regressor
     df.iloc[:, 3]      Regressand
     ================== =================================
-    '''
+    """
     MAP_DESC = {
         'A032RC1': 'National Income',
         'A191RC1': 'Gross Domestic Product',
@@ -745,7 +745,7 @@ def plot_approx_log_linear(df: DataFrame) -> None:
 
 
 def plot_lab_cap_inty_lab_prty_closure(df: DataFrame) -> None:
-    '''
+    """
     Plotting
 
     Parameters
@@ -759,7 +759,7 @@ def plot_lab_cap_inty_lab_prty_closure(df: DataFrame) -> None:
     Returns
     -------
     None
-    '''
+    """
     plot_lab_cap_inty_lab_prty(
         *simple_linear_regression(df.iloc[:, -2:]),
         'Original'
@@ -771,7 +771,7 @@ def plot_lab_cap_inty_lab_prty_closure(df: DataFrame) -> None:
 
 
 def plot_lab_cap_inty(df: DataFrame) -> None:
-    '''
+    """
     Plotting
 
     Parameters
@@ -784,7 +784,7 @@ def plot_lab_cap_inty(df: DataFrame) -> None:
     Returns
     -------
     None
-    '''
+    """
     # =========================================================================
     # Valid Only for _k = 2
     # =========================================================================
@@ -848,7 +848,7 @@ def plot_lab_cap_inty(df: DataFrame) -> None:
 
 
 def plot_lab_prty(df: DataFrame) -> None:
-    '''
+    """
     Plotting
 
     Parameters
@@ -861,7 +861,7 @@ def plot_lab_prty(df: DataFrame) -> None:
     Returns
     -------
     None
-    '''
+    """
     _k = 3
     # =========================================================================
     # Odd Frame
@@ -934,13 +934,13 @@ def plot_lab_prty(df: DataFrame) -> None:
 
 
 def plot_built_in() -> None:
-    '''
+    """
     Purpose: Draw:
 
     Returns
     -------
     None
-    '''
+    """
     FUNCTIONS = (
         # =====================================================================
         # Correlogram, Pandas;
@@ -979,7 +979,7 @@ def plot_can_test(df: DataFrame) -> None:
 
 
 def plot_capital_modelling(df: DataFrame, base: int) -> None:
-    '''
+    """
     ================== =================================
     df.index           Period
     df.iloc[:, 0]      Investment
@@ -987,7 +987,7 @@ def plot_capital_modelling(df: DataFrame, base: int) -> None:
     df.iloc[:, 2]      Capital
     df.iloc[:, 3]      Capital Retirement
     ================== =================================
-    '''
+    """
     _params_i = np.polyfit(
         df.index.to_series().astype(int),
         df.iloc[:, 0].div(df.iloc[:, 1]).astype(float),
@@ -1099,9 +1099,9 @@ def plot_census_complex(df: DataFrame) -> None:
 
 
 def plot_cobb_douglas(df: DataFrame, params: tuple[float], mapping: dict) -> None:
-    '''
+    """
     Cobb--Douglas Algorithm as per C.W. Cobb, P.H. Douglas. A Theory of Production, 1928;
-    '''
+    """
     assert df.shape[1] == 12
 
     plt.figure(1)
@@ -1182,7 +1182,7 @@ def plot_cobb_douglas(df: DataFrame, params: tuple[float], mapping: dict) -> Non
 
 
 def plot_cobb_douglas_3d(df: DataFrame) -> None:
-    '''
+    """
     Cobb--Douglas 3D-Plotting
 
     Parameters
@@ -1197,7 +1197,7 @@ def plot_cobb_douglas_3d(df: DataFrame) -> None:
     Returns
     -------
     None
-    '''
+    """
     assert df.shape[1] == 3
 
     fig = plt.figure()
@@ -1211,9 +1211,9 @@ def plot_cobb_douglas_3d(df: DataFrame) -> None:
 
 
 def plot_cobb_douglas_alt(df: DataFrame, params: tuple[float], mapping: dict) -> None:
-    '''
+    """
     Cobb--Douglas Algorithm as per C.W. Cobb, P.H. Douglas. A Theory of Production, 1928;
-    '''
+    """
     assert df.shape[1] == 20
 
     plt.figure(1)
@@ -1295,7 +1295,7 @@ def plot_cobb_douglas_alt(df: DataFrame, params: tuple[float], mapping: dict) ->
 
 
 def plot_cobb_douglas_complex(df: DataFrame) -> None:
-    '''
+    """
 
 
     Parameters
@@ -1310,7 +1310,7 @@ def plot_cobb_douglas_complex(df: DataFrame) -> None:
     Returns
     -------
     None
-    '''
+    """
     MAP_FIG = {
         'fg_a': 'Chart I Progress in Manufacturing {}$-${} ({}=100)',
         'fg_b': 'Chart II Theoretical and Actual Curves of Production {}$-${} ({}=100)',
@@ -1334,9 +1334,9 @@ def plot_cobb_douglas_complex(df: DataFrame) -> None:
 
 
 def plot_cobb_douglas_tight_layout(df: DataFrame, params: tuple[float], mapping: dict) -> None:
-    '''
+    """
     Cobb--Douglas Algorithm as per C.W. Cobb, P.H. Douglas. A Theory of Production, 1928;
-    '''
+    """
     assert df.shape[1] == 12
 
     fig, axes = plt.subplots(5, 1)
@@ -1419,7 +1419,7 @@ def plot_douglas(
     start_at: int = 1,
     skip: int = 1
 ) -> None:
-    '''
+    """
     Specialised Plotting
 
     Parameters
@@ -1442,7 +1442,7 @@ def plot_douglas(
     Returns
     -------
     None
-    '''
+    """
     _MAP_SERIES = pull_series_ids(archive_name)
     _SERIES_IDS = tuple(_MAP_SERIES.keys())
     if not legends is None:
@@ -1499,7 +1499,7 @@ def plot_douglas(
 
 
 def plot_elasticity(df: DataFrame) -> None:
-    '''
+    """
     Parameters
     ----------
     df : DataFrame
@@ -1512,7 +1512,7 @@ def plot_elasticity(df: DataFrame) -> None:
     Returns
     -------
     None
-    '''
+    """
     df.iloc[:, -1] = pd.to_numeric(df.iloc[:, -1], errors='coerce')
     df.dropna(inplace=True)
     # =========================================================================
@@ -1590,13 +1590,13 @@ def plot_elasticity(df: DataFrame) -> None:
 
 
 def plot_ewm(df: DataFrame, step: float = 0.1) -> None:
-    '''Single Exponential Smoothing
+    """Single Exponential Smoothing
     Robert Goodell Brown, 1956
     ================== =================================
     df.index           Period
     df.iloc[:, 0]      Target Series
     ================== =================================
-    '''
+    """
     _alpha = 0.25
     # =========================================================================
     # DataFrame for Exponentially Smoothed Series
@@ -1657,13 +1657,13 @@ def plot_ewm(df: DataFrame, step: float = 0.1) -> None:
 
 
 def plot_fourier_discrete(df: DataFrame, precision: int = 10) -> None:
-    '''
+    """
     Discrete Fourier Transform based on Simpson's Rule
     ================== =================================
     df.index           Period
     df.iloc[:, 0]      Target Series
     ================== =================================
-    '''
+    """
     _df = df.copy()
     precision += 1
     _p = np.polyfit(
@@ -1717,12 +1717,12 @@ def plot_grigoriev() -> None:
 
 
 def plot_growth_elasticity(df: DataFrame) -> None:
-    '''Growth Elasticity Plotting
+    """Growth Elasticity Plotting
     ================== =================================
     df.index           Period
     df.iloc[:, 0]      Target Series
     ================== =================================
-    '''
+    """
     # =========================================================================
     # TODO: Increase Cohesion of This Code: Send Plotting to Separate Function
     # =========================================================================
@@ -1817,7 +1817,7 @@ def plot_is_lm() -> None:
 
 
 def plot_kol_zur_filter(df: DataFrame) -> None:
-    '''
+    """
     Kolmogorov--Zurbenko Filter
 
     Parameters
@@ -1830,7 +1830,7 @@ def plot_kol_zur_filter(df: DataFrame) -> None:
     Returns
     -------
     None
-    '''
+    """
     df_o, df_e, residuals_o, residuals_e = kol_zur_filter(df)
 
     plt.figure(1)
@@ -1879,11 +1879,12 @@ def plot_kol_zur_filter(df: DataFrame) -> None:
 
 
 def plot_kurenkov(data_frames: tuple[DataFrame]) -> None:
-    '''
+    """
     data_frames[0]: Production DataFrame,
     data_frames[1]: Labor DataFrame,
     data_frames[2]: Capital DataFrame,
-    data_frames[3]: Capacity Utilization DataFrame'''
+    data_frames[3]: Capacity Utilization DataFrame
+    """
     # =========================================================================
     # Plotting
     # =========================================================================
@@ -1944,7 +1945,7 @@ def plot_kurenkov(data_frames: tuple[DataFrame]) -> None:
 
 
 def plot_lab_prod_polynomial(df: DataFrame) -> None:
-    '''
+    """
     Static Labor Productivity Approximation
 
     Parameters
@@ -1958,7 +1959,7 @@ def plot_lab_prod_polynomial(df: DataFrame) -> None:
     Returns
     ------
     None
-    '''
+    """
 
     def _r2_scores():
         for _ in range(5):
@@ -2118,13 +2119,13 @@ def plot_lab_prod_polynomial(df: DataFrame) -> None:
 
 
 def plot_pearson_r_test(df: DataFrame) -> None:
-    '''
+    """
     Left-Side & Right-Side Rolling Means' Calculation & Plotting
     ================== =================================
     df.index           Period
     df.iloc[:, 0]      Target Series
     ================== =================================
-    '''
+    """
     _pearson = DataFrame(columns=['right_to_left_ratio'])
     for _ in range(1 + df.shape[0] // 2):
         # =====================================================================
@@ -2154,7 +2155,7 @@ def plot_pearson_r_test(df: DataFrame) -> None:
 
 
 def plot_rolling_mean_filter(df: DataFrame) -> None:
-    '''
+    """
     Rolling Mean Filter
 
     Parameters
@@ -2167,7 +2168,7 @@ def plot_rolling_mean_filter(df: DataFrame) -> None:
     Returns
     -------
     None
-    '''
+    """
     _df = df.copy()
     df_o, df_e, residuals_o, residuals_e = rolling_mean_filter(_df)
     plt.figure(1)
@@ -2220,14 +2221,14 @@ def plot_rolling_mean_filter(df: DataFrame) -> None:
 
 
 def plot_lab_cap_inty_lab_prty(df: DataFrame, params: tuple[float], option: str) -> None:
-    '''
+    """
     ================== =================================
     df.index           Period
     df.iloc[:, 0]      [Logarithm] Labor Capital Intensity
     df.iloc[:, 1]      [Logarithm] Labor Productivity
     df.iloc[:, 2]      [Logarithm] Labor Productivity : Estimate
     ================== =================================
-    '''
+    """
     MAP = {
         'Original': {
             1: {
@@ -2284,12 +2285,12 @@ def plot_lab_cap_inty_lab_prty(df: DataFrame, params: tuple[float], option: str)
 
 
 def plot_turnover(df: DataFrame) -> None:
-    '''Static Fixed Assets Turnover Approximation
+    """Static Fixed Assets Turnover Approximation
     ================== =================================
     df.index           Period
     df.iloc[:, 0]      Fixed Assets Turnover
     ================== =================================
-    '''
+    """
     # =========================================================================
     # Linear: Fixed Assets Turnover
     # =========================================================================
@@ -2381,7 +2382,7 @@ def plot_turnover(df: DataFrame) -> None:
 
 
 def plot_usa_nber(df_sic: DataFrame, df_naics: DataFrame, agg: str) -> None:
-    '''Project V: USA NBER Data Plotting'''
+    """Project V: USA NBER Data Plotting"""
     for _, (sic_id, naics_id) in enumerate(zip(df_sic.columns, df_naics.columns)):
         # =====================================================================
         # Ensures Columns in Two DataFrames Are in the Same Ordering
@@ -2410,7 +2411,7 @@ def plot_usa_nber_manager() -> None:
 
 
 def plot_capital_acquisition(df: DataFrame) -> None:
-    '''
+    """
     Interactive Shell for Processing Capital Acquisitions
 
     Parameters
@@ -2431,7 +2432,7 @@ def plot_capital_acquisition(df: DataFrame) -> None:
     None
         Draws matplotlib.pyplot Plots.
 
-    '''
+    """
     _df = df.copy()
     _df.reset_index(level=0, inplace=True)
     _df.columns = ['period', *_df.columns[1:]]
@@ -2632,7 +2633,7 @@ def plot_capital_acquisition(df: DataFrame) -> None:
 
 
 def plot_capital_retirement(df: DataFrame) -> None:
-    '''
+    """
     Interactive Shell for Processing Capital Retirement
 
     Parameters
@@ -2652,7 +2653,7 @@ def plot_capital_retirement(df: DataFrame) -> None:
     None
         Draws matplotlib.pyplot Plots.
 
-    '''
+    """
     _df = df.copy()
     _df.reset_index(level=0, inplace=True)
     _df.columns = ['period', *_df.columns[1:]]

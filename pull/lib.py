@@ -14,7 +14,7 @@ from pandas import DataFrame
 
 
 def numerify(df: DataFrame) -> DataFrame:
-    '''
+    """
 
 
     Parameters
@@ -32,14 +32,14 @@ def numerify(df: DataFrame) -> DataFrame:
     df.index           Period
     df.iloc[:, 0]      Series
     ================== =================================
-    '''
+    """
     assert df.shape[1] == 1
     df.iloc[:, 0] = pd.to_numeric(df.iloc[:, 0], errors='coerce')
     return df
 
 
 def pull_by_series_id(df: DataFrame, series_id: str) -> DataFrame:
-    '''
+    """
 
 
     Parameters
@@ -59,7 +59,7 @@ def pull_by_series_id(df: DataFrame, series_id: str) -> DataFrame:
     df.index           Period
     df.iloc[:, 0]      Series
     ================== =================================
-    '''
+    """
     assert df.shape[1] == 2
     return df[df.iloc[:, 0] == series_id].iloc[:, [1]].rename(
         columns={"value": series_id}
@@ -67,7 +67,7 @@ def pull_by_series_id(df: DataFrame, series_id: str) -> DataFrame:
 
 
 def pull_can_aggregate(df: DataFrame, series_id: str) -> DataFrame:
-    '''
+    """
     Retrieves DataFrame from Quarterly Data within CANSIM Zip Archives
     Parameters
     ----------
@@ -81,7 +81,7 @@ def pull_can_aggregate(df: DataFrame, series_id: str) -> DataFrame:
     df.index           Period
     df.iloc[:, 0]      Series
     ================== =================================
-    '''
+    """
     _df = df.loc[:, ('series_id', 'value')].pipe(
         pull_by_series_id, series_id).pipe(numerify)
     if 'seas' in df.columns:
@@ -90,7 +90,7 @@ def pull_can_aggregate(df: DataFrame, series_id: str) -> DataFrame:
 
 
 def pull_can_capital(df: DataFrame, params: tuple[int, str]) -> DataFrame:
-    '''
+    """
     WARNING: VERY EXPENSIVE OPERATION !
     Retrieves Series IDs from Statistics Canada -- Fixed Assets Tables
 
@@ -108,7 +108,7 @@ def pull_can_capital(df: DataFrame, params: tuple[int, str]) -> DataFrame:
     DataFrame
         DESCRIPTION.
 
-    '''
+    """
     DIR = "/home/alexander/science"
     DBNAME = "capital"
     stmt = f"""
@@ -133,7 +133,7 @@ def pull_can_capital(df: DataFrame, params: tuple[int, str]) -> DataFrame:
 
 
 def pull_can_capital_former(df: DataFrame, params: tuple[int, str]) -> DataFrame:
-    '''
+    """
     Retrieves Series IDs from Statistics Canada -- Fixed Assets Tables
 
     Parameters
@@ -148,7 +148,7 @@ def pull_can_capital_former(df: DataFrame, params: tuple[int, str]) -> DataFrame
     -------
     DataFrame
         DESCRIPTION.
-    '''
+    """
     DIR = "/home/alexander/science"
     DBNAME = "capital"
     stmt = f"""
@@ -171,7 +171,7 @@ def pull_can_capital_former(df: DataFrame, params: tuple[int, str]) -> DataFrame
 
 
 def pull_series_ids(archive_name: str) -> dict[str]:
-    '''Returns Dictionary for Series from Douglas's & Kendrick's Databases'''
+    """Returns Dictionary for Series from Douglas's & Kendrick's Databases"""
     kwargs = {
         'filepath_or_buffer': archive_name,
         'index_col': 1,
@@ -181,7 +181,7 @@ def pull_series_ids(archive_name: str) -> dict[str]:
 
 
 def pull_uscb_description(series_id: str) -> str:
-    '''
+    """
     Retrieves Series Description U.S. Bureau of the Census
 
     Parameters
@@ -193,7 +193,7 @@ def pull_uscb_description(series_id: str) -> str:
     str
         Series Description.
 
-    '''
+    """
     MAP = {
         'source': 0,
         'table': 1,
