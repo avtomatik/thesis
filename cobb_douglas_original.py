@@ -7,13 +7,13 @@ Created on Sun Jul 12 18:28:15 2020
 
 
 import os
-from collect.lib import collect_cobb_douglas
-from collect.lib import transform_cobb_douglas
+
+from collect.lib import collect_cobb_douglas, transform_cobb_douglas
 from plot.lib import plot_cobb_douglas
 
 
 def main():
-    '''
+    """
     Cobb--Douglas Algorithm as per
     C.W. Cobb, P.H. Douglas. A Theory of Production, 1928 &
     P.H. Douglas. The Theory of Wages, 1934;
@@ -22,8 +22,8 @@ def main():
     -------
     None.
 
-    '''
-    DIR = '/media/alexander/321B-6A94'
+    """
+    DIR = '/home/green-machine/321B-6A94'
     MAP_FIG = {
         'fg_a': 'Chart I Progress in Manufacturing {}$-${} ({}=100)',
         'fg_b': 'Chart II Theoretical and Actual Curves of Production {}$-${} ({}=100)',

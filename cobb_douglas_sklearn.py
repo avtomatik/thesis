@@ -7,24 +7,23 @@ Created on Mon Mar  2 21:32:51 2020
 
 
 import os
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from numpy.fft import rfft
-from sklearn import datasets
-from sklearn import linear_model
 from sklearn import svm  # Support Vector Machine
+from sklearn import datasets, linear_model
 from sklearn.linear_model import Lasso
-from sklearn.model_selection import TimeSeriesSplit
-from sklearn.model_selection import cross_val_score
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import (TimeSeriesSplit, cross_val_score,
+                                     train_test_split)
+
+from collect.lib import collect_cobb_douglas, transform_cobb_douglas_sklearn
 from plot.lib import plot_cobb_douglas
-from collect.lib import collect_cobb_douglas
-from collect.lib import transform_cobb_douglas_sklearn
 
 
 def plot_discrete_fourier_transform(array: np.ndarray) -> None:
-    '''
+    """
     Discrete Fourier Transform
 
     Parameters
@@ -37,7 +36,7 @@ def plot_discrete_fourier_transform(array: np.ndarray) -> None:
     None
         DESCRIPTION.
 
-    '''
+    """
     # =========================================================================
     # TODO: Refine It
     # =========================================================================
@@ -55,7 +54,7 @@ def plot_discrete_fourier_transform(array: np.ndarray) -> None:
     plt.show()
 
 
-DIR = '/media/alexander/321B-6A94'
+DIR = '/home/green-machine/321B-6A94'
 MAP_FIG = {
     'fg_a': 'Chart I Progress in Manufacturing {}$-${} ({}=100)',
     'fg_b': 'Chart II Theoretical and Actual Curves of Production {}$-${} ({}=100)',

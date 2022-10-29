@@ -6,21 +6,19 @@ Created on Wed Feb  5 22:19:02 2020
 
 
 import os
-from collect.lib import collect_usa_capital_purchases
-from collect.lib import collect_cobb_douglas
-from collect.lib import collect_usa_production_two_fold
-from collect.lib import collect_usa_production_three_fold
-from collect.lib import collect_usa_production_latest
-from collect.lib import transform_cobb_douglas
-from collect.lib import transform_cobb_douglas_alt
+
+from collect.lib import (collect_cobb_douglas, collect_usa_capital_purchases,
+                         collect_usa_production_latest,
+                         collect_usa_production_three_fold,
+                         collect_usa_production_two_fold,
+                         transform_cobb_douglas, transform_cobb_douglas_alt)
+from plot.lib import (plot_capital_purchases, plot_cobb_douglas,
+                      plot_cobb_douglas_alt)
 from toolkit.lib import calculate_curve_fit_params
-from plot.lib import plot_capital_purchases
-from plot.lib import plot_cobb_douglas
-from plot.lib import plot_cobb_douglas_alt
 
 
 def main():
-    DIR = '/media/alexander/321B-6A94'
+    DIR = '/home/green-machine/321B-6A94'
     MAP_FIG = {
         'fg_a': 'Chart I Progress in Manufacturing {}$-${} ({}=100)',
         'fg_b': 'Chart II Theoretical and Actual Curves of Production {}$-${} ({}=100)',

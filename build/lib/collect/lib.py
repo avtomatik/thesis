@@ -143,15 +143,15 @@ def collect_archived() -> DataFrame:
 
 
 def collect_bea_def() -> DataFrame:
-    '''Intent: Returns Cumulative Price Index for Some Base Year from Certain Type BEA Deflator File'''
-    FILE_NAME = 'dataset_usa_bea-GDPDEF.xls'
-    df = pd.read_excel(
-        FILE_NAME,
-        names=['period', 'value'],
-        index_col=0,
-        skiprows=15,
-        parse_dates=True
-    )
+    """Intent: Returns Cumulative Price Index for Some Base Year from Certain Type BEA Deflator File"""
+    kwargs = {
+        'io': 'dataset_usa_bea-GDPDEF.xls',
+        'names': ('period', 'value'),
+        'index_col': 0,
+        'skiprows': 15,
+        'parse_dates': True,
+    }
+    df = pd.read_excel(**kwargs)
     return df.groupby(df.index.year).prod().pow(1/4)
 
 
@@ -284,37 +284,37 @@ def collect_usa_brown() -> DataFrame:
 
 def collect_can():
     # =========================================================================
-    # '''A. Fixed Assets Block: `Industrial buildings`, `Industrial machinery`\
+    # """A. Fixed Assets Block: `Industrial buildings`, `Industrial machinery`\
     # for `Newfoundland and Labrador`, `Prince Edward Island`, `Nova Scotia`, \
     # `New Brunswick`, `Quebec`, `Ontario`, `Manitoba`, `Saskatchewan`, `Alberta`, \
-    # `British Columbia`, `Yukon`, `Northwest Territories`, `Nunavut`'''
-    # '''2007 constant prices'''
-    # '''Geometric (infinite) end-year net stock'''
-    # '''Industrial buildings (x 1,000,000): `v43975603`, `v43977683`, `v43978099`, \
+    # `British Columbia`, `Yukon`, `Northwest Territories`, `Nunavut`"""
+    # """2007 constant prices"""
+    # """Geometric (infinite) end-year net stock"""
+    # """Industrial buildings (x 1,000,000): `v43975603`, `v43977683`, `v43978099`, \
     # `v43978515`, `v43978931`, `v43979347`, `v43979763`, `v43980179`, `v43980595`, \
-    # `v43976019`, `v43976435`, `v43976851`, `v43977267`'''
-    # '''Industrial machinery (x 1,000,000): `v43975594`, `v43977674`, `v43978090`, \
+    # `v43976019`, `v43976435`, `v43976851`, `v43977267`"""
+    # """Industrial machinery (x 1,000,000): `v43975594`, `v43977674`, `v43978090`, \
     # `v43978506`, `v43978922`, `v43979338`, `v43979754`, `v43980170`, `v43980586`, \
-    # `v43976010`, `v43976426`, `v43976842`, `v43977258`'''
-    # '''Table: 36-10-0238-01 (formerly CANSIM 031-0004): Flows and stocks of\
+    # `v43976010`, `v43976426`, `v43976842`, `v43977258`"""
+    # """Table: 36-10-0238-01 (formerly CANSIM 031-0004): Flows and stocks of\
     # fixed non-residential capital, total all industries, by asset, provinces\
-    # and territories, annual (dollars x 1,000,000)'''
+    # and territories, annual (dollars x 1,000,000)"""
     # =========================================================================
     URL = 'https://www150.statcan.gc.ca/n1/en/tbl/csv/36100096-eng.zip'
     capital = extract_can_from_url(URL)
     capital = extract_can_capital(extract_can_capital_query())
     # =========================================================================
-    # '''B. Labor Block: `v2523012`, Preferred Over `v3437501` Which Is Quarterly'''
-    # '''`v2523012` - Table: 14-10-0027-01 (formerly CANSIM 282-0012): Employment\
-    # by class of worker, annual (x 1,000)'''
+    # """B. Labor Block: `v2523012`, Preferred Over `v3437501` Which Is Quarterly"""
+    # """`v2523012` - Table: 14-10-0027-01 (formerly CANSIM 282-0012): Employment\
+    # by class of worker, annual (x 1,000)"""
     # =========================================================================
     URL = 'https://www150.statcan.gc.ca/n1/tbl/csv/14100027-eng.zip'
     labor = extract_can_from_url(URL)
     labor = extract_can(labor, 'v2523012')
     # =========================================================================
-    # '''C. Production Block: `v65201809`'''
-    # '''`v65201809` - Table: 36-10-0434-01 (formerly CANSIM 379-0031): Gross\
-    # domestic product (GDP) at basic prices, by industry, monthly (x 1,000,000)'''
+    # """C. Production Block: `v65201809`"""
+    # """`v65201809` - Table: 36-10-0434-01 (formerly CANSIM 379-0031): Gross\
+    # domestic product (GDP) at basic prices, by industry, monthly (x 1,000,000)"""
     # =========================================================================
     URL = 'https://www150.statcan.gc.ca/n1/tbl/csv/36100434-eng.zip'
     product = extract_can_from_url(URL)
@@ -479,7 +479,7 @@ def collect_can():
 
 
 def collect_can_price_a():
-    FILE_NAME = '/home/alexander/projects/stat_can_cap.xlsx'
+    FILE_NAME = '/home/green-machine/data_science/stat_can_cap.xlsx'
     _df = pd.read_excel(FILE_NAME, index_col=0)
     groups = [[[_, 5 + _] for _ in range(5)],
               # [[_, 10 + _] for _ in range(5)],
@@ -500,7 +500,7 @@ def collect_can_price_a():
 
 
 def collect_can_price_b():
-    FILE_NAME = '/home/alexander/projects/stat_can_cap.xlsx'
+    FILE_NAME = '/home/green-machine/data_science/stat_can_cap.xlsx'
     _df = pd.read_excel(FILE_NAME, index_col=0)
     df = DataFrame()
     for _ in range(21, 24):
@@ -672,7 +672,7 @@ def collect_capital_purchases() -> DataFrame:
 
 
 def collect_census_a():
-    '''Census Manufacturing Indexes, 1899=100'''
+    """Census Manufacturing Indexes, 1899=100"""
     ARCHIVE_NAMES = ('dataset_uscb.zip',
                      'dataset_uscb.zip',)
     SERIES_IDS = (
@@ -696,7 +696,7 @@ def collect_census_a():
 
 
 def collect_census_b_a():
-    '''Returns Nominal Million-Dollar Capital, Including Structures & Equipment, Series'''
+    """Returns Nominal Million-Dollar Capital, Including Structures & Equipment, Series"""
     ARCHIVE_NAMES = (
         # =====================================================================
         # Nominal Series, USD Millions
@@ -730,7 +730,7 @@ def collect_census_b_a():
 
 
 def collect_census_b_b():
-    '''Returns Census Fused Capital Deflator'''
+    """Returns Census Fused Capital Deflator"""
     ARCHIVE_NAME = 'dataset_uscb.zip'
     SERIES_IDS = (
         'P0107',  # Nominal
@@ -771,7 +771,7 @@ def collect_census_b_b():
 
 
 def collect_census_c() -> tuple[DataFrame, tuple[int]]:
-    '''Census Primary Metals & Railroad-Related Products Manufacturing Series'''
+    """Census Primary Metals & Railroad-Related Products Manufacturing Series"""
     ARCHIVE_NAME = 'dataset_uscb.zip'
     SERIES_IDS = (
         'P0262', 'P0265', 'P0266', 'P0267', 'P0268', 'P0269', 'P0293', 'P0294', 'P0295',
@@ -798,7 +798,7 @@ def collect_census_c() -> tuple[DataFrame, tuple[int]]:
 
 
 def collect_census_e() -> DataFrame:
-    '''Census Total Immigration Series'''
+    """Census Total Immigration Series"""
     ARCHIVE_NAME = 'dataset_uscb.zip'
     ids = itertools.chain(
         range(91, 102),
@@ -821,7 +821,7 @@ def collect_census_e() -> DataFrame:
 
 
 def collect_census_f() -> DataFrame:
-    '''Census Employment Series'''
+    """Census Employment Series"""
     ARCHIVE_NAME = 'dataset_uscb.zip'
     SERIES_IDS = ('D0085', 'D0086', 'D0796', 'D0797', 'D0977', 'D0982',)
     df = pd.concat(
@@ -839,7 +839,7 @@ def collect_census_f() -> DataFrame:
 
 
 def collect_census_g() -> DataFrame:
-    '''Census Gross National Product Series'''
+    """Census Gross National Product Series"""
     ARCHIVE_NAME = 'dataset_uscb.zip'
     SERIES_IDS = ('F0003', 'F0004',)
     df = pd.concat(
@@ -854,7 +854,7 @@ def collect_census_g() -> DataFrame:
 
 
 def collect_census_i_a() -> DataFrame:
-    '''Census Foreign Trade Series'''
+    """Census Foreign Trade Series"""
     ARCHIVE_NAME = 'dataset_uscb.zip'
     SERIES_IDS = ('U0001', 'U0008', 'U0015',)
     return pd.concat(
@@ -868,7 +868,7 @@ def collect_census_i_a() -> DataFrame:
 
 
 def collect_census_i_b() -> DataFrame:
-    '''Census Foreign Trade Series'''
+    """Census Foreign Trade Series"""
     ARCHIVE_NAME = 'dataset_uscb.zip'
     SERIES_IDS = ('U0187', 'U0188', 'U0189',)
     return pd.concat(
@@ -882,7 +882,7 @@ def collect_census_i_b() -> DataFrame:
 
 
 def collect_census_i_c() -> DataFrame:
-    '''Census Foreign Trade Series'''
+    """Census Foreign Trade Series"""
     ARCHIVE_NAME = 'dataset_uscb.zip'
     ids = itertools.chain(
         range(319, 324),
@@ -918,7 +918,7 @@ def collect_census_i_c() -> DataFrame:
 
 
 def collect_census_j() -> DataFrame:
-    '''Census Money Supply Aggregates'''
+    """Census Money Supply Aggregates"""
     YEAR_BASE = 1915
     ARCHIVE_NAME = 'dataset_uscb.zip'
     SERIES_IDS = ('X0410', 'X0414', 'X0415',)
@@ -948,7 +948,7 @@ def collect_census_price() -> DataFrame:
 
 
 def collect_centered_by_period(df: DataFrame) -> DataFrame:
-    '''
+    """
     Parameters
     ----------
     df : DataFrame
@@ -959,7 +959,7 @@ def collect_centered_by_period(df: DataFrame) -> DataFrame:
     Returns
     -------
     DataFrame
-    '''
+    """
     # =========================================================================
     # TODO: Any Use?
     # =========================================================================
@@ -993,7 +993,7 @@ def collect_centered_by_period(df: DataFrame) -> DataFrame:
 
 
 def collect_cobb_douglas_deflator():
-    '''Fixed Assets Deflator, 2009=100'''
+    """Fixed Assets Deflator, 2009=100"""
     # =========================================================================
     # TODO: Change Name; Be Careful with Usage Due to Change in Behavior
     # =========================================================================
@@ -1198,7 +1198,7 @@ def collect_cobb_douglas_extension_capital() -> DataFrame:
 
 
 def collect_cobb_douglas_extension_labor():
-    '''Manufacturing Laborers` Series Comparison'''
+    """Manufacturing Laborers` Series Comparison"""
     # =========================================================================
     # TODO: Bureau of Labor Statistics
     # TODO: Federal Reserve Board
@@ -1379,7 +1379,7 @@ def collect_cobb_douglas_price() -> DataFrame:
 
 
 def collect_cobb_douglas(series_number: int = 3) -> DataFrame:
-    '''Original Cobb--Douglas Data Preprocessing Extension'''
+    """Original Cobb--Douglas Data Preprocessing Extension"""
     ARCHIVE_NAMES = (
         'dataset_usa_cobb-douglas.zip',
         'dataset_usa_cobb-douglas.zip',
@@ -1430,7 +1430,7 @@ def collect_cobb_douglas(series_number: int = 3) -> DataFrame:
 
 
 def collect_combined():
-    '''Most Up-To-Date Version'''
+    """Most Up-To-Date Version"""
     # =========================================================================
     # TODO: Refactor It
     # =========================================================================
@@ -1551,7 +1551,7 @@ def collect_combined():
 
 
 def collect_combined_archived():
-    '''Version: 02 December 2013'''
+    """Version: 02 December 2013"""
     ARCHIVE_NAMES = (
         'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
         'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
@@ -1717,7 +1717,7 @@ def collect_combined_archived():
 
 
 def collect_common_archived():
-    '''Data Fetch'''
+    """Data Fetch"""
     ARCHIVE_NAMES = (
         'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1929_1969.zip',
         'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1969_2015.zip',
@@ -1835,7 +1835,7 @@ def collect_common_archived():
 
 
 def collect_douglas():
-    '''Douglas Data Preprocessing'''
+    """Douglas Data Preprocessing"""
     ARCHIVE_NAME = 'dataset_douglas.zip'
     SERIES_IDS = ('DT19AS03', 'DT19AS02', 'DT19AS01',)
     df = pd.concat(
@@ -1913,7 +1913,7 @@ def collect_local():
 
 
 def collect() -> DataFrame:
-    '''Data Fetch'''
+    """Data Fetch"""
     # =========================================================================
     # TODO: Update Accodring to Change in collect_cobb_douglas_deflator()
     # =========================================================================
@@ -2106,7 +2106,7 @@ def collect_usa_bea_labor_mfg():
 
 
 def collect_usa_bls_cpiu():
-    '''BLS CPI-U Price Index Fetch'''
+    """BLS CPI-U Price Index Fetch"""
     FILE_NAME = 'dataset_usa_bls_cpiai.txt'
     df = pd.read_csv(
         FILE_NAME,
@@ -2229,8 +2229,8 @@ def collect_usa_capital():
 
 
 def collect_usa_frb_cu():
-    '''Indexed Capacity Utilization Series: CAPUTL.B50001.A, 1967--2012
-    CAPUTL.B50001.A Fetching'''
+    """Indexed Capacity Utilization Series: CAPUTL.B50001.A, 1967--2012
+    CAPUTL.B50001.A Fetching"""
     FILE_NAME = 'dataset_usa_frb_g17_all_annual_2013_06_23.csv'
     SERIES_ID = 'CAPUTLB50001A'
     df = pd.read_csv(FILE_NAME, skiprows=1, usecols=range(5, 100))
@@ -2244,7 +2244,7 @@ def collect_usa_frb_cu():
 
 
 def collect_usa_frb_fa() -> DataFrame():
-    '''
+    """
     Returns Frame of Manufacturing Fixed Assets Series, Billion USD
 
     Returns
@@ -2255,7 +2255,7 @@ def collect_usa_frb_fa() -> DataFrame():
     df.iloc[:, 0]      Nominal
     df.iloc[:, 1]      Real
     ================== =================================
-    '''
+    """
     FILE_NAME = 'dataset_usa_frb_invest_capital.csv'
     df = pd.read_csv(FILE_NAME,
                      skiprows=4, skipfooter=688, engine='python')
@@ -2269,7 +2269,7 @@ def collect_usa_frb_fa() -> DataFrame():
 
 
 def collect_usa_frb_fa_def() -> DataFrame():
-    '''
+    """
     Returns Frame of Deflator for Manufacturing Fixed Assets Series
 
     Returns
@@ -2279,7 +2279,7 @@ def collect_usa_frb_fa_def() -> DataFrame():
     df.index           Period
     df.iloc[:, 0]      Deflator
     ================== =================================
-    '''
+    """
     FILE_NAME = 'dataset_usa_frb_invest_capital.csv'
     df = pd.read_csv(FILE_NAME, skiprows=4, skipfooter=688, engine='python')
     df.columns = ['period', *df.columns[1:]]
@@ -2291,7 +2291,7 @@ def collect_usa_frb_fa_def() -> DataFrame():
 
 
 def collect_usa_frb_ip():
-    '''Indexed Manufacturing Series: FRB G17 IP, AIPMA_SA_IX, 1919--2018'''
+    """Indexed Manufacturing Series: FRB G17 IP, AIPMA_SA_IX, 1919--2018"""
     # =========================================================================
     # TODO: https://www.federalreserve.gov/datadownload/Output.aspx?rel=g17&filetype=zip
     # =========================================================================
@@ -2324,7 +2324,7 @@ def collect_usa_mcconnel(series_ids: tuple[str]) -> DataFrame:
 
 
 def collect_usa_sahr_infcf():
-    '''Retrieve Yearly Price Rates from `dataset_usa_infcf16652007.zip`'''
+    """Retrieve Yearly Price Rates from `dataset_usa_infcf16652007.zip`"""
     ARCHIVE_NAME = 'dataset_usa_infcf16652007.zip'
     _df = pd.read_csv(ARCHIVE_NAME, usecols=range(4, 7))
     df = DataFrame()
@@ -2404,10 +2404,10 @@ def collect_usa_xlsm():
 
 
 def collect_version_a():
-    '''Data Fetch Archived
+    """Data Fetch Archived
     Returns:
         _data_a: Capital, Labor, Product;
-        _data_b: Capital, Labor, Product Adjusted to Capacity Utilisation'''
+        _data_b: Capital, Labor, Product Adjusted to Capacity Utilisation"""
     ARCHIVE_NAMES = (
         'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
         'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
@@ -2472,13 +2472,13 @@ def collect_version_a():
 
 
 def collect_version_b() -> tuple[DataFrame]:
-    '''
+    """
     Returns
         data_frame_a: Capital, Labor, Product;
         data_frame_b: Capital, Labor, Product;
         data_frame_c: Capital, Labor, Product Adjusted to Capacity Utilisation
-    '''
-    '''Data Fetch Revised'''
+    """
+    """Data Fetch Revised"""
     KWARGS = {
         'archive_name': 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip',
         'wb_name': 'Section4ALL_xls.xls',
@@ -2536,7 +2536,7 @@ def collect_version_b() -> tuple[DataFrame]:
 
 
 def collect_version_c():
-    '''Data Fetch'''
+    """Data Fetch"""
     # =========================================================================
     # Data Fetch for Capital
     # Data Fetch for Capital Deflator
@@ -2574,7 +2574,7 @@ def get_mean_for_min_std():
     # Base Vector v2523013
     # =========================================================================
     df = DataFrame()
-    FILE_NAME = '/home/alexander/projects/stat_can_lab.xlsx'
+    FILE_NAME = '/home/green-machine/data_science/stat_can_lab.xlsx'
     _ = pd.read_excel(FILE_NAME, index_col=0)
     SERIES_IDS = (
         'v123355112',
@@ -2595,7 +2595,7 @@ def get_mean_for_min_std():
 
 
 def get_price_base(df: DataFrame) -> int:
-    '''
+    """
     Determine Base Year
 
     Parameters
@@ -2611,7 +2611,7 @@ def get_price_base(df: DataFrame) -> int:
     int
         Base Year.
 
-    '''
+    """
     df['__deflator'] = df.iloc[:, 0].sub(100).abs()
     _b = df.iloc[:, -1].astype(float).argmin()
     df.drop(df.columns[-1], axis=1, inplace=True)
@@ -2673,14 +2673,14 @@ def transform_e(df: DataFrame) -> tuple[DataFrame]:
 
 
 def transform_cobb_douglas(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
-    '''
+    """
     ================== =================================
     df.index           Period
     df.iloc[:, 0]      Capital
     df.iloc[:, 1]      Labor
     df.iloc[:, 2]      Product
     ================== =================================
-    '''
+    """
     # =========================================================================
     # Labor Capital Intensity
     # =========================================================================
@@ -2738,7 +2738,7 @@ def transform_cobb_douglas(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
 
 
 def transform_cobb_douglas_alt(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
-    '''
+    """
     ================== =================================
     df.index           Period
     df.iloc[:, 0]      Capital
@@ -2746,7 +2746,7 @@ def transform_cobb_douglas_alt(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
     df.iloc[:, 2]      Product
     df.iloc[:, 3]      Product Alternative
     ================== =================================
-    '''
+    """
     # =========================================================================
     # Labor Capital Intensity
     # =========================================================================
@@ -2824,12 +2824,12 @@ def transform_cobb_douglas_alt(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
 # =============================================================================
 #     TODO: Implement Additional Features
 # =============================================================================
-#     '''
+#     """
 #     df.index: Period,
 #     df.iloc[:, 0]: Capital,
 #     df.iloc[:, 1]: Labor,
 #     df.iloc[:, 2]: Product
-#     '''
+#     """
 #     from sklearn.linear_model import Lasso
 #     from sklearn.linear_model import LassoCV
 #     from sklearn.linear_model import LinearRegression
@@ -2898,7 +2898,7 @@ def transform_cobb_douglas_alt(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
 
 
 def transform_kurenkov(data_testing: DataFrame) -> tuple[DataFrame]:
-    '''Returns Four DataFrames with Comparison of data_testing: DataFrame and Kurenkov Yu.V. Data'''
+    """Returns Four DataFrames with Comparison of data_testing: DataFrame and Kurenkov Yu.V. Data"""
     FILE_NAME = 'dataset_usa_reference_ru_kurenkov_yu_v.csv'
     data_control = pd.read_csv(FILE_NAME, index_col=0)
     # =============================================================================

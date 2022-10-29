@@ -7,12 +7,12 @@ Created on Wed Dec 18 21:04:02 2019
 
 
 import os
-from plot.lib import plot_is_lm
-from plot.lib import plot_grigoriev
+
+from plot.lib import plot_grigoriev, plot_is_lm
 
 
 def main():
-    DIR = '/media/alexander/321B-6A94'
+    DIR = '/home/green-machine/321B-6A94'
 
     os.chdir(DIR)
     plot_is_lm()

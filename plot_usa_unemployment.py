@@ -6,19 +6,20 @@ Created on Tue Sep 10 23:12:03 2019
 """
 
 
-import matplotlib.pyplot as plt
 import os
+
+import matplotlib.pyplot as plt
 import pandas as pd
 from pandas.plotting import autocorrelation_plot
-from read.lib import read_usa_bls
-from read.lib import read_usa_hist
+
 from pull.lib import pull_by_series_id
+from read.lib import read_usa_bls, read_usa_hist
 
 
 def main():
     FLAG = True
-    DIR = '/media/alexander/321B-6A94'
-    _DIR = '/home/alexander/Downloads'
+    DIR = '/home/green-machine/321B-6A94'
+    _DIR = '/home/green-machine/Downloads'
     ARCHIVE_NAME = 'dataset_uscb.zip'
     FILE_NAME = 'dataset_usa_bls-2017-07-06-ln.data.1.AllData'
     _FILE_NAME = 'plot_usa_unemployment_autocorrelation.pdf'

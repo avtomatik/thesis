@@ -7,13 +7,15 @@ Created on Thu Oct 29 23:21:52 2020
 
 
 import pandas as pd
+from pandas import DataFrame
+
 pd.options.display.max_columns = 8
 
 
-def page_0x8e_table_0x1() -> pd.DataFrame:
-    '''
+def page_0x8e_table_0x1() -> DataFrame:
+    """
     # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 142: Table I
-    '''
+    """
     period = (
         1879,
         1889,
@@ -65,7 +67,7 @@ def page_0x8e_table_0x1() -> pd.DataFrame:
         15783,
     )
 
-    df = pd.DataFrame.from_dict(
+    df = DataFrame.from_dict(
         {
             'period': period,
             'bldg_per': bldg_per,
@@ -79,10 +81,10 @@ def page_0x8e_table_0x1() -> pd.DataFrame:
     return df
 
 
-def page_0x90() -> pd.DataFrame:
-    '''
+def page_0x90() -> DataFrame:
+    """
     # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 144
-    '''
+    """
     val = (
         200,
         210,
@@ -108,7 +110,7 @@ def page_0x90() -> pd.DataFrame:
         12.5,
     )
 
-    df = pd.DataFrame.from_dict(
+    df = DataFrame.from_dict(
         {
             'period': range(1880, 1890),
             'val': val,
@@ -120,10 +122,10 @@ def page_0x90() -> pd.DataFrame:
     return df
 
 
-def page_0x91_table_0x2() -> pd.DataFrame:
-    '''
+def page_0x91_table_0x2() -> DataFrame:
+    """
     # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 145: Table II
-    '''
+    """
     col_a = (
         339,
         264,
@@ -203,7 +205,7 @@ def page_0x91_table_0x2() -> pd.DataFrame:
         650,
     )
 
-    df = pd.DataFrame.from_dict(
+    df = DataFrame.from_dict(
         {
             'period': range(1899, 1923),
             'col_a': col_a,
@@ -224,10 +226,10 @@ def page_0x91_table_0x2() -> pd.DataFrame:
     return df
 
 
-def page_0x92() -> pd.DataFrame:
-    '''
+def page_0x92() -> DataFrame:
+    """
     # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 146
-    '''
+    """
     ma = (
         105,
         110,
@@ -253,7 +255,7 @@ def page_0x92() -> pd.DataFrame:
         263,
     )
 
-    df = pd.DataFrame.from_dict(
+    df = DataFrame.from_dict(
         {
             'period': range(1911, 1921),
             'ma': ma,
@@ -263,10 +265,10 @@ def page_0x92() -> pd.DataFrame:
     return df.set_index(df.columns[0], verify_integrity=True)
 
 
-def page_0x94_table_0x3() -> pd.DataFrame:
-    '''
+def page_0x94_table_0x3() -> DataFrame:
+    """
     # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 148: Table III
-    '''
+    """
     lab = (
         4713,
         4968,
@@ -294,7 +296,7 @@ def page_0x94_table_0x3() -> pd.DataFrame:
         7602,
     )
 
-    df = pd.DataFrame.from_dict(
+    df = DataFrame.from_dict(
         {
             'period': range(1899, 1923),
             'lab': lab,
@@ -305,10 +307,10 @@ def page_0x94_table_0x3() -> pd.DataFrame:
     return df
 
 
-def page_0x95_table_0x4() -> pd.DataFrame:
-    '''
+def page_0x95_table_0x4() -> DataFrame:
+    """
     # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 149: Table IV
-    '''
+    """
     pro = (
         100,
         101,
@@ -336,7 +338,7 @@ def page_0x95_table_0x4() -> pd.DataFrame:
         240,
     )
 
-    df = pd.DataFrame.from_dict(
+    df = DataFrame.from_dict(
         {
             'period': range(1899, 1923),
             'pro': pro,
@@ -345,10 +347,10 @@ def page_0x95_table_0x4() -> pd.DataFrame:
     return df.set_index(df.columns[0], verify_integrity=True)
 
 
-def page_0x96_table_0x5() -> pd.DataFrame:
-    '''
+def page_0x96_table_0x5() -> DataFrame:
+    """
     # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 150: Table V
-    '''
+    """
     df = pd.concat(
         [
             page_0x91_table_0x2().iloc[:, [-1]],
@@ -361,10 +363,10 @@ def page_0x96_table_0x5() -> pd.DataFrame:
     return df.iloc[:, [-1]]
 
 
-def page_0x98_table_0x6() -> pd.DataFrame:
-    '''
+def page_0x98_table_0x6() -> DataFrame:
+    """
     # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 152: Table VI
-    '''
+    """
     pro_com = (
         101,
         107,
@@ -470,7 +472,7 @@ def page_0x98_table_0x6() -> pd.DataFrame:
         'Оживление; подъём',
     )
 
-    df = pd.DataFrame.from_dict(
+    df = DataFrame.from_dict(
         {
             'period': range(1899, 1923),
             'pro_com': pro_com,
@@ -484,10 +486,10 @@ def page_0x98_table_0x6() -> pd.DataFrame:
     return df.set_index(df.columns[0], verify_integrity=True).iloc[:, range(4)]
 
 
-def page_0x99_table_0x7() -> pd.DataFrame:
-    '''
+def page_0x99_table_0x7() -> DataFrame:
+    """
     # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 153: Table VII
-    '''
+    """
     df = page_0x98_table_0x6().iloc[:, range(2)]
     df['sub_pro'] = df.iloc[:, 1].sub(
         df.iloc[:, 1].rolling(window=3, center=True).mean())
@@ -496,10 +498,10 @@ def page_0x99_table_0x7() -> pd.DataFrame:
     return df.iloc[:, -2:].dropna().astype(int)
 
 
-def page_0x9f_table_0x8() -> pd.DataFrame:
-    '''
+def page_0x9f_table_0x8() -> DataFrame:
+    """
     # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 159: Table VIII
-    '''
+    """
     pro = (
         100,
         101,
@@ -553,7 +555,7 @@ def page_0x9f_table_0x8() -> pd.DataFrame:
         223,
     )
 
-    df = pd.DataFrame.from_dict(
+    df = DataFrame.from_dict(
         {
             'period': range(1899, 1923),
             'pro': pro,
@@ -566,10 +568,10 @@ def page_0x9f_table_0x8() -> pd.DataFrame:
     return df
 
 
-def page_0xa1() -> pd.DataFrame:
-    '''
+def page_0xa1() -> DataFrame:
+    """
     # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 161
-    '''
+    """
     idx = (
         100,
         96,
@@ -597,7 +599,7 @@ def page_0xa1() -> pd.DataFrame:
         149,
     )
 
-    df = pd.DataFrame.from_dict(
+    df = DataFrame.from_dict(
         {
             'period': range(1899, 1923),
             'idx': idx,
@@ -606,10 +608,10 @@ def page_0xa1() -> pd.DataFrame:
     return df.set_index(df.columns[0], verify_integrity=True)
 
 
-def page_0xa2_table_0x9() -> pd.DataFrame:
-    '''
+def page_0xa2_table_0x9() -> DataFrame:
+    """
     # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 162: Table IX
-    '''
+    """
     def_mfg = (
         100,
         105,
@@ -663,7 +665,7 @@ def page_0xa2_table_0x9() -> pd.DataFrame:
         199,
     )
 
-    df = pd.DataFrame.from_dict(
+    df = DataFrame.from_dict(
         {
             'period': range(1899, 1923),
             'def_mfg': def_mfg,
@@ -677,10 +679,10 @@ def page_0xa2_table_0x9() -> pd.DataFrame:
     return df
 
 
-def page_0xa3_footnote_0x25() -> pd.DataFrame:
-    '''
+def page_0xa3_footnote_0x25() -> DataFrame:
+    """
     # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 163: Table X
-    '''
+    """
     idx = (
         101,
         95,
@@ -708,7 +710,7 @@ def page_0xa3_footnote_0x25() -> pd.DataFrame:
         136,
     )
 
-    df = pd.DataFrame.from_dict(
+    df = DataFrame.from_dict(
         {
             'period': range(1899, 1923),
             'idx': idx,
@@ -717,10 +719,10 @@ def page_0xa3_footnote_0x25() -> pd.DataFrame:
     return df.set_index(df.columns[0], verify_integrity=True)
 
 
-def page_0xa3_table_0xa() -> pd.DataFrame:
-    '''
+def page_0xa3_table_0xa() -> DataFrame:
+    """
     # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 163: Footnote 37
-    '''
+    """
     period = (
         1909,
         1911,
@@ -746,7 +748,7 @@ def page_0xa3_table_0xa() -> pd.DataFrame:
         78.1,
     )
 
-    df = pd.DataFrame.from_dict(
+    df = DataFrame.from_dict(
         {
             'period': period,
             'value': value,
@@ -757,10 +759,10 @@ def page_0xa3_table_0xa() -> pd.DataFrame:
     return df.set_index(df.columns[0], verify_integrity=True).sort_index()
 
 
-def page_0xa4_table_0xb() -> pd.DataFrame:
-    '''
+def page_0xa4_table_0xb() -> DataFrame:
+    """
     # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 164: Table XI
-    '''
+    """
     pro_val = (
         101,
         95,
@@ -840,7 +842,7 @@ def page_0xa4_table_0xb() -> pd.DataFrame:
         '',
     )
 
-    df = pd.DataFrame.from_dict(
+    df = DataFrame.from_dict(
         {
             'period': range(1899, 1923),
             'pro_val': pro_val,

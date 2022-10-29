@@ -10,12 +10,11 @@ Created on Sun Jun 12 12:25:52 2022
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from pandas import DataFrame
-from scipy.interpolate import UnivariateSpline
 import scipy.optimize as optimization
-from sklearn.metrics import mean_squared_error
-from sklearn.metrics import r2_score
+from pandas import DataFrame
 from read.lib import read_can
+from scipy.interpolate import UnivariateSpline
+from sklearn.metrics import mean_squared_error, r2_score
 
 
 def calculate_capital(df: DataFrame, p_i: tuple[float], p_t: tuple[float], ratio: float):
@@ -876,7 +875,7 @@ def string_to_url(string: str) -> str:
     return f'https://www150.statcan.gc.ca/n1/tbl/csv/{string}'
 
 
-def build_load_data_frame(file_name: str, blueprint: dict) -> None:
+def build_push_data_frame(file_name: str, blueprint: dict) -> None:
     """
     Builds DataFrame & Loads It To Excel
 

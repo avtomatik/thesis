@@ -7,12 +7,14 @@ Created on Wed Sep  1 21:22:23 2021
 
 
 import os
+
 import pandas as pd
+
 from read.lib import read_can
 
 
 def url_to_file_name(_url: str) -> str:
-    '''
+    """
 
 
     Parameters
@@ -25,7 +27,7 @@ def url_to_file_name(_url: str) -> str:
     str
         DESCRIPTION.
 
-    '''
+    """
     return '/'.join(
         (
             'https://www150.statcan.gc.ca/n1/tbl/csv',
@@ -34,7 +36,7 @@ def url_to_file_name(_url: str) -> str:
 
 
 def main():
-    DIR = '/home/alexander/science'
+    DIR = '/media/green-machine/321B-6A94'
     FILE_NAME = 'stat_can_all.xlsx'
 
     # =============================================================================

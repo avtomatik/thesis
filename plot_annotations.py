@@ -4,15 +4,16 @@
 
 
 import os
+
 import matplotlib.pyplot as plt
 import pandas as pd
-from collect.lib import collect_version_c
-from collect.lib import collect_usa_macroeconomics
+
+from collect.lib import collect_usa_macroeconomics, collect_version_c
 from plot.lib import plot_increment
 
 
 def data_transform_add_dx_dy(df: pd.DataFrame) -> pd.DataFrame:
-    '''
+    """
 
 
     Parameters
@@ -34,7 +35,7 @@ def data_transform_add_dx_dy(df: pd.DataFrame) -> pd.DataFrame:
     df.iloc[:, 2]      Labor Capital Intensity Increment
     df.iloc[:, 3]      Labor Productivity Increment
     ================== =================================
-    '''
+    """
     _df = df.copy()
     _df.dropna(inplace=True)
     # =========================================================================
@@ -57,7 +58,7 @@ def data_transform_add_dx_dy(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def plot_local(df: pd.DataFrame) -> None:
-    '''
+    """
 
 
     Parameters
@@ -75,7 +76,7 @@ def plot_local(df: pd.DataFrame) -> None:
     None
         DESCRIPTION.
 
-    '''
+    """
     # =========================================================================
     # Scenario I
     # =========================================================================
@@ -102,7 +103,7 @@ def main():
     # =========================================================================
     # TODO: Revise Dataset
     # =========================================================================
-    DIR = '/media/alexander/321B-6A94'
+    DIR = '/home/green-machine/321B-6A94'
 
     os.chdir(DIR)
     _df = collect_usa_macroeconomics()

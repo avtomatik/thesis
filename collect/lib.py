@@ -7,30 +7,19 @@ Created on Sun Jun 12 11:52:01 2022
 """
 
 import itertools
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
-from pathlib import Path
 from pandas import DataFrame
+from pull.lib import (numerify, pull_by_series_id, pull_can_aggregate,
+                      pull_can_capital, pull_can_capital_former)
+from read.lib import (read_can, read_usa_bea, read_usa_frb, read_usa_frb_g17,
+                      read_usa_frb_ms, read_usa_frb_us3, read_usa_fred,
+                      read_usa_hist)
 from scipy import signal
-# from sklearn.linear_model import Lasso
-# from sklearn.linear_model import LassoCV
-from sklearn.linear_model import LinearRegression
-# from sklearn.linear_model import Ridge
-from pull.lib import numerify
-from read.lib import read_can
-from read.lib import read_usa_bea
-from read.lib import read_usa_frb
-from read.lib import read_usa_frb_g17
-from read.lib import read_usa_frb_us3
-from read.lib import read_usa_hist
-from read.lib import read_usa_frb_ms
-from read.lib import read_usa_fred
-from pull.lib import pull_by_series_id
-from pull.lib import pull_can_capital
-from pull.lib import pull_can_capital_former
-from pull.lib import pull_can_aggregate
-from toolkit.lib import price_inverse_single
-from toolkit.lib import strip_cumulated_deflator
+from sklearn.linear_model import Lasso, LassoCV, LinearRegression, Ridge
+from toolkit.lib import price_inverse_single, strip_cumulated_deflator
 
 
 ARCHIVE_NAMES_UTILISED = (
@@ -364,7 +353,7 @@ def collect_cobb_douglas_extension_labor() -> DataFrame:
 
 def collect_cobb_douglas_extension_product() -> DataFrame:
     kwargs = {
-        'filepath_or_buffer': 'dataset_usa_davis-j-h-ip-total.xls',
+        'io': 'dataset_usa_davis-j-h-ip-total.xls',
         'header': None,
         'names': ('period', 'davis_index'),
         'index_col': 0,
@@ -1579,7 +1568,7 @@ def construct_can(archive_ids: dict) -> DataFrame:
     df.iloc[:, 2]      Product
     ================== =================================
     """
-    DIR = '/home/alexander/science'
+    DIR = '/media/green-machine/321B-6A94'
     if Path(DIR).joinpath(f'{tuple(archive_ids)[0]}_preloaded.csv').is_file():
         kwargs = {
             'filepath_or_buffer': Path(DIR).joinpath(f'{tuple(archive_ids)[0]}_preloaded.csv'),
@@ -1640,10 +1629,10 @@ def get_mean_for_min_std():
     """
     Determine Year & Mean Value for Base Vectors for Year with Minimum StandardError
     """
-    DIR = '/home/alexander/science'
+    DIR = '/media/green-machine/321B-6A94'
     FILE_NAME = 'stat_can_lab.xlsx'
     kwargs = {
-        'filepath_or_buffer': Path(DIR).joinpath(FILE_NAME),
+        'io': Path(DIR).joinpath(FILE_NAME),
         'index_col': 0,
     }
     # =========================================================================
@@ -2085,10 +2074,10 @@ def transform_sum(df: DataFrame) -> DataFrame:
 
 
 def collect_can_price_a():
-    DIR = '/home/alexander/science'
+    DIR = '/media/green-machine/321B-6A94'
     FILE_NAME = 'stat_can_cap.xlsx'
     kwargs = {
-        'filepath_or_buffer': Path(DIR).joinpath(FILE_NAME),
+        'io': Path(DIR).joinpath(FILE_NAME),
         'index_col': 0,
     }
     _df = pd.read_excel(**kwargs)
@@ -2113,10 +2102,10 @@ def collect_can_price_a():
 
 
 def collect_can_price_b():
-    DIR = '/home/alexander/science'
+    DIR = '/media/green-machine/321B-6A94'
     FILE_NAME = 'stat_can_cap.xlsx'
     kwargs = {
-        'filepath_or_buffer': Path(DIR).joinpath(FILE_NAME),
+        'io': Path(DIR).joinpath(FILE_NAME),
         'index_col': 0,
     }
     _df = pd.read_excel(**kwargs)

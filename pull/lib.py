@@ -9,6 +9,7 @@ Created on Sun Sep  4 23:56:20 2022
 
 import sqlite3
 from pathlib import Path
+
 import pandas as pd
 from pandas import DataFrame
 
@@ -97,7 +98,7 @@ def pull_can_capital(df: DataFrame, params: tuple[int, str]) -> DataFrame:
     Parameters
     ----------
     df : DataFrame
-        DESCRIPTION.
+
     params : tuple[int, str]
         param : BASE_YEAR : Basic Price Year.
         param : CATEGORY : Estimate Basis.
@@ -106,10 +107,9 @@ def pull_can_capital(df: DataFrame, params: tuple[int, str]) -> DataFrame:
     Returns
     -------
     DataFrame
-        DESCRIPTION.
 
     """
-    DIR = "/home/alexander/science"
+    DIR = "/home/green-machine/data_science"
     DBNAME = "capital"
     stmt = f"""
     SELECT * FROM {DBNAME}
@@ -139,6 +139,7 @@ def pull_can_capital_former(df: DataFrame, params: tuple[int, str]) -> DataFrame
     Parameters
     ----------
     df : DataFrame
+
     params : tuple[int, str]
         param : BASE_YEAR : Basic Price Year.
         param : CATEGORY : Estimate Basis.
@@ -147,9 +148,9 @@ def pull_can_capital_former(df: DataFrame, params: tuple[int, str]) -> DataFrame
     Returns
     -------
     DataFrame
-        DESCRIPTION.
+
     """
-    DIR = "/home/alexander/science"
+    DIR = "/home/green-machine/data_science"
     DBNAME = "capital"
     stmt = f"""
     SELECT * FROM {DBNAME}

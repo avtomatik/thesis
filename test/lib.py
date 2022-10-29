@@ -8,18 +8,14 @@ Created on Sun Jun 12 12:19:54 2022
 
 
 from functools import partial
+
 import pandas as pd
 from pandas import DataFrame
 from pandas.plotting import autocorrelation_plot
-from pull.lib import numerify
-from pull.lib import pull_can_quarter_former
-from pull.lib import pull_by_series_id
-from read.lib import read_manager_can_former
-from read.lib import read_usa_bea_excel
-from read.lib import read_usa_bls
-from read.lib import read_usa_hist
 from plot.lib import plot_can_test
-
+from pull.lib import numerify, pull_by_series_id, pull_can_quarter_former
+from read.lib import (read_manager_can_former, read_usa_bea_excel,
+                      read_usa_bls, read_usa_hist)
 
 ARCHIVE_NAMES_UTILISED = (
     'dataset_douglas.zip',
