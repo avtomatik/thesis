@@ -7,11 +7,12 @@ Created on Tue Nov  2 21:10:29 2021
 
 
 import os
+
 import pandas as pd
 from pandas import DataFrame
-from collect.lib import construct_cap_deflator
-from collect.lib import collect_can_price_a
-from collect.lib import collect_can_price_b
+
+from collect.lib import (collect_can_price_a, collect_can_price_b,
+                         construct_cap_deflator)
 
 
 def append_series_ids(df: DataFrame, series_ids: tuple[str]) -> DataFrame:
@@ -28,8 +29,8 @@ def append_series_ids(df: DataFrame, series_ids: tuple[str]) -> DataFrame:
 
 
 def main():
-    DIR = '/home/alexander/science'
-    _DIR = '/media/alexander/321B-6A94'
+    DIR = '/media/green-machine/321B-6A94'
+    _DIR = '/home/green-machine/321B-6A94'
 
     SERIES_IDS = {
         'CDT2S1': 'dataset_usa_cobb-douglas.zip',

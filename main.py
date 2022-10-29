@@ -1,92 +1,56 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Created on Tue Mar 10 22:29:22 2020
 
 Thesis Project
 
 @author: Alexander Mikhailov
-'''
+"""
 
 
 import itertools
 import os
-from collect.lib import collect_usa_investment_turnover_bls
-from collect.lib import collect_cobb_douglas
-from collect.lib import collect_usa_general
-from collect.lib import collect_douglas
-from collect.lib import collect_usa_investment_turnover
-from collect.lib import collect_usa_mcconnel
-from collect.lib import collect_uscb_cap
-from collect.lib import collect_uscb_cap_deflator
-from collect.lib import collect_uscb_unemployment_hours_worked
-from collect.lib import collect_uscb_employment_conflicts
-from collect.lib import collect_uscb_gnp
-from collect.lib import collect_uscb_immigration
-from collect.lib import collect_uscb_metals
-from collect.lib import collect_uscb_money_stock
-from collect.lib import collect_uscb_production
-from collect.lib import collect_uscb_trade
-from collect.lib import collect_uscb_trade_by_countries
-from collect.lib import collect_uscb_trade_gold_silver
-from collect.lib import collect_usa_production_two_fold
-from collect.lib import collect_usa_production_three_fold
-from collect.lib import collect_usa_production_latest
-from collect.lib import construct_can
-from collect.lib import transform_a
-from collect.lib import transform_b
-from collect.lib import transform_production_money
-from collect.lib import transform_cobb_douglas
-from collect.lib import transform_d
-from collect.lib import transform_e
-from collect.lib import transform_kurenkov
-from read.lib import read_usa_hist
-from pull.lib import pull_by_series_id
-from plot.lib import plot_investment_production
-from plot.lib import plot_approx_linear
-from plot.lib import plot_approx_log_linear
-from plot.lib import plot_investment
-from plot.lib import plot_c
-from plot.lib import plot_capital_modelling
-from plot.lib import plot_census_complex
-from plot.lib import plot_cobb_douglas
-from plot.lib import plot_cobb_douglas_3d
-from plot.lib import plot_cobb_douglas_complex
-from plot.lib import plot_d
-from plot.lib import plot_douglas
-from plot.lib import plot_e
-from plot.lib import plot_elasticity
-from plot.lib import plot_ewm
-from plot.lib import plot_fourier_discrete
-from plot.lib import plot_growth_elasticity
-from plot.lib import plot_kol_zur_filter
-from plot.lib import plot_kurenkov
-from plot.lib import plot_pearson_r_test
-from plot.lib import plot_rolling_mean_filter
-from plot.lib import plot_uscb_cap
-from plot.lib import plot_uscb_cap_deflator
-from plot.lib import plot_uscb_commodities
-from plot.lib import plot_uscb_employment_conflicts
-from plot.lib import plot_uscb_farm_lands
-from plot.lib import plot_uscb_finance
-from plot.lib import plot_uscb_gnp
-from plot.lib import plot_uscb_immigration
-from plot.lib import plot_uscb_metals
-from plot.lib import plot_uscb_money_stock
-from plot.lib import plot_uscb_production
-from plot.lib import plot_uscb_trade
-from plot.lib import plot_uscb_trade_by_countries
-from plot.lib import plot_uscb_trade_gold_silver
-from plot.lib import plot_uscb_unemployment_hours_worked
-from toolkit.lib import calculate_power_function_fit_params_a
-from toolkit.lib import calculate_power_function_fit_params_b
-from toolkit.lib import calculate_power_function_fit_params_c
-from toolkit.lib import m_spline_ea
-from toolkit.lib import m_spline_eb
-from toolkit.lib import m_spline_la
-from toolkit.lib import m_spline_lb
-from toolkit.lib import m_spline_lls
-from toolkit.lib import m_spline_manager
 
+from collect.lib import (collect_cobb_douglas, collect_douglas,
+                         collect_usa_general, collect_usa_investment_turnover,
+                         collect_usa_investment_turnover_bls,
+                         collect_usa_mcconnel, collect_usa_production_latest,
+                         collect_usa_production_three_fold,
+                         collect_usa_production_two_fold, collect_uscb_cap,
+                         collect_uscb_cap_deflator,
+                         collect_uscb_employment_conflicts, collect_uscb_gnp,
+                         collect_uscb_immigration, collect_uscb_metals,
+                         collect_uscb_money_stock, collect_uscb_production,
+                         collect_uscb_trade, collect_uscb_trade_by_countries,
+                         collect_uscb_trade_gold_silver,
+                         collect_uscb_unemployment_hours_worked, construct_can,
+                         transform_a, transform_b, transform_cobb_douglas,
+                         transform_d, transform_e, transform_kurenkov,
+                         transform_production_money)
+from plot.lib import (plot_approx_linear, plot_approx_log_linear, plot_c,
+                      plot_capital_modelling, plot_census_complex,
+                      plot_cobb_douglas, plot_cobb_douglas_3d,
+                      plot_cobb_douglas_complex, plot_d, plot_douglas, plot_e,
+                      plot_elasticity, plot_ewm, plot_fourier_discrete,
+                      plot_growth_elasticity, plot_investment,
+                      plot_investment_production, plot_kol_zur_filter,
+                      plot_kurenkov, plot_pearson_r_test,
+                      plot_rolling_mean_filter, plot_uscb_cap,
+                      plot_uscb_cap_deflator, plot_uscb_commodities,
+                      plot_uscb_employment_conflicts, plot_uscb_farm_lands,
+                      plot_uscb_finance, plot_uscb_gnp, plot_uscb_immigration,
+                      plot_uscb_metals, plot_uscb_money_stock,
+                      plot_uscb_production, plot_uscb_trade,
+                      plot_uscb_trade_by_countries,
+                      plot_uscb_trade_gold_silver,
+                      plot_uscb_unemployment_hours_worked)
+from pull.lib import pull_by_series_id
+from read.lib import read_usa_hist
+from toolkit.lib import (calculate_power_function_fit_params_a,
+                         calculate_power_function_fit_params_b,
+                         calculate_power_function_fit_params_c, m_spline_ea,
+                         m_spline_eb, m_spline_la, m_spline_lb, m_spline_lls,
+                         m_spline_manager)
 
 ARCHIVE_NAMES_UTILISED = (
     'dataset_can_00310004-eng.zip',
@@ -130,7 +94,7 @@ print(__doc__)
 
 
 def main():
-    DIR = '/media/alexander/321B-6A94'
+    DIR = '/home/green-machine/321B-6A94'
     os.chdir(DIR)
     # =========================================================================
     # Subproject I. Approximation

@@ -16,7 +16,7 @@ from sklearn.metrics import mean_squared_error
 
 
 def calculate_capital(df: DataFrame, p_i: tuple[float], p_t: tuple[float], ratio: float):
-    '''
+    """
     ================== =================================
     df.index           Period
     df.iloc[:, 0]      Investment
@@ -29,19 +29,19 @@ def calculate_capital(df: DataFrame, p_i: tuple[float], p_t: tuple[float], ratio
     p_t[0]: Λ - Fixed Assets Turnover Ratio - Slope over Period,
     p_t[1]: Λ - Fixed Assets Turnover Ratio - Absolute Term over Period,
     ratio: Investment to Capital Conversion Ratio
-    '''
+    """
     return df.index.to_series().shift(1).mul(p_i[0]).add(p_i[1]).mul(df.index.to_series().shift(1).mul(p_t[0]).add(p_t[1])).mul(ratio).add(1).sub(df.iloc[:, 3].shift(1)).mul(df.iloc[:, 2].shift(1))
 
 
 def calculate_curve_fit_params(df: DataFrame) -> None:
-    '''
+    """
     ================== =================================
     df.index           Period
     df.iloc[:, 0]      Capital
     df.iloc[:, 1]      Labor
     df.iloc[:, 2]      Product
     ================== =================================
-    '''
+    """
     # =========================================================================
     # TODO: Use Feed from transform_cobb_douglas()
     # =========================================================================
@@ -69,14 +69,14 @@ def calculate_curve_fit_params(df: DataFrame) -> None:
 
 
 def calculate_plot_uspline(df: DataFrame):
-    '''
+    """
     ================== =================================
     df.index           Period
     df.iloc[:, 0]      Capital
     df.iloc[:, 1]      Labor
     df.iloc[:, 2]      Product
     ================== =================================
-    '''
+    """
     # =========================================================================
     # TODO: Increase Cohesion
     # =========================================================================
@@ -135,7 +135,7 @@ def calculate_plot_uspline(df: DataFrame):
 
 
 def calculate_power_function_fit_params_a(df: DataFrame, params: tuple[float]):
-    '''
+    """
     Parameters
     ----------
     df : DataFrame
@@ -150,7 +150,7 @@ def calculate_power_function_fit_params_a(df: DataFrame, params: tuple[float]):
     -------
     None.
 
-    '''
+    """
     df.reset_index(level=0, inplace=True)
     _t_0 = df.iloc[:, 0].min() - 1
     # =========================================================================
@@ -174,7 +174,7 @@ def calculate_power_function_fit_params_a(df: DataFrame, params: tuple[float]):
 
 
 def calculate_power_function_fit_params_b(df: DataFrame, params: tuple[float]):
-    '''
+    """
     Parameters
     ----------
     df : DataFrame
@@ -190,7 +190,7 @@ def calculate_power_function_fit_params_b(df: DataFrame, params: tuple[float]):
     -------
     None.
 
-    '''
+    """
     _param = (params[3]-params[2])/(params[1]-params[0])**params[4]
     # =========================================================================
     # '{RESULT}(Yhat) = U_1 + ((U_2-U_1)/(TAU_2-TAU_1)**Alpha)*({X}-TAU_1)**Alpha'
@@ -217,7 +217,7 @@ def calculate_power_function_fit_params_b(df: DataFrame, params: tuple[float]):
 
 
 def calculate_power_function_fit_params_c(df: DataFrame, params: tuple[float]):
-    '''
+    """
     Parameters
     ----------
     df : DataFrame
@@ -233,7 +233,7 @@ def calculate_power_function_fit_params_c(df: DataFrame, params: tuple[float]):
     -------
     None.
 
-    '''
+    """
     _alpha = (np.log(params[3])-np.log(params[2])) / \
         (np.log(params[0])-np.log(params[1]))
     # =========================================================================
@@ -258,12 +258,12 @@ def calculate_power_function_fit_params_c(df: DataFrame, params: tuple[float]):
 
 
 def kol_zur_filter(df: DataFrame, k: int = None) -> tuple[DataFrame]:
-    '''Kolmogorov--Zurbenko Filter
+    """Kolmogorov--Zurbenko Filter
     ================== =================================
     df.index           Period
     df.iloc[:, 0]      Target Series
     ================== =================================
-    '''
+    """
     if k is None:
         k = df.shape[0] // 2
     df.reset_index(level=0, inplace=True)
@@ -378,7 +378,7 @@ def kol_zur_filter(df: DataFrame, k: int = None) -> tuple[DataFrame]:
 
 
 def mean_by_year(df: DataFrame) -> DataFrame:
-    '''
+    """
     Process Non-Indexed Flat DataFrame
     Parameters
     ----------
@@ -386,7 +386,7 @@ def mean_by_year(df: DataFrame) -> DataFrame:
     Returns
     -------
     DataFrame
-    '''
+    """
     # =========================================================================
     # Index Width Check
     # =========================================================================
@@ -403,7 +403,7 @@ def mean_by_year(df: DataFrame) -> DataFrame:
 
 
 def m_spline_ea(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFrame, tuple[float]]:
-    '''Exponential Spline, Type A
+    """Exponential Spline, Type A
     ================== =================================
     df.iloc[:, 0]      Period
     df.iloc[:, 1]      Target Series
@@ -411,7 +411,7 @@ def m_spline_ea(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFra
     n_spans            Number of Spans
     knots              Interpolation Knots
     ================== =================================
-    '''
+    """
     _params_a, _params_k, _splined = [], [], []
     # =========================================================================
     # TODO: Rework Algorithm To Make It More Clear Possibly Using `continue` Statement
@@ -463,7 +463,7 @@ def m_spline_ea(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFra
 
 
 def m_spline_eb(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFrame, tuple[float]]:
-    '''Exponential Spline, Type B
+    """Exponential Spline, Type B
     ================== =================================
     df.iloc[:, 0]      Period
     df.iloc[:, 1]      Target Series
@@ -471,7 +471,7 @@ def m_spline_eb(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFra
     n_spans            Number of Spans
     knots              Interpolation Knots
     ================== =================================
-    '''
+    """
     # =========================================================================
     # TODO: Rework Algorithm To Make It More Clear Possibly Using `continue` Statement
     # =========================================================================
@@ -511,13 +511,13 @@ def m_spline_eb(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFra
 
 
 def _m_spline_error_metrics(df: DataFrame) -> None:
-    '''Error Metrics Function'''
+    """Error Metrics Function"""
     print('Criterion, C: {:.6f}'.format(
         df.iloc[:, 2].div(df.iloc[:, 1]).sub(1).abs().mean()))
 
 
 def m_spline_la(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFrame, tuple[float]]:
-    '''Linear Spline, Type A
+    """Linear Spline, Type A
     ================== =================================
     df.iloc[:, 0]      Period
     df.iloc[:, 1]      Target Series
@@ -525,7 +525,7 @@ def m_spline_la(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFra
     n_spans            Number of Spans
     knots              Interpolation Knots
     ================== =================================
-    '''
+    """
     # =========================================================================
     # TODO: Rework Algorithm To Make It More Clear Possibly Using `continue` Statement
     # =========================================================================
@@ -569,7 +569,7 @@ def m_spline_la(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFra
 
 
 def m_spline_lb(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFrame, tuple[float]]:
-    '''Linear Spline, Type B
+    """Linear Spline, Type B
     ================== =================================
     df.iloc[:, 0]      Period
     df.iloc[:, 1]      Target Series
@@ -577,7 +577,7 @@ def m_spline_lb(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFra
     n_spans            Number of Spans
     knots              Interpolation Knots
     ================== =================================
-    '''
+    """
     # =========================================================================
     # TODO: Rework Algorithm To Make It More Clear Possibly Using `continue` Statement
     # =========================================================================
@@ -611,7 +611,7 @@ def m_spline_lb(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFra
 
 
 def m_spline_lls(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFrame, tuple[float]]:
-    '''Linear Spline, Linear Regression Kernel
+    """Linear Spline, Linear Regression Kernel
     ================== =================================
     df.iloc[:, 0]      Period
     df.iloc[:, 1]      Target Series
@@ -619,7 +619,7 @@ def m_spline_lls(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFr
     n_spans            Number of Spans
     knots              Interpolation Knots
     ================== =================================
-    '''
+    """
     _params_a, _params_k, _splined = [], [], []
     # =========================================================================
     # TODO: Rework Algorithm To Make It More Clear Possibly Using `continue` Statement
@@ -675,13 +675,13 @@ def m_spline_lls(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFr
 
 
 def _m_spline_print_params(n_spans: int, params: tuple[float]) -> None:
-    '''
+    """
     Results Delivery Function
     ================== =================================
     n_spans            Number of Spans
     params             Coefficients
     ================== =================================
-    '''
+    """
     if n_spans == len(params):
         for _, _param in enumerate(params, start=1):
             print(f'Model Parameter: K{_:02d} = {_param:.6f}')
@@ -694,7 +694,7 @@ def _m_spline_print_params(n_spans: int, params: tuple[float]) -> None:
 
 
 def m_spline_manager(df: DataFrame, kernel: callable) -> None:
-    '''
+    """
     Interactive Shell for Processing Make Shift Spline Functions
 
     Parameters
@@ -711,7 +711,7 @@ def m_spline_manager(df: DataFrame, kernel: callable) -> None:
     -------
     None
         Draws matplotlib.pyplot Plots.
-    '''
+    """
     df.reset_index(level=0, inplace=True)
     df.columns = ['Period', 'Original']
     # =========================================================================
@@ -790,7 +790,7 @@ def m_spline_manager(df: DataFrame, kernel: callable) -> None:
 
 
 def price_direct(df: DataFrame, base: int) -> DataFrame:
-    '''
+    """
     Returns Cumulative Price Index for Base Year
     Parameters
     ----------
@@ -805,7 +805,7 @@ def price_direct(df: DataFrame, base: int) -> DataFrame:
     Returns
     -------
     DataFrame
-    '''
+    """
     # =========================================================================
     # Cumulative Price Index
     # =========================================================================
@@ -818,7 +818,7 @@ def price_direct(df: DataFrame, base: int) -> DataFrame:
 
 
 def price_inverse(df: DataFrame) -> DataFrame:
-    '''
+    """
     Returns Growth Rate from Cumulative Price Index for Some Base Year
 
     Parameters
@@ -833,13 +833,13 @@ def price_inverse(df: DataFrame) -> DataFrame:
     DataFrame
         DESCRIPTION.
 
-    '''
+    """
     df['gri'] = df.iloc[:, [-1]].div(df.iloc[:, [-1]].shift(1)).sub(1)
     return df.iloc[:, [-1]].dropna(axis=0)
 
 
 def price_inverse_double(df: DataFrame) -> DataFrame:
-    '''
+    """
     Returns Growth Rate from Nominal & Real Prices Series
 
     Parameters
@@ -855,14 +855,14 @@ def price_inverse_double(df: DataFrame) -> DataFrame:
     DataFrame
         DESCRIPTION.
 
-    '''
+    """
     df['cpi'] = df.iloc[:, 0].div(df.iloc[:, 1])
     df['gri'] = df.iloc[:, [-1]].div(df.iloc[:, [-1]].shift(1)).sub(1)
     return df.iloc[:, [-1]].dropna(axis=0)
 
 
 def price_inverse_single(df: DataFrame) -> DataFrame:
-    '''
+    """
     Returns Prices Icrement Series from Cumulative Deflator Series
 
     Parameters
@@ -877,7 +877,7 @@ def price_inverse_single(df: DataFrame) -> DataFrame:
     DataFrame
         TODO: DESCRIPTION.
 
-    '''
+    """
     return df.div(df.shift(1)).sub(1)
 
 
@@ -888,8 +888,8 @@ def strip_cumulated_deflator(df: DataFrame):
     return price_inverse_single(df.dropna()).dropna()
 
 
-def build_load_data_frame(file_name: str, criteria: dict) -> None:
-    '''
+def build_push_data_frame(file_name: str, criteria: dict) -> None:
+    """
     Builds DataFrame & Loads It To Excel
 
     Parameters
@@ -902,7 +902,7 @@ def build_load_data_frame(file_name: str, criteria: dict) -> None:
     Returns
     -------
     None
-    '''
+    """
     df = DataFrame()
     for criterion in criteria:
         _df = extract_can_from_url(string_to_url(criterion['file_name']))
@@ -919,7 +919,7 @@ def build_load_data_frame(file_name: str, criteria: dict) -> None:
 
 
 def rolling_mean_filter(df: DataFrame, k: int = None) -> tuple[DataFrame]:
-    '''
+    """
     Rolling Mean Filter
 
     Parameters
@@ -937,7 +937,7 @@ def rolling_mean_filter(df: DataFrame, k: int = None) -> tuple[DataFrame]:
     tuple[DataFrame]
         DESCRIPTION.
 
-    '''
+    """
     if k is None:
         k = df.shape[0] // 2
     df.reset_index(level=0, inplace=True)
@@ -1050,7 +1050,7 @@ def rolling_mean_filter(df: DataFrame, k: int = None) -> tuple[DataFrame]:
 
 
 def simple_linear_regression(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
-    '''
+    """
     Determine Regression Coefficients
 
     Parameters
@@ -1066,7 +1066,7 @@ def simple_linear_regression(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
     tuple[DataFrame, tuple[float]]
         DESCRIPTION.
 
-    '''
+    """
     # =========================================================================
     # TODO: Eliminate This Function
     # =========================================================================

@@ -7,12 +7,13 @@ Created on Mon Apr 12 22:46:08 2021
 
 
 import os
+
 from collect.lib import collect_usa_production_latest, transform_cobb_douglas
 from plot.lib import plot_cobb_douglas
 
 
 def main():
-    DIR = '/media/alexander/321B-6A94'
+    DIR = '/home/green-machine/321B-6A94'
     MAP_FIG = {
         'fg_a': 'Chart I Progress in Manufacturing {}$-${} ({}=100)',
         'fg_b': 'Chart II Theoretical and Actual Curves of Production {}$-${} ({}=100)',

@@ -7,23 +7,16 @@ Created on Thu Jan  9 21:17:48 2020
 
 
 import os
-from collect.lib import collect_usa_general
-from collect.lib import transform_a
-from collect.lib import transform_b
-from collect.lib import transform_production_money
-from collect.lib import transform_d
-from collect.lib import transform_e
-from collect.lib import transform_kurenkov
-from plot.lib import plot_investment_production
-from plot.lib import plot_investment
-from plot.lib import plot_c
-from plot.lib import plot_d
-from plot.lib import plot_e
-from plot.lib import plot_kurenkov
+
+from collect.lib import (collect_usa_general, transform_a, transform_b,
+                         transform_d, transform_e, transform_kurenkov,
+                         transform_production_money)
+from plot.lib import (plot_c, plot_d, plot_e, plot_investment,
+                      plot_investment_production, plot_kurenkov)
 
 
 def main():
-    DIR = '/media/alexander/321B-6A94'
+    DIR = '/home/green-machine/321B-6A94'
 
     os.chdir(DIR)
     _df_a = collect_usa_general()

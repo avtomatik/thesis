@@ -4,13 +4,13 @@
 
 
 import os
-from collect.lib import collect_cobb_douglas
-from collect.lib import transform_cobb_douglas
+
+from collect.lib import collect_cobb_douglas, transform_cobb_douglas
 from toolkit.lib import calculate_plot_uspline
 
 
 def main():
-    DIR = '/media/alexander/321B-6A94'
+    DIR = '/home/green-machine/321B-6A94'
 
     os.chdir(DIR)
     calculate_plot_uspline(

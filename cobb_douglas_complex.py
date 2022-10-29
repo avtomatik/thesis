@@ -7,15 +7,15 @@ Created on Sun Mar 15 16:17:13 2020
 
 
 import os
-from collect.lib import collect_usa_production_two_fold
-from collect.lib import collect_usa_production_three_fold
-from collect.lib import collect_usa_production_latest
-from collect.lib import collect_cobb_douglas
+
+from collect.lib import (collect_cobb_douglas, collect_usa_production_latest,
+                         collect_usa_production_three_fold,
+                         collect_usa_production_two_fold)
 from plot.lib import plot_cobb_douglas_complex
 
 
 def main():
-    DIR = '/media/alexander/321B-6A94'
+    DIR = '/home/green-machine/321B-6A94'
 
     os.chdir(DIR)
     # =========================================================================

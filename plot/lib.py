@@ -7,36 +7,23 @@ Created on Sun Jun 12 08:59:10 2022
 """
 
 
-from functools import partial
 import itertools
+from functools import partial
 from pathlib import Path
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from collect.lib import transform_cobb_douglas
+from extract.lib import (pull_by_series_id, pull_series_ids,
+                         pull_uscb_description, read_usa_hist, read_usa_nber,
+                         read_worldbank)
+from pandas import DataFrame
+from pandas.plotting import autocorrelation_plot, bootstrap_plot, lag_plot
 from scipy import stats
 from sklearn.metrics import r2_score
-from pandas import DataFrame
-from pandas.plotting import (
-    autocorrelation_plot,
-    # bootstrap_plot,
-    lag_plot,
-)
-from collect.lib import transform_cobb_douglas
-from extract.lib import (
-    pull_series_ids,
-    pull_by_series_id,
-    read_usa_hist,
-    pull_uscb_description,
-    read_usa_nber,
-    read_worldbank,
-)
-from toolkit.lib import (
-    calculate_capital,
-    kol_zur_filter,
-    rolling_mean_filter,
-    simple_linear_regression,
-)
-
+from toolkit.lib import (calculate_capital, kol_zur_filter,
+                         rolling_mean_filter, simple_linear_regression)
 
 ARCHIVE_NAMES_UTILISED = (
     'dataset_rus_m1.zip',
@@ -1762,7 +1749,7 @@ def plot_growth_elasticity(df: DataFrame) -> None:
 
 def plot_increment(df: DataFrame) -> None:
     FLAG = False
-    DIR = '/home/alexander/science'
+    DIR = '/media/green-machine/321B-6A94'
     FILE_NAME = 'fig_file_name.pdf'
     fig, axes = plt.subplots(2, 1)
     axes[0].plot(df.iloc[:, 0], df.iloc[:, 1], label='Curve')

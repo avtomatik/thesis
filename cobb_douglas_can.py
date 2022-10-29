@@ -6,10 +6,8 @@ Created on Sat Jun 18 11:29:40 2022
 @author: alexander
 """
 
-from collect.lib import construct_can
-from collect.lib import transform_cobb_douglas
-from plot.lib import plot_cobb_douglas
-from plot.lib import plot_cobb_douglas_3d
+from collect.lib import construct_can, transform_cobb_douglas
+from plot.lib import plot_cobb_douglas, plot_cobb_douglas_3d
 
 
 def main():

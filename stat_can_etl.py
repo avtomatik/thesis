@@ -7,10 +7,12 @@ Created on Sat Sep 18 22:20:54 2021
 
 
 import os
+
 import pandas as pd
-from pandas import DataFrame
 from extract.lib import extract_can_from_url
-from toolkit.lib import build_load_data_frame, string_to_url
+from pandas import DataFrame
+
+from toolkit.lib import build_push_data_frame, string_to_url
 
 # =============================================================================
 # Capital
@@ -75,7 +77,7 @@ from toolkit.lib import build_load_data_frame, string_to_url
 
 
 def string_to_numeric(string: str) -> float:
-    '''
+    """
     TODO: Move to Fit Module
 
     Parameters
@@ -88,13 +90,13 @@ def string_to_numeric(string: str) -> float:
     float
         DESCRIPTION.
 
-    '''
+    """
     y, m = string.split('-')
     return int(y) + (int(m) - 0.5) / 12
 
 
-def build_load_data_frame(file_name: str, blueprint: dict) -> None:
-    '''
+def build_push_data_frame(file_name: str, blueprint: dict) -> None:
+    """
     Builds DataFrame & Loads It To Excel
 
     Parameters
@@ -107,7 +109,7 @@ def build_load_data_frame(file_name: str, blueprint: dict) -> None:
     Returns
     -------
     None
-    '''
+    """
     df = DataFrame()
     for item in blueprint:
         _df = extract_can_from_url(
@@ -319,8 +321,8 @@ PRODUCT = (
 
 
 def main():
-    DIR = '/home/alexander/science'
-    DIR = '/home/alexander/Downloads'
+    DIR = '/media/green-machine/321B-6A94'
+    DIR = '/home/green-machine/Downloads'
     os.chdir(DIR)
     FILE_NAME = 'stat_can_desc.xlsx'
     FILE_NAMES = (
@@ -335,7 +337,7 @@ def main():
     # =========================================================================
     MAP_FILES = dict(zip(FILE_NAMES, (CAPITAL, LABOUR, PRODUCT)))
     for file_name, blueprint in MAP_FILES.items():
-        build_load_data_frame(file_name, blueprint)
+        build_push_data_frame(file_name, blueprint)
 
     # =============================================================================
     # # =============================================================================

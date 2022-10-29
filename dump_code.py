@@ -12,16 +12,12 @@ Created on Sun Jun 12 16:24:57 2022
 # =============================================================================
 import os
 import sqlite3
-import pandas as pd
-from pandas import DataFrame
-from extract.lib import (
-    read_manager_can_former,
-    read_usa_bea,
-    read_usa_bea_excel,
-    pull_can_quarter_former,
-    pull_by_series_id,
-)
 
+import pandas as pd
+from extract.lib import (pull_by_series_id, pull_can_quarter_former,
+                         read_manager_can_former, read_usa_bea,
+                         read_usa_bea_excel)
+from pandas import DataFrame
 
 # =============================================================================
 # Separate Chunk of Code
@@ -58,7 +54,7 @@ def append_series_ids_sum(df, chunk, series_ids):
 
 
 def url_to_file_name(_url: str) -> str:
-    '''
+    """
 
 
     Parameters
@@ -71,7 +67,7 @@ def url_to_file_name(_url: str) -> str:
     str
         DESCRIPTION.
 
-    '''
+    """
     return '/'.join(
         (
             'https://www150.statcan.gc.ca/n1/tbl/csv',
@@ -87,7 +83,7 @@ def string_to_url(string):
 # Separate Block
 # =============================================================================
 def test_data_capital_combined_archived():
-    '''Data Test'''
+    """Data Test"""
     KEYS = (
         'archive_name',
         'wb_name',
@@ -224,7 +220,7 @@ def test_data_capital_combined_archived():
 
 
 def collect_usa_bls_cpiu() -> DataFrame:
-    '''BLS CPI-U Price Index Fetch'''
+    """BLS CPI-U Price Index Fetch"""
     FILE_NAME = 'dataset_usa_bls_cpiai.txt'
     _df = pd.read_csv(
         FILE_NAME,
@@ -246,7 +242,7 @@ def collect_usa_bls_cpiu() -> DataFrame:
 
 
 def extract_can_group_a(file_id: int, **kwargs) -> DataFrame:
-    '''
+    """
 
 
     Parameters
@@ -261,7 +257,7 @@ def extract_can_group_a(file_id: int, **kwargs) -> DataFrame:
     DataFrame
         DESCRIPTION.
 
-    '''
+    """
     # =========================================================================
     # Not Used Anywhere
     # =========================================================================
@@ -280,7 +276,7 @@ def extract_can_group_a(file_id: int, **kwargs) -> DataFrame:
 
 
 def extract_can_group_b(file_id: int, **kwargs) -> DataFrame:
-    '''
+    """
 
 
     Parameters
@@ -295,7 +291,7 @@ def extract_can_group_b(file_id: int, **kwargs) -> DataFrame:
     DataFrame
         DESCRIPTION.
 
-    '''
+    """
     # =========================================================================
     # Not Used Anywhere
     # =========================================================================
@@ -310,7 +306,7 @@ def extract_can_group_b(file_id: int, **kwargs) -> DataFrame:
 
 
 def transform_center_by_period(df: DataFrame) -> DataFrame:
-    '''
+    """
     Parameters
     ----------
     df : DataFrame
@@ -321,7 +317,7 @@ def transform_center_by_period(df: DataFrame) -> DataFrame:
     Returns
     -------
     DataFrame
-    '''
+    """
     # =========================================================================
     # TODO: Any Use?
     # =========================================================================
@@ -356,7 +352,7 @@ def transform_center_by_period(df: DataFrame) -> DataFrame:
 
 
 def extract_read_usa_bea_pull_by_series_id(series_id: str) -> DataFrame:
-    '''
+    """
     Retrieves Yearly Data for BEA Series' series_id
     Parameters
     ----------
@@ -366,10 +362,12 @@ def extract_read_usa_bea_pull_by_series_id(series_id: str) -> DataFrame:
     -------
     DataFrame
         DESCRIPTION.
-    '''
+    """
     ARCHIVE_NAME = 'dataset_usa_bea-nipa-2015-05-01.zip'
+    DIR = "/home/green-machine/data_science"
+    DBNAME = "temporary"
     _df = pd.read_csv(ARCHIVE_NAME, usecols=[0, *range(14, 18)])
-    with sqlite3.connect("/home/alexander/science/temporary.db") as conn:
+    with sqlite3.connect(Path(DIR).joinpath(f"{DBNAME}.db")) as conn:
         cursor = conn.cursor()
         _df.to_sql("temporary", conn, if_exists="replace", index=False)
         stmt = f"""
@@ -438,7 +436,7 @@ def collect_usa_xlsm() -> DataFrame:
 
 
 def collect_bea_def() -> DataFrame:
-    '''
+    """
     USA BEA Gross Domestic Product Deflator: Cumulative Price Index
 
     Returns
@@ -449,14 +447,14 @@ def collect_bea_def() -> DataFrame:
     df.iloc[:, 0]      Gross Domestic Product Deflator
     ================== =================================
 
-    '''
+    """
     _df = collect_bea_gdp()
     _df['deflator_gdp'] = _df.iloc[:, 0].div(_df.iloc[:, 1]).mul(100)
     return _df.iloc[:, [-1]]
 
 
 def collect_bea_gdp() -> DataFrame:
-    '''
+    """
     USA BEA Gross Domestic Product
 
     Returns
@@ -467,7 +465,7 @@ def collect_bea_gdp() -> DataFrame:
     df.iloc[:, 0]      Nominal
     df.iloc[:, 1]      Real
     ================== =================================
-    '''
+    """
     SERIES_IDS = {
         # =====================================================================
         # Nominal Gross Domestic Product Series: A191RC1
@@ -534,7 +532,7 @@ def collect_capital_combined_archived() -> DataFrame:
     ).dropna(axis=0)
 
 
-DIR = '/media/alexander/321B-6A94'
+DIR = '/home/green-machine/321B-6A94'
 
 os.chdir(DIR)
 
@@ -545,7 +543,7 @@ os.chdir(DIR)
 # www.bea.gov/histdata/Releases/GDP_and_PI/2012/Q1/Second_May-31-2012/Section5ALL_Hist.xls
 # =============================================================================
 # =============================================================================
-# Metadata: `Section5ALL_Hist.xls`@[`dataset_usa_bea-release-2010-08-05 Section5ALL_Hist.xls` Offsets `dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip`]'''
+# Metadata: `Section5ALL_Hist.xls`@[`dataset_usa_bea-release-2010-08-05 Section5ALL_Hist.xls` Offsets `dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip`]"""
 # =============================================================================
 # =============================================================================
 # Fixed Assets Series: K160021, 1951--1969
