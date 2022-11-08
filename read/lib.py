@@ -402,14 +402,32 @@ def read_usa_nber(file_name: str, agg: str) -> DataFrame:
     return _df.groupby(_df.columns[0]).sum()
 
 
-def read_worldbank(source_id: str) -> DataFrame:
-    _url = f'https://api.worldbank.org/v2/en/indicator/{source_id}?downloadformat=csv'
-    with ZipFile(io.BytesIO(requests.get(_url).content)) as archive:
-        _map = {_.file_size: _.filename for _ in archive.filelist}
+def read_worldbank(
+    source_id: str,
+    url_template: str = 'https://api.worldbank.org/v2/en/indicator/{}?downloadformat=csv'
+) -> DataFrame:
+    """
+    Returns DataFrame with World Bank API
+
+    Parameters
+    ----------
+    source_id : str
+        Like ('NY.GDP.MKTP.CD').
+    url_template : str, optional
+        DESCRIPTION. The default is 'https://api.worldbank.org/v2/en/indicator/{}?downloadformat=csv'.
+
+    Returns
+    -------
+    DataFrame
+
+    """
+    with ZipFile(io.BytesIO(requests.get(url_template.format(source_id)).content)) as archive:
         # =====================================================================
-        # Select Largest File
+        # Select the Largest File with `min()` Function
         # =====================================================================
-        with archive.open(_map[max(_map)]) as f:
+        with archive.open(
+            min({_.filename: _.file_size for _ in archive.filelist})
+        ) as f:
             kwargs = {
                 'filepath_or_buffer': f,
                 'index_col': 0,
