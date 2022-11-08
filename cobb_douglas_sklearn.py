@@ -11,15 +11,14 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from collect.lib import collect_cobb_douglas, transform_cobb_douglas_sklearn
 from numpy.fft import rfft
+from plot.lib import plot_cobb_douglas
 from sklearn import svm  # Support Vector Machine
 from sklearn import datasets, linear_model
 from sklearn.linear_model import Lasso
 from sklearn.model_selection import (TimeSeriesSplit, cross_val_score,
                                      train_test_split)
-
-from collect.lib import collect_cobb_douglas, transform_cobb_douglas_sklearn
-from plot.lib import plot_cobb_douglas
 
 
 def plot_discrete_fourier_transform(array: np.ndarray) -> None:

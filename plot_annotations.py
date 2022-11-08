@@ -7,7 +7,6 @@ import os
 
 import matplotlib.pyplot as plt
 import pandas as pd
-
 from collect.lib import collect_usa_macroeconomics, collect_version_c
 from plot.lib import plot_increment
 

@@ -9,10 +9,9 @@ Created on Tue Nov  2 21:10:29 2021
 import os
 
 import pandas as pd
-from pandas import DataFrame
-
 from collect.lib import (collect_can_price_a, collect_can_price_b,
                          construct_cap_deflator)
+from pandas import DataFrame
 
 
 def append_series_ids(df: DataFrame, series_ids: tuple[str]) -> DataFrame:

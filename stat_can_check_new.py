@@ -9,7 +9,6 @@ Created on Wed Sep  1 21:22:23 2021
 import os
 
 import pandas as pd
-
 from read.lib import read_can
 
 

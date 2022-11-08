@@ -11,7 +11,6 @@ import os
 import matplotlib.pyplot as plt
 import pandas as pd
 from pandas.plotting import autocorrelation_plot
-
 from pull.lib import pull_by_series_id
 from read.lib import read_usa_bls, read_usa_hist
 

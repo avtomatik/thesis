@@ -11,7 +11,6 @@ import os
 import pandas as pd
 from extract.lib import extract_can_from_url
 from pandas import DataFrame
-
 from toolkit.lib import build_push_data_frame, string_to_url
 
 # =============================================================================

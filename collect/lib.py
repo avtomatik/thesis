@@ -17,10 +17,9 @@ from pull.lib import (numerify, pull_by_series_id, pull_can_aggregate,
 from read.lib import (read_can, read_usa_bea, read_usa_frb, read_usa_frb_g17,
                       read_usa_frb_ms, read_usa_frb_us3, read_usa_fred,
                       read_usa_hist)
-from scipy import signal
+from scipy.signal import wiener
 from sklearn.linear_model import Lasso, LassoCV, LinearRegression, Ridge
 from toolkit.lib import price_inverse_single, strip_cumulated_deflator
-
 
 ARCHIVE_NAMES_UTILISED = (
     'dataset_douglas.zip',
@@ -650,13 +649,13 @@ def collect_usa_capital_purchases() -> DataFrame:
         verify_integrity=True,
         sort=True
     ).truncate(before=1875)
-    df['total'] = signal.wiener(
+    df['total'] = wiener(
         df.loc[:, ['CDT2S1', 'J0149', 'P0107']].mean(axis=1)
     ).round()
-    df['struc'] = signal.wiener(
+    df['struc'] = wiener(
         df.loc[:, ['J0150', 'P0108']].mean(axis=1)
     ).round()
-    df['equip'] = signal.wiener(
+    df['equip'] = wiener(
         df.loc[:, ['J0151', 'P0109']].mean(axis=1)
     ).round()
     return df
@@ -1241,13 +1240,13 @@ def collect_uscb_cap(smoothing: bool = False) -> DataFrame:
         sort=True
     ).truncate(before=1875)
     if smoothing:
-        df['total'] = signal.wiener(
+        df['total'] = wiener(
             df.loc[:, ['J0149', 'P0107']].mean(axis=1)
         ).round()
-        df['struc'] = signal.wiener(
+        df['struc'] = wiener(
             df.loc[:, ['J0150', 'P0108']].mean(axis=1)
         ).round()
-        df['equip'] = signal.wiener(
+        df['equip'] = wiener(
             df.loc[:, ['J0151', 'P0109']].mean(axis=1)
         ).round()
     else:
