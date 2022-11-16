@@ -14,33 +14,34 @@ import os
 from collect.lib import (collect_cobb_douglas, collect_douglas,
                          collect_usa_general, collect_usa_investment_turnover,
                          collect_usa_investment_turnover_bls,
-                         collect_usa_mcconnel, collect_usa_production_latest,
-                         collect_usa_production_three_fold,
-                         collect_usa_production_two_fold, collect_uscb_cap,
+                         collect_usa_manufacturing_latest,
+                         collect_usa_manufacturing_three_fold,
+                         collect_usa_manufacturing_two_fold,
+                         collect_usa_mcconnel, collect_uscb_cap,
                          collect_uscb_cap_deflator,
                          collect_uscb_employment_conflicts, collect_uscb_gnp,
-                         collect_uscb_immigration, collect_uscb_metals,
-                         collect_uscb_money_stock, collect_uscb_production,
+                         collect_uscb_immigration, collect_uscb_manufacturing,
+                         collect_uscb_metals, collect_uscb_money_stock,
                          collect_uscb_trade, collect_uscb_trade_by_countries,
                          collect_uscb_trade_gold_silver,
                          collect_uscb_unemployment_hours_worked, construct_can,
                          transform_a, transform_b, transform_cobb_douglas,
                          transform_d, transform_e, transform_kurenkov,
-                         transform_production_money)
+                         transform_manufacturing_money)
 from plot.lib import (plot_approx_linear, plot_approx_log_linear, plot_c,
                       plot_capital_modelling, plot_census_complex,
                       plot_cobb_douglas, plot_cobb_douglas_3d,
                       plot_cobb_douglas_complex, plot_d, plot_douglas, plot_e,
                       plot_elasticity, plot_ewm, plot_fourier_discrete,
                       plot_growth_elasticity, plot_investment,
-                      plot_investment_production, plot_kol_zur_filter,
+                      plot_investment_manufacturing, plot_kol_zur_filter,
                       plot_kurenkov, plot_pearson_r_test,
                       plot_rolling_mean_filter, plot_uscb_cap,
                       plot_uscb_cap_deflator, plot_uscb_commodities,
                       plot_uscb_employment_conflicts, plot_uscb_farm_lands,
                       plot_uscb_finance, plot_uscb_gnp, plot_uscb_immigration,
-                      plot_uscb_metals, plot_uscb_money_stock,
-                      plot_uscb_production, plot_uscb_trade,
+                      plot_uscb_manufacturing, plot_uscb_metals,
+                      plot_uscb_money_stock, plot_uscb_trade,
                       plot_uscb_trade_by_countries,
                       plot_uscb_trade_gold_silver,
                       plot_uscb_unemployment_hours_worked)
@@ -94,7 +95,7 @@ print(__doc__)
 
 
 def main():
-    DIR = '/home/green-machine/321B-6A94'
+    DIR = '/media/green-machine/KINGSTON'
     os.chdir(DIR)
     # =========================================================================
     # Subproject I. Approximation
@@ -173,8 +174,8 @@ def main():
     # =========================================================================
     # On Expanded Dataset
     # =========================================================================
-    df_d, df_e = collect_usa_production_two_fold()
-    df_f, df_g, df_h = collect_usa_production_three_fold()
+    df_d, df_e = collect_usa_manufacturing_two_fold()
+    df_f, df_g, df_h = collect_usa_manufacturing_three_fold()
     plot_cobb_douglas_complex(df_a)
     plot_cobb_douglas_complex(df_b)
     plot_cobb_douglas_complex(df_c)
@@ -198,7 +199,7 @@ def main():
     # Option: 1967--2012, Capacity Utilization Adjustment
     # =========================================================================
     plot_cobb_douglas_complex(df_h)
-    # plot_cobb_douglas_complex(collect_usa_production_latest())
+    # plot_cobb_douglas_complex(collect_usa_manufacturing_latest())
 
     # =========================================================================
     # Subproject V. Cobb--Douglas CAN
@@ -328,7 +329,7 @@ def main():
     # Project: Initial Version Dated: 05 October 2012
     # =========================================================================
     df_a_a = transform_a(_df_a)
-    plot_investment_production(df_a_a)
+    plot_investment_manufacturing(df_a_a)
     # =========================================================================
     # Project: Initial Version Dated: 23 November 2012
     # =========================================================================
@@ -337,7 +338,7 @@ def main():
     # =========================================================================
     # Project: Initial Version Dated: 16 June 2013
     # =========================================================================
-    df_c_a = transform_production_money(_df_a)
+    df_c_a = transform_manufacturing_money(_df_a)
     plot_c(df_c_a)
     # =========================================================================
     # Project: Initial Version Dated: 15 June 2015
@@ -357,7 +358,7 @@ def main():
     # =========================================================================
     # Subproject X. USA Census
     # =========================================================================
-    plot_uscb_production(*collect_uscb_production())
+    plot_uscb_manufacturing(*collect_uscb_manufacturing())
     plot_uscb_cap(collect_uscb_cap())
     plot_uscb_cap_deflator(collect_uscb_cap_deflator())
     plot_uscb_metals(*collect_uscb_metals())

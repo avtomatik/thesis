@@ -10,13 +10,13 @@ import os
 
 from collect.lib import (collect_usa_general, transform_a, transform_b,
                          transform_d, transform_e, transform_kurenkov,
-                         transform_production_money)
+                         transform_manufacturing_money)
 from plot.lib import (plot_c, plot_d, plot_e, plot_investment,
-                      plot_investment_production, plot_kurenkov)
+                      plot_investment_manufacturing, plot_kurenkov)
 
 
 def main():
-    DIR = '/home/green-machine/321B-6A94'
+    DIR = '/media/green-machine/KINGSTON'
 
     os.chdir(DIR)
     _df_a = collect_usa_general()
@@ -24,7 +24,7 @@ def main():
     # Project: Initial Version Dated: 05 October 2012
     # =========================================================================
     df_a_a = transform_a(_df_a)
-    plot_investment_production(df_a_a)
+    plot_investment_manufacturing(df_a_a)
     # =========================================================================
     # Project: Initial Version Dated: 23 November 2012
     # =========================================================================
@@ -33,7 +33,7 @@ def main():
     # =========================================================================
     # Project: Initial Version Dated: 16 June 2013
     # =========================================================================
-    df_c_a = transform_production_money(_df_a)
+    df_c_a = transform_manufacturing_money(_df_a)
     plot_c(df_c_a)
     # =========================================================================
     # Project: Initial Version Dated: 15 June 2015

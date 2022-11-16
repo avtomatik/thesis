@@ -11,26 +11,26 @@ import os
 
 from collect.lib import (collect_uscb_cap, collect_uscb_cap_deflator,
                          collect_uscb_employment_conflicts, collect_uscb_gnp,
-                         collect_uscb_immigration, collect_uscb_metals,
-                         collect_uscb_money_stock, collect_uscb_production,
+                         collect_uscb_immigration, collect_uscb_manufacturing,
+                         collect_uscb_metals, collect_uscb_money_stock,
                          collect_uscb_trade, collect_uscb_trade_by_countries,
                          collect_uscb_trade_gold_silver,
                          collect_uscb_unemployment_hours_worked)
 from plot.lib import (plot_uscb_cap, plot_uscb_cap_deflator,
                       plot_uscb_commodities, plot_uscb_employment_conflicts,
                       plot_uscb_farm_lands, plot_uscb_finance, plot_uscb_gnp,
-                      plot_uscb_immigration, plot_uscb_metals,
-                      plot_uscb_money_stock, plot_uscb_production,
-                      plot_uscb_trade, plot_uscb_trade_by_countries,
+                      plot_uscb_immigration, plot_uscb_manufacturing,
+                      plot_uscb_metals, plot_uscb_money_stock, plot_uscb_trade,
+                      plot_uscb_trade_by_countries,
                       plot_uscb_trade_gold_silver,
                       plot_uscb_unemployment_hours_worked)
 
 
 def main():
-    DIR = '/home/green-machine/321B-6A94'
+    DIR = '/media/green-machine/KINGSTON'
 
     os.chdir(DIR)
-    plot_uscb_production(*collect_uscb_production())
+    plot_uscb_manufacturing(*collect_uscb_manufacturing())
     plot_uscb_cap(collect_uscb_cap())
     plot_uscb_cap_deflator(collect_uscb_cap_deflator())
     plot_uscb_metals(*collect_uscb_metals())

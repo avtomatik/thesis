@@ -12,7 +12,7 @@ from plot.lib import plot_grigoriev, plot_is_lm
 
 
 def main():
-    DIR = '/home/green-machine/321B-6A94'
+    DIR = '/media/green-machine/KINGSTON'
 
     os.chdir(DIR)
     plot_is_lm()

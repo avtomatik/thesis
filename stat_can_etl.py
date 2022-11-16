@@ -9,8 +9,8 @@ Created on Sat Sep 18 22:20:54 2021
 import os
 
 import pandas as pd
-from extract.lib import extract_can_from_url
 from pandas import DataFrame
+from read.lib import read_can
 from toolkit.lib import build_push_data_frame, string_to_url
 
 # =============================================================================
@@ -111,7 +111,7 @@ def build_push_data_frame(file_name: str, blueprint: dict) -> None:
     """
     df = DataFrame()
     for item in blueprint:
-        _df = extract_can_from_url(
+        _df = read_can(
             string_to_url(item['file_name']),
             index_col=0,
             usecols=range(14),
@@ -320,7 +320,7 @@ PRODUCT = (
 
 
 def main():
-    DIR = '/media/green-machine/321B-6A94'
+    DIR = '/media/green-machine/KINGSTON'
     DIR = '/home/green-machine/Downloads'
     os.chdir(DIR)
     FILE_NAME = 'stat_can_desc.xlsx'

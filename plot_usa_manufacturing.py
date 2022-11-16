@@ -13,12 +13,14 @@ from pull.lib import pull_by_series_id
 from read.lib import read_usa_hist
 
 
-def main():
-    DIR = '/home/green-machine/321B-6A94'
-    SERIES_ID, ARCHIVE_NAME = 'J0014', 'dataset_uscb.zip',
+def main(
+    directory: str = '/media/green-machine/KINGSTON',
+    series_id: str = 'J0014',
+    archive_name: str = 'dataset_uscb.zip',
+):
 
-    os.chdir(DIR)
-    df = read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, SERIES_ID)
+    os.chdir(directory)
+    df = read_usa_hist(archive_name).pipe(pull_by_series_id, series_id)
     plot_growth_elasticity(df)
     plot_rolling_mean_filter(df)
 

@@ -2,12 +2,14 @@ README.md
 setup.py
 ./collect/__init__.py
 ./collect/lib.py
-./extract/__init__.py
-./extract/lib.py
 ./plot/__init__.py
 ./plot/lib.py
+./pull/__init__.py
+./pull/lib.py
 ./push/__init__.py
 ./push/lib.py
+./read/__init__.py
+./read/lib.py
 ./test/__init__.py
 ./test/lib.py
 ./toolkit/__init__.py

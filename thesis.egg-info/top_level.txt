@@ -1,6 +1,7 @@
 collect
-extract
 plot
+pull
 push
+read
 test
 toolkit

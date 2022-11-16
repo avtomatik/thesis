@@ -10,7 +10,7 @@ from toolkit.lib import calculate_plot_uspline
 
 
 def main():
-    DIR = '/home/green-machine/321B-6A94'
+    DIR = '/media/green-machine/KINGSTON'
 
     os.chdir(DIR)
     calculate_plot_uspline(

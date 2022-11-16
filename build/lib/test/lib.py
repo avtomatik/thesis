@@ -7,6 +7,15 @@ Created on Sun Jun 12 12:19:54 2022
 """
 
 
+from functools import partial
+
+import pandas as pd
+from pandas import DataFrame
+from pandas.plotting import autocorrelation_plot
+from plot.lib import plot_can_test
+from pull.lib import numerify, pull_by_series_id, pull_can_quarter_former
+from read.lib import read_usa_bea_excel, read_usa_bls, read_usa_hist
+
 ARCHIVE_NAMES_UTILISED = (
     'dataset_douglas.zip',
     'dataset_usa_bea-release-2019-12-19-Survey.zip',
@@ -40,7 +49,10 @@ def options():
         'DT63AS03',
     )
     [
-        print(extract_usa_classic(ARCHIVE_NAME, series_id))
+        print(read_usa_hist(ARCHIVE_NAME, series_id))
+# =============================================================================
+#         read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, SERIES_ID)
+# =============================================================================
         for series_id in SERIES_IDS
     ]
 
@@ -82,14 +94,17 @@ def test_data_consistency_a():
         [
             pd.concat(
                 [
-                    extract_can_quarter(*_args) for _args in ARGS[:3]
+                    pull_can_quarter_former(
+                        read_can(_args[0]), _args[1])
+                    for _args in ARGS[:3]
                 ],
                 axis=1,
                 sort=True
             ),
             pd.concat(
                 [
-                    extract_can_annual(*_args) for _args in ARGS[3:]
+                    numerify(pull_by_series_id(read_can(_args[0]), _args[1]))
+                    for _args in ARGS[3:]
                 ],
                 axis=1,
                 sort=True
@@ -143,8 +158,11 @@ def test_data_consistency_b():
     )
     df = pd.concat(
         [
-            extract_read_usa_bea(ARCHIVE_NAME, WB_NAME, sh, _id)
-            for sh, _id in zip(SH_NAMES, SERIES_IDS)
+            # =================================================================
+            # TODO: UPDATE ACCORDING TO NEW SIGNATURE
+            # =================================================================
+            read_usa_bea_excel(ARCHIVE_NAME, WB_NAME, sh, series_id)
+            for sh, series_id in zip(SH_NAMES, SERIES_IDS)
         ],
         axis=1,
         sort=True
@@ -170,7 +188,7 @@ def test_data_consistency_c():
         'PCUOMFG--OMFG',
     )
     [
-        print(extract_usa_bls(file_name, series_id))
+        print(read_usa_bls(file_name).pipe(pull_by_series_id, series_id))
         for file_name, series_id in zip(FILE_NAMES, SERIES_IDS)
     ]
 
@@ -191,8 +209,8 @@ def test_data_consistency_d():
                 'archive_name': archive_name,
                 'wb_name': wb_name,
                 'sh_name': _sh,
-                'series_id': _id,
-            } for _sh, _id in zip(sheet_names, series_ids)
+                'series_id': series_id,
+            } for _sh, series_id in zip(sheet_names, series_ids)
         ]
 
     # =========================================================================
@@ -246,11 +264,11 @@ def test_data_consistency_d():
     # =========================================================================
     # Tested: `k3n31gd1es000` = `k3n31gd1eq000` + `k3n31gd1ip000` + `k3n31gd1st000`
     # =========================================================================
-    test_sub_a(df)
+    test_substitute_a(df)
     # =========================================================================
     # Comparison of `k3n31gd1es000` out of control_frame with `k3n31gd1es000` out of test_frame
     # =========================================================================
-    test_sub_b(df)
+    test_substitute_b(df)
     # =========================================================================
     # Future Project: Test Ratio of Manufacturing Fixed Assets to Overall Fixed Assets
     # =========================================================================
@@ -281,7 +299,10 @@ def test_douglas() -> None:
     df = pd.concat(
         [
             partial(read_usa_hist, **_kwargs[0])(),
-            partial(extract_usa_classic, **_kwargs[1])(),
+            partial(read_usa_hist, **_kwargs[1])(),
+# =============================================================================
+#             read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, SERIES_ID)
+# =============================================================================
         ],
         axis=1
     )
@@ -305,7 +326,10 @@ def test_douglas() -> None:
     )
     df = pd.concat(
         [
-            partial(extract_usa_classic, **kwargs)() for kwargs in _kwargs
+            partial(read_usa_hist, **kwargs)() for kwargs in _kwargs
+# =============================================================================
+#             read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, SERIES_ID)
+# =============================================================================
         ],
         axis=1
     )
@@ -316,7 +340,10 @@ def test_douglas() -> None:
 def test_procedure(kwargs_list: list[dict]) -> None:
     df = pd.concat(
         [
-            extract_read_usa_bea(**_kwargs) for _kwargs in kwargs_list
+            # =================================================================
+            # TODO: UPDATE ACCORDING TO NEW SIGNATURE
+            # =================================================================
+            read_usa_bea_excel(**_kwargs) for _kwargs in kwargs_list
         ],
         axis=1,
         sort=True
@@ -325,13 +352,13 @@ def test_procedure(kwargs_list: list[dict]) -> None:
     df.iloc[:, [-1]].dropna(axis=0).plot(grid=True)
 
 
-def test_sub_a(df: DataFrame):
+def test_substitute_a(df: DataFrame):
     df['delta_sm'] = df.iloc[:, 0].sub(df.iloc[:, [3, 4, 5]].sum(axis=1))
     df.dropna(axis=0, inplace=True)
     autocorrelation_plot(df.iloc[:, [-1]])
 
 
-def test_sub_b(df: DataFrame):
+def test_substitute_b(df: DataFrame):
     # df['delta_eq'] = df.iloc[:, 0].sub(df.iloc[:, -1])
     df['delta_eq'] = df.iloc[:, 0].mul(4).div(
         df.iloc[:, 0].add(df.iloc[:, -1])).sub(2)
@@ -342,14 +369,14 @@ def test_sub_b(df: DataFrame):
 def test_read_usa_bea_sfat_series() -> DataFrame:
     ARCHIVE_NAME = 'dataset_usa_bea-nipa-selected.zip'
     SERIES_ID = 'k3n31gd1es000'
-    _df = pd.read_csv(ARCHIVE_NAME, usecols=[0, *range(8, 11)])
+    _df = pd.read_csv(ARCHIVE_NAME, index_col=2, usecols=[0, *range(8, 11)])
     _df = _df[_df.iloc[:, 1] == SERIES_ID]
     control_frame = DataFrame()
     for source_id in sorted(set(_df.iloc[:, 0])):
-        chunk = _df[_df.iloc[:, 0] == source_id].iloc[:, [2, 3]]
-        chunk.columns = [chunk.columns[0],
-                         ''.join((source_id.split()[1].replace('.', '_'), SERIES_ID))]
-        chunk.set_index(chunk.columns[0], inplace=True, verify_integrity=True)
+        chunk = _df[_df.iloc[:, 0] == source_id].iloc[:, [2]]
+        chunk.columns = [
+            ''.join((source_id.split()[1].replace('.', '_'), SERIES_ID))
+        ]
         control_frame = pd.concat([control_frame, chunk], axis=1, sort=True)
 
     ARCHIVE_NAME = 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip'
@@ -358,11 +385,15 @@ def test_read_usa_bea_sfat_series() -> DataFrame:
     # =========================================================================
     # Fixed Assets Series, 1925--2016
     # =========================================================================
-    SERIES_IDS = ('k3n31gd1es000', 'k3n31gd1eq000',
-                  'k3n31gd1ip000', 'k3n31gd1st000',)
+    SERIES_IDS = (
+        'k3n31gd1es000', 'k3n31gd1eq000', 'k3n31gd1ip000', 'k3n31gd1st000',
+    )
     test_frame = pd.concat(
         [
-            extract_read_usa_bea(ARCHIVE_NAME, WB_NAME, SH_NAME, series_id)
+            # =================================================================
+            # TODO: UPDATE ACCORDING TO NEW SIGNATURE
+            # =================================================================
+            read_usa_bea_excel(ARCHIVE_NAME, WB_NAME, SH_NAME, series_id)
             for series_id in SERIES_IDS
         ],
         axis=1,

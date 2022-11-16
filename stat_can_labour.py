@@ -28,8 +28,8 @@ def append_series_ids(df: DataFrame, series_ids: tuple[str]) -> DataFrame:
 
 
 def main():
-    DIR = '/media/green-machine/321B-6A94'
-    _DIR = '/home/green-machine/321B-6A94'
+    DIR = '/media/green-machine/KINGSTON'
+    _DIR = '/media/green-machine/KINGSTON'
 
     SERIES_IDS = {
         'CDT2S1': 'dataset_usa_cobb-douglas.zip',

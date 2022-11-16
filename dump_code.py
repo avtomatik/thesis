@@ -14,10 +14,9 @@ import os
 import sqlite3
 
 import pandas as pd
-from extract.lib import (pull_by_series_id, pull_can_quarter_former,
-                         read_manager_can_former, read_usa_bea,
-                         read_usa_bea_excel)
 from pandas import DataFrame
+from pull.lib import pull_by_series_id, pull_can_quarter_former
+from read.lib import read_usa_bea, read_usa_bea_excel
 
 # =============================================================================
 # Separate Chunk of Code
@@ -53,7 +52,7 @@ def append_series_ids_sum(df, chunk, series_ids):
         axis=1, sort=False)
 
 
-def url_to_file_name(_url: str) -> str:
+def url_to_archive_name(_url: str) -> str:
     """
 
 
@@ -532,7 +531,7 @@ def collect_capital_combined_archived() -> DataFrame:
     ).dropna(axis=0)
 
 
-DIR = '/home/green-machine/321B-6A94'
+DIR = '/media/green-machine/KINGSTON'
 
 os.chdir(DIR)
 
@@ -616,5 +615,5 @@ _df_semi_d = pd.concat(
 extract_can_group_a(7931814471809016759, skiprows=241)
 extract_can_group_a(8448814858763853126, skiprows=81)
 extract_can_group_b(5245628780870031920, skiprows=3)
-pull_can_quarter_former(read_manager_can_former(3800068), 'v62143969')
-pull_can_quarter_former(read_manager_can_former(3800068), 'v62143990')
+pull_can_quarter_former(read_can(3800068), 'v62143969')
+pull_can_quarter_former(read_can(3800068), 'v62143990')

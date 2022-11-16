@@ -996,7 +996,7 @@ def collect_usa_mcconnel(series_ids: tuple[str]) -> DataFrame:
     ).truncate(before=1980)
 
 
-def collect_usa_production_two_fold() -> tuple[DataFrame]:
+def collect_usa_manufacturing_two_fold() -> tuple[DataFrame]:
     """
     Data Fetch Archived
 
@@ -1069,7 +1069,7 @@ def collect_usa_production_two_fold() -> tuple[DataFrame]:
     )
 
 
-def collect_usa_production_three_fold() -> tuple[DataFrame]:
+def collect_usa_manufacturing_three_fold() -> tuple[DataFrame]:
     """
     Data Fetch Revised
 
@@ -1137,7 +1137,7 @@ def collect_usa_production_three_fold() -> tuple[DataFrame]:
     )
 
 
-def collect_usa_production_latest() -> DataFrame:
+def collect_usa_manufacturing_latest() -> DataFrame:
     """Data Fetch"""
     # =========================================================================
     # TODO: Update Accodring to Change in collect_cobb_douglas_deflator()
@@ -1444,7 +1444,7 @@ def collect_uscb_money_stock() -> DataFrame:
     return df.div(df.loc[YEAR_BASE, :]).mul(100)
 
 
-def collect_uscb_production() -> tuple[DataFrame, int]:
+def collect_uscb_manufacturing() -> tuple[DataFrame, int]:
     """
     Census Manufacturing Indexes, 1899=100
 
@@ -1567,7 +1567,7 @@ def construct_can(archive_ids: dict) -> DataFrame:
     df.iloc[:, 2]      Product
     ================== =================================
     """
-    DIR = '/media/green-machine/321B-6A94'
+    DIR = '/media/green-machine/KINGSTON'
     if Path(DIR).joinpath(f'{tuple(archive_ids)[0]}_preloaded.csv').is_file():
         kwargs = {
             'filepath_or_buffer': Path(DIR).joinpath(f'{tuple(archive_ids)[0]}_preloaded.csv'),
@@ -1628,7 +1628,7 @@ def get_mean_for_min_std():
     """
     Determine Year & Mean Value for Base Vectors for Year with Minimum StandardError
     """
-    DIR = '/media/green-machine/321B-6A94'
+    DIR = '/media/green-machine/KINGSTON'
     FILE_NAME = 'stat_can_lab.xlsx'
     kwargs = {
         'io': Path(DIR).joinpath(FILE_NAME),
@@ -1690,15 +1690,15 @@ def transform_b(df: DataFrame) -> DataFrame:
     return df.iloc[:, [0, 6, 7, 20]].dropna(axis=0)
 
 
-def transform_production_money(df: DataFrame) -> DataFrame:
-    df_production = df.iloc[:, [0, 6, 7]].dropna(axis=0)
-    df_production = df_production.div(df_production.iloc[0, :])
+def transform_manufacturing_money(df: DataFrame) -> DataFrame:
+    df_manufacturing = df.iloc[:, [0, 6, 7]].dropna(axis=0)
+    df_manufacturing = df_manufacturing.div(df_manufacturing.iloc[0, :])
     df_money = df.iloc[:, range(18, 20)].dropna(how='all')
     df_money['m1_fused'] = df_money.mean(axis=1)
     df_money = df_money.iloc[:, -1].div(df_money.iloc[0, -1])
     _df = pd.concat(
         [
-            df_production,
+            df_manufacturing,
             df_money
         ],
         axis=1
@@ -2073,7 +2073,7 @@ def transform_sum(df: DataFrame) -> DataFrame:
 
 
 def collect_can_price_a():
-    DIR = '/media/green-machine/321B-6A94'
+    DIR = '/media/green-machine/KINGSTON'
     FILE_NAME = 'stat_can_cap.xlsx'
     kwargs = {
         'io': Path(DIR).joinpath(FILE_NAME),
@@ -2101,7 +2101,7 @@ def collect_can_price_a():
 
 
 def collect_can_price_b():
-    DIR = '/media/green-machine/321B-6A94'
+    DIR = '/media/green-machine/KINGSTON'
     FILE_NAME = 'stat_can_cap.xlsx'
     kwargs = {
         'io': Path(DIR).joinpath(FILE_NAME),

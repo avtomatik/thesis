@@ -10,9 +10,11 @@ Created on Sun Jun 12 12:25:52 2022
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import scipy.optimize as optimization
 from pandas import DataFrame
+from read.lib import read_can
 from scipy.interpolate import UnivariateSpline
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_error, r2_score
 
 
 def calculate_capital(df: DataFrame, p_i: tuple[float], p_t: tuple[float], ratio: float):
@@ -37,28 +39,14 @@ def calculate_curve_fit_params(df: DataFrame) -> None:
     """
     ================== =================================
     df.index           Period
-    df.iloc[:, 0]      Capital
-    df.iloc[:, 1]      Labor
-    df.iloc[:, 2]      Product
+    df.iloc[:, 0]      Labor Capital Intensity
+    df.iloc[:, 1]      Labor Productivity
     ================== =================================
     """
-    # =========================================================================
-    # TODO: Use Feed from transform_cobb_douglas()
-    # =========================================================================
 
     def _curve(regressor: pd.Series, b: float, k: float) -> pd.Series:
         return regressor.pow(k).mul(b)
 
-    # =========================================================================
-    # Labor Capital Intensity
-    # =========================================================================
-    df['lab_cap_int'] = df.iloc[:, 0].div(
-        df.iloc[:, 1])
-    # =========================================================================
-    # Labor Productivity
-    # =========================================================================
-    df['lab_product'] = df.iloc[:, 2].div(
-        df.iloc[:, 1])
     params, matrix = optimization.curve_fit(
         _curve,
         df.iloc[:, -2],
@@ -72,36 +60,20 @@ def calculate_plot_uspline(df: DataFrame):
     """
     ================== =================================
     df.index           Period
-    df.iloc[:, 0]      Capital
-    df.iloc[:, 1]      Labor
-    df.iloc[:, 2]      Product
+    df.iloc[:, 0]      Labor Capital Intensity
+    df.iloc[:, 1]      Labor Productivity
     ================== =================================
     """
+    df.sort_values(df.columns[0], inplace=True)
     # =========================================================================
-    # TODO: Increase Cohesion
+    # _new_axis = np.linspace(df.iloc[:, [0]].min(), df.iloc[:, [0]].max(), df.shape[0] - 1)
     # =========================================================================
-    # =========================================================================
-    # TODO: Use Feed from transform_cobb_douglas()
-    # =========================================================================
-    # =========================================================================
-    # Labor Capital Intensity
-    # =========================================================================
-    df['lab_cap_int'] = df.iloc[:, 0].div(df.iloc[:, 1])
-    # =========================================================================
-    # Labor Productivity
-    # =========================================================================
-    df['lab_product'] = df.iloc[:, 2].div(df.iloc[:, 1])
-    chunk = df.iloc[:, -2:]
-    chunk.sort_values(chunk.columns[0], inplace=True)
-    spl = UnivariateSpline(chunk.iloc[:, [0]], chunk.iloc[:, [1]])
-    # =========================================================================
-    # _new_axis = np.linspace(chunk.iloc[:, [0]].min(), chunk.iloc[:, [0]].max(), chunk.shape[0] - 1)
-    # =========================================================================
+    spl = UnivariateSpline(df.iloc[:, [0]], df.iloc[:, [1]])
     plt.figure()
-    plt.scatter(chunk.iloc[:, [0]], chunk.iloc[:, [1]], label='Original')
+    plt.scatter(df.iloc[:, [0]], df.iloc[:, [1]], label='Original')
     plt.plot(
-        chunk.iloc[:, 0],
-        spl(chunk.iloc[:, 0]),
+        df.iloc[:, 0],
+        spl(df.iloc[:, 0]),
         'g',
         lw=3,
         label='Spline'
@@ -163,13 +135,15 @@ def calculate_power_function_fit_params_a(df: DataFrame, params: tuple[float]):
     print(f'Model Parameter: A = {params[1]:.4f};')
     print(f'Model Parameter: Alpha = {params[2]:.4f};')
     print(f'Estimator Result: Mean Value: {df.iloc[:, 2].mean():,.4f};')
-    print('Estimator Result: Mean Squared Deviation, MSD: {:,.4f};'.format(
-        mean_squared_error(df.iloc[:, 1], df.iloc[:, 2])
+    print(
+        'Estimator Result: Mean Squared Deviation, MSD: {:,.4f};'.format(
+            mean_squared_error(df.iloc[:, 1], df.iloc[:, 2])
+        )
     )
-    )
-    print('Estimator Result: Root-Mean-Square Deviation, RMSD: {:,.4f}.'.format(
-        np.sqrt(mean_squared_error(df.iloc[:, 1], df.iloc[:, 2]))
-    )
+    print(
+        'Estimator Result: Root-Mean-Square Deviation, RMSD: {:,.4f}.'.format(
+            np.sqrt(mean_squared_error(df.iloc[:, 1], df.iloc[:, 2]))
+        )
     )
 
 
@@ -206,13 +180,15 @@ def calculate_power_function_fit_params_b(df: DataFrame, params: tuple[float]):
         f'Model Parameter: A: = (U_2-U_1)/(TAU_2-TAU_1)**Alpha = {_param:,.4f};'
     )
     print(f'Estimator Result: Mean Value: {df.iloc[:, 1].mean():,.4f};')
-    print('Estimator Result: Mean Squared Deviation, MSD: {:,.4f};'.format(
-        mean_squared_error(df.iloc[:, 1], df.iloc[:, 2])
+    print(
+        'Estimator Result: Mean Squared Deviation, MSD: {:,.4f};'.format(
+            mean_squared_error(df.iloc[:, 1], df.iloc[:, 2])
+        )
     )
-    )
-    print('Estimator Result: Root-Mean-Square Deviation, RMSD: {:,.4f}.'.format(
-        np.sqrt(mean_squared_error(df.iloc[:, 1], df.iloc[:, 2]))
-    )
+    print(
+        'Estimator Result: Root-Mean-Square Deviation, RMSD: {:,.4f}.'.format(
+            np.sqrt(mean_squared_error(df.iloc[:, 1], df.iloc[:, 2]))
+        )
     )
 
 
@@ -247,18 +223,21 @@ def calculate_power_function_fit_params_c(df: DataFrame, params: tuple[float]):
     print(f'Model Parameter: Y_2 = {params[3]};')
     print(f'Model Parameter: Alpha: = LN(Y_2/Y_1)/LN(X_1/X_2) = {_alpha:.4f};')
     print(f'Estimator Result: Mean Value: {df.iloc[:, 1].mean():,.4f};')
-    print('Estimator Result: Mean Squared Deviation, MSD: {:,.4f};'.format(
-        mean_squared_error(df.iloc[:, 1], df.iloc[:, 2])
+    print(
+        'Estimator Result: Mean Squared Deviation, MSD: {:,.4f};'.format(
+            mean_squared_error(df.iloc[:, 1], df.iloc[:, 2])
+        )
     )
-    )
-    print('Estimator Result: Root-Mean-Square Deviation, RMSD: {:,.4f}.'.format(
-        np.sqrt(mean_squared_error(df.iloc[:, 1], df.iloc[:, 2]))
-    )
+    print(
+        'Estimator Result: Root-Mean-Square Deviation, RMSD: {:,.4f}.'.format(
+            np.sqrt(mean_squared_error(df.iloc[:, 1], df.iloc[:, 2]))
+        )
     )
 
 
 def kol_zur_filter(df: DataFrame, k: int = None) -> tuple[DataFrame]:
-    """Kolmogorov--Zurbenko Filter
+    """
+    Kolmogorov--Zurbenko Filter
     ================== =================================
     df.index           Period
     df.iloc[:, 0]      Target Series
@@ -377,33 +356,9 @@ def kol_zur_filter(df: DataFrame, k: int = None) -> tuple[DataFrame]:
     return df_o, df_e, residuals_o, residuals_e
 
 
-def mean_by_year(df: DataFrame) -> DataFrame:
-    """
-    Process Non-Indexed Flat DataFrame
-    Parameters
-    ----------
-    df : DataFrame
-    Returns
-    -------
-    DataFrame
-    """
-    # =========================================================================
-    # Index Width Check
-    # =========================================================================
-    width = 0
-    for item in df.index:
-        width = max(len(f'{item}'), width)
-    if width > 4:
-        df[['YEAR', 'Q']] = df.index.to_series().str.split('-', expand=True)
-        df = df.iloc[:, [1, 0]]
-        df = df.apply(pd.to_numeric)
-        df = df.groupby('YEAR').mean()
-        df.index.rename('REF_DATE', inplace=True)
-    return df
-
-
 def m_spline_ea(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFrame, tuple[float]]:
-    """Exponential Spline, Type A
+    """
+    Exponential Spline, Type A
     ================== =================================
     df.iloc[:, 0]      Period
     df.iloc[:, 1]      Target Series
@@ -455,15 +410,18 @@ def m_spline_ea(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFra
         pd.concat(
             [
                 df,
-                DataFrame(_splined, columns=['Splined']),
+                DataFrame(_splined, columns=('Splined')),
             ],
-            axis=1, sort=True),
+            axis=1,
+            sort=True
+        ),
         tuple(_params_k)
     )
 
 
 def m_spline_eb(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFrame, tuple[float]]:
-    """Exponential Spline, Type B
+    """
+    Exponential Spline, Type B
     ================== =================================
     df.iloc[:, 0]      Period
     df.iloc[:, 1]      Target Series
@@ -503,9 +461,11 @@ def m_spline_eb(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFra
         pd.concat(
             [
                 df,
-                DataFrame(_splined, columns=['Spline'])
+                DataFrame(_splined, columns=('Spline'))
             ],
-            axis=1, sort=True),
+            axis=1,
+            sort=True
+        ),
         tuple(_params_k)
     )
 
@@ -517,7 +477,8 @@ def _m_spline_error_metrics(df: DataFrame) -> None:
 
 
 def m_spline_la(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFrame, tuple[float]]:
-    """Linear Spline, Type A
+    """
+    Linear Spline, Type A
     ================== =================================
     df.iloc[:, 0]      Period
     df.iloc[:, 1]      Target Series
@@ -561,15 +522,18 @@ def m_spline_la(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFra
         pd.concat(
             [
                 df,
-                DataFrame(_splined, columns=['Spline'])
+                DataFrame(_splined, columns=('Spline'))
             ],
-            axis=1, sort=True),
+            axis=1,
+            sort=True
+        ),
         tuple(_params_k)
     )
 
 
 def m_spline_lb(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFrame, tuple[float]]:
-    """Linear Spline, Type B
+    """
+    Linear Spline, Type B
     ================== =================================
     df.iloc[:, 0]      Period
     df.iloc[:, 1]      Target Series
@@ -603,15 +567,18 @@ def m_spline_lb(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFra
         pd.concat(
             [
                 df,
-                DataFrame(_splined, columns=['Spline'])
+                DataFrame(_splined, columns=('Spline'))
             ],
-            axis=1, sort=True),
+            axis=1,
+            sort=True
+        ),
         tuple(_params_k)
     )
 
 
 def m_spline_lls(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFrame, tuple[float]]:
-    """Linear Spline, Linear Regression Kernel
+    """
+    Linear Spline, Linear Regression Kernel
     ================== =================================
     df.iloc[:, 0]      Period
     df.iloc[:, 1]      Target Series
@@ -667,9 +634,11 @@ def m_spline_lls(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFr
         pd.concat(
             [
                 df,
-                DataFrame(_splined, columns=['Splined']),
+                DataFrame(_splined, columns=('Splined')),
             ],
-            axis=1, sort=True),
+            axis=1,
+            sort=True
+        ),
         tuple(_params_a)
     )
 
@@ -713,7 +682,7 @@ def m_spline_manager(df: DataFrame, kernel: callable) -> None:
         Draws matplotlib.pyplot Plots.
     """
     df.reset_index(level=0, inplace=True)
-    df.columns = ['Period', 'Original']
+    df.columns = ('Period', 'Original')
     # =========================================================================
     # Number of Periods
     # =========================================================================
@@ -774,7 +743,7 @@ def m_spline_manager(df: DataFrame, kernel: callable) -> None:
         for _knot, _factor in zip(_knots, _correction_factors):
             modified.iloc[_knot, 1] = modified.iloc[_knot, 1]*_factor
 
-        modified.columns = ['Period', 'Corrected']
+        modified.columns = ('Period', 'Corrected')
         splined_frame, _params = kernel(modified, N, _knots)
         _m_spline_print_params(N, _params)
         _m_spline_error_metrics(splined_frame)
@@ -888,7 +857,25 @@ def strip_cumulated_deflator(df: DataFrame):
     return price_inverse_single(df.dropna()).dropna()
 
 
-def build_push_data_frame(file_name: str, criteria: dict) -> None:
+def string_to_url(string: str) -> str:
+    """
+
+
+    Parameters
+    ----------
+    string : str
+        DESCRIPTION.
+
+    Returns
+    -------
+    str
+        DESCRIPTION.
+
+    """
+    return f'https://www150.statcan.gc.ca/n1/tbl/csv/{string}'
+
+
+def build_push_data_frame(file_name: str, blueprint: dict) -> None:
     """
     Builds DataFrame & Loads It To Excel
 
@@ -896,7 +883,7 @@ def build_push_data_frame(file_name: str, criteria: dict) -> None:
     ----------
     file_name : str
         Excel File Name.
-    criteria : dict
+    blueprint : dict
         DESCRIPTION.
 
     Returns
@@ -904,17 +891,22 @@ def build_push_data_frame(file_name: str, criteria: dict) -> None:
     None
     """
     df = DataFrame()
-    for criterion in criteria:
-        _df = extract_can_from_url(string_to_url(criterion['file_name']))
-        _df = _df[_df['VECTOR'].isin(criterion['series_ids'])]
-        _df = _df[['REF_DATE', 'VECTOR', 'VALUE']]
-        for series_id in criterion['series_ids']:
-            chunk = _df[_df['VECTOR'] == series_id]
-            chunk.set_index(chunk.columns[0], inplace=True)
-            chunk = chunk.iloc[:, [1]]
-            chunk = mean_by_year(chunk)
-            chunk.rename(columns={'VALUE': series_id}, inplace=True)
+    for item in blueprint:
+        _df = read_can(
+            # =================================================================
+            # TODO: UPDATE ACCORDING TO NEW SIGNATURE
+            # =================================================================
+            string_to_url(item['file_name']),
+            index_col=0,
+            usecols=range(14),
+            parse_dates=True
+        )
+        _df = _df[_df['VECTOR'].isin(item['series_ids'])]
+        for series_id in item['series_ids']:
+            chunk = _df[_df['VECTOR'] == series_id][['VALUE']]
+            chunk = chunk.groupby(chunk.index.year).mean()
             df = pd.concat([df, chunk], axis=1, sort=True)
+        df.columns = item['series_ids']
     df.to_excel(file_name)
 
 
@@ -1051,7 +1043,7 @@ def rolling_mean_filter(df: DataFrame, k: int = None) -> tuple[DataFrame]:
 
 def simple_linear_regression(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
     """
-    Determine Regression Coefficients
+    Determining of Coefficients of Regression
 
     Parameters
     ----------
@@ -1090,9 +1082,11 @@ def simple_linear_regression(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
     print('Model: Yhat = {:,.4f} + {:,.4f}*X'.format(*params[::-1]))
     print('Model Parameter: A_0 = {:,.4f}'.format(params[1]))
     print('Model Parameter: A_1 = {:,.4f}'.format(params[0]))
-    print('Model Result: ESS = {:,.4f}; TSS = {:,.4f}; R^2 = {:,.4f}'.format(
-        _ess[0],
-        _tss,
-        _r
-    ))
+    print(
+        'Model Result: ESS = {:,.4f}; TSS = {:,.4f}; R^2 = {:,.4f}'.format(
+            _ess[0],
+            _tss,
+            _r
+        )
+    )
     return df, tuple(params)

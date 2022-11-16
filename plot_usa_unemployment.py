@@ -17,7 +17,7 @@ from read.lib import read_usa_bls, read_usa_hist
 
 def main():
     FLAG = True
-    DIR = '/home/green-machine/321B-6A94'
+    DIR = '/media/green-machine/KINGSTON'
     _DIR = '/home/green-machine/Downloads'
     ARCHIVE_NAME = 'dataset_uscb.zip'
     FILE_NAME = 'dataset_usa_bls-2017-07-06-ln.data.1.AllData'

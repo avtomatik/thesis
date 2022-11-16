@@ -10,10 +10,15 @@ from setuptools import find_packages, setup
 
 setup(
     name='thesis',
-    version='0.9.1',
+    version='0.9.2',
+    description='08.00.13 Mathematical and Instrumental Methods of Economics',
+    author='Alexander Mikhailov',
+    author_email='alexander.mikhailoff@gmail.com',
+    url='https://github.com/avtomatik/thesis/',
     packages=[
         'collect',
-        'extract',
+        'read',
+        'pull',
         'plot',
         'push',
         'test',
@@ -22,7 +27,8 @@ setup(
     package_dir={
         '': '.',
         'collect': './collect',
-        'extract': './extract',
+        'read': './read',
+        'pull': './pull',
         'plot': './plot',
         'push': './push',
         'test': './test',

@@ -14,8 +14,7 @@ from pandas import DataFrame
 from pandas.plotting import autocorrelation_plot
 from plot.lib import plot_can_test
 from pull.lib import numerify, pull_by_series_id, pull_can_quarter_former
-from read.lib import (read_manager_can_former, read_usa_bea_excel,
-                      read_usa_bls, read_usa_hist)
+from read.lib import read_usa_bea_excel, read_usa_bls, read_usa_hist
 
 ARCHIVE_NAMES_UTILISED = (
     'dataset_douglas.zip',
@@ -96,7 +95,7 @@ def test_data_consistency_a():
             pd.concat(
                 [
                     pull_can_quarter_former(
-                        read_manager_can_former(_args[0]), _args[1])
+                        read_can(_args[0]), _args[1])
                     for _args in ARGS[:3]
                 ],
                 axis=1,
@@ -104,7 +103,7 @@ def test_data_consistency_a():
             ),
             pd.concat(
                 [
-                    numerify(pull_by_series_id(read_manager_can_former(_args[0]), _args[1]))
+                    numerify(pull_by_series_id(read_can(_args[0]), _args[1]))
                     for _args in ARGS[3:]
                 ],
                 axis=1,

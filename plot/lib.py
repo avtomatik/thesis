@@ -15,11 +15,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from collect.lib import transform_cobb_douglas
-from extract.lib import (pull_by_series_id, pull_series_ids,
-                         pull_uscb_description, read_usa_hist, read_usa_nber,
-                         read_worldbank)
 from pandas import DataFrame
 from pandas.plotting import autocorrelation_plot, bootstrap_plot, lag_plot
+from pull.lib import pull_by_series_id
+from read.lib import read_usa_bea, read_usa_bea_excel
 from scipy import stats
 from sklearn.metrics import r2_score
 from toolkit.lib import (calculate_capital, kol_zur_filter,
@@ -44,7 +43,7 @@ def _cap_productivity(array: np.array, k: float = 0.25, b: float = 1.01) -> np.a
     return np.multiply(np.power(array, 1-k), b)
 
 
-def plot_investment_production(df: DataFrame) -> None:
+def plot_investment_manufacturing(df: DataFrame) -> None:
     """
     ================== =================================
     df.index           Period
@@ -62,7 +61,7 @@ def plot_investment_production(df: DataFrame) -> None:
     # =========================================================================
     # `Real` Production
     # =========================================================================
-    _df['production'] = _df.iloc[:, 1].mul(_df.iloc[:, 3]).div(_df.iloc[:, 2])
+    _df['manufacturing'] = _df.iloc[:, 1].mul(_df.iloc[:, 3]).div(_df.iloc[:, 2])
     _df['inv_roll_mean'] = _df.iloc[:, -2].rolling(2).mean()
     _df['prd_roll_mean'] = _df.iloc[:, -2].rolling(2).mean()
     plt.figure()
@@ -266,7 +265,7 @@ def plot_e(df: DataFrame) -> None:
     plt.show()
 
 
-def plot_uscb_production(df: DataFrame, base: int) -> None:
+def plot_uscb_manufacturing(df: DataFrame, base: int) -> None:
     plt.figure()
     plt.plot(df.iloc[:, [0, 2]], label=[
         'Fabricant S., Shiskin J., NBER',
@@ -1749,7 +1748,7 @@ def plot_growth_elasticity(df: DataFrame) -> None:
 
 def plot_increment(df: DataFrame) -> None:
     FLAG = False
-    DIR = '/media/green-machine/321B-6A94'
+    DIR = '/media/green-machine/KINGSTON'
     FILE_NAME = 'fig_file_name.pdf'
     fig, axes = plt.subplots(2, 1)
     axes[0].plot(df.iloc[:, 0], df.iloc[:, 1], label='Curve')

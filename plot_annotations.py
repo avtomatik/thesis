@@ -102,7 +102,7 @@ def main():
     # =========================================================================
     # TODO: Revise Dataset
     # =========================================================================
-    DIR = '/home/green-machine/321B-6A94'
+    DIR = '/media/green-machine/KINGSTON'
 
     os.chdir(DIR)
     _df = collect_usa_macroeconomics()
