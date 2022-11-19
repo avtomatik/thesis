@@ -3,7 +3,7 @@
 """
 Created on Sun Jun 12 12:19:54 2022
 
-@author: alexander
+@author: Alexander Mikhailov
 """
 
 
@@ -367,9 +367,13 @@ def test_substitute_b(df: DataFrame):
 
 
 def test_read_usa_bea_sfat_series() -> DataFrame:
-    ARCHIVE_NAME = 'dataset_usa_bea-nipa-selected.zip'
     SERIES_ID = 'k3n31gd1es000'
-    _df = pd.read_csv(ARCHIVE_NAME, index_col=2, usecols=[0, *range(8, 11)])
+    kwargs = {
+        'filepath_or_buffer': 'dataset_usa_bea-nipa-selected.zip',
+        'index_col': 2,
+        'usecols': [0, *range(8, 11)],
+    }
+    _df = pd.read_csv(**kwargs)
     _df = _df[_df.iloc[:, 1] == SERIES_ID]
     control_frame = DataFrame()
     for source_id in sorted(set(_df.iloc[:, 0])):

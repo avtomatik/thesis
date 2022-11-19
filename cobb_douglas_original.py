@@ -2,7 +2,7 @@
 """
 Created on Sun Jul 12 18:28:15 2020
 
-@author: Mastermind
+@author: Alexander Mikhailov
 """
 
 
@@ -35,7 +35,7 @@ def main():
 
     os.chdir(DIR)
     plot_cobb_douglas(
-        *transform_cobb_douglas(collect_cobb_douglas()),
+        *collect_cobb_douglas().pipe(transform_cobb_douglas),
         MAP_FIG
     )
 

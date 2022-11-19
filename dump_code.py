@@ -3,7 +3,7 @@
 """
 Created on Sun Jun 12 16:24:57 2022
 
-@author: alexander
+@author: Alexander Mikhailov
 """
 
 
@@ -23,17 +23,6 @@ from read.lib import read_usa_bea, read_usa_bea_excel
 # =============================================================================
 
 
-def append_series_ids(df, chunk, series_ids):
-    for series_id in series_ids:
-        chunk = pd.concat(
-            [
-                chunk,
-                df.loc[:, [series_id]].dropna(axis=0)
-            ],
-            axis=1, sort=False)
-    return chunk
-
-
 def append_series_ids_sum(df, chunk, series_ids):
     for series_id in series_ids:
         _chunk = pd.concat(
@@ -50,28 +39,6 @@ def append_series_ids_sum(df, chunk, series_ids):
             _chunk.iloc[:, [-1]]
         ],
         axis=1, sort=False)
-
-
-def url_to_archive_name(_url: str) -> str:
-    """
-
-
-    Parameters
-    ----------
-    _url : str
-        DESCRIPTION.
-
-    Returns
-    -------
-    str
-        DESCRIPTION.
-
-    """
-    return '/'.join(
-        (
-            'https://www150.statcan.gc.ca/n1/tbl/csv',
-            f"{_url.split('?pid=')[1][:-2]}-eng.zip")
-    )
 
 
 def string_to_url(string):
@@ -220,14 +187,14 @@ def test_data_capital_combined_archived():
 
 def collect_usa_bls_cpiu() -> DataFrame:
     """BLS CPI-U Price Index Fetch"""
-    FILE_NAME = 'dataset_usa_bls_cpiai.txt'
-    _df = pd.read_csv(
-        FILE_NAME,
-        sep='\s+',
-        index_col=0,
-        usecols=range(13),
-        skiprows=16
-    )
+    kwargs = {
+        'filepath_or_buffer': 'dataset_usa_bls_cpiai.txt',
+        'sep': '\s+',
+        'index_col': 0,
+        'usecols': range(13),
+        'skiprows': 16,
+    }
+    _df = pd.read_csv(**kwargs)
     _df.rename_axis('period', inplace=True)
     _df['mean'] = _df.mean(axis=1)
     _df['sqrt'] = _df.iloc[:, :-1].prod(1).pow(1/12)
@@ -260,9 +227,9 @@ def extract_can_group_a(file_id: int, **kwargs) -> DataFrame:
     # =========================================================================
     # Not Used Anywhere
     # =========================================================================
-    _df = pd.read_csv(
-        f'dataset_read_can{file_id:n}.csv', index_col=0, **kwargs
-    )
+    kwargs['filepath_or_buffer'] = f'dataset_read_can{file_id:n}.csv'
+    kwargs['index_col'] = 0
+    _df = pd.read_csv(**kwargs)
     if file_id == 7931814471809016759:
         _df.columns = [column[:7] for column in _df.columns]
         _df.iloc[:, -1] = pd.to_numeric(_df.iloc[:, -1].str.replace(';', ''))
@@ -294,9 +261,9 @@ def extract_can_group_b(file_id: int, **kwargs) -> DataFrame:
     # =========================================================================
     # Not Used Anywhere
     # =========================================================================
-    _df = pd.read_csv(
-        f'dataset_read_can{file_id:n}.csv', index_col=0, **kwargs
-    )
+    kwargs['filepath_or_buffer'] = f'dataset_read_can{file_id:n}.csv'
+    kwargs['index_col'] = 0
+    _df = pd.read_csv(**kwargs)
     _df['period'] = pd.to_numeric(
         _df.index.astype(str).to_series().str.slice(start=4),
         downcast='integer'
@@ -362,10 +329,13 @@ def extract_read_usa_bea_pull_by_series_id(series_id: str) -> DataFrame:
     DataFrame
         DESCRIPTION.
     """
-    ARCHIVE_NAME = 'dataset_usa_bea-nipa-2015-05-01.zip'
     DIR = "/home/green-machine/data_science"
     DBNAME = "temporary"
-    _df = pd.read_csv(ARCHIVE_NAME, usecols=[0, *range(14, 18)])
+    kwargs = {
+        'filepath_or_buffer': 'dataset_usa_bea-nipa-2015-05-01.zip',
+        'usecols': [0, *range(14, 18)],
+    }
+    _df = pd.read_csv(**kwargs)
     with sqlite3.connect(Path(DIR).joinpath(f"{DBNAME}.db")) as conn:
         cursor = conn.cursor()
         _df.to_sql("temporary", conn, if_exists="replace", index=False)
@@ -418,17 +388,16 @@ def collect_usa_xlsm() -> DataFrame:
         # =====================================================================
         'A032RC',
     )
-    _df = read_usa_bea(URL)
     return pd.concat(
         [
             pd.concat(
                 [
-                    pull_by_series_id(_df, series_id)
+                    read_usa_bea(URL).pipe(pull_by_series_id, series_id)
                     for series_id in SERIES_IDS
                 ],
                 axis=1
             ),
-            pd.read_csv(FILE_NAME, index_col=0),
+            read_usa_prime_rate(),
         ],
         axis=1
     )
@@ -559,9 +528,13 @@ _df_sub_a = read_usa_bea_excel(**kwargs).loc[:, [SERIES_ID]]
 # Not Clear
 # =============================================================================
 
-FILE_NAME = 'dataset_read_can-{:08n}-eng-{}.csv'.format(
-    310003, 7591839622055840674)
-_df = pd.read_csv(FILE_NAME, skiprows=3)
+kwargs = {
+    'filepath_or_buffer': 'dataset_read_can-{:08n}-eng-{}.csv'.format(
+        310003, 7591839622055840674
+    ),
+    'skiprows': 3,
+}
+_df = pd.read_csv(**kwargs)
 
 # =============================================================================
 # Unallocated

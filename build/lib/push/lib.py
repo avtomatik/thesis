@@ -3,7 +3,7 @@
 """
 Created on Sun Jun 12 12:40:09 2022
 
-@author: alexander
+@author: Alexander Mikhailov
 """
 
 import os

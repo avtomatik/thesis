@@ -3,7 +3,7 @@
 """
 Created on Sun Jun 12 13:14:17 2022
 
-@author: alexander
+@author: Alexander Mikhailov
 """
 
 from setuptools import find_packages, setup

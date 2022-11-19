@@ -2,7 +2,7 @@
 """
 Created on Mon Mar  2 21:32:51 2020
 
-@author: Mastermind
+@author: Alexander Mikhailov
 """
 
 
@@ -53,7 +53,7 @@ def plot_discrete_fourier_transform(array: np.ndarray) -> None:
     plt.show()
 
 
-DIR = '/media/green-machine/KINGSTON'
+DIR = "/home/green-machine/data_science/data/interim"
 MAP_FIG = {
     'fg_a': 'Chart I Progress in Manufacturing {}$-${} ({}=100)',
     'fg_b': 'Chart II Theoretical and Actual Curves of Production {}$-${} ({}=100)',
@@ -64,17 +64,18 @@ MAP_FIG = {
 }
 
 os.chdir(DIR)
-# =============================================================================
+
 # plot_cobb_douglas(
-#     *transform_cobb_douglas_sklearn(collect_cobb_douglas()),
+#     *collect_cobb_douglas().pipe(transform_cobb_douglas_sklearn),
 #     MAP_FIG
 # )
-# =============================================================================
+print(*collect_cobb_douglas().pipe(transform_cobb_douglas_sklearn))
 
 
-_df = collect_cobb_douglas()
-X, y = transform_cobb_douglas_sklearn(_df)
-print(X)
+# _df = collect_cobb_douglas()
+# print(_df)
+# X, y = transform_cobb_douglas_sklearn(_df)
+# print(X)
 
 # =============================================================================
 # TODO: Discrete Laplace Transform

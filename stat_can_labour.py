@@ -2,7 +2,7 @@
 """
 Created on Tue Nov  2 21:10:29 2021
 
-@author: Mastermind
+@author: Alexander Mikhailov
 """
 
 
@@ -12,19 +12,6 @@ import pandas as pd
 from collect.lib import (collect_can_price_a, collect_can_price_b,
                          construct_cap_deflator)
 from pandas import DataFrame
-
-
-def append_series_ids(df: DataFrame, series_ids: tuple[str]) -> DataFrame:
-    # =========================================================================
-    # TODO: What?
-    # =========================================================================
-    return pd.concat(
-        [
-            df.loc[:, [series_id]].dropna(axis=0)
-            for series_id in series_ids
-        ],
-        axis=1
-    )
 
 
 def main():
@@ -80,7 +67,7 @@ def main():
     #     'v41708375',
     #     'v42189907',
     # )
-    # combined = append_series_ids(data, combined, SERIES_IDS)
+    # combined = data.loc[:, SERIES_IDS].dropna(how="all")
     # combined = combined.div(combined.loc[1997]).mul(100)
     # combined['mean_comb'] = combined.mean(1)
     # combined = combined.iloc[:, [-1]]
@@ -137,7 +124,7 @@ def main():
     # # #     'v42189127',
     # # #     'v11567',
     # # # )
-    # # # combined = append_series_ids(data, combined, SERIES_IDS)
+    # # # combined = data.loc[:, SERIES_IDS].dropna(how="all")
     # # # combined = combined.div(combined.loc[1961]).mul(100)
 
     # # # # =============================================================================
@@ -149,7 +136,7 @@ def main():
     # # #     'v42189751',
     # # #     'v64602050',
     # # # )
-    # # # combined = append_series_ids(data, combined, SERIES_IDS)
+    # # # combined = data.loc[:, SERIES_IDS].dropna(how="all")
     # # # combined = combined.div(combined.loc[1997]).mul(100)
     # # # combined.plot(grid=True).get_figure().savefig(
     # # #     'view.pdf', format='pdf', dpi=900)

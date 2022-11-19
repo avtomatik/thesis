@@ -2,7 +2,7 @@
 """
 Created on Sun Mar 15 16:17:13 2020
 
-@author: Mastermind
+@author: Alexander Mikhailov
 """
 
 

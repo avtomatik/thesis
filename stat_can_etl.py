@@ -2,11 +2,12 @@
 """
 Created on Sat Sep 18 22:20:54 2021
 
-@author: Mastermind
+@author: Alexander Mikhailov
 """
 
 
 import os
+from pathlib import Path
 
 import pandas as pd
 from pandas import DataFrame
@@ -75,25 +76,6 @@ from toolkit.lib import build_push_data_frame, string_to_url
 # =============================================================================
 
 
-def string_to_numeric(string: str) -> float:
-    """
-    TODO: Move to Fit Module
-
-    Parameters
-    ----------
-    string : str
-        DESCRIPTION.
-
-    Returns
-    -------
-    float
-        DESCRIPTION.
-
-    """
-    y, m = string.split('-')
-    return int(y) + (int(m) - 0.5) / 12
-
-
 def build_push_data_frame(file_name: str, blueprint: dict) -> None:
     """
     Builds DataFrame & Loads It To Excel
@@ -112,7 +94,7 @@ def build_push_data_frame(file_name: str, blueprint: dict) -> None:
     df = DataFrame()
     for item in blueprint:
         _df = read_can(
-            string_to_url(item['file_name']),
+            string_to_url(item['archive_name']),
             index_col=0,
             usecols=range(14),
             parse_dates=True
@@ -123,12 +105,12 @@ def build_push_data_frame(file_name: str, blueprint: dict) -> None:
             chunk = chunk.groupby(chunk.index.year).mean()
             df = pd.concat([df, chunk], axis=1, sort=True)
         df.columns = item['series_ids']
-    # df.to_excel(file_name)
+    # df.to_excel(archive_name)
 
 
 CAPITAL = (
     {
-        'file_name': '36100096-eng.zip',
+        'archive_name': '36100096-eng.zip',
         'series_ids':
         (
             'v90968617', 'v90968618', 'v90968619', 'v90968620', 'v90968621',
@@ -137,7 +119,7 @@ CAPITAL = (
         ),
     },
     {
-        'file_name': '36100210-eng.zip',
+        'archive_name': '36100210-eng.zip',
         'series_ids':
         (
             'v46444563', 'v46444624', 'v46444685', 'v46444746', 'v46444807',
@@ -147,7 +129,7 @@ CAPITAL = (
         ),
     },
     {
-        'file_name': '36100236-eng.zip',
+        'archive_name': '36100236-eng.zip',
         'series_ids':
         (
             'v1071434', 'v1071435', 'v1071436', 'v1071437', 'v64498363',
@@ -158,47 +140,47 @@ CAPITAL = (
 )
 LABOUR = (
     {
-        'file_name': '14100027-eng.zip',
+        'archive_name': '14100027-eng.zip',
         'series_ids':
         ('v2523013', ),
     },
     {
-        'file_name': '14100221-eng.zip',
+        'archive_name': '14100221-eng.zip',
         'series_ids':
         ('v54027148', 'v54027152', ),
     },
     {
-        'file_name': '14100235-eng.zip',
+        'archive_name': '14100235-eng.zip',
         'series_ids':
         ('v74989', ),
     },
     {
-        'file_name': '14100238-eng.zip',
+        'archive_name': '14100238-eng.zip',
         'series_ids':
         ('v1596771', ),
     },
     {
-        'file_name': '14100243-eng.zip',
+        'archive_name': '14100243-eng.zip',
         'series_ids':
         ('v78931172', 'v78931174', 'v78931173', ),
     },
     {
-        'file_name': '14100265-eng.zip',
+        'archive_name': '14100265-eng.zip',
         'series_ids':
         ('v249139', 'v249703', 'v250265', ),
     },
     {
-        'file_name': '14100355-eng.zip',
+        'archive_name': '14100355-eng.zip',
         'series_ids':
         ('v2057609', 'v123355112', 'v2057818', ),
     },
     {
-        'file_name': '14100392-eng.zip',
+        'archive_name': '14100392-eng.zip',
         'series_ids':
         ('v1235071986', ),
     },
     {
-        'file_name': '36100489-eng.zip',
+        'archive_name': '36100489-eng.zip',
         'series_ids':
         (
             'v65521825',
@@ -217,37 +199,37 @@ LABOUR = (
 )
 PRODUCT = (
     {
-        'file_name': '10100094-eng.zip',
+        'archive_name': '10100094-eng.zip',
         'series_ids':
             ('v37482', ),
     },
     {
-        'file_name': '16100053-eng.zip',
+        'archive_name': '16100053-eng.zip',
         'series_ids':
             ('v535579', 'v535593', 'v535663', 'v535677', ),
     },
     {
-        'file_name': '16100054-eng.zip',
+        'archive_name': '16100054-eng.zip',
         'series_ids':
             ('v761808', 'v761927', ),
     },
     {
-        'file_name': '16100109-eng.zip',
+        'archive_name': '16100109-eng.zip',
         'series_ids':
             ('v4331088', ),
     },
     {
-        'file_name': '16100111-eng.zip',
+        'archive_name': '16100111-eng.zip',
         'series_ids':
             ('v142817', ),
     },
     {
-        'file_name': '36100207-eng.zip',
+        'archive_name': '36100207-eng.zip',
         'series_ids':
             ('v21573668', 'v21573686', ),
     },
     {
-        'file_name': '36100208-eng.zip',
+        'archive_name': '36100208-eng.zip',
         'series_ids':
             (
                 # =============================================================
@@ -260,22 +242,22 @@ PRODUCT = (
             ),
     },
     {
-        'file_name': '36100217-eng.zip',
+        'archive_name': '36100217-eng.zip',
         'series_ids':
             ('v86718697', 'v86719219', ),
     },
     {
-        'file_name': '36100303-eng.zip',
+        'archive_name': '36100303-eng.zip',
         'series_ids':
             ('v716397', 'v718173', ),
     },
     {
-        'file_name': '36100305-eng.zip',
+        'archive_name': '36100305-eng.zip',
         'series_ids':
             ('v719421', ),
     },
     {
-        'file_name': '36100309-eng.zip',
+        'archive_name': '36100309-eng.zip',
         'series_ids':
             (
                 'v41707475',
@@ -288,7 +270,7 @@ PRODUCT = (
                 'v41707775', 'v41708195', 'v41708375', ),
     },
     {
-        'file_name': '36100310-eng.zip',
+        'archive_name': '36100310-eng.zip',
         'series_ids':
             (
                 'v42189127',
@@ -302,17 +284,17 @@ PRODUCT = (
             ),
     },
     {
-        'file_name': '36100386-eng.zip',
+        'archive_name': '36100386-eng.zip',
         'series_ids':
             ('v11567', ),
     },
     {
-        'file_name': '36100480-eng.zip',
+        'archive_name': '36100480-eng.zip',
         'series_ids':
             ('v111382232', ),
     },
     {
-        'file_name': '36100488-eng.zip',
+        'archive_name': '36100488-eng.zip',
         'series_ids':
             ('v64602050', ),
     },
@@ -320,8 +302,7 @@ PRODUCT = (
 
 
 def main():
-    DIR = '/media/green-machine/KINGSTON'
-    DIR = '/home/green-machine/Downloads'
+    DIR = '/home/green-machine/data_science/data/interim'
     os.chdir(DIR)
     FILE_NAME = 'stat_can_desc.xlsx'
     FILE_NAMES = (
@@ -334,8 +315,7 @@ def main():
     # =========================================================================
     # Construct Excel File from Specification
     # =========================================================================
-    MAP_FILES = dict(zip(FILE_NAMES, (CAPITAL, LABOUR, PRODUCT)))
-    for file_name, blueprint in MAP_FILES.items():
+    for file_name, blueprint in zip(FILE_NAMES, (CAPITAL, LABOUR, PRODUCT)):
         build_push_data_frame(file_name, blueprint)
 
     # =============================================================================
@@ -344,19 +324,19 @@ def main():
     # # =============================================================================
     # _df = pd.concat(
     #     [
-    #         pd.read_excel(os.path.join(DIR, file_name), index_col=0)
+    #         pd.read_excel(Path(DIR).joinpath(file_name), index_col=0)
     #         for file_name in FILE_NAMES
     #     ],
     #     axis=1
     # )
     #
     # desc = pd.merge(
-    #     pd.read_excel(os.path.join(DIR, FILE_NAME), index_col=0),
+    #     pd.read_excel(Path(DIR).joinpath(FILE_NAME), index_col=0),
     #     _df.transpose(),
     #     left_index=True,
     #     right_index=True,
     # )
-    # desc.transpose().to_excel(os.path.join(DIR, _FILE_NAME))
+    # desc.transpose().to_excel(Path(DIR).joinpath(_FILE_NAME))
     # =============================================================================
 
 

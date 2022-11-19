@@ -2,7 +2,7 @@
 """
 Created on Thu Jan  9 21:17:48 2020
 
-@author: Mastermind
+@author: Alexander Mikhailov
 """
 
 
@@ -23,22 +23,22 @@ def main():
     # =========================================================================
     # Project: Initial Version Dated: 05 October 2012
     # =========================================================================
-    df_a_a = transform_a(_df_a)
+    df_a_a = _df_a.pipe(transform_a)
     plot_investment_manufacturing(df_a_a)
     # =========================================================================
     # Project: Initial Version Dated: 23 November 2012
     # =========================================================================
-    df_b_a = transform_b(_df_a)
+    df_b_a = _df_a.pipe(transform_b)
     plot_investment(df_b_a)
     # =========================================================================
     # Project: Initial Version Dated: 16 June 2013
     # =========================================================================
-    df_c_a = transform_manufacturing_money(_df_a)
+    df_c_a = _df_a.pipe(transform_manufacturing_money)
     plot_c(df_c_a)
     # =========================================================================
     # Project: Initial Version Dated: 15 June 2015
     # =========================================================================
-    plot_d(transform_d(_df_a))
+    plot_d(_df_a.pipe(transform_d))
     # =========================================================================
     # Project: Initial Version Dated: 17 February 2013
     # =========================================================================
@@ -48,7 +48,7 @@ def main():
     # =========================================================================
     # Project: BEA Data Compared with Kurenkov Yu.V. Data
     # =========================================================================
-    plot_kurenkov(transform_kurenkov(_df_a))
+    plot_kurenkov(_df_a.pipe(transform_kurenkov))
 
 
 if __name__ == '__main__':

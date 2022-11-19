@@ -3,7 +3,7 @@
 """
 Created on Sun Jun 12 11:52:01 2022
 
-@author: alexander
+@author: Alexander Mikhailov
 """
 
 import itertools
@@ -182,7 +182,7 @@ def collect_cobb_douglas_deflator() -> DataFrame:
             # =================================================================
             # Federal Reserve Board Data
             # =================================================================
-            collect_usa_frb_fa_def(),
+            read_usa_frb().pipe(collect_usa_frb_fa_def),
         ],
         axis=1,
         sort=True
@@ -212,11 +212,34 @@ def collect_cobb_douglas_deflator() -> DataFrame:
     return result.iloc[:, [-1]].dropna(axis=0)
 
 
-def collect_cobb_douglas_extension_capital() -> DataFrame:
-    # =========================================================================
-    # Existing Capital Dataset
-    # =========================================================================
-    df = collect_usa_capital()
+def collect_cobb_douglas_extension_capital(df: DataFrame) -> DataFrame:
+    """
+
+
+    Parameters
+    ----------
+    df : DataFrame
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      CDT2S1
+        df.iloc[:, 1]      CDT2S3
+        df.iloc[:, 2]      CDT2S4
+        df.iloc[:, 3]      P0107
+        df.iloc[:, 4]      P0110
+        df.iloc[:, 5]      P0119
+        df.iloc[:, 6]      KTA15S08
+        df.iloc[:, 7]      DT63AS01
+        df.iloc[:, 8]      frb_nominal
+        df.iloc[:, 9]      frb_real
+        ================== =================================
+
+    Returns
+    -------
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Nominal Extended
+        ================== =================================
+    """
     # =========================================================================
     # Convert Capital Series into Current (Historical) Prices
     # =========================================================================
@@ -315,11 +338,6 @@ def collect_cobb_douglas_extension_labor() -> DataFrame:
         # =====================================================================
         'KTD02S02': 'dataset_usa_kendrick.zip',
     }
-    kwargs = {
-        'filepath_or_buffer': 'dataset_usa_reference_ru_kurenkov_yu_v.csv',
-        'index_col': 0,
-        'usecols': (0, 2)
-    }
     _df = pd.concat(
         [
             pd.concat(
@@ -339,7 +357,7 @@ def collect_cobb_douglas_extension_labor() -> DataFrame:
             # =================================================================
             # Kurenkov Yu.V.
             # =================================================================
-            pd.read_csv(**kwargs),
+            read_usa_kurenkov().iloc[:, [1]],
         ],
         axis=1
     ).truncate(before=1889)
@@ -350,14 +368,7 @@ def collect_cobb_douglas_extension_labor() -> DataFrame:
     return _df.iloc[:, [-1]]
 
 
-def collect_cobb_douglas_extension_product() -> DataFrame:
-    kwargs = {
-        'io': 'dataset_usa_davis-j-h-ip-total.xls',
-        'header': None,
-        'names': ('period', 'davis_index'),
-        'index_col': 0,
-        'skiprows': 5
-    }
+def collect_cobb_douglas_extension_manufacturing() -> DataFrame:
     SERIES_IDS = {
         # =====================================================================
         # Bureau of the Census, 1949, Page 179, J13: National Bureau of Economic Research Index of Physical Output, All Manufacturing Industries.
@@ -391,7 +402,7 @@ def collect_cobb_douglas_extension_product() -> DataFrame:
             # =================================================================
             # Joseph H. Davis Production Index
             # =================================================================
-            pd.read_excel(**kwargs),
+            read_usa_davis_ip(),
             # =================================================================
             # Federal Reserve, AIPMASAIX
             # =================================================================
@@ -487,12 +498,7 @@ def collect_usa_brown() -> DataFrame:
     # EMAIL;PREF;INTERNET:mbrown@buffalo.edu
     # =========================================================================
     ARCHIVE_NAMES = ('dataset_usa_brown.zip', 'dataset_usa_kendrick.zip',)
-    kwargs = {
-        'filepath_or_buffer': ARCHIVE_NAMES[0],
-        'skiprows': 4,
-        'usecols': (3,)
-    }
-    _series_ids = pd.read_csv(**kwargs).stack().values
+    _series_ids = read_usa_hist(ARCHIVE_NAMES[0]).iloc[:, [0]].stack().values
     SERIES_IDS = {
         col: f'series_{hex(_)}' for _, col in enumerate(sorted(set(_series_ids)))
     }
@@ -605,7 +611,7 @@ def collect_usa_capital() -> DataFrame:
             # =================================================================
             # FRB Data
             # =================================================================
-            collect_usa_frb_fa(),
+            read_usa_frb().pipe(collect_usa_frb_fa),
         ],
         axis=1,
         sort=True
@@ -661,39 +667,55 @@ def collect_usa_capital_purchases() -> DataFrame:
     return df
 
 
-def collect_usa_frb_fa() -> DataFrame:
+def collect_usa_frb_fa(df: DataFrame) -> DataFrame:
     """
     Retrieves DataFrame for Manufacturing Fixed Assets Series, Billion USD
 
+    Parameters
+    ----------
+    df : DataFrame
+        ================== =================================
+        df.index           Period
+        ...                ...
+        df.iloc[:, -1]     Values
+        ================== =================================
     Returns
     -------
     DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Nominal
-    df.iloc[:, 1]      Real
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Nominal
+        df.iloc[:, 1]      Real
+        ================== =================================
     """
-    df = read_usa_frb()
     df['frb_nominal'] = ((df.iloc[:, 1].mul(df.iloc[:, 2]).div(df.iloc[:, 0])).add(
         df.iloc[:, 4].mul(df.iloc[:, 5]).div(df.iloc[:, 3]))).div(1000)
     df['frb_real'] = df.iloc[:, [2, 5]].sum(axis=1).div(1000)
     return df.iloc[:, -2:]
 
 
-def collect_usa_frb_fa_def() -> DataFrame:
+def collect_usa_frb_fa_def(df: DataFrame) -> DataFrame:
     """
     Retrieves DataFrame for Deflator for Manufacturing Fixed Assets Series
+
+    Parameters
+    ----------
+    df : DataFrame
+        ================== =================================
+        df.index           Period
+        ...                ...
+        df.iloc[:, -1]     Values
+        ================== =================================
 
     Returns
     -------
     DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Deflator
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Deflator
+        ================== =================================
+
     """
-    df = read_usa_frb()
     df['fa_def_frb'] = (df.iloc[:, [1, 4]].sum(axis=1)).div(
         df.iloc[:, [0, 3]].sum(axis=1))
     return df.iloc[:, [-1]]
@@ -768,10 +790,6 @@ def collect_usa_general() -> DataFrame:
         # =====================================================================
         'k3ptotl1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
     }
-    kwargs = {
-        'filepath_or_buffer': 'dataset_usa_0025_p_r.txt',
-        'index_col': 0,
-    }
     return pd.concat(
         [
             pd.concat(
@@ -799,7 +817,7 @@ def collect_usa_general() -> DataFrame:
             ),
             read_usa_frb_ms(),
             read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, SERIES_ID),
-            pd.read_csv(**kwargs),
+            read_usa_prime_rate(),
         ],
         axis=1
     )
@@ -1147,7 +1165,7 @@ def collect_usa_manufacturing_latest() -> DataFrame:
             # =================================================================
             # Data Fetch for Capital
             # =================================================================
-            collect_cobb_douglas_extension_capital(),
+            collect_usa_capital().pipe(collect_cobb_douglas_extension_capital),
             # =================================================================
             # Data Fetch for Capital Deflator
             # =================================================================
@@ -1168,7 +1186,7 @@ def collect_usa_manufacturing_latest() -> DataFrame:
             # =================================================================
             # Data Fetch for Product
             # =================================================================
-            collect_cobb_douglas_extension_product(),
+            collect_cobb_douglas_extension_manufacturing(),
         ],
         axis=1,
         sort=True
@@ -1176,34 +1194,28 @@ def collect_usa_manufacturing_latest() -> DataFrame:
     return df.div(df.iloc[0, :])
 
 
-def collect_usa_sahr_infcf() -> DataFrame:
+def collect_usa_sahr_infcf(df: DataFrame) -> DataFrame:
     """
-    Retrieve Yearly Price Rates from `dataset_usa_infcf16652007.zip`
+    Retrieves Yearly Price Rates from `dataset_usa_infcf16652007.zip`
 
     Returns
     -------
     DataFrame
     """
-    kwargs = {
-        'filepath_or_buffer': 'dataset_usa_infcf16652007.zip',
-        'index_col': 1,
-        'usecols': range(4, 7)
-    }
-    _df = pd.read_csv(**kwargs)
     # =========================================================================
     # Retrieve First 14 Series
     # =========================================================================
-    df = pd.concat(
+    _df = pd.concat(
         [
-            _df[_df.iloc[:, 0] == series_id].iloc[:, [1]].rdiv(
+            df[df.iloc[:, 0] == series_id].iloc[:, [1]].rdiv(
                 1).pipe(price_inverse_single).mul(-1)
-            for series_id in _df.iloc[:, 0].unique()[:14]
+            for series_id in df.iloc[:, 0].unique()[:14]
         ],
         axis=1,
         sort=True
     )
-    df['cpiu_fused'] = df.mean(axis=1)
-    return df.iloc[:, [-1]].dropna(axis=0)
+    _df['cpiu_fused'] = _df.mean(axis=1)
+    return _df.iloc[:, [-1]].dropna(axis=0)
 
 
 def collect_uscb_cap(smoothing: bool = False) -> DataFrame:
@@ -1980,12 +1992,8 @@ def transform_cobb_douglas_sklearn(df: DataFrame) -> DataFrame:
 
 def transform_kurenkov(data_testing: DataFrame) -> tuple[DataFrame]:
     """Returns Four DataFrames with Comparison of data_testing: DataFrame and Kurenkov Yu.V. Data"""
-    kwargs = {
-        'filepath_or_buffer': 'dataset_usa_reference_ru_kurenkov_yu_v.csv',
-        'index_col': 0,
-    }
     SERIES_ID = 'CAPUTL.B50001.A'
-    data_control = pd.read_csv(**kwargs)
+    data_control = read_usa_kurenkov()
     # =========================================================================
     # Production
     # =========================================================================

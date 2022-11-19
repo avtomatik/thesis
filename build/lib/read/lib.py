@@ -3,7 +3,7 @@
 """
 Created on Sun Jun 12 00:44:36 2022
 
-@author: alexander
+@author: Alexander Mikhailov
 """
 
 
@@ -98,7 +98,8 @@ def read_can(archive_id: int) -> DataFrame:
         'parse_dates': archive_id in (2820011, 3790031, 3800084, 36100434)
     }
     if archive_id < 10 ** 7:
-        return pd.read_csv(f'dataset_can_{archive_id:08n}-eng.zip', **kwargs)
+        kwargs['filepath_or_buffer'] = f'dataset_can_{archive_id:08n}-eng.zip'
+        return pd.read_csv(**kwargs)
     if Path(f'{archive_id:08n}-eng.zip').is_file():
         with ZipFile(f'{archive_id:08n}-eng.zip', 'r').open(f'{archive_id:08n}.csv') as f:
             return pd.read_csv(f, **kwargs)
@@ -205,6 +206,7 @@ def read_usa_bls(file_name: str) -> DataFrame:
     return _df[_df.loc[:, 'sub_period'] == 'M13'].loc[:, ('series_id', 'value')]
 
 
+@cache
 def read_usa_frb() -> DataFrame:
     """
 
@@ -226,7 +228,7 @@ def read_usa_frb() -> DataFrame:
     # =========================================================================
     _df = pd.read_csv(**kwargs)
     kwargs['header'] = 0
-    kwargs['names'] = ['period', *[int(_) for _ in _df.columns[1:]]]
+    kwargs['names'] = ['period', *map(int, _df.columns[1:])]
     kwargs['index_col'] = 0
     # =========================================================================
     # Re-Load
@@ -325,7 +327,7 @@ def read_usa_frb_us3() -> DataFrame:
     # =========================================================================
     _df = pd.read_csv(**kwargs)
     kwargs['header'] = 0
-    kwargs['names'] = ['period', *[_.strip() for _ in _df.columns[1:]]]
+    kwargs['names'] = ['period', *map(str.strip, _df.columns[1:])]
     kwargs['index_col'] = 0
     # =========================================================================
     # Re-Load
@@ -361,7 +363,7 @@ def read_usa_fred(series_id: str) -> DataFrame:
 @cache
 def read_usa_hist(archive_name: str) -> DataFrame:
     """
-    Extract Data from Enumerated Historical Datasets
+    Retrieves Data from Enumerated Historical Datasets
     Parameters
     ----------
     archive_name : str
@@ -435,3 +437,74 @@ def read_worldbank(
             }
             _df = pd.read_csv(**kwargs).dropna(axis=1, how='all').transpose()
             return _df.drop(_df.index[:3]).rename_axis('period')
+
+
+def read_usa_sahr_infcf() -> DataFrame:
+    """
+
+
+    Returns
+    -------
+    TYPE
+        DESCRIPTION.
+
+    """
+    kwargs = {
+        'filepath_or_buffer': 'dataset_usa_infcf16652007.zip',
+        'index_col': 1,
+        'usecols': range(4, 7)
+    }
+    return pd.read_csv(**kwargs)
+
+
+def read_usa_davis_ip() -> DataFrame:
+    """
+
+
+    Returns
+    -------
+    DataFrame
+        DESCRIPTION.
+
+    """
+    kwargs = {
+        'io': 'dataset_usa_davis-j-h-ip-total.xls',
+        'header': None,
+        'names': ('period', 'davis_index'),
+        'index_col': 0,
+        'skiprows': 5
+    }
+    return pd.read_excel(**kwargs)
+
+
+def read_usa_kurenkov() -> DataFrame:
+    """
+
+
+    Returns
+    -------
+    None.
+
+    """
+    kwargs = {
+        'filepath_or_buffer': 'dataset_usa_reference_ru_kurenkov_yu_v.csv',
+        'index_col': 0,
+    }
+    return pd.read_csv(**kwargs)
+
+
+def read_usa_prime_rate() -> DataFrame:
+    """
+
+
+    Returns
+    -------
+    DataFrame
+        DESCRIPTION.
+
+    """
+    kwargs = {
+        'filepath_or_buffer': 'dataset_usa_0025_p_r.txt',
+        'index_col': 0,
+    }
+    return pd.read_csv(**kwargs)

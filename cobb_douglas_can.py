@@ -3,7 +3,7 @@
 """
 Created on Sat Jun 18 11:29:40 2022
 
-@author: alexander
+@author: Alexander Mikhailov
 """
 
 from collect.lib import construct_can, transform_cobb_douglas

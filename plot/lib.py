@@ -3,7 +3,7 @@
 """
 Created on Sun Jun 12 08:59:10 2022
 
-@author: alexander
+@author: Alexander Mikhailov
 """
 
 

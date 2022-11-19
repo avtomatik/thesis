@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed Feb  5 22:19:02 2020
-@author: Mastermind
+@author: Alexander Mikhailov
 """
 
 
@@ -51,7 +51,7 @@ def main():
     _df_i = collect_usa_manufacturing_latest()
 
 # =============================================================================
-#     df = transform_cobb_douglas(collect_cobb_douglas())[0].iloc[:, [3, 4]]
+#     df = collect_cobb_douglas().pipe(transform_cobb_douglas)[0].iloc[:, [3, 4]]
 #     calculate_curve_fit_params(df)
 # =============================================================================
 
