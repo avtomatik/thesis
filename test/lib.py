@@ -14,7 +14,7 @@ from pandas import DataFrame
 from pandas.plotting import autocorrelation_plot
 from plot.lib import plot_can_test
 from pull.lib import numerify, pull_by_series_id, pull_can_quarter_former
-from read.lib import read_usa_bea_excel, read_usa_bls, read_usa_hist
+from read.lib import read_can, read_usa_bea_excel, read_usa_bls, read_usa_hist
 
 ARCHIVE_NAMES_UTILISED = (
     'dataset_douglas.zip',
@@ -94,8 +94,7 @@ def test_data_consistency_a():
         [
             pd.concat(
                 [
-                    pull_can_quarter_former(
-                        read_can(_args[0]), _args[1])
+                    pull_can_quarter_former(read_can(_args[0]), _args[1])
                     for _args in ARGS[:3]
                 ],
                 axis=1,
@@ -373,11 +372,11 @@ def test_read_usa_bea_sfat_series() -> DataFrame:
         'index_col': 2,
         'usecols': [0, *range(8, 11)],
     }
-    _df = pd.read_csv(**kwargs)
-    _df = _df[_df.iloc[:, 1] == SERIES_ID]
+    df = pd.read_csv(**kwargs)
+    df = df[df.iloc[:, 1] == SERIES_ID]
     control_frame = DataFrame()
-    for source_id in sorted(set(_df.iloc[:, 0])):
-        chunk = _df[_df.iloc[:, 0] == source_id].iloc[:, [2]]
+    for source_id in sorted(set(df.iloc[:, 0])):
+        chunk = df[df.iloc[:, 0] == source_id].iloc[:, [2]]
         chunk.columns = [
             ''.join((source_id.split()[1].replace('.', '_'), SERIES_ID))
         ]

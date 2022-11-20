@@ -18,22 +18,22 @@ def data_transform_add_dx_dy(df: pd.DataFrame) -> pd.DataFrame:
     Parameters
     ----------
     df : pd.DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Capital
-    df.iloc[:, 1]      Labor
-    df.iloc[:, 2]      Product
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Capital
+        df.iloc[:, 1]      Labor
+        df.iloc[:, 2]      Product
+        ================== =================================
     Returns
     -------
     df : pd.DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Labor Capital Intensity
-    df.iloc[:, 1]      Labor Productivity
-    df.iloc[:, 2]      Labor Capital Intensity Increment
-    df.iloc[:, 3]      Labor Productivity Increment
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Labor Capital Intensity
+        df.iloc[:, 1]      Labor Productivity
+        df.iloc[:, 2]      Labor Capital Intensity Increment
+        df.iloc[:, 3]      Labor Productivity Increment
+        ================== =================================
     """
     _df = df.copy()
     _df.dropna(inplace=True)
@@ -63,13 +63,13 @@ def plot_local(df: pd.DataFrame) -> None:
     Parameters
     ----------
     df : pd.DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Labor Capital Intensity
-    df.iloc[:, 1]      Labor Productivity
-    df.iloc[:, 2]      Labor Capital Intensity Increment
-    df.iloc[:, 3]      Labor Productivity Increment
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Labor Capital Intensity
+        df.iloc[:, 1]      Labor Productivity
+        df.iloc[:, 2]      Labor Capital Intensity Increment
+        df.iloc[:, 3]      Labor Productivity Increment
+        ================== =================================
     Returns
     -------
     None

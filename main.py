@@ -24,10 +24,7 @@ from collect.lib import (collect_cobb_douglas, collect_douglas,
                          collect_uscb_metals, collect_uscb_money_stock,
                          collect_uscb_trade, collect_uscb_trade_by_countries,
                          collect_uscb_trade_gold_silver,
-                         collect_uscb_unemployment_hours_worked, construct_can,
-                         transform_a, transform_b, transform_cobb_douglas,
-                         transform_d, transform_e, transform_kurenkov,
-                         transform_manufacturing_money)
+                         collect_uscb_unemployment_hours_worked, construct_can)
 from plot.lib import (plot_approx_linear, plot_approx_log_linear, plot_c,
                       plot_capital_modelling, plot_census_complex,
                       plot_cobb_douglas, plot_cobb_douglas_3d,
@@ -52,6 +49,9 @@ from toolkit.lib import (calculate_power_function_fit_params_a,
                          calculate_power_function_fit_params_c, m_spline_ea,
                          m_spline_eb, m_spline_la, m_spline_lb, m_spline_lls,
                          m_spline_manager)
+from transform.lib import (transform_a, transform_b, transform_cobb_douglas,
+                           transform_d, transform_e, transform_kurenkov,
+                           transform_manufacturing_money)
 
 ARCHIVE_NAMES_UTILISED = (
     'dataset_can_00310004-eng.zip',
@@ -254,7 +254,7 @@ def main():
     }
     _df = construct_can(ARCHIVE_IDS)
     plot_cobb_douglas(
-        *transform_cobb_douglas(_df),
+        *_df.pipe(transform_cobb_douglas),
         MAP_FIG
     )
     plot_cobb_douglas_3d(_df)

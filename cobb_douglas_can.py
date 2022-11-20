@@ -6,8 +6,9 @@ Created on Sat Jun 18 11:29:40 2022
 @author: Alexander Mikhailov
 """
 
-from collect.lib import construct_can, transform_cobb_douglas
+from collect.lib import construct_can
 from plot.lib import plot_cobb_douglas, plot_cobb_douglas_3d
+from transform.lib import transform_cobb_douglas
 
 
 def main():
@@ -61,7 +62,7 @@ def main():
     }
     _df = construct_can(ARCHIVE_IDS)
     plot_cobb_douglas(
-        *transform_cobb_douglas(_df),
+        *_df.pipe(transform_cobb_douglas),
         MAP_FIG
     )
     plot_cobb_douglas_3d(_df)

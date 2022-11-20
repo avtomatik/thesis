@@ -194,17 +194,17 @@ def collect_usa_bls_cpiu() -> DataFrame:
         'usecols': range(13),
         'skiprows': 16,
     }
-    _df = pd.read_csv(**kwargs)
-    _df.rename_axis('period', inplace=True)
-    _df['mean'] = _df.mean(axis=1)
-    _df['sqrt'] = _df.iloc[:, :-1].prod(1).pow(1/12)
+    df = pd.read_csv(**kwargs)
+    df.rename_axis('period', inplace=True)
+    df['mean'] = df.mean(axis=1)
+    df['sqrt'] = df.iloc[:, :-1].prod(1).pow(1/12)
     # =========================================================================
     # Tests
     # =========================================================================
-    _df['mean_less_sqrt'] = _df.iloc[:, -2].sub(_df.iloc[:, -1])
-    _df['dec_on_dec'] = _df.iloc[:, -3].div(_df.iloc[:, -3].shift(1)).sub(1)
-    _df['mean_on_mean'] = _df.iloc[:, -4].div(_df.iloc[:, -4].shift(1)).sub(1)
-    return _df.iloc[:, [-1]].dropna(axis=0)
+    df['mean_less_sqrt'] = df.iloc[:, -2].sub(df.iloc[:, -1])
+    df['dec_on_dec'] = df.iloc[:, -3].div(df.iloc[:, -3].shift(1)).sub(1)
+    df['mean_on_mean'] = df.iloc[:, -4].div(df.iloc[:, -4].shift(1)).sub(1)
+    return df.iloc[:, [-1]].dropna(axis=0)
 
 
 def extract_can_group_a(file_id: int, **kwargs) -> DataFrame:
@@ -229,16 +229,16 @@ def extract_can_group_a(file_id: int, **kwargs) -> DataFrame:
     # =========================================================================
     kwargs['filepath_or_buffer'] = f'dataset_read_can{file_id:n}.csv'
     kwargs['index_col'] = 0
-    _df = pd.read_csv(**kwargs)
+    df = pd.read_csv(**kwargs)
     if file_id == 7931814471809016759:
-        _df.columns = [column[:7] for column in _df.columns]
-        _df.iloc[:, -1] = pd.to_numeric(_df.iloc[:, -1].str.replace(';', ''))
-    _df = _df.transpose()
-    _df['period'] = pd.to_numeric(
-        _df.index.astype(str).to_series().str.slice(start=3),
+        df.columns = [column[:7] for column in df.columns]
+        df.iloc[:, -1] = pd.to_numeric(df.iloc[:, -1].str.replace(';', ''))
+    df = df.transpose()
+    df['period'] = pd.to_numeric(
+        df.index.astype(str).to_series().str.slice(start=3),
         downcast='integer'
     )
-    return _df.groupby(_df.columns[-1]).mean()
+    return df.groupby(df.columns[-1]).mean()
 
 
 def extract_can_group_b(file_id: int, **kwargs) -> DataFrame:
@@ -263,12 +263,12 @@ def extract_can_group_b(file_id: int, **kwargs) -> DataFrame:
     # =========================================================================
     kwargs['filepath_or_buffer'] = f'dataset_read_can{file_id:n}.csv'
     kwargs['index_col'] = 0
-    _df = pd.read_csv(**kwargs)
-    _df['period'] = pd.to_numeric(
-        _df.index.astype(str).to_series().str.slice(start=4),
+    df = pd.read_csv(**kwargs)
+    df['period'] = pd.to_numeric(
+        df.index.astype(str).to_series().str.slice(start=4),
         downcast='integer'
     )
-    return _df.groupby(_df.columns[-1]).mean()
+    return df.groupby(df.columns[-1]).mean()
 
 
 def transform_center_by_period(df: DataFrame) -> DataFrame:
@@ -368,7 +368,6 @@ def extract_read_usa_bea_pull_by_series_id(series_id: str) -> DataFrame:
 
 
 def collect_usa_xlsm() -> DataFrame:
-    FILE_NAME = 'dataset_usa_0025_p_r.txt'
     URL = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
     SERIES_IDS = (
         # =====================================================================
@@ -416,9 +415,9 @@ def collect_bea_def() -> DataFrame:
     ================== =================================
 
     """
-    _df = collect_bea_gdp()
-    _df['deflator_gdp'] = _df.iloc[:, 0].div(_df.iloc[:, 1]).mul(100)
-    return _df.iloc[:, [-1]]
+    df = collect_bea_gdp()
+    df['deflator_gdp'] = df.iloc[:, 0].div(df.iloc[:, 1]).mul(100)
+    return df.iloc[:, [-1]]
 
 
 def collect_bea_gdp() -> DataFrame:
@@ -588,5 +587,5 @@ _df_semi_d = pd.concat(
 extract_can_group_a(7931814471809016759, skiprows=241)
 extract_can_group_a(8448814858763853126, skiprows=81)
 extract_can_group_b(5245628780870031920, skiprows=3)
-pull_can_quarter_former(read_can(3800068), 'v62143969')
-pull_can_quarter_former(read_can(3800068), 'v62143990')
+read_can(3800068).pipe(pull_can_quarter_former, 'v62143969')
+read_can(3800068).pipe(pull_can_quarter_former, 'v62143990')

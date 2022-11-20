@@ -13,13 +13,13 @@ import pandas as pd
 from more_itertools import map_except
 
 
-def url_to_archive_name(_url: str) -> str:
+def url_to_archive_name(url: str) -> str:
     """
 
 
     Parameters
     ----------
-    _url : str
+    url : str
         DESCRIPTION.
 
     Returns
@@ -28,7 +28,7 @@ def url_to_archive_name(_url: str) -> str:
         DESCRIPTION.
 
     """
-    return f"{_url.split('?pid=')[1][:-2]}-eng.zip"
+    return f"{url.split('?pid=')[1][:-2]}-eng.zip"
 
 
 def get_archive_names(file_name: str, directory: str = '../stat_can') -> set[str]:

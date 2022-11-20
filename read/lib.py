@@ -89,7 +89,7 @@ def read_can(archive_id: int) -> DataFrame:
         },
         36100434: {'period': 0, 'series_id': 10, 'value': 12}
     }
-    _url = f'https://www150.statcan.gc.ca/n1/tbl/csv/{archive_id:08n}-eng.zip'
+    url = f'https://www150.statcan.gc.ca/n1/tbl/csv/{archive_id:08n}-eng.zip'
     kwargs = {
         'header': 0,
         'names': tuple(MAP.get(archive_id).keys()),
@@ -99,12 +99,101 @@ def read_can(archive_id: int) -> DataFrame:
     }
     if archive_id < 10 ** 7:
         kwargs['filepath_or_buffer'] = f'dataset_can_{archive_id:08n}-eng.zip'
-        return pd.read_csv(**kwargs)
     if Path(f'{archive_id:08n}-eng.zip').is_file():
-        with ZipFile(f'{archive_id:08n}-eng.zip', 'r').open(f'{archive_id:08n}.csv') as f:
-            return pd.read_csv(f, **kwargs)
-    with ZipFile(io.BytesIO(requests.get(_url).content)).open(f'{archive_id:08n}.csv') as f:
-        return pd.read_csv(f, **kwargs)
+        kwargs['filepath_or_buffer'] = ZipFile(
+            f'{archive_id:08n}-eng.zip', 'r'
+        ).open(f'{archive_id:08n}.csv')
+    kwargs['filepath_or_buffer'] = ZipFile(io.BytesIO(
+        requests.get(url).content)
+    ).open(f'{archive_id:08n}.csv')
+    return pd.read_csv(**kwargs)
+
+
+def read_can_temp(
+    file_name: str, directory: str = '/home/green-machine/data_science/data/interim'
+) -> DataFrame:
+    """
+
+
+    Parameters
+    ----------
+    file_name : str
+        DESCRIPTION.
+    directory : str, optional
+        DESCRIPTION. The default is '/home/green-machine/data_science/data/interim'.
+
+    Returns
+    -------
+    DataFrame
+        DESCRIPTION.
+
+    """
+    kwargs = {
+        'io': Path(directory).joinpath(file_name),
+        'index_col': 0,
+    }
+    return pd.read_excel(**kwargs)
+
+
+def read_rus_grigoriev() -> DataFrame:
+    """
+
+
+    Returns
+    -------
+    DataFrame
+        DESCRIPTION.
+
+    """
+    kwargs = {
+        'filepath_or_buffer': 'dataset_rus_grigoriev_v.csv',
+        'index_col': 1,
+        'usecols': range(2, 5)
+    }
+    return pd.read_csv(**kwargs).sort_index()
+
+
+def read_rus_is_lm() -> DataFrame:
+    """
+    Read Data
+
+    Returns
+    -------
+    DataFrame
+        DESCRIPTION.
+
+    """
+    kwargs = {
+        'filepath_or_buffer': 'dataset_rus_m1.zip',
+        'names': ('period', 'prime_rate', 'm1'),
+        'index_col': 0,
+        'skiprows': 1,
+        'parse_dates': True
+    }
+    return pd.read_csv(**kwargs)
+
+
+def read_unstats(url: str = 'https://unstats.un.org/unsd/amaapi/api/file/2') -> DataFrame:
+    """
+
+
+    Parameters
+    ----------
+    url : str, optional
+        DESCRIPTION. The default is 'https://unstats.un.org/unsd/amaapi/api/file/2'.
+
+    Returns
+    -------
+    DataFrame
+        DESCRIPTION.
+
+    """
+    kwargs = {
+        'io': io.BytesIO(requests.get(url).content),
+        'index_col': 0,
+        'skiprows': 2,
+    }
+    return pd.read_excel(**kwargs)
 
 
 @cache
@@ -166,12 +255,12 @@ def read_usa_bea_excel(archive_name: str, wb_name: str, sh_name: str) -> DataFra
         # Load
         # =====================================================================
         kwargs['io'] = xl_file
-        _df = pd.read_excel(**kwargs)
+        df = pd.read_excel(**kwargs)
         # =====================================================================
         # Re-Load
         # =====================================================================
         kwargs['index_col'] = 0
-        kwargs['usecols'] = range(2, _df.shape[1])
+        kwargs['usecols'] = range(2, df.shape[1])
         return pd.read_excel(**kwargs).dropna(axis=0).transpose()
 
 
@@ -201,9 +290,29 @@ def read_usa_bls(file_name: str) -> DataFrame:
         'usecols': range(4),
         'low_memory': False
     }
-    _df = pd.read_csv(**kwargs)
-    _df.loc[:, 'series_id'] = _df.loc[:, 'series_id'].str.strip()
-    return _df[_df.loc[:, 'sub_period'] == 'M13'].loc[:, ('series_id', 'value')]
+    df = pd.read_csv(**kwargs)
+    df.loc[:, 'series_id'] = df.loc[:, 'series_id'].str.strip()
+    return df[df.loc[:, 'sub_period'] == 'M13'].loc[:, ('series_id', 'value')]
+
+
+def read_usa_davis_ip() -> DataFrame:
+    """
+
+
+    Returns
+    -------
+    DataFrame
+        DESCRIPTION.
+
+    """
+    kwargs = {
+        'io': 'dataset_usa_davis-j-h-ip-total.xls',
+        'header': None,
+        'names': ('period', 'davis_index'),
+        'index_col': 0,
+        'skiprows': 5
+    }
+    return pd.read_excel(**kwargs)
 
 
 @cache
@@ -226,9 +335,9 @@ def read_usa_frb() -> DataFrame:
     # =========================================================================
     # Load
     # =========================================================================
-    _df = pd.read_csv(**kwargs)
+    df = pd.read_csv(**kwargs)
     kwargs['header'] = 0
-    kwargs['names'] = ['period', *map(int, _df.columns[1:])]
+    kwargs['names'] = ['period', *map(int, df.columns[1:])]
     kwargs['index_col'] = 0
     # =========================================================================
     # Re-Load
@@ -256,14 +365,13 @@ def read_usa_frb_g17() -> DataFrame:
     # =========================================================================
     # Load
     # =========================================================================
-    _df = pd.read_csv(**kwargs)
+    df = pd.read_csv(**kwargs)
     kwargs['header'] = 0
     kwargs['names'] = [
-        'period',
-        *[int(float(_)) for _ in _df.columns[1 + _start:_df.shape[1]]]
+        'period', *map(int, map(float, df.columns[1 + _start:df.shape[1]]))
     ]
     kwargs['index_col'] = 0
-    kwargs['usecols'] = range(_start, _df.shape[1])
+    kwargs['usecols'] = range(_start, df.shape[1])
     # =========================================================================
     # Re-Load
     # =========================================================================
@@ -285,9 +393,9 @@ def read_usa_frb_ms() -> DataFrame:
     # =========================================================================
     # hex(3**3 * 23 * 197 * 2039 * 445466883143470280668577791313)
     # =========================================================================
-    _url = 'https://www.federalreserve.gov/datadownload/Output.aspx?rel=H6&series=5398d8d1734b19f731aba3105eb36d47&lastobs=&from=01/01/1959&to=12/31/2018&filetype=csv&label=include&layout=seriescolumn'
+    url = 'https://www.federalreserve.gov/datadownload/Output.aspx?rel=H6&series=5398d8d1734b19f731aba3105eb36d47&lastobs=&from=01/01/1959&to=12/31/2018&filetype=csv&label=include&layout=seriescolumn'
     kwargs = {
-        'filepath_or_buffer': io.BytesIO(requests.get(_url).content),
+        'filepath_or_buffer': io.BytesIO(requests.get(url).content),
         'header': 0,
         'names': ('period', 'm1_m'),
         'index_col': 0,
@@ -295,8 +403,8 @@ def read_usa_frb_ms() -> DataFrame:
         'skiprows': 5,
         'parse_dates': True
     }
-    _df = pd.read_csv(**kwargs)
-    return _df.groupby(_df.index.year).mean()
+    df = pd.read_csv(**kwargs)
+    return df.groupby(df.index.year).mean()
 
 
 def read_usa_frb_us3() -> DataFrame:
@@ -325,15 +433,15 @@ def read_usa_frb_us3() -> DataFrame:
     # =========================================================================
     # Load
     # =========================================================================
-    _df = pd.read_csv(**kwargs)
+    df = pd.read_csv(**kwargs)
     kwargs['header'] = 0
-    kwargs['names'] = ['period', *map(str.strip, _df.columns[1:])]
+    kwargs['names'] = ['period', *map(str.strip, df.columns[1:])]
     kwargs['index_col'] = 0
     # =========================================================================
     # Re-Load
     # =========================================================================
-    _df = pd.read_csv(**kwargs)
-    return _df.groupby(_df.index.year).mean()
+    df = pd.read_csv(**kwargs)
+    return df.groupby(df.index.year).mean()
 
 
 def read_usa_fred(series_id: str) -> DataFrame:
@@ -348,16 +456,16 @@ def read_usa_fred(series_id: str) -> DataFrame:
     df.iloc[:, 0]      Series
     ================== =================================
     """
-    _url = f'https://fred.stlouisfed.org/graph/fredgraph.csv?id={series_id}'
+    url = f'https://fred.stlouisfed.org/graph/fredgraph.csv?id={series_id}'
     kwargs = {
-        'filepath_or_buffer': io.BytesIO(requests.get(_url).content),
+        'filepath_or_buffer': io.BytesIO(requests.get(url).content),
         'header': 0,
         'names': ('period', series_id.lower()),
         'index_col': 0,
         'parse_dates': True
     }
-    _df = pd.read_csv(**kwargs)
-    return _df.groupby(_df.index.year).mean()
+    df = pd.read_csv(**kwargs)
+    return df.groupby(df.index.year).mean()
 
 
 @cache
@@ -396,12 +504,63 @@ def read_usa_hist(archive_name: str) -> DataFrame:
     return pd.read_csv(**kwargs)
 
 
+def read_usa_kurenkov() -> DataFrame:
+    """
+
+
+    Returns
+    -------
+    None.
+
+    """
+    kwargs = {
+        'filepath_or_buffer': 'dataset_usa_reference_ru_kurenkov_yu_v.csv',
+        'index_col': 0,
+    }
+    return pd.read_csv(**kwargs)
+
+
 def read_usa_nber(file_name: str, agg: str) -> DataFrame:
-    _df = pd.read_csv(file_name)
-    _df.drop(_df.columns[0], axis=1, inplace=True)
+    df = pd.read_csv(file_name)
+    df.drop(df.columns[0], axis=1, inplace=True)
     if agg == 'mean':
-        return _df.groupby(_df.columns[0]).mean()
-    return _df.groupby(_df.columns[0]).sum()
+        return df.groupby(df.columns[0]).mean()
+    return df.groupby(df.columns[0]).sum()
+
+
+def read_usa_prime_rate() -> DataFrame:
+    """
+
+
+    Returns
+    -------
+    DataFrame
+        DESCRIPTION.
+
+    """
+    kwargs = {
+        'filepath_or_buffer': 'dataset_usa_0025_p_r.txt',
+        'index_col': 0,
+    }
+    return pd.read_csv(**kwargs)
+
+
+def read_usa_sahr_infcf() -> DataFrame:
+    """
+
+
+    Returns
+    -------
+    TYPE
+        DESCRIPTION.
+
+    """
+    kwargs = {
+        'filepath_or_buffer': 'dataset_usa_infcf16652007.zip',
+        'index_col': 1,
+        'usecols': range(4, 7)
+    }
+    return pd.read_csv(**kwargs)
 
 
 def read_worldbank(
@@ -435,76 +594,5 @@ def read_worldbank(
                 'index_col': 0,
                 'skiprows': 4
             }
-            _df = pd.read_csv(**kwargs).dropna(axis=1, how='all').transpose()
-            return _df.drop(_df.index[:3]).rename_axis('period')
-
-
-def read_usa_sahr_infcf() -> DataFrame:
-    """
-
-
-    Returns
-    -------
-    TYPE
-        DESCRIPTION.
-
-    """
-    kwargs = {
-        'filepath_or_buffer': 'dataset_usa_infcf16652007.zip',
-        'index_col': 1,
-        'usecols': range(4, 7)
-    }
-    return pd.read_csv(**kwargs)
-
-
-def read_usa_davis_ip() -> DataFrame:
-    """
-
-
-    Returns
-    -------
-    DataFrame
-        DESCRIPTION.
-
-    """
-    kwargs = {
-        'io': 'dataset_usa_davis-j-h-ip-total.xls',
-        'header': None,
-        'names': ('period', 'davis_index'),
-        'index_col': 0,
-        'skiprows': 5
-    }
-    return pd.read_excel(**kwargs)
-
-
-def read_usa_kurenkov() -> DataFrame:
-    """
-
-
-    Returns
-    -------
-    None.
-
-    """
-    kwargs = {
-        'filepath_or_buffer': 'dataset_usa_reference_ru_kurenkov_yu_v.csv',
-        'index_col': 0,
-    }
-    return pd.read_csv(**kwargs)
-
-
-def read_usa_prime_rate() -> DataFrame:
-    """
-
-
-    Returns
-    -------
-    DataFrame
-        DESCRIPTION.
-
-    """
-    kwargs = {
-        'filepath_or_buffer': 'dataset_usa_0025_p_r.txt',
-        'index_col': 0,
-    }
-    return pd.read_csv(**kwargs)
+            df = pd.read_csv(**kwargs).dropna(axis=1, how='all').transpose()
+            return df.drop(df.index[:3]).rename_axis('period')

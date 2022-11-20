@@ -8,8 +8,9 @@ Created on Sun Jul 12 18:28:15 2020
 
 import os
 
-from collect.lib import collect_cobb_douglas, transform_cobb_douglas
+from collect.lib import collect_cobb_douglas
 from plot.lib import plot_cobb_douglas
+from transform.lib import transform_cobb_douglas
 
 
 def main():

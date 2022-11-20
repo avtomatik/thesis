@@ -8,15 +8,15 @@ Created on Wed Dec 18 21:04:02 2019
 
 import os
 
-from plot.lib import plot_grigoriev, plot_is_lm
+from plot.lib import plot_grigoriev, plot_rus_is_lm
 
 
 def main():
     DIR = '/media/green-machine/KINGSTON'
 
     os.chdir(DIR)
-    plot_is_lm()
-    plot_grigoriev()
+    read_rus_is_lm().pipe(plot_rus_is_lm)
+    read_rus_grigoriev().pipe(plot_grigoriev)
 
 
 if __name__ == '__main__':

@@ -23,6 +23,7 @@ setup(
         'push',
         'test',
         'toolkit',
+        'transform',
     ],
     package_dir={
         '': '.',
@@ -33,5 +34,6 @@ setup(
         'push': './push',
         'test': './test',
         'toolkit': './toolkit',
+        'transform': './transform',
     },
 )

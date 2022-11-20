@@ -10,11 +10,11 @@ import os
 from collect.lib import (collect_cobb_douglas, collect_usa_capital_purchases,
                          collect_usa_manufacturing_latest,
                          collect_usa_manufacturing_three_fold,
-                         collect_usa_manufacturing_two_fold,
-                         transform_cobb_douglas, transform_cobb_douglas_alt)
+                         collect_usa_manufacturing_two_fold)
 from plot.lib import (plot_capital_purchases, plot_cobb_douglas,
                       plot_cobb_douglas_alt)
 from toolkit.lib import calculate_curve_fit_params
+from transform.lib import transform_cobb_douglas, transform_cobb_douglas_alt
 
 
 def main():
@@ -89,15 +89,15 @@ def main():
     # =========================================================================
     # Project II. Scipy Signal Median Filter, Non-Linear Low-Pass Filter
     # =========================================================================
-    plot_cobb_douglas(*transform_cobb_douglas(_df_a), MAP_FIG)
-    plot_cobb_douglas(*transform_cobb_douglas(_df_b), MAP_FIG)
-    plot_cobb_douglas(*transform_cobb_douglas(_df_c), MAP_FIG)
-    plot_cobb_douglas(*transform_cobb_douglas(_df_d), MAP_FIG)
-    plot_cobb_douglas(*transform_cobb_douglas(_df_e), MAP_FIG)
-    plot_cobb_douglas(*transform_cobb_douglas(_df_f), MAP_FIG)
-    plot_cobb_douglas(*transform_cobb_douglas(_df_g), MAP_FIG)
-    plot_cobb_douglas(*transform_cobb_douglas(_df_h), MAP_FIG)
-    plot_cobb_douglas(*transform_cobb_douglas(_df_i), MAP_FIG)
+    plot_cobb_douglas(*_df_a.pipe(transform_cobb_douglas), MAP_FIG)
+    plot_cobb_douglas(*_df_b.pipe(transform_cobb_douglas), MAP_FIG)
+    plot_cobb_douglas(*_df_c.pipe(transform_cobb_douglas), MAP_FIG)
+    plot_cobb_douglas(*_df_d.pipe(transform_cobb_douglas), MAP_FIG)
+    plot_cobb_douglas(*_df_e.pipe(transform_cobb_douglas), MAP_FIG)
+    plot_cobb_douglas(*_df_f.pipe(transform_cobb_douglas), MAP_FIG)
+    plot_cobb_douglas(*_df_g.pipe(transform_cobb_douglas), MAP_FIG)
+    plot_cobb_douglas(*_df_h.pipe(transform_cobb_douglas), MAP_FIG)
+    plot_cobb_douglas(*_df_i.pipe(transform_cobb_douglas), MAP_FIG)
     # =========================================================================
     # Project III. Scipy Signal Wiener Filter
     # =========================================================================

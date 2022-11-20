@@ -35,7 +35,7 @@ def numerify(df: DataFrame) -> DataFrame:
     ================== =================================
     """
     assert df.shape[1] == 1
-    df.iloc[:, 0] = pd.to_numeric(df.iloc[:, 0], errors='coerce')
+    df.iloc[:, 0] = df.iloc[:, 0].apply(pd.to_numeric, errors='coerce')
     return df
 
 
@@ -171,14 +171,14 @@ def pull_can_capital_former(df: DataFrame, params: tuple[int, str]) -> DataFrame
         )
 
 
-def pull_series_ids(archive_name: str) -> dict[str]:
+def pull_series_ids_description(archive_name: str) -> dict[str]:
     """Returns Dictionary for Series from Douglas's & Kendrick's Databases"""
     kwargs = {
         'filepath_or_buffer': archive_name,
         'index_col': 1,
         'usecols': (3, 4),
     }
-    return pd.read_csv(**kwargs).to_dict().get('series')
+    return pd.read_csv(**kwargs).to_dict().get('description')
 
 
 def pull_uscb_description(series_id: str) -> str:
@@ -211,8 +211,8 @@ def pull_uscb_description(series_id: str) -> str:
         'usecols': tuple(MAP.values()),
         'low_memory': False
     }
-    _df = pd.read_csv(**kwargs)
+    df = pd.read_csv(**kwargs)
     lookup_columns = ('group1', 'group2', 'group3', 'note')
-    _df = _df[_df.loc[:, 'series_id'] == series_id].loc[:, lookup_columns]
-    _df.drop_duplicates(inplace=True)
-    return '\n'.join(_ for _ in dict(_df.iloc[0, :]).values() if isinstance(_, str))
+    df = df[df.loc[:, 'series_id'] == series_id].loc[:, lookup_columns]
+    df.drop_duplicates(inplace=True)
+    return '\n'.join(_ for _ in dict(df.iloc[0, :]).values() if isinstance(_, str))

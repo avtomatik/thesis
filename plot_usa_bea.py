@@ -8,11 +8,11 @@ Created on Thu Jan  9 21:17:48 2020
 
 import os
 
-from collect.lib import (collect_usa_general, transform_a, transform_b,
-                         transform_d, transform_e, transform_kurenkov,
-                         transform_manufacturing_money)
+from collect.lib import collect_usa_general
 from plot.lib import (plot_c, plot_d, plot_e, plot_investment,
                       plot_investment_manufacturing, plot_kurenkov)
+from transform.lib import (transform_a, transform_b, transform_d, transform_e,
+                           transform_kurenkov, transform_manufacturing_money)
 
 
 def main():

@@ -14,6 +14,8 @@ setup.py
 ./test/lib.py
 ./toolkit/__init__.py
 ./toolkit/lib.py
+./transform/__init__.py
+./transform/lib.py
 thesis.egg-info/PKG-INFO
 thesis.egg-info/SOURCES.txt
 thesis.egg-info/dependency_links.txt

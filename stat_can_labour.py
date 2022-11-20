@@ -58,7 +58,7 @@ def main():
     # result = pd.DataFrame()
     # combined = pd.DataFrame()
     FILE_NAME = 'stat_can_prd.xlsx'
-    # data = pd.read_excel(os.path.join(DIR, FILE_NAME), index_col=0)
+    # data = read_can_temp(FILE_NAME)
     # # =============================================================================
     # # Capital cost
     # # =============================================================================
@@ -76,14 +76,14 @@ def main():
     # # combined.to_excel(os.path.join(_DIR, 'result.xlsx'))
 
     FILE_NAME = 'stat_can_cap.xlsx'
-    # data = pd.read_excel(os.path.join(DIR, FILE_NAME), index_col=0)
+    # data = read_can_temp(FILE_NAME)
     # data = data.div(data.loc[1997]).mul(100)
     # combined = pd.concat([data, combined], axis=1)
     # combined.plot(grid=True).get_figure().savefig('view.pdf', format='pdf', dpi=900)
 
     # # data = combined
     FILE_NAME = 'stat_can_cap.xlsx'
-    # data = pd.read_excel(os.path.join(DIR, FILE_NAME), index_col=0)
+    # data = read_can_temp(FILE_NAME)
     #
     #
     # =============================================================================
@@ -104,7 +104,7 @@ def main():
 
     # # combined = pd.DataFrame()
     FILE_NAME = 'stat_can_prd.xlsx'
-    # # data = pd.read_excel(os.path.join(DIR, FILE_NAME), index_col=0)
+    # # data = read_can_temp(FILE_NAME)
     # # # =============================================================================
     # # # Production Indexes
     # # # =============================================================================
@@ -144,7 +144,7 @@ def main():
 
     # =============================================================================
     # FILE_NAME = 'stat_can_cap.xlsx'
-    # data = pd.read_excel(os.path.join(DIR, FILE_NAME), index_col=0)
+    # data = read_can_temp(FILE_NAME)
     # combined = pd.concat(
     #     [data.iloc[:, [_]].dropna() for _ in range(30, 35)],
     #     axis=1
@@ -157,14 +157,14 @@ def main():
     # =============================================================================
 
     FILE_NAME = 'stat_can_cap_matching.xlsx'
-    # data = pd.read_excel(os.path.join(DIR, FILE_NAME), index_col=0)
+    # data = read_can_temp(FILE_NAME)
     # data = data[data.iloc[:, 5] != 'Information and communication technologies machinery and equipment']
     # data = data[data.iloc[:, 5] != 'Land']
     # data = data[data.iloc[:, 6] != 'Intellectual property products']
-    # # data.dropna(axis=0, how='all').to_excel(os.path.join(DIR, FILE_NAME), index=True)
+    # # data.dropna(axis=0, how='all').to_excel(Path(DIR).joinpath(FILE_NAME), index=True)
 
     FILE_NAME = 'stat_can_cap.xlsx'
-    data = pd.read_excel(os.path.join(DIR, FILE_NAME), index_col=0)
+    data = read_can_temp(FILE_NAME)
     SERIES_IDS = (
         'v46444624',
         'v46444685',

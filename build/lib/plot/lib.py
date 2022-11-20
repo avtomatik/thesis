@@ -14,15 +14,16 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from collect.lib import transform_cobb_douglas
 from pandas import DataFrame
 from pandas.plotting import autocorrelation_plot, bootstrap_plot, lag_plot
-from pull.lib import pull_by_series_id
-from read.lib import read_usa_bea, read_usa_bea_excel
+from pull.lib import (pull_by_series_id, pull_series_ids_description,
+                      pull_uscb_description)
+from read.lib import read_usa_hist, read_worldbank
 from scipy import stats
 from sklearn.metrics import r2_score
 from toolkit.lib import (calculate_capital, kol_zur_filter,
                          rolling_mean_filter, simple_linear_regression)
+from transform.lib import transform_cobb_douglas
 
 ARCHIVE_NAMES_UTILISED = (
     'dataset_rus_m1.zip',
@@ -422,21 +423,21 @@ def plot_uscb_unemployment_hours_worked(df: DataFrame) -> None:
 
 
 def plot_uscb_employment_conflicts(df: DataFrame) -> None:
-    fig, _axes_stoppages = plt.subplots()
+    fig, axes_stoppages = plt.subplots()
     color = 'tab:red'
-    _axes_stoppages.set_xlabel('Period')
-    _axes_stoppages.set_ylabel('Number', color=color)
-    _axes_stoppages.plot(df.iloc[:, 0], color=color, label='Stoppages')
-    _axes_stoppages.set_title('Work Conflicts')
-    _axes_stoppages.grid(True)
-    _axes_stoppages.legend(loc=2)
-    _axes_stoppages.tick_params(axis='y', labelcolor=color)
-    _axes_workers = _axes_stoppages.twinx()
+    axes_stoppages.set_xlabel('Period')
+    axes_stoppages.set_ylabel('Number', color=color)
+    axes_stoppages.plot(df.iloc[:, 0], color=color, label='Stoppages')
+    axes_stoppages.set_title('Work Conflicts')
+    axes_stoppages.grid(True)
+    axes_stoppages.legend(loc=2)
+    axes_stoppages.tick_params(axis='y', labelcolor=color)
+    axes_workers = axes_stoppages.twinx()
     color = 'tab:blue'
-    _axes_workers.set_ylabel('1,000 People', color=color)
-    _axes_workers.plot(df.iloc[:, 1], color=color, label='Workers Involved')
-    _axes_workers.legend(loc=1)
-    _axes_workers.tick_params(axis='y', labelcolor=color)
+    axes_workers.set_ylabel('1,000 People', color=color)
+    axes_workers.plot(df.iloc[:, 1], color=color, label='Workers Involved')
+    axes_workers.legend(loc=1)
+    axes_workers.tick_params(axis='y', labelcolor=color)
     fig.tight_layout()
     plt.show()
 
@@ -610,7 +611,7 @@ def plot_approx_linear(df: DataFrame) -> None:
     df.iloc[:, 3]      Regressand
     ================== =================================
     """
-    df.iloc[:, -1] = pd.to_numeric(df.iloc[:, -1], errors='coerce')
+    df.iloc[:, -1] = df.iloc[:, -1].apply(pd.to_numeric, errors='coerce')
     df.dropna(inplace=True)
     # =========================================================================
     # TODO: Separate Basic Year Function
@@ -676,7 +677,7 @@ def plot_approx_log_linear(df: DataFrame) -> None:
         'A032RC1': 'National Income',
         'A191RC1': 'Gross Domestic Product',
     }
-    df.iloc[:, -1] = pd.to_numeric(df.iloc[:, -1], errors='coerce')
+    df.iloc[:, -1] = df.iloc[:, -1].apply(pd.to_numeric, errors='coerce')
     df.dropna(inplace=True)
     # =========================================================================
     # TODO: Separate Basic Year Function
@@ -1305,7 +1306,7 @@ def plot_cobb_douglas_complex(df: DataFrame) -> None:
         'fg_e': 'Chart V Relative Final Productivities of Labor and Capital',
         'year_price': 1899,
     }
-    _df, _params = transform_cobb_douglas(df)
+    _df, _params = df.pipe(transform_cobb_douglas)
     plot_cobb_douglas(
         _df,
         _params,
@@ -1429,7 +1430,7 @@ def plot_douglas(
     -------
     None
     """
-    _MAP_SERIES = pull_series_ids(archive_name)
+    _MAP_SERIES = pull_series_ids_description(archive_name)
     _SERIES_IDS = tuple(_MAP_SERIES.keys())
     if not legends is None:
         for _n, (_lw, _up, _tt, _mr, _lb) in enumerate(
@@ -1499,7 +1500,7 @@ def plot_elasticity(df: DataFrame) -> None:
     -------
     None
     """
-    df.iloc[:, -1] = pd.to_numeric(df.iloc[:, -1], errors='coerce')
+    df.iloc[:, -1] = df.iloc[:, -1].apply(pd.to_numeric, errors='coerce')
     df.dropna(inplace=True)
     # =========================================================================
     # TODO: Separate Basic Year Function
@@ -1691,14 +1692,8 @@ def plot_fourier_discrete(df: DataFrame, precision: int = 10) -> None:
     plt.show()
 
 
-def plot_grigoriev() -> None:
-    kwargs = {
-        'filepath_or_buffer': 'dataset_rus_grigoriev_v.csv',
-        'index_col': 1,
-        'usecols': range(2, 5)
-    }
-    df = pd.read_csv(**kwargs).sort_index()
-    for series_id in sorted(set(df.iloc[:, 0])):
+def plot_grigoriev(df: DataFrame) -> None:
+    for series_id in sorted(set(df.loc[:, "series"])):
         df.pipe(pull_by_series_id, series_id).plot(grid=True)
 
 
@@ -1778,21 +1773,21 @@ def plot_increment(df: DataFrame) -> None:
         plt.show()
 
 
-def plot_is_lm() -> None:
-    # =========================================================================
-    # Read Data
-    # =========================================================================
-    kwargs = {
-        'filepath_or_buffer': 'dataset_rus_m1.zip',
-        'names': ('period', 'prime_rate', 'm1'),
-        'index_col': 0,
-        'skiprows': 1,
-        'parse_dates': True
-    }
-    df = pd.read_csv(**kwargs)
-    # =========================================================================
-    # Plotting
-    # =========================================================================
+def plot_rus_is_lm(df: DataFrame) -> None:
+    """
+    Plotting
+
+    Parameters
+    ----------
+    df : DataFrame
+        DESCRIPTION.
+
+    Returns
+    -------
+    None
+        DESCRIPTION.
+
+    """
     plt.figure()
     plt.plot(df.iloc[:, 0], df.iloc[:, 1])
     plt.xlabel('Percentage')
