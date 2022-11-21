@@ -75,7 +75,7 @@ print(*collect_cobb_douglas().pipe(transform_cobb_douglas_sklearn))
 
 # _df = collect_cobb_douglas()
 # print(_df)
-# X, y = transform_cobb_douglas_sklearn(_df)
+# X, y = _df.pipe(transform_cobb_douglas_sklearn)
 # print(X)
 
 # =============================================================================

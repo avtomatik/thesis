@@ -43,7 +43,7 @@ def main():
         range(265, 270),
         range(293, 296),
     )
-    SERIES_IDS = tuple(f'P{_id:04n}' for _id in ids)
+    SERIES_IDS = {f'P{_:04n}': ARCHIVE_NAME for _ in ids}
 
     ids = itertools.chain(
         range(231, 242),
@@ -57,7 +57,7 @@ def main():
         range(290, 291),
         range(293, 301),
     )
-    SERIES_IDS_ALT = tuple(f'P{_id:04n}' for _id in ids)
+    SERIES_IDS_ALT = {f'P{_:04n}': ARCHIVE_NAME for _ in ids}
 
     plot_uscb_commodities(SERIES_IDS)
     plot_uscb_immigration(collect_uscb_immigration())

@@ -18,6 +18,7 @@ from read.lib import (read_can, read_can_temp, read_usa_bea, read_usa_davis_ip,
                       read_usa_frb_us3, read_usa_fred, read_usa_hist,
                       read_usa_kurenkov, read_usa_prime_rate)
 from scipy.signal import wiener
+from sklearn.impute import SimpleImputer
 from toolkit.lib import price_inverse_single, strip_cumulated_deflator
 from transform.lib import (transform_cobb_douglas_extension_capital,
                            transform_sum, transform_usa_frb_fa,
@@ -344,12 +345,13 @@ def collect_cobb_douglas_extension_manufacturing() -> DataFrame:
 
 def collect_douglas() -> DataFrame:
     """Douglas Data Preprocessing"""
-    ARCHIVE_NAME = 'dataset_douglas.zip'
-    SERIES_IDS = ('DT19AS03', 'DT19AS02', 'DT19AS01',)
+    SERIES_IDS = {
+        'DT19AS03': 'dataset_douglas.zip', 'DT19AS02': 'dataset_douglas.zip', 'DT19AS01': 'dataset_douglas.zip'
+    }
     df = pd.concat(
         [
-            read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
-            for series_id in SERIES_IDS
+            read_usa_hist(archive_name).pipe(pull_by_series_id, series_id)
+            for series_id, archive_name in SERIES_IDS.items()
         ],
         axis=1,
         verify_integrity=True,
@@ -450,7 +452,9 @@ def collect_usa_brown() -> DataFrame:
     # _
     # _
     # =========================================================================
-    SERIES_IDS = ('KTA03S07', 'KTA03S08', 'KTA10S08', 'KTA15S07', 'KTA15S08',)
+    SERIES_IDS = {
+        'KTA03S07': 'dataset_usa_kendrick.zip', 'KTA03S08': 'dataset_usa_kendrick.zip', 'KTA10S08': 'dataset_usa_kendrick.zip', 'KTA15S07': 'dataset_usa_kendrick.zip', 'KTA15S08': 'dataset_usa_kendrick.zip'
+    }
     _k_frame = pd.concat(
         [
             read_usa_hist(ARCHIVE_NAMES[1]).pipe(pull_by_series_id, series_id)
@@ -715,8 +719,7 @@ def collect_usa_investment_turnover_bls() -> DataFrame:
             read_usa_fred(SERIES_ID),
             pd.concat(
                 [
-                    read_usa_bea(url).pipe(
-                        pull_by_series_id, series_id)
+                    read_usa_bea(url).pipe(pull_by_series_id, series_id)
                     for series_id, url in SERIES_IDS.items()
                 ],
                 axis=1
@@ -841,8 +844,7 @@ def collect_usa_macroeconomics() -> DataFrame:
             pd.concat(
                 [
                     (
-                        read_usa_bea(url).pipe(
-                            pull_by_series_id, series_id),
+                        read_usa_bea(url).pipe(pull_by_series_id, series_id),
                         read_usa_bea(url).pipe(
                             pull_by_series_id, series_id).rdiv(100)
                     )[series_id == 'A191RD']
@@ -901,8 +903,7 @@ def collect_usa_manufacturing_two_fold() -> tuple[DataFrame]:
         [
             pd.concat(
                 [
-                    read_usa_bea(url).pipe(
-                        pull_by_series_id, series_id)
+                    read_usa_bea(url).pipe(pull_by_series_id, series_id)
                     for series_id, url in SERIES_IDS.items()
                 ],
                 axis=1,
@@ -1165,7 +1166,6 @@ def collect_uscb_employment_conflicts() -> DataFrame:
         # =====================================================================
         'D0982': 'dataset_uscb.zip',
     }
-    YEAR = 1906
     df = pd.concat(
         [
             read_usa_hist(archive_name).pipe(pull_by_series_id, series_id)
@@ -1176,25 +1176,26 @@ def collect_uscb_employment_conflicts() -> DataFrame:
         sort=True
     )
     # =========================================================================
-    # Fill the Gaps
+    # Extend Period Index
     # =========================================================================
     df = df.reindex(range(df.index[0], 1 + df.index[-1]))
-    return df.fillna(
-        {
-            series_id: df.loc[:YEAR, series_id].mean()
-            for series_id in SERIES_IDS
-        }
+    # =========================================================================
+    # Inpute Values
+    # =========================================================================
+    return DataFrame(
+        data=SimpleImputer(strategy="median").fit_transform(df),
+        index=df.index,
+        columns=df.columns
     )
 
 
 def collect_uscb_gnp() -> DataFrame:
     """Census Gross National Product Series"""
-    ARCHIVE_NAME = 'dataset_uscb.zip'
-    SERIES_IDS = ('F0003', 'F0004',)
+    SERIES_IDS = {'F0003': 'dataset_uscb.zip', 'F0004': 'dataset_uscb.zip'}
     df = pd.concat(
         [
-            read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
-            for series_id in SERIES_IDS
+            read_usa_hist(archive_name).pipe(pull_by_series_id, series_id)
+            for series_id, archive_name in SERIES_IDS.items()
         ],
         axis=1,
         verify_integrity=True,
@@ -1212,7 +1213,7 @@ def collect_uscb_immigration() -> DataFrame:
         range(111, 116),
         range(117, 120),
     )
-    SERIES_IDS = tuple(f'C{_id:04n}' for _id in ids)
+    SERIES_IDS = {f'C{_:04n}': ARCHIVE_NAME for _ in ids}
     df = pd.concat(
         [
             read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
@@ -1295,12 +1296,12 @@ def collect_uscb_metals() -> tuple[DataFrame, tuple[int]]:
 def collect_uscb_money_stock() -> DataFrame:
     """Census Money Supply Aggregates"""
     YEAR_BASE = 1915
-    ARCHIVE_NAME = 'dataset_uscb.zip'
-    SERIES_IDS = ('X0410', 'X0414', 'X0415',)
+    SERIES_IDS = {'X0410': 'dataset_uscb.zip',
+                  'X0414': 'dataset_uscb.zip', 'X0415': 'dataset_uscb.zip'}
     df = pd.concat(
         [
-            read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
-            for series_id in SERIES_IDS
+            read_usa_hist(archive_name).pipe(pull_by_series_id, series_id)
+            for series_id, archive_name in SERIES_IDS.items()
         ],
         axis=1,
         verify_integrity=True,
@@ -1320,7 +1321,7 @@ def collect_uscb_trade_by_countries() -> DataFrame:
         range(343, 347),
         range(348, 353),
     )
-    SERIES_IDS = tuple(f'U{_id:04n}' for _id in ids)
+    SERIES_IDS = {f'U{_:04n}': ARCHIVE_NAME for _ in ids}
     df = pd.concat(
         [
             read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
@@ -1349,12 +1350,12 @@ def collect_uscb_trade_by_countries() -> DataFrame:
 
 def collect_uscb_trade() -> DataFrame:
     """Census Foreign Trade Series"""
-    ARCHIVE_NAME = 'dataset_uscb.zip'
-    SERIES_IDS = ('U0001', 'U0008', 'U0015',)
+    SERIES_IDS = {'U0001': 'dataset_uscb.zip',
+                  'U0008': 'dataset_uscb.zip', 'U0015': 'dataset_uscb.zip'}
     return pd.concat(
         [
-            read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
-            for series_id in SERIES_IDS
+            read_usa_hist(archive_name).pipe(pull_by_series_id, series_id)
+            for series_id, archive_name in SERIES_IDS.items()
         ],
         axis=1,
         verify_integrity=True,
@@ -1364,12 +1365,12 @@ def collect_uscb_trade() -> DataFrame:
 
 def collect_uscb_trade_gold_silver() -> DataFrame:
     """Census Foreign Trade Series"""
-    ARCHIVE_NAME = 'dataset_uscb.zip'
-    SERIES_IDS = ('U0187', 'U0188', 'U0189',)
+    SERIES_IDS = {'U0187': 'dataset_uscb.zip',
+                  'U0188': 'dataset_uscb.zip', 'U0189': 'dataset_uscb.zip'}
     return pd.concat(
         [
-            read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
-            for series_id in SERIES_IDS
+            read_usa_hist(archive_name).pipe(pull_by_series_id, series_id)
+            for series_id, archive_name in SERIES_IDS.items()
         ],
         axis=1,
         verify_integrity=True,
@@ -1408,7 +1409,13 @@ def collect_can_price_a():
     FILE_NAME = 'stat_can_cap.xlsx'
     _df = read_can_temp(FILE_NAME)
     groups = [
+        # =====================================================================
+        # Nominal
+        # =====================================================================
         [[_, 5 + _] for _ in range(5)],
+        # =====================================================================
+        # Real
+        # =====================================================================
         [[_, 5 + _] for _ in range(35, 39)],
     ]
     # groups = [
@@ -1495,6 +1502,20 @@ def construct_can(archive_ids: dict) -> DataFrame:
 
 
 def construct_cap_deflator(series_ids: dict[str]) -> DataFrame:
+    """
+
+
+    Parameters
+    ----------
+    series_ids : dict[str]
+        { "nominal" , "real" }.
+
+    Returns
+    -------
+    DataFrame
+        DESCRIPTION.
+
+    """
     df = pd.concat(
         [
             read_usa_hist(archive_name).pipe(pull_by_series_id, series_id)

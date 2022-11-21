@@ -308,8 +308,7 @@ def kol_zur_filter(df: DataFrame, k: int = None) -> tuple[DataFrame]:
                 ],
                 axis=1
             )
-            df_o.columns = [*df_o.columns[:-1],
-                            f'{df.columns[1]}_{hex(2 + _)}', ]
+            df_o.columns = (*df_o.columns[:-1], f'{df.columns[1]}_{hex(2 + _)}', )
             # =================================================================
             # DataFrame for Kolmogorov--Zurbenko Filter Residuals: Odd
             # =================================================================
@@ -332,8 +331,7 @@ def kol_zur_filter(df: DataFrame, k: int = None) -> tuple[DataFrame]:
                 ],
                 axis=1
             )
-            df_e.columns = [*df_e.columns[:-1],
-                            f'{df.columns[1]}_{hex(2 + _)}', ]
+            df_e.columns = (*df_e.columns[:-1], f'{df.columns[1]}_{hex(2 + _)}', )
             # =================================================================
             # DataFrame for Kolmogorov--Zurbenko Filter Residuals: Even
             # =================================================================
@@ -993,8 +991,7 @@ def rolling_mean_filter(df: DataFrame, k: int = None) -> tuple[DataFrame]:
                 ],
                 axis=1,
             )
-            df_o.columns = [*df_o.columns[:-1],
-                            f'{df.columns[1]}_{hex(2 + _)}', ]
+            df_o.columns = (*df_o.columns[:-1], f'{df.columns[1]}_{hex(2 + _)}', )
             # =================================================================
             # DataFrame for Rolling Mean Filter Residuals: Odd
             # =================================================================
@@ -1017,8 +1014,7 @@ def rolling_mean_filter(df: DataFrame, k: int = None) -> tuple[DataFrame]:
                 ],
                 axis=1,
             )
-            df_e.columns = [*df_e.columns[:-1],
-                            f'{df.columns[1]}_{hex(2 + _)}', ]
+            df_e.columns = (*df_e.columns[:-1], f'{df.columns[1]}_{hex(2 + _)}', )
             # =================================================================
             # DataFrame for Rolling Mean Filter Residuals: Even
             # =================================================================

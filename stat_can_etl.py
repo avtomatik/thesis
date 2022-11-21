@@ -324,14 +324,14 @@ def main():
     # # =============================================================================
     # _df = pd.concat(
     #     [
-    #         pd.read_excel(Path(DIR).joinpath(file_name), index_col=0)
+    #         read_can_temp(file_name)
     #         for file_name in FILE_NAMES
     #     ],
     #     axis=1
     # )
     #
     # desc = pd.merge(
-    #     pd.read_excel(Path(DIR).joinpath(FILE_NAME), index_col=0),
+    #     read_can_temp(FILE_NAME),
     #     _df.transpose(),
     #     left_index=True,
     #     right_index=True,

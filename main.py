@@ -308,9 +308,7 @@ def main():
         plot_census_complex(df.iloc[:, [_]])
 
     ARCHIVE_NAME = 'dataset_uscb.zip'
-    SERIES_IDS = (
-        'D0004', 'D0130', 'F0003', 'F0004', 'P0110', 'U0001', 'U0008', 'X0414', 'X0415',
-    )
+    SERIES_IDS = {'D0004': 'dataset_uscb.zip', 'D0130': 'dataset_uscb.zip', 'F0003': 'dataset_uscb.zip', 'F0004': 'dataset_uscb.zip', 'P0110': 'dataset_uscb.zip', 'U0001': 'dataset_uscb.zip', 'U0008': 'dataset_uscb.zip', 'X0414': 'dataset_uscb.zip', 'X0415': 'dataset_uscb.zip'}
     for series_id in SERIES_IDS:
         print(f'Processing {series_id}')
         df = read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
@@ -371,7 +369,7 @@ def main():
         range(265, 270),
         range(293, 296),
     )
-    SERIES_IDS = tuple(f'P{_id:04n}' for _id in ids)
+    SERIES_IDS = {f'P{_:04n}': ARCHIVE_NAME for _ in ids}
     # =========================================================================
     #     ids = itertools.chain(
     #         range(231, 242),
@@ -385,7 +383,7 @@ def main():
     #         range(290, 291),
     #         range(293, 301),
     #     )
-    #     SERIES_IDS_ALT = tuple(f'P{_id:04n}' for _id in ids)
+    #     SERIES_IDS_ALT = {f'P{_:04n}': ARCHIVE_NAME for _ in ids}
     # =========================================================================
 
     plot_uscb_commodities(SERIES_IDS)
@@ -595,7 +593,7 @@ def main():
         'fg_e': 'Chart V Relative Final Productivities of Labor and Capital',
         'year_price': 1899,
     }
-    plot_cobb_douglas(*transform_cobb_douglas(collect_douglas()), MAP_FIG)
+    plot_cobb_douglas(*collect_douglas().pipe(transform_cobb_douglas), MAP_FIG)
     # =========================================================================
     # Kendrick Macroeconomic Series
     # =========================================================================

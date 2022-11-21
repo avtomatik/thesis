@@ -39,7 +39,7 @@ def main():
     autocorrelation_plot(df.iloc[:, -1])
     plt.grid(True)
     if FLAG:
-        plt.savefig(os.path.join(_DIR, _FILE_NAME), format='pdf', dpi=900)
+        plt.savefig(Path(_DIR).joinpath(_FILE_NAME), format='pdf', dpi=900)
 
 
 if __name__ == '__main__':

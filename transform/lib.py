@@ -550,7 +550,7 @@ def transform_usa_sahr_infcf(df: DataFrame) -> DataFrame:
     # =========================================================================
     df = pd.concat(
         [
-            df[df.iloc[:, 0] == series_id].iloc[:, [1]].rdiv(
+            df.pipe(pull_by_series_id, series_id).rdiv(
                 1).pipe(price_inverse_single).mul(-1)
             for series_id in df.iloc[:, 0].unique()[:14]
         ],

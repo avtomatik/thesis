@@ -30,7 +30,8 @@ def append_series_ids_sum(df, chunk, series_ids):
                 _chunk,
                 df.loc[:, [series_id]].dropna(axis=0)
             ],
-            axis=1, sort=False)
+            axis=1
+        )
     series_ids.extend(['sum'])
     _chunk['_'.join(series_ids)] = _chunk.sum(1)
     return pd.concat(
@@ -38,7 +39,8 @@ def append_series_ids_sum(df, chunk, series_ids):
             chunk,
             _chunk.iloc[:, [-1]]
         ],
-        axis=1, sort=False)
+        axis=1
+    )
 
 
 def string_to_url(string):
@@ -231,7 +233,7 @@ def extract_can_group_a(file_id: int, **kwargs) -> DataFrame:
     kwargs['index_col'] = 0
     df = pd.read_csv(**kwargs)
     if file_id == 7931814471809016759:
-        df.columns = [column[:7] for column in df.columns]
+        df.columns = (column[:7] for column in df.columns)
         df.iloc[:, -1] = pd.to_numeric(df.iloc[:, -1].str.replace(';', ''))
     df = df.transpose()
     df['period'] = pd.to_numeric(
@@ -368,31 +370,30 @@ def extract_read_usa_bea_pull_by_series_id(series_id: str) -> DataFrame:
 
 
 def collect_usa_xlsm() -> DataFrame:
-    URL = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
-    SERIES_IDS = (
+    SERIES_IDS = {
         # =====================================================================
         # Nominal Investment Series: A006RC, 1929--2021
         # =====================================================================
-        'A006RC',
+        'A006RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
         # =====================================================================
         # Nominal Nominal Gross Domestic Product Series: A191RC, 1929--2021
         # =====================================================================
-        'A191RC',
+        'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
         # =====================================================================
         # Real Gross Domestic Product Series, 2012=100: A191RX, 1929--2021
         # =====================================================================
-        'A191RX',
+        'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
         # =====================================================================
         # Nominal National income Series: A032RC, 1929--2021
         # =====================================================================
-        'A032RC',
-    )
+        'A032RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+    }
     return pd.concat(
         [
             pd.concat(
                 [
-                    read_usa_bea(URL).pipe(pull_by_series_id, series_id)
-                    for series_id in SERIES_IDS
+                    read_usa_bea(url).pipe(pull_by_series_id, series_id)
+                    for series_id, url in SERIES_IDS.items()
                 ],
                 axis=1
             ),

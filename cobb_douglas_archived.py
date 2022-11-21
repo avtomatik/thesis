@@ -35,11 +35,11 @@ def main():
     df = collect_cobb_douglas(5)
     _df_b = df.iloc[:, [0, 1, 3]]
     plot_cobb_douglas_alt(
-        *transform_cobb_douglas_alt(df),
+        *df.pipe(transform_cobb_douglas_alt),
         MAP_FIG
     )
     plot_cobb_douglas_alt(
-        *transform_cobb_douglas_alt(_df_b),
+        *_df_b.pipe(transform_cobb_douglas_alt),
         MAP_FIG
     )
 

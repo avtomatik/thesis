@@ -73,7 +73,7 @@ def main():
     # combined = combined.iloc[:, [-1]]
     # result = pd.concat([result, combined], axis=1)
     # # combined.plot(grid=True).get_figure().savefig('view.pdf', format='pdf', dpi=900)
-    # # combined.to_excel(os.path.join(_DIR, 'result.xlsx'))
+    # # combined.to_excel(Path(_DIR).joinpath('result.xlsx'))
 
     FILE_NAME = 'stat_can_cap.xlsx'
     # data = read_can_temp(FILE_NAME)
@@ -99,7 +99,7 @@ def main():
     #             },
     #             ignore_index=True
     #         )
-    # result.to_excel(os.path.join(_DIR, 'result.xlsx'), index=False)
+    # result.to_excel(Path(_DIR).joinpath('result.xlsx'), index=False)
     # =============================================================================
 
     # # combined = pd.DataFrame()
@@ -140,7 +140,7 @@ def main():
     # # # combined = combined.div(combined.loc[1997]).mul(100)
     # # # combined.plot(grid=True).get_figure().savefig(
     # # #     'view.pdf', format='pdf', dpi=900)
-    # # # combined.to_excel(os.path.join(_DIR, 'result.xlsx'))
+    # # # combined.to_excel(Path(_DIR).joinpath('result.xlsx'))
 
     # =============================================================================
     # FILE_NAME = 'stat_can_cap.xlsx'

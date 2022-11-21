@@ -577,16 +577,15 @@ def plot_uscb_money_stock(df: DataFrame) -> None:
 def plot_uscb_finance() -> None:
     """Census Financial Markets & Institutions Series"""
     ARCHIVE_NAME = 'dataset_uscb.zip'
-    SERIES_IDS = tuple(
-        f'X{_id:04n}' for _id in itertools.chain(
-            range(410, 424),
-            range(580, 588),
-            range(610, 634),
-            range(741, 756),
-            range(879, 933),
-            range(947, 957),
-        )
+    ids = itertools.chain(
+        range(410, 424),
+        range(580, 588),
+        range(610, 634),
+        range(741, 756),
+        range(879, 933),
+        range(947, 957),
     )
+    SERIES_IDS = {f'X{_:04n}': ARCHIVE_NAME for _ in ids}
     for _, series_id in enumerate(SERIES_IDS, start=1):
         df = read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
         df = df.div(df.iloc[0, :]).mul(100)
@@ -2416,7 +2415,7 @@ def plot_capital_acquisition(df: DataFrame) -> None:
     """
     _df = df.copy()
     _df.reset_index(level=0, inplace=True)
-    _df.columns = ['period', *_df.columns[1:]]
+    _df.columns = ('period', *_df.columns[1:])
     # =========================================================================
     # TODO: Separate Basic Year Function
     # =========================================================================
@@ -2637,7 +2636,7 @@ def plot_capital_retirement(df: DataFrame) -> None:
     """
     _df = df.copy()
     _df.reset_index(level=0, inplace=True)
-    _df.columns = ['period', *_df.columns[1:]]
+    _df.columns = ('period', *_df.columns[1:])
     # =========================================================================
     # Define Basic Year for Deflator
     # =========================================================================

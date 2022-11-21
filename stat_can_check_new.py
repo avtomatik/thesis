@@ -79,15 +79,21 @@ def main(
     # Read File Generated with main() @main.py @https://github.com/avtomatik/stat-can
     # =========================================================================
 
-    snapshots_available = tuple(sorted([
-        file_name for file_name in os.listdir(Path(directory)) if file_name.endswith(".xlsx")
-    ]))
+    snapshots_available = sorted(
+        filter(lambda _: _.endswith(".xlsx"), os.listdir(Path(directory)))
+    )
+
     archive_names_available = get_archive_names(snapshots_available[-1])
 
     archive_names_seen = get_archive_names(snapshots_available[-2]) \
         if check_option == "snapshots" \
         else {
-        f for f in os.listdir(Path(directory).parent.joinpath("data/external")) if f.endswith(('-eng.zip'))
+        set(
+            filter(
+                lambda _: _.endswith("-eng.zip"),
+                os.listdir(Path(directory).parent.joinpath("data/external"))
+            )
+        )
     }
 
     archive_names_to_check = sorted(
