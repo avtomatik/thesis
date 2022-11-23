@@ -62,7 +62,7 @@ def main():
     }
     _df = construct_can(ARCHIVE_IDS)
     plot_cobb_douglas(
-        *_df.pipe(transform_cobb_douglas),
+        *_df.pipe(transform_cobb_douglas, year_base=2007),
         MAP_FIG
     )
     plot_cobb_douglas_3d(_df)

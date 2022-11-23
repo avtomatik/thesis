@@ -12,11 +12,14 @@ Created on Sun Jun 12 16:24:57 2022
 # =============================================================================
 import os
 import sqlite3
+from pathlib import Path
 
 import pandas as pd
+from collect.lib import collect_usa_bea_labor_mfg
 from pandas import DataFrame
-from pull.lib import pull_by_series_id, pull_can_quarter_former
-from read.lib import read_usa_bea, read_usa_bea_excel
+from pull.lib import pull_by_series_id
+from read.lib import (read_can, read_temporary, read_usa_bea,
+                      read_usa_bea_excel, read_usa_frb_g17)
 
 # =============================================================================
 # Separate Chunk of Code
@@ -397,7 +400,7 @@ def collect_usa_xlsm() -> DataFrame:
                 ],
                 axis=1
             ),
-            read_usa_prime_rate(),
+            read_temporary('dataset_usa_0025_p_r.txt'),
         ],
         axis=1
     )
@@ -485,7 +488,7 @@ def collect_capital_combined_archived() -> DataFrame:
             # =================================================================
             # Capacity Utilization Series: CAPUTL.B50001.A, 1967--2012
             # =================================================================
-            read_pull_usa_frb_cu(),
+            read_usa_frb_g17().loc[:, [SERIES_ID]].dropna(axis=0),
             # =================================================================
             # Manufacturing Labor Series: _4313C0, 1929--2020
             # =================================================================

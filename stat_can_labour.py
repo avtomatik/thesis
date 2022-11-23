@@ -10,7 +10,7 @@ import os
 
 import pandas as pd
 from collect.lib import (collect_can_price_a, collect_can_price_b,
-                         construct_cap_deflator)
+                         construct_deflator)
 from pandas import DataFrame
 
 
@@ -30,8 +30,8 @@ def main():
     # =============================================================================
     # CALLS = (
     #     # =========================================================================
-    #     # construct_cap_deflator,
-    #     # construct_cap_deflator,
+    #     # construct_deflator,
+    #     # construct_deflator,
     #     # =========================================================================
     #     collect_can_price_a,
     #     collect_can_price_b,
@@ -57,8 +57,8 @@ def main():
     # # =============================================================================
     # result = pd.DataFrame()
     # combined = pd.DataFrame()
-    FILE_NAME = 'stat_can_prd.xlsx'
-    # data = read_can_temp(FILE_NAME)
+    FILE_NAME = 'stat_can_prd.csv'
+    # data = read_temporary(FILE_NAME)
     # # =============================================================================
     # # Capital cost
     # # =============================================================================
@@ -73,17 +73,17 @@ def main():
     # combined = combined.iloc[:, [-1]]
     # result = pd.concat([result, combined], axis=1)
     # # combined.plot(grid=True).get_figure().savefig('view.pdf', format='pdf', dpi=900)
-    # # combined.to_excel(Path(_DIR).joinpath('result.xlsx'))
+    # # combined.to_csv(Path(_DIR).joinpath('result.csv'))
 
-    FILE_NAME = 'stat_can_cap.xlsx'
-    # data = read_can_temp(FILE_NAME)
+    FILE_NAME = 'stat_can_cap.csv'
+    # data = read_temporary(FILE_NAME)
     # data = data.div(data.loc[1997]).mul(100)
     # combined = pd.concat([data, combined], axis=1)
     # combined.plot(grid=True).get_figure().savefig('view.pdf', format='pdf', dpi=900)
 
     # # data = combined
-    FILE_NAME = 'stat_can_cap.xlsx'
-    # data = read_can_temp(FILE_NAME)
+    FILE_NAME = 'stat_can_cap.csv'
+    # data = read_temporary(FILE_NAME)
     #
     #
     # =============================================================================
@@ -99,12 +99,12 @@ def main():
     #             },
     #             ignore_index=True
     #         )
-    # result.to_excel(Path(_DIR).joinpath('result.xlsx'), index=False)
+    # result.to_csv(Path(_DIR).joinpath('result.csv'), index=False)
     # =============================================================================
 
     # # combined = pd.DataFrame()
-    FILE_NAME = 'stat_can_prd.xlsx'
-    # # data = read_can_temp(FILE_NAME)
+    FILE_NAME = 'stat_can_prd.csv'
+    # # data = read_temporary(FILE_NAME)
     # # # =============================================================================
     # # # Production Indexes
     # # # =============================================================================
@@ -140,11 +140,11 @@ def main():
     # # # combined = combined.div(combined.loc[1997]).mul(100)
     # # # combined.plot(grid=True).get_figure().savefig(
     # # #     'view.pdf', format='pdf', dpi=900)
-    # # # combined.to_excel(Path(_DIR).joinpath('result.xlsx'))
+    # # # combined.to_csv(Path(_DIR).joinpath('result.csv'))
 
     # =============================================================================
-    # FILE_NAME = 'stat_can_cap.xlsx'
-    # data = read_can_temp(FILE_NAME)
+    # FILE_NAME = 'stat_can_cap.csv'
+    # data = read_temporary(FILE_NAME)
     # combined = pd.concat(
     #     [data.iloc[:, [_]].dropna() for _ in range(30, 35)],
     #     axis=1
@@ -156,15 +156,15 @@ def main():
     # result.plot(grid=True).get_figure().savefig('view.pdf', format='pdf', dpi=900)
     # =============================================================================
 
-    FILE_NAME = 'stat_can_cap_matching.xlsx'
-    # data = read_can_temp(FILE_NAME)
+    FILE_NAME = 'stat_can_cap_matching.csv'
+    # data = read_temporary(FILE_NAME)
     # data = data[data.iloc[:, 5] != 'Information and communication technologies machinery and equipment']
     # data = data[data.iloc[:, 5] != 'Land']
     # data = data[data.iloc[:, 6] != 'Intellectual property products']
-    # # data.dropna(axis=0, how='all').to_excel(Path(DIR).joinpath(FILE_NAME), index=True)
+    # # data.dropna(axis=0, how='all').to_csv(Path(DIR).joinpath(FILE_NAME), index=True)
 
-    FILE_NAME = 'stat_can_cap.xlsx'
-    data = read_can_temp(FILE_NAME)
+    FILE_NAME = 'stat_can_cap.csv'
+    data = read_temporary(FILE_NAME)
     SERIES_IDS = (
         'v46444624',
         'v46444685',

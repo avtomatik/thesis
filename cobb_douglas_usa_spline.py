@@ -15,7 +15,7 @@ def main():
 
     os.chdir(DIR)
     calculate_plot_uspline(
-        collect_cobb_douglas().pipe(transform_cobb_douglas)[0].iloc[:, [3, 4]]
+        collect_cobb_douglas().pipe(transform_cobb_douglas, year_base=1899)[0].iloc[:, [3, 4]]
     )
 
 

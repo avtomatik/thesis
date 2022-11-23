@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame
 from pull.lib import numerify, pull_by_series_id
-from read.lib import read_usa_frb_g17, read_usa_frb_us3, read_usa_kurenkov
+from read.lib import read_temporary, read_usa_frb_g17, read_usa_frb_us3
 from sklearn.linear_model import Lasso, LassoCV, LinearRegression, Ridge
 from toolkit.lib import price_inverse_single
 
@@ -25,7 +25,7 @@ def transform_b(df: DataFrame) -> DataFrame:
     return df.iloc[:, [0, 6, 7, 20]].dropna(axis=0)
 
 
-def transform_cobb_douglas(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
+def transform_cobb_douglas(df: DataFrame, year_base: int) -> tuple[DataFrame, tuple[float]]:
     """
     ================== =================================
     df.index           Period
@@ -34,6 +34,7 @@ def transform_cobb_douglas(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
     df.iloc[:, 2]      Product
     ================== =================================
     """
+    df = df.div(df.loc[year_base, :])
     # =========================================================================
     # Labor Capital Intensity
     # =========================================================================
@@ -377,10 +378,10 @@ def transform_e(df: DataFrame) -> tuple[DataFrame]:
     )
 
 
-def transform_kurenkov(data_testing: DataFrame) -> tuple[DataFrame]:
+def combine_kurenkov(data_testing: DataFrame) -> tuple[DataFrame]:
     """Returns Four DataFrames with Comparison of data_testing: DataFrame and Kurenkov Yu.V. Data"""
     SERIES_ID = 'CAPUTL.B50001.A'
-    data_control = read_usa_kurenkov()
+    data_control = read_temporary('dataset_usa_reference_ru_kurenkov_yu_v.csv')
     # =========================================================================
     # Production
     # =========================================================================

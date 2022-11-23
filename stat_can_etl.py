@@ -105,7 +105,7 @@ def build_push_data_frame(file_name: str, blueprint: dict) -> None:
             chunk = chunk.groupby(chunk.index.year).mean()
             df = pd.concat([df, chunk], axis=1, sort=True)
         df.columns = item['series_ids']
-    # df.to_excel(archive_name)
+    # df.to_csv(archive_name)
 
 
 CAPITAL = (
@@ -304,13 +304,13 @@ PRODUCT = (
 def main():
     DIR = '/home/green-machine/data_science/data/interim'
     os.chdir(DIR)
-    FILE_NAME = 'stat_can_desc.xlsx'
+    FILE_NAME = 'stat_can_desc.csv'
     FILE_NAMES = (
-        'stat_can_cap.xlsx',
-        'stat_can_lab.xlsx',
-        'stat_can_prd.xlsx',
+        'stat_can_cap.csv',
+        'stat_can_lab.csv',
+        'stat_can_prd.csv',
     )
-    _FILE_NAME = 'stat_can_desc.xlsx'
+    _FILE_NAME = 'stat_can_desc.csv'
 
     # =========================================================================
     # Construct Excel File from Specification
@@ -324,19 +324,19 @@ def main():
     # # =============================================================================
     # _df = pd.concat(
     #     [
-    #         read_can_temp(file_name)
+    #         read_temporary(file_name)
     #         for file_name in FILE_NAMES
     #     ],
     #     axis=1
     # )
     #
     # desc = pd.merge(
-    #     read_can_temp(FILE_NAME),
+    #     read_temporary(FILE_NAME),
     #     _df.transpose(),
     #     left_index=True,
     #     right_index=True,
     # )
-    # desc.transpose().to_excel(Path(DIR).joinpath(_FILE_NAME))
+    # desc.transpose().to_csv(Path(DIR).joinpath(_FILE_NAME))
     # =============================================================================
 
 

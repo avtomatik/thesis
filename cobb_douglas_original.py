@@ -36,7 +36,7 @@ def main():
 
     os.chdir(DIR)
     plot_cobb_douglas(
-        *collect_cobb_douglas().pipe(transform_cobb_douglas),
+        *collect_cobb_douglas().pipe(transform_cobb_douglas, year_base=1899),
         MAP_FIG
     )
 

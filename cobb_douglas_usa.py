@@ -29,7 +29,7 @@ def main():
 
     os.chdir(DIR)
     plot_cobb_douglas(
-        *collect_usa_manufacturing_latest().pipe(transform_cobb_douglas),
+        *collect_usa_manufacturing_latest().pipe(transform_cobb_douglas, year_base=2012),
         MAP_FIG
     )
 

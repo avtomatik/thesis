@@ -905,7 +905,7 @@ def build_push_data_frame(file_name: str, blueprint: dict) -> None:
             chunk = chunk.groupby(chunk.index.year).mean()
             df = pd.concat([df, chunk], axis=1, sort=True)
         df.columns = item['series_ids']
-    df.to_excel(file_name)
+    df.to_csv(file_name)
 
 
 def rolling_mean_filter(df: DataFrame, k: int = None) -> tuple[DataFrame]:

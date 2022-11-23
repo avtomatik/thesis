@@ -11,8 +11,9 @@ import os
 from collect.lib import collect_usa_general
 from plot.lib import (plot_c, plot_d, plot_e, plot_investment,
                       plot_investment_manufacturing, plot_kurenkov)
-from transform.lib import (transform_a, transform_b, transform_d, transform_e,
-                           transform_kurenkov, transform_manufacturing_money)
+from transform.lib import (combine_kurenkov, transform_a, transform_b,
+                           transform_d, transform_e,
+                           transform_manufacturing_money)
 
 
 def main():
@@ -48,7 +49,7 @@ def main():
     # =========================================================================
     # Project: BEA Data Compared with Kurenkov Yu.V. Data
     # =========================================================================
-    plot_kurenkov(_df_a.pipe(transform_kurenkov))
+    plot_kurenkov(_df_a.pipe(combine_kurenkov))
 
 
 if __name__ == '__main__':

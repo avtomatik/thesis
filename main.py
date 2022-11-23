@@ -12,7 +12,8 @@ import itertools
 import os
 
 from collect.lib import (collect_cobb_douglas, collect_douglas,
-                         collect_usa_general, collect_usa_investment_turnover,
+                         collect_usa_general, collect_usa_hist,
+                         collect_usa_investment_turnover,
                          collect_usa_investment_turnover_bls,
                          collect_usa_manufacturing_latest,
                          collect_usa_manufacturing_three_fold,
@@ -49,8 +50,8 @@ from toolkit.lib import (calculate_power_function_fit_params_a,
                          calculate_power_function_fit_params_c, m_spline_ea,
                          m_spline_eb, m_spline_la, m_spline_lb, m_spline_lls,
                          m_spline_manager)
-from transform.lib import (transform_a, transform_b, transform_cobb_douglas,
-                           transform_d, transform_e, transform_kurenkov,
+from transform.lib import (combine_kurenkov, transform_a, transform_b,
+                           transform_cobb_douglas, transform_d, transform_e,
                            transform_manufacturing_money)
 
 ARCHIVE_NAMES_UTILISED = (
@@ -254,7 +255,7 @@ def main():
     }
     _df = construct_can(ARCHIVE_IDS)
     plot_cobb_douglas(
-        *_df.pipe(transform_cobb_douglas),
+        *_df.pipe(transform_cobb_douglas, year_base=2007),
         MAP_FIG
     )
     plot_cobb_douglas_3d(_df)
@@ -277,7 +278,7 @@ def main():
     # =========================================================================
     # Fixed Assets Turnover
     # =========================================================================
-    df = collect_cobb_douglas().pipe(transform_cobb_douglas)[0].iloc[:, [6]]
+    df = collect_cobb_douglas().pipe(transform_cobb_douglas, year_base=1899)[0].iloc[:, [6]]
     # =========================================================================
     # Option 1
     # =========================================================================
@@ -351,7 +352,7 @@ def main():
     # =========================================================================
     # Project: BEA Data Compared with Kurenkov Yu.V. Data
     # =========================================================================
-    plot_kurenkov(_df_a.pipe(transform_kurenkov))
+    plot_kurenkov(_df_a.pipe(combine_kurenkov))
 
     # =========================================================================
     # Subproject X. USA Census
@@ -593,7 +594,12 @@ def main():
         'fg_e': 'Chart V Relative Final Productivities of Labor and Capital',
         'year_price': 1899,
     }
-    plot_cobb_douglas(*collect_douglas().pipe(transform_cobb_douglas), MAP_FIG)
+    SERIES_IDS = {
+        'DT19AS03': 'dataset_douglas.zip',
+        'DT19AS02': 'dataset_douglas.zip',
+        'DT19AS01': 'dataset_douglas.zip'
+    }
+    plot_cobb_douglas(*collect_usa_hist(SERIES_IDS).pipe(transform_cobb_douglas, year_base=1899), MAP_FIG)
     # =========================================================================
     # Kendrick Macroeconomic Series
     # =========================================================================

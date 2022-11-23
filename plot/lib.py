@@ -1305,7 +1305,7 @@ def plot_cobb_douglas_complex(df: DataFrame) -> None:
         'fg_e': 'Chart V Relative Final Productivities of Labor and Capital',
         'year_price': 1899,
     }
-    _df, _params = df.pipe(transform_cobb_douglas)
+    _df, _params = df.pipe(transform_cobb_douglas, year_base=1899)
     plot_cobb_douglas(
         _df,
         _params,

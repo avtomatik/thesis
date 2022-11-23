@@ -51,7 +51,7 @@ def main():
     _df_i = collect_usa_manufacturing_latest()
 
 # =============================================================================
-#     df = collect_cobb_douglas().pipe(transform_cobb_douglas)[0].iloc[:, [3, 4]]
+#     df = collect_cobb_douglas().pipe(transform_cobb_douglas, year_base=1899)[0].iloc[:, [3, 4]]
 #     calculate_curve_fit_params(df)
 # =============================================================================
 
@@ -89,15 +89,15 @@ def main():
     # =========================================================================
     # Project II. Scipy Signal Median Filter, Non-Linear Low-Pass Filter
     # =========================================================================
-    plot_cobb_douglas(*_df_a.pipe(transform_cobb_douglas), MAP_FIG)
-    plot_cobb_douglas(*_df_b.pipe(transform_cobb_douglas), MAP_FIG)
-    plot_cobb_douglas(*_df_c.pipe(transform_cobb_douglas), MAP_FIG)
-    plot_cobb_douglas(*_df_d.pipe(transform_cobb_douglas), MAP_FIG)
-    plot_cobb_douglas(*_df_e.pipe(transform_cobb_douglas), MAP_FIG)
-    plot_cobb_douglas(*_df_f.pipe(transform_cobb_douglas), MAP_FIG)
-    plot_cobb_douglas(*_df_g.pipe(transform_cobb_douglas), MAP_FIG)
-    plot_cobb_douglas(*_df_h.pipe(transform_cobb_douglas), MAP_FIG)
-    plot_cobb_douglas(*_df_i.pipe(transform_cobb_douglas), MAP_FIG)
+    plot_cobb_douglas(*_df_a.pipe(transform_cobb_douglas, year_base=1899), MAP_FIG)
+    plot_cobb_douglas(*_df_b.pipe(transform_cobb_douglas, year_base=1899), MAP_FIG)
+    plot_cobb_douglas(*_df_c.pipe(transform_cobb_douglas, year_base=1899), MAP_FIG)
+    plot_cobb_douglas(*_df_d.pipe(transform_cobb_douglas, year_base=1929), MAP_FIG)
+    plot_cobb_douglas(*_df_e.pipe(transform_cobb_douglas, year_base=1929), MAP_FIG)
+    plot_cobb_douglas(*_df_f.pipe(transform_cobb_douglas, year_base=1929), MAP_FIG)
+    plot_cobb_douglas(*_df_g.pipe(transform_cobb_douglas, year_base=1967), MAP_FIG)
+    plot_cobb_douglas(*_df_h.pipe(transform_cobb_douglas, year_base=1967), MAP_FIG)
+    plot_cobb_douglas(*_df_i.pipe(transform_cobb_douglas, year_base=1967), MAP_FIG)
     # =========================================================================
     # Project III. Scipy Signal Wiener Filter
     # =========================================================================

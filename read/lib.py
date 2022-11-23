@@ -111,7 +111,7 @@ def read_can(archive_id: int) -> DataFrame:
     return pd.read_csv(**kwargs)
 
 
-def read_can_temp(
+def read_temporary(
     file_name: str, directory: str = '/home/green-machine/data_science/data/interim'
 ) -> DataFrame:
     """
@@ -131,10 +131,10 @@ def read_can_temp(
 
     """
     kwargs = {
-        'io': Path(directory).joinpath(file_name),
+        'filepath_or_buffer': Path(directory).joinpath(file_name),
         'index_col': 0,
     }
-    return pd.read_excel(**kwargs)
+    return pd.read_csv(**kwargs)
 
 
 def read_rus_grigoriev() -> DataFrame:
@@ -380,7 +380,7 @@ def read_usa_frb_g17() -> DataFrame:
     return pd.read_csv(**kwargs).transpose()
 
 
-def read_usa_frb_ms() -> DataFrame:
+def read_usa_frb_h6() -> DataFrame:
     """
     Money Stock Measures (H.6) Series
 
@@ -506,45 +506,12 @@ def read_usa_hist(archive_name: str) -> DataFrame:
     return pd.read_csv(**kwargs)
 
 
-def read_usa_kurenkov() -> DataFrame:
-    """
-
-
-    Returns
-    -------
-    None.
-
-    """
-    kwargs = {
-        'filepath_or_buffer': 'dataset_usa_reference_ru_kurenkov_yu_v.csv',
-        'index_col': 0,
-    }
-    return pd.read_csv(**kwargs)
-
-
 def read_usa_nber(file_name: str, agg: str) -> DataFrame:
     df = pd.read_csv(file_name)
     df.drop(df.columns[0], axis=1, inplace=True)
     if agg == 'mean':
         return df.groupby(df.columns[0]).mean()
     return df.groupby(df.columns[0]).sum()
-
-
-def read_usa_prime_rate() -> DataFrame:
-    """
-
-
-    Returns
-    -------
-    DataFrame
-        DESCRIPTION.
-
-    """
-    kwargs = {
-        'filepath_or_buffer': 'dataset_usa_0025_p_r.txt',
-        'index_col': 0,
-    }
-    return pd.read_csv(**kwargs)
 
 
 def read_usa_sahr_infcf() -> DataFrame:
