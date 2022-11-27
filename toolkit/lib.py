@@ -19,29 +19,29 @@ from sklearn.metrics import mean_squared_error, r2_score
 
 def calculate_capital(df: DataFrame, p_i: tuple[float], p_t: tuple[float], ratio: float):
     """
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Investment
-    df.iloc[:, 1]      Production
-    df.iloc[:, 2]      Capital
-    df.iloc[:, 3]      Capital Retirement
-    ================== =================================
-    p_i[0]: S - Gross Fixed Investment to Gross Domestic Product Ratio - Slope over Period,
-    p_i[1]: S - Gross Fixed Investment to Gross Domestic Product Ratio - Absolute Term over Period,
-    p_t[0]: Λ - Fixed Assets Turnover Ratio - Slope over Period,
-    p_t[1]: Λ - Fixed Assets Turnover Ratio - Absolute Term over Period,
-    ratio: Investment to Capital Conversion Ratio
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Investment
+        df.iloc[:, 1]      Production
+        df.iloc[:, 2]      Capital
+        df.iloc[:, 3]      Capital Retirement
+        ================== =================================
+        p_i[0]: S - Gross Fixed Investment to Gross Domestic Product Ratio - Slope over Period,
+        p_i[1]: S - Gross Fixed Investment to Gross Domestic Product Ratio - Absolute Term over Period,
+        p_t[0]: Λ - Fixed Assets Turnover Ratio - Slope over Period,
+        p_t[1]: Λ - Fixed Assets Turnover Ratio - Absolute Term over Period,
+        ratio: Investment to Capital Conversion Ratio
     """
     return df.index.to_series().shift(1).mul(p_i[0]).add(p_i[1]).mul(df.index.to_series().shift(1).mul(p_t[0]).add(p_t[1])).mul(ratio).add(1).sub(df.iloc[:, 3].shift(1)).mul(df.iloc[:, 2].shift(1))
 
 
 def calculate_curve_fit_params(df: DataFrame) -> None:
     """
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Labor Capital Intensity
-    df.iloc[:, 1]      Labor Productivity
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Labor Capital Intensity
+        df.iloc[:, 1]      Labor Productivity
+        ================== =================================
     """
 
     def _curve(regressor: pd.Series, b: float, k: float) -> pd.Series:
@@ -58,11 +58,11 @@ def calculate_curve_fit_params(df: DataFrame) -> None:
 
 def calculate_plot_uspline(df: DataFrame):
     """
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Labor Capital Intensity
-    df.iloc[:, 1]      Labor Productivity
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Labor Capital Intensity
+        df.iloc[:, 1]      Labor Productivity
+        ================== =================================
     """
     df.sort_values(df.columns[0], inplace=True)
     # =========================================================================
@@ -85,7 +85,7 @@ def calculate_plot_uspline(df: DataFrame):
     )
     plt.xlabel('Labor Capital Intensity')
     plt.ylabel('Labor Productivity')
-    plt.grid(True)
+    plt.grid()
     plt.legend()
     # =========================================================================
     # TODO: Figure Out How It Works
@@ -152,11 +152,11 @@ def calculate_power_function_fit_params_b(df: DataFrame, params: tuple[float]):
     Parameters
     ----------
     df : DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Regressor
-    df.iloc[:, 1]      Regressand
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Regressor
+        df.iloc[:, 1]      Regressand
+        ================== =================================
     params : tuple[float]
         Model Parameters.
 
@@ -197,11 +197,11 @@ def calculate_power_function_fit_params_c(df: DataFrame, params: tuple[float]):
     Parameters
     ----------
     df : DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Regressor
-    df.iloc[:, 1]      Regressand
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Regressor
+        df.iloc[:, 1]      Regressand
+        ================== =================================
     params : tuple[float]
         Model Parameters.
 
@@ -238,10 +238,10 @@ def calculate_power_function_fit_params_c(df: DataFrame, params: tuple[float]):
 def kol_zur_filter(df: DataFrame, k: int = None) -> tuple[DataFrame]:
     """
     Kolmogorov--Zurbenko Filter
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Target Series
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Target Series
+        ================== =================================
     """
     if k is None:
         k = df.shape[0] // 2
@@ -667,10 +667,10 @@ def m_spline_manager(df: DataFrame, kernel: callable) -> None:
     Parameters
     ----------
     df : DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Target Series
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Target Series
+        ================== =================================
     kernel : callable
         One Out of m_spline_ea(), m_spline_eb(), m_spline_la(), m_spline_lb(), m_spline_lls().
 
@@ -751,22 +751,22 @@ def m_spline_manager(df: DataFrame, kernel: callable) -> None:
             color='g',
             label='$s_{}(\\tau)$'.format(1,)
         )
-    plt.grid(True)
+    plt.grid()
     plt.legend()
     plt.show()
 
 
-def price_direct(df: DataFrame, base: int) -> DataFrame:
+def price_direct(df: DataFrame, year_base: int) -> DataFrame:
     """
     Returns Cumulative Price Index for Base Year
     Parameters
     ----------
     df : DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Growth Rate
-    ================== =================================
-    base : int
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Growth Rate
+        ================== =================================
+    year_base : int
         Base Year.
 
     Returns
@@ -780,7 +780,7 @@ def price_direct(df: DataFrame, base: int) -> DataFrame:
     # =========================================================================
     # Cumulative Price Index for the Base Year
     # =========================================================================
-    df['cpi'] = df.iloc[:, 1].div(df.iloc[base-df.index[0], 1])
+    df['cpi'] = df.iloc[:, 1].div(df.iloc[year_base-df.index[0], 1])
     return df.iloc[:, [-1]]
 
 
@@ -791,10 +791,10 @@ def price_inverse(df: DataFrame) -> DataFrame:
     Parameters
     ----------
     df : DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Cumulative Price Index for Some Base Year
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Cumulative Price Index for Some Base Year
+        ================== =================================
     Returns
     -------
     DataFrame
@@ -812,11 +812,11 @@ def price_inverse_double(df: DataFrame) -> DataFrame:
     Parameters
     ----------
     df : DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Nominal Prices
-    df.iloc[:, 1]      Real Prices
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Nominal Prices
+        df.iloc[:, 1]      Real Prices
+        ================== =================================
     Returns
     -------
     DataFrame
@@ -835,10 +835,10 @@ def price_inverse_single(df: DataFrame) -> DataFrame:
     Parameters
     ----------
     df : DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      TODO: Prices
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      TODO: Prices
+        ================== =================================
     Returns
     -------
     DataFrame
@@ -846,13 +846,6 @@ def price_inverse_single(df: DataFrame) -> DataFrame:
 
     """
     return df.div(df.shift(1)).sub(1)
-
-
-def strip_cumulated_deflator(df: DataFrame):
-    # =========================================================================
-    # TODO: Eliminate This Function
-    # =========================================================================
-    return price_inverse_single(df.dropna()).dropna()
 
 
 def string_to_url(string: str) -> str:
@@ -915,10 +908,10 @@ def rolling_mean_filter(df: DataFrame, k: int = None) -> tuple[DataFrame]:
     Parameters
     ----------
     df : DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Target Series
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Target Series
+        ================== =================================
     k : int, optional
         DESCRIPTION. The default is None.
 
@@ -1044,11 +1037,11 @@ def simple_linear_regression(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
     Parameters
     ----------
     df : DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Regressor
-    df.iloc[:, 1]      Regressand
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Regressor
+        df.iloc[:, 1]      Regressand
+        ================== =================================
     Returns
     -------
     tuple[DataFrame, tuple[float]]

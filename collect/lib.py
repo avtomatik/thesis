@@ -11,18 +11,18 @@ from pathlib import Path
 
 import pandas as pd
 from pandas import DataFrame
-from pull.lib import (numerify, pull_by_series_id, pull_can_aggregate,
-                      pull_can_capital, pull_can_capital_former)
+from pull.lib import (pull_by_series_id, pull_can_aggregate, pull_can_capital,
+                      pull_can_capital_former)
 from read.lib import (read_can, read_temporary, read_usa_bea,
                       read_usa_davis_ip, read_usa_frb, read_usa_frb_g17,
                       read_usa_frb_h6, read_usa_frb_us3, read_usa_fred,
                       read_usa_hist)
 from scipy.signal import wiener
 from sklearn.impute import SimpleImputer
-from toolkit.lib import price_inverse_single, strip_cumulated_deflator
-from transform.lib import (transform_cobb_douglas_extension_capital,
-                           transform_sum, transform_usa_frb_fa,
-                           transform_usa_frb_fa_def)
+from toolkit.lib import price_inverse_single
+from transform.lib import (numerify, transform_cobb_douglas_extension_capital,
+                           transform_mean_wide, transform_sum_long,
+                           transform_usa_frb_fa, transform_usa_frb_fa_def)
 
 ARCHIVE_NAMES_UTILISED = (
     'dataset_douglas.zip',
@@ -52,12 +52,12 @@ def collect_cobb_douglas(series_number: int = 3) -> DataFrame:
     Returns
     -------
     DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Capital
-    df.iloc[:, 1]      Labor
-    df.iloc[:, 2]      Product
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Capital
+        df.iloc[:, 1]      Labor
+        df.iloc[:, 2]      Product
+        ================== =================================
     """
     SERIES_IDS = {
         # =====================================================================
@@ -171,15 +171,7 @@ def collect_cobb_douglas_deflator() -> DataFrame:
             # =================================================================
             # Bureau of Economic Analysis
             # =================================================================
-            pd.concat(
-                [
-                    read_usa_bea(url).pipe(pull_by_series_id, series_id)
-                    for series_id, url in SERIES_IDS_EA.items()
-                ],
-                axis=1,
-                verify_integrity=True,
-                sort=True
-            ),
+            collect_usa_bea(SERIES_IDS_EA),
             # =================================================================
             # Federal Reserve Board Data
             # =================================================================
@@ -202,15 +194,13 @@ def collect_cobb_douglas_deflator() -> DataFrame:
     # =========================================================================
     # Strip Deflators
     # =========================================================================
-    result = pd.concat(
+    return pd.concat(
         [
-            strip_cumulated_deflator(df.loc[:, column])
+            df.loc[:, [column]].pipe(price_inverse_single)
             for column in df.columns
         ],
         axis=1
     )
-    result['def_mean'] = result.mean(axis=1)
-    return result.iloc[:, [-1]].dropna(axis=0)
 
 
 def collect_cobb_douglas_extension_labor() -> DataFrame:
@@ -219,10 +209,10 @@ def collect_cobb_douglas_extension_labor() -> DataFrame:
     Returns
     -------
     DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Labor Series
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Labor Series
+        ================== =================================
     """
     # =========================================================================
     # TODO: Bureau of Labor Statistics
@@ -258,13 +248,31 @@ def collect_cobb_douglas_extension_labor() -> DataFrame:
         # =====================================================================
         'KTD02S02': 'dataset_usa_kendrick.zip',
     }
+    SERIES_IDS_LAB = {
+        # =====================================================================
+        # Manufacturing Labor Series: H4313C, 1929--1948
+        # =====================================================================
+        'H4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        # =====================================================================
+        # Manufacturing Labor Series: J4313C, 1948--1987
+        # =====================================================================
+        'J4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        # =====================================================================
+        # Manufacturing Labor Series: A4313C, 1987--2000
+        # =====================================================================
+        'A4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        # =====================================================================
+        # Manufacturing Labor Series: N4313C, 1998--2020
+        # =====================================================================
+        'N4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+    }
     df = pd.concat(
         [
             collect_usa_hist(SERIES_IDS),
             # =========================================================================
             # Bureau of Economic Analysis, H4313C & J4313C & A4313C & N4313C
             # =========================================================================
-            collect_usa_bea_labor_mfg(),
+            collect_usa_bea(SERIES_IDS_LAB).pipe(transform_mean_wide, name="bea_labor_mfg"),
             # =================================================================
             # Kurenkov Yu.V.
             # =================================================================
@@ -321,55 +329,6 @@ def collect_cobb_douglas_extension_manufacturing() -> DataFrame:
     df.iloc[:, -1] = df.iloc[:, -1].div(df.loc[1939, df.columns[-1]]).mul(100)
     df['fused'] = df.iloc[:, -2:].mean(axis=1)
     return df.iloc[:, [-1]]
-
-
-def collect_usa_bea_labor() -> DataFrame:
-    """
-    Labor Series: A4601C0, 1929--2013
-    """
-    SERIES_ID, URL = 'A4601C', 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
-    return read_usa_bea(URL).pipe(pull_by_series_id, SERIES_ID)
-
-
-def collect_usa_bea_labor_mfg() -> DataFrame:
-    """
-    Manufacturing Labor Series
-    Returns
-    -------
-    DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Labor Series
-    ================== =================================
-    """
-    SERIES_IDS = {
-        # =====================================================================
-        # Manufacturing Labor Series: H4313C, 1929--1948
-        # =====================================================================
-        'H4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        # =====================================================================
-        # Manufacturing Labor Series: J4313C, 1948--1987
-        # =====================================================================
-        'J4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        # =====================================================================
-        # Manufacturing Labor Series: A4313C, 1987--2000
-        # =====================================================================
-        'A4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        # =====================================================================
-        # Manufacturing Labor Series: N4313C, 1998--2020
-        # =====================================================================
-        'N4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-    }
-    df = pd.concat(
-        [
-            read_usa_bea(url).pipe(pull_by_series_id, series_id)
-            for series_id, url in SERIES_IDS.items()
-        ],
-        axis=1,
-        sort=True
-    )
-    df['bea_mfg_labor'] = df.mean(axis=1)
-    return df.iloc[:, [-1]].dropna(axis=0)
 
 
 def collect_usa_brown() -> DataFrame:
@@ -546,7 +505,7 @@ def collect_usa_general() -> DataFrame:
     DataFrame
         DESCRIPTION.
     """
-    SERIES_ID, ARCHIVE_NAME = 'X0414', 'dataset_uscb.zip'
+    SERIES_ID = {'X0414': 'dataset_uscb.zip'}
     SERIES_IDS = {
         # =====================================================================
         # Nominal Investment Series: A006RC
@@ -605,6 +564,24 @@ def collect_usa_general() -> DataFrame:
         # =====================================================================
         'k3ptotl1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
     }
+    SERIES_IDS_LAB = {
+        # =====================================================================
+        # Manufacturing Labor Series: H4313C, 1929--1948
+        # =====================================================================
+        'H4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        # =====================================================================
+        # Manufacturing Labor Series: J4313C, 1948--1987
+        # =====================================================================
+        'J4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        # =====================================================================
+        # Manufacturing Labor Series: A4313C, 1987--2000
+        # =====================================================================
+        'A4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        # =====================================================================
+        # Manufacturing Labor Series: N4313C, 1998--2020
+        # =====================================================================
+        'N4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+    }
     return pd.concat(
         [
             pd.concat(
@@ -617,7 +594,7 @@ def collect_usa_general() -> DataFrame:
                         ],
                         axis=1
                     ),
-                    collect_usa_bea_labor_mfg(),
+                    collect_usa_bea(SERIES_IDS_LAB).pipe(transform_mean_wide, name="bea_labor_mfg"),
                     pd.concat(
                         [
                             read_usa_bea(SERIES_IDS[series_id]).pipe(
@@ -631,7 +608,7 @@ def collect_usa_general() -> DataFrame:
                 sort=True
             ),
             read_usa_frb_h6(),
-            read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, SERIES_ID),
+            collect_usa_hist(SERIES_ID),
             read_temporary("dataset_usa_0025_p_r.txt"),
         ],
         axis=1
@@ -660,13 +637,7 @@ def collect_usa_investment_turnover_bls() -> DataFrame:
             # Producer Price Index
             # =================================================================
             read_usa_fred(SERIES_ID),
-            pd.concat(
-                [
-                    read_usa_bea(url).pipe(pull_by_series_id, series_id)
-                    for series_id, url in SERIES_IDS.items()
-                ],
-                axis=1
-            ),
+            collect_usa_bea(SERIES_IDS),
         ],
         axis=1,
         sort=True
@@ -711,14 +682,7 @@ def collect_usa_investment_turnover() -> DataFrame:
         # =====================================================================
         'kcn31gd1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
     }
-    df = pd.concat(
-        [
-            read_usa_bea(url).pipe(pull_by_series_id, series_id)
-            for series_id, url in SERIES_IDS.items()
-        ],
-        axis=1,
-        sort=True
-    )
+    df = collect_usa_bea(SERIES_IDS)
     # =========================================================================
     # Investment, 2012=100
     # =========================================================================
@@ -782,6 +746,24 @@ def collect_usa_macroeconomics() -> DataFrame:
         # =====================================================================
         'k3n31gd1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
     }
+    SERIES_IDS_LAB = {
+        # =====================================================================
+        # Manufacturing Labor Series: H4313C, 1929--1948
+        # =====================================================================
+        'H4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        # =====================================================================
+        # Manufacturing Labor Series: J4313C, 1948--1987
+        # =====================================================================
+        'J4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        # =====================================================================
+        # Manufacturing Labor Series: A4313C, 1987--2000
+        # =====================================================================
+        'A4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        # =====================================================================
+        # Manufacturing Labor Series: N4313C, 1998--2020
+        # =====================================================================
+        'N4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+    }
     return pd.concat(
         [
             pd.concat(
@@ -799,7 +781,7 @@ def collect_usa_macroeconomics() -> DataFrame:
             # =================================================================
             # Manufacturing Labor Series: _4313C0, 1929--2020
             # =================================================================
-            collect_usa_bea_labor_mfg(),
+            collect_usa_bea(SERIES_IDS_LAB).pipe(transform_mean_wide, name="bea_labor_mfg"),
             # =====================================================================
             # Capacity Utilization Series: CAPUTL.B50001.A, 1967--2012
             # =====================================================================
@@ -816,19 +798,19 @@ def collect_usa_manufacturing_two_fold() -> tuple[DataFrame]:
     Returns
     -------
     DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Capital Series
-    df.iloc[:, 1]      Labor Series
-    df.iloc[:, 2]      Product Series
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Capital Series
+        df.iloc[:, 1]      Labor Series
+        df.iloc[:, 2]      Product Series
+        ================== =================================
     DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Capital Series
-    df.iloc[:, 1]      Labor Series
-    df.iloc[:, 2]      Product Series Adjusted to Capacity Utilisation
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Capital Series
+        df.iloc[:, 1]      Labor Series
+        df.iloc[:, 2]      Product Series Adjusted to Capacity Utilisation
+        ================== =================================
     """
     SERIES_ID = 'CAPUTL.B50001.A'
     SERIES_IDS = {
@@ -841,20 +823,31 @@ def collect_usa_manufacturing_two_fold() -> tuple[DataFrame]:
         # =================================================================
         'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
     }
+    SERIES_IDS_LAB = {
+        # =====================================================================
+        # Manufacturing Labor Series: H4313C, 1929--1948
+        # =====================================================================
+        'H4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        # =====================================================================
+        # Manufacturing Labor Series: J4313C, 1948--1987
+        # =====================================================================
+        'J4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        # =====================================================================
+        # Manufacturing Labor Series: A4313C, 1987--2000
+        # =====================================================================
+        'A4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        # =====================================================================
+        # Manufacturing Labor Series: N4313C, 1998--2020
+        # =====================================================================
+        'N4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+    }
     df = pd.concat(
         [
-            pd.concat(
-                [
-                    read_usa_bea(url).pipe(pull_by_series_id, series_id)
-                    for series_id, url in SERIES_IDS.items()
-                ],
-                axis=1,
-                sort=True
-            ),
+            collect_usa_bea(SERIES_IDS),
             # =================================================================
             # Manufacturing Labor Series: _4313C0, 1929--2020
             # =================================================================
-            collect_usa_bea_labor_mfg(),
+            collect_usa_bea(SERIES_IDS_LAB).pipe(transform_mean_wide, name="bea_labor_mfg"),
         ],
         axis=1
     ).dropna(axis=0)
@@ -887,38 +880,58 @@ def collect_usa_manufacturing_three_fold() -> tuple[DataFrame]:
     Returns
     -------
     DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Capital Series
-    df.iloc[:, 1]      Labor Series
-    df.iloc[:, 2]      Product Series
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Capital Series
+        df.iloc[:, 1]      Labor Series
+        df.iloc[:, 2]      Product Series
+        ================== =================================
     DataFrame
-    ================== =================================
-    df.index           Period Truncated
-    df.iloc[:, 0]      Capital Series
-    df.iloc[:, 1]      Labor Series
-    df.iloc[:, 2]      Product Series
-    ================== =================================
+        ================== =================================
+        df.index           Period Truncated
+        df.iloc[:, 0]      Capital Series
+        df.iloc[:, 1]      Labor Series
+        df.iloc[:, 2]      Product Series
+        ================== =================================
     DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Capital Series
-    df.iloc[:, 1]      Labor Series
-    df.iloc[:, 2]      Product Series Adjusted to Capacity Utilisation
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Capital Series
+        df.iloc[:, 1]      Labor Series
+        df.iloc[:, 2]      Product Series Adjusted to Capacity Utilisation
+        ================== =================================
     """
-    SERIES_ID, URL = 'kcn31gd1es00', 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt'
+    SERIES_IDS = {
+        'kcn31gd1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt'
+    }
+    SERIES_IDS_LAB = {
+        # =====================================================================
+        # Manufacturing Labor Series: H4313C, 1929--1948
+        # =====================================================================
+        'H4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        # =====================================================================
+        # Manufacturing Labor Series: J4313C, 1948--1987
+        # =====================================================================
+        'J4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        # =====================================================================
+        # Manufacturing Labor Series: A4313C, 1987--2000
+        # =====================================================================
+        'A4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        # =====================================================================
+        # Manufacturing Labor Series: N4313C, 1998--2020
+        # =====================================================================
+        'N4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+    }
     df = pd.concat(
         [
             # =================================================================
             # Fixed Assets: kcn31gd1es00, 1925--2016, Table 4.2. Chain-Type Quantity Indexes for Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
             # =================================================================
-            read_usa_bea(URL).pipe(pull_by_series_id, SERIES_ID),
+            collect_usa_bea(SERIES_IDS),
             # =================================================================
             # Manufacturing Labor Series: _4313C0, 1929--2020
             # =================================================================
-            collect_usa_bea_labor_mfg(),
+            collect_usa_bea(SERIES_IDS_LAB).pipe(transform_mean_wide, name="bea_labor_mfg"),
             # =================================================================
             # Manufacturing Series: FRB G17 IP, AIPMA_SA_IX, 1919--2018
             # =================================================================
@@ -962,7 +975,7 @@ def collect_usa_manufacturing_latest() -> DataFrame:
             # =================================================================
             # Data Fetch for Capital Deflator
             # =================================================================
-            collect_cobb_douglas_deflator(),
+            collect_cobb_douglas_deflator().pipe(transform_mean_wide, name="def_mean").dropna(axis=0),
         ],
         axis=1,
         sort=True
@@ -1020,7 +1033,7 @@ def collect_uscb_cap_deflator() -> DataFrame:
         'P0117': ('dataset_uscb.zip', 1000, '1958=100, billions'),
         'P0118': ('dataset_uscb.zip', 1000, '1958=100, billions'),
     }
-    _df = pd.concat(
+    df = pd.concat(
         [
             read_usa_hist(archive_name).pipe(pull_by_series_id, series_id)
             for series_id, (archive_name, *_) in SERIES_IDS.items()
@@ -1029,21 +1042,21 @@ def collect_uscb_cap_deflator() -> DataFrame:
         verify_integrity=True,
         sort=True
     ).truncate(before=1879)
-    _df['total_purchases'] = _df.iloc[:, 0].div(_df.iloc[:, 3])
-    _df['struc_purchases'] = _df.iloc[:, 1].div(_df.iloc[:, 4])
-    _df['equip_purchases'] = _df.iloc[:, 2].div(_df.iloc[:, 5])
-    _df['total_depreciat'] = _df.iloc[:, 6].div(_df.iloc[:, 9])
-    _df['struc_depreciat'] = _df.iloc[:, 7].div(_df.iloc[:, 10])
-    _df['equip_depreciat'] = _df.iloc[:, 8].div(_df.iloc[:, 11])
-    df = pd.concat(
+    df['total_purchases'] = df.iloc[:, 0].div(df.iloc[:, 3])
+    df['struc_purchases'] = df.iloc[:, 1].div(df.iloc[:, 4])
+    df['equip_purchases'] = df.iloc[:, 2].div(df.iloc[:, 5])
+    df['total_depreciat'] = df.iloc[:, 6].div(df.iloc[:, 9])
+    df['struc_depreciat'] = df.iloc[:, 7].div(df.iloc[:, 10])
+    df['equip_depreciat'] = df.iloc[:, 8].div(df.iloc[:, 11])
+    # =========================================================================
+    # Strip Deflators
+    # =========================================================================
+    return pd.concat(
         [
-            price_inverse_single(
-                _df.iloc[:, [-(1+_)]].dropna(axis=0)).dropna(axis=0) for _ in range(6)
+            df.iloc[:, [-(1+_)]].pipe(price_inverse_single).dropna(axis=0) for _ in range(6)
         ],
         axis=1
     )
-    df['census_fused'] = df.mean(axis=1)
-    return df.iloc[:, [-1]]
 
 
 def collect_uscb_cap(smoothing: bool = False) -> DataFrame:
@@ -1129,29 +1142,6 @@ def collect_uscb_gnp() -> DataFrame:
     return df.div(df.iloc[0, :]).mul(100)
 
 
-def collect_uscb_immigration() -> DataFrame:
-    """Census Total Immigration Series"""
-    ARCHIVE_NAME = 'dataset_uscb.zip'
-    ids = itertools.chain(
-        range(91, 102),
-        range(103, 110),
-        range(111, 116),
-        range(117, 120),
-    )
-    SERIES_IDS = {f'C{_:04n}': ARCHIVE_NAME for _ in ids}
-    df = pd.concat(
-        [
-            read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
-            for series_id in SERIES_IDS
-        ],
-        axis=1,
-        verify_integrity=True,
-        sort=True
-    )
-    df['C89'] = df.sum(1)
-    return df.iloc[:, [-1]]
-
-
 def collect_uscb_manufacturing() -> tuple[DataFrame, int]:
     """
     Census Manufacturing Indexes, 1899=100
@@ -1220,31 +1210,25 @@ def collect_uscb_money_stock() -> DataFrame:
 def collect_uscb_trade_by_countries() -> DataFrame:
     """Census Foreign Trade Series"""
     ARCHIVE_NAME = 'dataset_uscb.zip'
-    ids = itertools.chain(
-        range(319, 324),
-        range(325, 329),
-        range(330, 335),
-        range(337, 342),
-        range(343, 347),
-        range(348, 353),
-    )
-    SERIES_IDS = {f'U{_:04n}': ARCHIVE_NAME for _ in ids}
-    df = pd.concat(
-        [
-            read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
-            for series_id in SERIES_IDS
-        ],
-        axis=1,
-        verify_integrity=True,
-        sort=True
-    )
+    SERIES_IDS = {
+        f'U{_:04n}': ARCHIVE_NAME
+        for _ in itertools.chain(
+            range(319, 324),
+            range(325, 329),
+            range(330, 335),
+            range(337, 342),
+            range(343, 347),
+            range(348, 353),
+        )
+    }
+    df = collect_usa_hist(SERIES_IDS)
 
     for _ in range(len(SERIES_IDS) // 2):
         _title = f'{df.columns[_]}_net_{df.columns[_ + len(SERIES_IDS) // 2]}'
         df[_title] = df.iloc[:, _].sub(df.iloc[:, _ + len(SERIES_IDS) // 2])
 
-    df['exports'] = df.loc[:, SERIES_IDS[:len(SERIES_IDS) // 2]].sum(1)
-    df['imports'] = df.loc[:, SERIES_IDS[len(SERIES_IDS) // 2:]].sum(1)
+    df['exports'] = df.loc[:, SERIES_IDS[:len(SERIES_IDS) // 2]].sum(axis=1)
+    df['imports'] = df.loc[:, SERIES_IDS[len(SERIES_IDS) // 2:]].sum(axis=1)
 
     for _ in range(len(SERIES_IDS) // 2):
         _title = f'{df.columns[_ + len(SERIES_IDS)]}_over_all'
@@ -1334,12 +1318,12 @@ def construct_can(archive_ids: dict) -> DataFrame:
     Returns
     -------
     DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Capital
-    df.iloc[:, 1]      Labor
-    df.iloc[:, 2]      Product
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Capital
+        df.iloc[:, 1]      Labor
+        df.iloc[:, 2]      Product
+        ================== =================================
     """
     DIR = '/media/green-machine/KINGSTON'
     kwargs = {
@@ -1364,7 +1348,8 @@ def construct_can(archive_ids: dict) -> DataFrame:
         _df = _df.set_index(_df.iloc[:, 0])
     df = pd.concat(
         [
-            _df.loc[:, ('series_id', 'value')].pipe(transform_sum),
+            _df.loc[:, ('series_id', 'value')].pipe(
+                transform_sum_long, name="capital"),
             read_can(tuple(archive_ids)[1]).pipe(
                 pull_by_series_id, archive_ids.get(tuple(archive_ids)[1])).pipe(numerify),
             read_can(tuple(archive_ids)[-1]).pipe(
@@ -1418,10 +1403,10 @@ def get_price_base(df: DataFrame) -> int:
     Parameters
     ----------
     df : DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Deflator
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Deflator
+        ================== =================================
     Returns
     -------
     int
@@ -1431,13 +1416,43 @@ def get_price_base(df: DataFrame) -> int:
     return int(df.index[df.iloc[:, -1].astype(float).argmin()])
 
 
-def collect_usa_hist(series_ids: dict[str]) -> DataFrame:
+def collect_usa_bea(series_ids: dict[str, str]) -> DataFrame:
     """
 
 
     Parameters
     ----------
-    series_ids : dict[str]
+    series_ids : dict[str, str]
+        DESCRIPTION.
+
+    Returns
+    -------
+    DataFrame
+        ================== =================================
+        df.index           Period
+        ...                ...
+        df.iloc[:, -1]     Values
+        ================== =================================
+
+    """
+    return pd.concat(
+        [
+            read_usa_bea(url).pipe(pull_by_series_id, series_id)
+            for series_id, url in series_ids.items()
+        ],
+        axis=1,
+        verify_integrity=True,
+        sort=True
+    )
+
+
+def collect_usa_hist(series_ids: dict[str, str]) -> DataFrame:
+    """
+
+
+    Parameters
+    ----------
+    series_ids : dict[str, str]
         DESCRIPTION.
 
     Returns
@@ -1486,3 +1501,25 @@ def construct_deflator(df: DataFrame) -> DataFrame:
     df['deflator'] = df.iloc[:, 0].div(df.iloc[:, 1])
     df['prc'] = df.iloc[:, -1].div(df.iloc[:, -1].shift(1)).sub(1)
     return df.iloc[:, [-1]].dropna(axis=0)
+
+
+def collect_usa_sahr_infcf(df: DataFrame) -> DataFrame:
+    """
+    Retrieves Yearly Price Rates from `dataset_usa_infcf16652007.zip`
+
+    Returns
+    -------
+    DataFrame
+    """
+    # =========================================================================
+    # Retrieve First 14 Series
+    # =========================================================================
+    return pd.concat(
+        [
+            df.pipe(pull_by_series_id, series_id).rdiv(
+                1).pipe(price_inverse_single).mul(-1)
+            for series_id in df.iloc[:, 0].unique()[:14]
+        ],
+        axis=1,
+        sort=True
+    )

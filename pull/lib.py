@@ -12,31 +12,7 @@ from pathlib import Path
 
 import pandas as pd
 from pandas import DataFrame
-
-
-def numerify(df: DataFrame) -> DataFrame:
-    """
-
-
-    Parameters
-    ----------
-    df : DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Series
-    ================== =================================
-
-    Returns
-    -------
-    DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Series
-    ================== =================================
-    """
-    assert df.shape[1] == 1
-    df.iloc[:, 0] = df.iloc[:, 0].apply(pd.to_numeric, errors='coerce')
-    return df
+from transform.lib import numerify
 
 
 def pull_by_series_id(df: DataFrame, series_id: str) -> DataFrame:
@@ -46,20 +22,20 @@ def pull_by_series_id(df: DataFrame, series_id: str) -> DataFrame:
     Parameters
     ----------
     df : DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Series IDs
-    df.iloc[:, 1]      Values
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Series IDs
+        df.iloc[:, 1]      Values
+        ================== =================================
     series_id : str
 
     Returns
     -------
     DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Series
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Series
+        ================== =================================
     """
     assert df.shape[1] == 2
     return df[df.iloc[:, 0] == series_id].iloc[:, [1]].rename(
@@ -78,10 +54,10 @@ def pull_can_aggregate(df: DataFrame, series_id: str) -> DataFrame:
     Returns
     -------
     DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Series
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Series
+        ================== =================================
     """
     _df = df.loc[:, ('series_id', 'value')].pipe(
         pull_by_series_id, series_id).pipe(numerify)
@@ -171,7 +147,7 @@ def pull_can_capital_former(df: DataFrame, params: tuple[int, str]) -> DataFrame
         )
 
 
-def pull_series_ids_description(archive_name: str) -> dict[str]:
+def pull_series_ids_description(archive_name: str) -> dict[str, str]:
     """Returns Dictionary for Series from Douglas's & Kendrick's Databases"""
     kwargs = {
         'filepath_or_buffer': archive_name,

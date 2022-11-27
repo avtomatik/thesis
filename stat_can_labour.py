@@ -37,7 +37,7 @@ def main():
     #     collect_can_price_b,
     # )
     # data = pd.concat([call() for call in CALLS], axis=1)
-    # data['mean'] = data.mean(1)
+    # data['mean'] = data.mean(axis=1)
     # data['cum_mean'] = df.iloc[:, -1].add(1).cumprod()
     # data = data.div(data.loc[2012])
     # =============================================================================
@@ -69,7 +69,7 @@ def main():
     # )
     # combined = data.loc[:, SERIES_IDS].dropna(how="all")
     # combined = combined.div(combined.loc[1997]).mul(100)
-    # combined['mean_comb'] = combined.mean(1)
+    # combined['mean_comb'] = combined.mean(axis=1)
     # combined = combined.iloc[:, [-1]]
     # result = pd.concat([result, combined], axis=1)
     # # combined.plot(grid=True).get_figure().savefig('view.pdf', format='pdf', dpi=900)
@@ -146,11 +146,11 @@ def main():
     # FILE_NAME = 'stat_can_cap.csv'
     # data = read_temporary(FILE_NAME)
     # combined = pd.concat(
-    #     [data.iloc[:, [_]].dropna() for _ in range(30, 35)],
+    #     [data.iloc[:, [_]].dropna(axis=0) for _ in range(30, 35)],
     #     axis=1
     # )
     # combined = combined.div(combined.loc[1997]).mul(100)
-    # combined['mean'] = combined.sum(1)
+    # combined['mean'] = combined.sum(axis=1)
     # combined = combined.iloc[:, [-1]]
     # result = pd.concat([result, combined], axis=1)
     # result.plot(grid=True).get_figure().savefig('view.pdf', format='pdf', dpi=900)

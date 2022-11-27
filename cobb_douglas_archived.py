@@ -25,7 +25,7 @@ def main():
         'fg_c': 'Chart III Percentage Deviations of $P$ and $P\'$ from Their Trend Lines\nTrend Lines=3 Year Moving Average',
         'fg_d': 'Chart IV Percentage Deviations of Computed from Actual Product {}$-${}',
         'fg_e': 'Chart V Relative Final Productivities of Labor and Capital',
-        'year_price': 1899,
+        'year_base': 1899,
     }
 
     os.chdir(DIR)

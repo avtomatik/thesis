@@ -9,10 +9,11 @@ Created on Sun Nov 20 17:42:38 2022
 import numpy as np
 import pandas as pd
 from pandas import DataFrame
-from pull.lib import numerify, pull_by_series_id
+from pull.lib import pull_by_series_id
 from read.lib import read_temporary, read_usa_frb_g17, read_usa_frb_us3
 from sklearn.linear_model import Lasso, LassoCV, LinearRegression, Ridge
 from toolkit.lib import price_inverse_single
+from transform.lib import numerify
 
 
 def transform_a(df: DataFrame) -> DataFrame:
@@ -27,12 +28,12 @@ def transform_b(df: DataFrame) -> DataFrame:
 
 def transform_cobb_douglas(df: DataFrame, year_base: int) -> tuple[DataFrame, tuple[float]]:
     """
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Capital
-    df.iloc[:, 1]      Labor
-    df.iloc[:, 2]      Product
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Capital
+        df.iloc[:, 1]      Labor
+        df.iloc[:, 2]      Product
+        ================== =================================
     """
     df = df.div(df.loc[year_base, :])
     # =========================================================================
@@ -85,7 +86,7 @@ def transform_cobb_douglas(df: DataFrame, year_base: int) -> tuple[DataFrame, tu
     df['prod_comp_roll'] = df.iloc[:, -1].rolling(window=3, center=True).mean()
     df['prod_comp_roll_sub'] = df.iloc[:, -2].sub(df.iloc[:, -1])
     # =========================================================================
-    #     print(r2_score(df.iloc[:, 2], df.iloc[:, 3]))
+    #     print(f"R**2: {r2_score(df.iloc[:, 2], df.iloc[:, 3]):,.4f}")
     #     print(df.iloc[:, 3].div(df.iloc[:, 2]).sub(1).abs().mean())
     # =========================================================================
     return df, (k, np.exp(b),)
@@ -93,13 +94,13 @@ def transform_cobb_douglas(df: DataFrame, year_base: int) -> tuple[DataFrame, tu
 
 def transform_cobb_douglas_alt(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
     """
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Capital
-    df.iloc[:, 1]      Labor
-    df.iloc[:, 2]      Product
-    df.iloc[:, 3]      Product Alternative
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Capital
+        df.iloc[:, 1]      Labor
+        df.iloc[:, 2]      Product
+        df.iloc[:, 3]      Product Alternative
+        ================== =================================
     """
     # =========================================================================
     # Labor Capital Intensity
@@ -262,12 +263,12 @@ def transform_cobb_douglas_sklearn(df: DataFrame) -> DataFrame:
     Parameters
     ----------
     df : DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Capital
-    df.iloc[:, 1]      Labor
-    df.iloc[:, 2]      Product
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Capital
+        df.iloc[:, 1]      Labor
+        df.iloc[:, 2]      Product
+        ================== =================================
 
     Returns
     -------
@@ -401,7 +402,7 @@ def combine_kurenkov(data_testing: DataFrame) -> tuple[DataFrame]:
     data_b = pd.concat(
         [
             data_control.iloc[:, [1]],
-            data_testing.loc[:, ['bea_mfg_labor']],
+            data_testing.loc[:, ['bea_labor_mfg']],
         ],
         axis=1,
         sort=True
@@ -433,43 +434,74 @@ def combine_kurenkov(data_testing: DataFrame) -> tuple[DataFrame]:
 
 
 def transform_manufacturing_money(df: DataFrame) -> DataFrame:
+    SERIES_ID = {'X0414': 'dataset_uscb.zip'}
     df_manufacturing = df.iloc[:, [0, 6, 7]].dropna(axis=0)
     df_manufacturing = df_manufacturing.div(df_manufacturing.iloc[0, :])
-    df_money = df.iloc[:, range(18, 20)].dropna(how='all')
-    df_money['m1_fused'] = df_money.mean(axis=1)
-    df_money = df_money.iloc[:, -1].div(df_money.iloc[0, -1])
+    df_money = pd.concat(
+        [
+            read_usa_frb_h6(),
+            collect_usa_hist(SERIES_ID)
+        ],
+        axis=1
+    ).pipe(transform_mean_wide, name="m1_fused").sort_index()
     df = pd.concat(
         [
             df_manufacturing,
-            df_money
+            df_money.div(df_money.iloc[0, :])
         ],
         axis=1
     ).dropna(axis=0)
     return df.div(df.iloc[0, :])
 
 
-def transform_sum(df: DataFrame) -> DataFrame:
+def transform_mean_wide(df: DataFrame, name: str) -> DataFrame:
     """
 
 
     Parameters
     ----------
     df : DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Series IDs
-    df.iloc[:, 1]      Values
-    ================== =================================
-    series_ids : Iterable[str]
-        DESCRIPTION.
+        ================== =================================
+        df.index           Period
+        df.iloc[:, ...]    Series
+        ================== =================================
+    name : str
+        New Column Name.
 
     Returns
     -------
     DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Sum of <series_ids>
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Sum of <series_ids>
+        ================== =================================
+    """
+    df[name] = df.mean(axis=1)
+    return df.iloc[:, [-1]]
+
+
+def transform_sum_long(df: DataFrame, name: str) -> DataFrame:
+    """
+
+
+    Parameters
+    ----------
+    df : DataFrame
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Series IDs
+        df.iloc[:, 1]      Values
+        ================== =================================
+    name : str
+        New Column Name.
+
+    Returns
+    -------
+    DataFrame
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Sum of <series_ids>
+        ================== =================================
     """
     series_ids = sorted(set(df.iloc[:, 0]))
     df = pd.concat(
@@ -479,8 +511,36 @@ def transform_sum(df: DataFrame) -> DataFrame:
         ],
         axis=1
     )
-    df.columns = series_ids
-    df['sum'] = df.sum(axis=1)
+    # =========================================================================
+    # df.columns = series_ids
+    # =========================================================================
+    df[name] = df.sum(axis=1)
+    return df.iloc[:, [-1]]
+
+
+def transform_sum_wide(df: DataFrame, name: str) -> DataFrame:
+    """
+
+
+    Parameters
+    ----------
+    df : DataFrame
+        ================== =================================
+        df.index           Period
+        df.iloc[:, ...]    Series
+        ================== =================================
+    name : str
+        New Column Name.
+
+    Returns
+    -------
+    DataFrame
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Sum of <series_ids>
+        ================== =================================
+    """
+    df[name] = df.sum(axis=1)
     return df.iloc[:, [-1]]
 
 
@@ -538,25 +598,26 @@ def transform_usa_frb_fa_def(df: DataFrame) -> DataFrame:
     return df.iloc[:, [-1]]
 
 
-def transform_usa_sahr_infcf(df: DataFrame) -> DataFrame:
+def numerify(df: DataFrame) -> DataFrame:
     """
-    Retrieves Yearly Price Rates from `dataset_usa_infcf16652007.zip`
+
+
+    Parameters
+    ----------
+    df : DataFrame
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Series
+        ================== =================================
 
     Returns
     -------
     DataFrame
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Series
+        ================== =================================
     """
-    # =========================================================================
-    # Retrieve First 14 Series
-    # =========================================================================
-    df = pd.concat(
-        [
-            df.pipe(pull_by_series_id, series_id).rdiv(
-                1).pipe(price_inverse_single).mul(-1)
-            for series_id in df.iloc[:, 0].unique()[:14]
-        ],
-        axis=1,
-        sort=True
-    )
-    df['cpiu_fused'] = df.mean(axis=1)
-    return df.iloc[:, [-1]].dropna(axis=0)
+    assert df.shape[1] == 1
+    df.iloc[:, 0] = df.iloc[:, 0].apply(pd.to_numeric, errors='coerce')
+    return df

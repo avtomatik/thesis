@@ -11,9 +11,8 @@ Thesis Project
 import itertools
 import os
 
-from collect.lib import (collect_cobb_douglas, collect_douglas,
-                         collect_usa_general, collect_usa_hist,
-                         collect_usa_investment_turnover,
+from collect.lib import (collect_cobb_douglas, collect_usa_general,
+                         collect_usa_hist, collect_usa_investment_turnover,
                          collect_usa_investment_turnover_bls,
                          collect_usa_manufacturing_latest,
                          collect_usa_manufacturing_three_fold,
@@ -81,7 +80,6 @@ FILE_NAMES_UTILISED = (
     'dataset_usa_bls-2015-02-23-ln.data.1.AllData',
     'dataset_usa_bls-2017-07-06-ln.data.1.AllData',
     'dataset_usa_bls-pc.data.0.Current',
-    'dataset_usa_bls_cpiai.txt',
     'dataset_usa_davis-j-h-ip-total.xls',
     'dataset_usa_frb_g17_all_annual_2013_06_23.csv',
     'dataset_usa_frb_invest_capital.csv',
@@ -109,9 +107,9 @@ def main():
     # `calculate_power_function_fit_params_c`: Power Function Approximation
     # =============================================================================
     _df = collect_usa_general()
-    plot_approx_linear(_df.iloc[:, [7, 6, 0, 6]].dropna())
-    plot_approx_log_linear(_df.iloc[:, [7, 6, 20, 4]].dropna())
-    plot_approx_log_linear(_df.iloc[:, [7, 6, 20, 6]].dropna())
+    plot_approx_linear(_df.iloc[:, [7, 6, 0, 6]].dropna(axis=0))
+    plot_approx_log_linear(_df.iloc[:, [7, 6, 20, 4]].dropna(axis=0))
+    plot_approx_log_linear(_df.iloc[:, [7, 6, 20, 6]].dropna(axis=0))
 
     SERIES_IDS = ('Валовой внутренний продукт, млрд долл. США',)
     calculate_power_function_fit_params_a(
@@ -214,7 +212,7 @@ def main():
         'fg_c': 'Chart III Percentage Deviations of $P$ and $P\'$ from Their Trend Lines\nTrend Lines=3 Year Moving Average',
         'fg_d': 'Chart IV Percentage Deviations of Computed from Actual Product {}$-${}',
         'fg_e': 'Chart V Relative Final Productivities of Labor and Capital',
-        'year_price': 2007,
+        'year_base': 2007,
     }
     ARCHIVE_IDS = {
         # =====================================================================
@@ -264,8 +262,8 @@ def main():
     # Subproject VI. Elasticity
     # =========================================================================
     _df = collect_usa_general()
-    df_a = _df.iloc[:, [7, 6, 4]].dropna()
-    df_b = _df.iloc[:, [4]].dropna()
+    df_a = _df.iloc[:, [7, 6, 4]].dropna(axis=0)
+    df_b = _df.iloc[:, [4]].dropna(axis=0)
     plot_elasticity(df_a)
     # plot_growth_elasticity(df_b)
 
@@ -359,36 +357,48 @@ def main():
     # =========================================================================
     plot_uscb_manufacturing(*collect_uscb_manufacturing())
     plot_uscb_cap(collect_uscb_cap())
-    plot_uscb_cap_deflator(collect_uscb_cap_deflator())
+    plot_uscb_cap_deflator(collect_uscb_cap_deflator().pipe(transform_mean_wide, name="census_fused"))
     plot_uscb_metals(*collect_uscb_metals())
     # =========================================================================
     # Census Production Series
     # =========================================================================
-    ids = itertools.chain(
-        range(248, 252),
-        (262,),
-        range(265, 270),
-        range(293, 296),
-    )
-    SERIES_IDS = {f'P{_:04n}': ARCHIVE_NAME for _ in ids}
-    # =========================================================================
-    #     ids = itertools.chain(
-    #         range(231, 242),
-    #         range(244, 245),
-    #         range(247, 272),
-    #         range(277, 278),
-    #         range(279, 280),
-    #         range(281, 285),
-    #         range(286, 287),
-    #         range(288, 289),
-    #         range(290, 291),
-    #         range(293, 301),
-    #     )
-    #     SERIES_IDS_ALT = {f'P{_:04n}': ARCHIVE_NAME for _ in ids}
-    # =========================================================================
+    SERIES_IDS = {
+        f'P{_:04n}': ARCHIVE_NAME
+        for _ in itertools.chain(
+            range(248, 252),
+            (262,),
+            range(265, 270),
+            range(293, 296),
+        )
+    }
+    SERIES_IDS_ALT = {
+        f'P{_:04n}': ARCHIVE_NAME
+        for _ in itertools.chain(
+            range(231, 242),
+            range(244, 245),
+            range(247, 272),
+            range(277, 278),
+            range(279, 280),
+            range(281, 285),
+            range(286, 287),
+            range(288, 289),
+            range(290, 291),
+            range(293, 301),
+        )
+    }
 
     plot_uscb_commodities(SERIES_IDS)
-    plot_uscb_immigration(collect_uscb_immigration())
+    ARCHIVE_NAME = 'dataset_uscb.zip'
+    SERIES_IDS = {
+        f'C{_:04n}': ARCHIVE_NAME
+        for _ in itertools.chain(
+            range(91, 102),
+            range(103, 110),
+            range(111, 116),
+            range(117, 120),
+        )
+    }
+    plot_uscb_immigration(collect_usa_hist(SERIES_IDS).pipe(transform_sum_wide, name="C89"))
     plot_uscb_unemployment_hours_worked(collect_uscb_unemployment_hours_worked())
     plot_uscb_employment_conflicts(collect_uscb_employment_conflicts())
     plot_uscb_gnp(collect_uscb_gnp())
@@ -402,9 +412,9 @@ def main():
     # =========================================================================
     # Subproject XI. USA Census J14
     # =========================================================================
-    SERIES_ID, ARCHIVE_NAME = 'J0014', 'dataset_uscb.zip'
+    SERIES_ID = {'J0014': 'dataset_uscb.zip'}
 
-    df = read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, SERIES_ID)
+    df = collect_usa_hist(SERIES_ID)
     _df = df.copy()
     plot_growth_elasticity(_df)
     _df = df.copy()
@@ -592,7 +602,7 @@ def main():
         'fg_c': 'Chart III Percentage Deviations of $P$ and $P\'$ from Their Trend Lines, Massachusetts\nTrend Lines = 3 Year Moving Average',
         'fg_d': 'Chart 17 The Percentage Deviations of the Computed Product ($P\'$) from the Actual Product ($P$) in Massachusetts Manufacturing, {}$-${}',
         'fg_e': 'Chart V Relative Final Productivities of Labor and Capital',
-        'year_price': 1899,
+        'year_base': 1899,
     }
     SERIES_IDS = {
         'DT19AS03': 'dataset_douglas.zip',

@@ -32,7 +32,7 @@ def main() -> None:
         axis=1,
     ).transpose()
     df = pd.DataFrame()
-    df['us_to_world'] = _df.loc[:, 'United States'].div(_df.sum(1))
+    df['us_to_world'] = _df.loc[:, 'United States'].div(_df.sum(axis=1))
     df.plot(grid=True)
 
 

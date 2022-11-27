@@ -13,8 +13,9 @@ import pandas as pd
 from pandas import DataFrame
 from pandas.plotting import autocorrelation_plot
 from plot.lib import plot_can_test
-from pull.lib import numerify, pull_by_series_id, pull_can_quarter_former
+from pull.lib import pull_by_series_id, pull_can_quarter_former
 from read.lib import read_can, read_usa_bea_excel, read_usa_bls, read_usa_hist
+from transform.lib import numerify
 
 ARCHIVE_NAMES_UTILISED = (
     'dataset_douglas.zip',
@@ -51,7 +52,7 @@ def options():
     [
         print(read_usa_hist(ARCHIVE_NAME, series_id))
 # =============================================================================
-#         read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, SERIES_ID)
+#         collect_usa_hist(SERIES_ID)
 # =============================================================================
         for series_id in SERIES_IDS
     ]
@@ -300,7 +301,7 @@ def test_douglas() -> None:
             partial(read_usa_hist, **_kwargs[0])(),
             partial(read_usa_hist, **_kwargs[1])(),
 # =============================================================================
-#             read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, SERIES_ID)
+#             collect_usa_hist(SERIES_ID)
 # =============================================================================
         ],
         axis=1
@@ -309,7 +310,7 @@ def test_douglas() -> None:
     df.loc[:, [_loc]] = df.loc[:, [_loc]].div(
         df.loc[1899, [_loc]]).mul(100).round(0)
     df['dif'] = df.iloc[:, 1].sub(df.iloc[:, 0])
-    df.dropna().plot(title='Cobb--Douglas Data Comparison', legend=True, grid=True)
+    df.dropna(axis=0).plot(title='Cobb--Douglas Data Comparison', legend=True, grid=True)
     _kwargs = (
         {
             # =================================================================
@@ -327,13 +328,13 @@ def test_douglas() -> None:
         [
             partial(read_usa_hist, **kwargs)() for kwargs in _kwargs
 # =============================================================================
-#             read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, SERIES_ID)
+#             collect_usa_hist(SERIES_ID)
 # =============================================================================
         ],
         axis=1
     )
     df['div'] = df.iloc[:, 0].div(df.iloc[:, 1])
-    df.dropna().plot(title='Cobb--Douglas Data Comparison', legend=True, grid=True)
+    df.dropna(axis=0).plot(title='Cobb--Douglas Data Comparison', legend=True, grid=True)
 
 
 def test_procedure(kwargs_list: list[dict]) -> None:

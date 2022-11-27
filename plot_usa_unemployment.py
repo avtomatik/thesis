@@ -7,39 +7,49 @@ Created on Tue Sep 10 23:12:03 2019
 
 
 import os
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import pandas as pd
+from collect.lib import collect_usa_hist
 from pandas.plotting import autocorrelation_plot
 from pull.lib import pull_by_series_id
-from read.lib import read_usa_bls, read_usa_hist
+from read.lib import read_usa_bls
+from transform.lib import numerify, transform_mean_wide
 
 
-def main():
-    FLAG = True
-    DIR = '/media/green-machine/KINGSTON'
-    _DIR = '/home/green-machine/Downloads'
-    ARCHIVE_NAME = 'dataset_uscb.zip'
-    FILE_NAME = 'dataset_usa_bls-2017-07-06-ln.data.1.AllData'
-    _FILE_NAME = 'plot_usa_unemployment_autocorrelation.pdf'
+def main(
+    savefig: bool = False,
+    directory: str = '/media/green-machine/KINGSTON'
+) -> None:
+    SERIES_ID_CB = {'D0086': 'dataset_uscb.zip'}
+    SERIES_ID_LS = {
+        'LNU04000000': 'dataset_usa_bls-2017-07-06-ln.data.1.AllData'
+    }
+    DIR = '/home/green-machine/Downloads'
+    FILE_NAME = 'plot_usa_unemployment_autocorrelation.pdf'
 
-    os.chdir(DIR)
+    os.chdir(directory)
+
     df = pd.concat(
         [
-            read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, 'D0086'),
-            read_usa_bls(FILE_NAME).pipe(pull_by_series_id, 'LNU04000000'),
+            collect_usa_hist(SERIES_ID_CB),
+            pd.concat(
+                [
+                    read_usa_bls(file_name).pipe(
+                        pull_by_series_id, series_id).pipe(numerify)
+                    for series_id, file_name in SERIES_ID_LS.items()
+                ],
+                axis=1
+            ),
         ],
         axis=1
     )
-    df.plot(
-        title='US Unemployment, {}$-${}'.format(*df.index[[0, -1]]),
-        grid=True
-    )
-    df['fused'] = df.mean(1)
-    autocorrelation_plot(df.iloc[:, -1])
-    plt.grid(True)
-    if FLAG:
-        plt.savefig(Path(_DIR).joinpath(_FILE_NAME), format='pdf', dpi=900)
+    df.plot(title='US Unemployment, {}$-${}'.format(*df.index[[0, -1]]))
+    df.pipe(transform_mean_wide, name="fused").pipe(autocorrelation_plot)
+
+    if savefig:
+        plt.savefig(Path(DIR).joinpath(FILE_NAME), format='pdf', dpi=900)
 
 
 if __name__ == '__main__':

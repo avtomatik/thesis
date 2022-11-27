@@ -495,7 +495,7 @@ def page_0x99_table_0x7() -> DataFrame:
         df.iloc[:, 1].rolling(window=3, center=True).mean())
     df['sub_pro_com'] = df.iloc[:, 0].sub(
         df.iloc[:, 0].rolling(window=3, center=True).mean())
-    return df.iloc[:, -2:].dropna().astype(int)
+    return df.iloc[:, -2:].dropna(axis=0).astype(int)
 
 
 def page_0x9f_table_0x8() -> DataFrame:

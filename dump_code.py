@@ -15,7 +15,7 @@ import sqlite3
 from pathlib import Path
 
 import pandas as pd
-from collect.lib import collect_usa_bea_labor_mfg
+from collect.lib import collect_usa_bea, collect_usa_bea_labor_mfg
 from pandas import DataFrame
 from pull.lib import pull_by_series_id
 from read.lib import (read_can, read_temporary, read_usa_bea,
@@ -36,7 +36,7 @@ def append_series_ids_sum(df, chunk, series_ids):
             axis=1
         )
     series_ids.extend(['sum'])
-    _chunk['_'.join(series_ids)] = _chunk.sum(1)
+    _chunk['_'.join(series_ids)] = _chunk.sum(axis=1)
     return pd.concat(
         [
             chunk,
@@ -281,10 +281,10 @@ def transform_center_by_period(df: DataFrame) -> DataFrame:
     Parameters
     ----------
     df : DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Target Series
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Target Series
+        ================== =================================
     Returns
     -------
     DataFrame
@@ -393,13 +393,7 @@ def collect_usa_xlsm() -> DataFrame:
     }
     return pd.concat(
         [
-            pd.concat(
-                [
-                    read_usa_bea(url).pipe(pull_by_series_id, series_id)
-                    for series_id, url in SERIES_IDS.items()
-                ],
-                axis=1
-            ),
+            collect_usa_bea(SERIES_IDS),
             read_temporary('dataset_usa_0025_p_r.txt'),
         ],
         axis=1
@@ -413,10 +407,10 @@ def collect_bea_def() -> DataFrame:
     Returns
     -------
     DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Gross Domestic Product Deflator
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Gross Domestic Product Deflator
+        ================== =================================
 
     """
     df = collect_bea_gdp()
@@ -431,11 +425,11 @@ def collect_bea_gdp() -> DataFrame:
     Returns
     -------
     DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Nominal
-    df.iloc[:, 1]      Real
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Nominal
+        df.iloc[:, 1]      Real
+        ================== =================================
     """
     SERIES_IDS = {
         # =====================================================================
@@ -447,13 +441,7 @@ def collect_bea_gdp() -> DataFrame:
         # =====================================================================
         'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
     }
-    return pd.concat(
-        [
-            pull_by_series_id(read_usa_bea(url), series_id)
-            for series_id, url in SERIES_IDS.items()
-        ],
-        axis=1
-    )
+    return collect_usa_bea(SERIES_IDS)
 
 
 def collect_capital_combined_archived() -> DataFrame:
@@ -475,16 +463,27 @@ def collect_capital_combined_archived() -> DataFrame:
         # =====================================================================
         'k1n31gd1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
     }
+    SERIES_IDS_LAB = {
+        # =====================================================================
+        # Manufacturing Labor Series: H4313C, 1929--1948
+        # =====================================================================
+        'H4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        # =====================================================================
+        # Manufacturing Labor Series: J4313C, 1948--1987
+        # =====================================================================
+        'J4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        # =====================================================================
+        # Manufacturing Labor Series: A4313C, 1987--2000
+        # =====================================================================
+        'A4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        # =====================================================================
+        # Manufacturing Labor Series: N4313C, 1998--2020
+        # =====================================================================
+        'N4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+    }
     return pd.concat(
         [
-            pd.concat(
-                [
-                    pull_by_series_id(read_usa_bea(url), series_id)
-                    for series_id, url in SERIES_IDS.items()
-                ],
-                axis=1,
-                sort=True
-            ),
+            collect_usa_bea(SERIES_IDS),
             # =================================================================
             # Capacity Utilization Series: CAPUTL.B50001.A, 1967--2012
             # =================================================================
@@ -492,15 +491,25 @@ def collect_capital_combined_archived() -> DataFrame:
             # =================================================================
             # Manufacturing Labor Series: _4313C0, 1929--2020
             # =================================================================
-            collect_usa_bea_labor_mfg(),
+            collect_usa_bea(SERIES_IDS_LAB).pipe(transform_mean_wide, name="bea_labor_mfg"),
             # =================================================================
             # For Overall Labor Series, See: A4601C0, 1929--2020
             # =================================================================
-            collect_usa_bea_labor_mfg()
+            collect_usa_bea_labor()
         ],
         axis=1,
         sort=True
     ).dropna(axis=0)
+
+
+def collect_usa_bea_labor() -> DataFrame:
+    """
+    Labor Series: A4601C0, 1929--2013
+    """
+    SERIES_IDS = {
+        'A4601C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
+    }
+    return collect_usa_bea(SERIES_IDS)
 
 
 DIR = '/media/green-machine/KINGSTON'

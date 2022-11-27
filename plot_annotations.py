@@ -122,7 +122,7 @@ def main():
     cap_b_b = _df.loc[:, ['k1ntotl1si000']].mul(_defl)
     cap_b_c = _df.loc[:, ['k3n31gd1es000']].mul(_df.loc[:, ['A191RD3']])
     cap_b_d = _df.loc[:, ['k3n31gd1es000']].mul(_defl)
-    L = _df.loc[:, ['bea_mfg_labor']]
+    L = _df.loc[:, ['bea_labor_mfg']]
     # =========================================================================
     # Production
     # =========================================================================

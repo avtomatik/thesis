@@ -46,13 +46,13 @@ def _cap_productivity(array: np.array, k: float = 0.25, b: float = 1.01) -> np.a
 
 def plot_investment_manufacturing(df: DataFrame) -> None:
     """
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Gross Domestic Investment
-    df.iloc[:, 1]      National Income
-    df.iloc[:, 2]      Nominal Gross Domestic Product
-    df.iloc[:, 3]      Real Gross Domestic Product
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Gross Domestic Investment
+        df.iloc[:, 1]      National Income
+        df.iloc[:, 2]      Nominal Gross Domestic Product
+        df.iloc[:, 3]      Real Gross Domestic Product
+        ================== =================================
     """
     _df = df.copy()
     # =========================================================================
@@ -83,20 +83,20 @@ def plot_investment_manufacturing(df: DataFrame) -> None:
         _df.index, _df.iloc[:, -2], '--',
         _df.index, _df.iloc[:, -1], '--'
     )
-    plt.grid(True)
+    plt.grid()
     plt.legend()
     plt.show()
 
 
 def plot_investment(df: DataFrame) -> None:
     """
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Gross Domestic Investment
-    df.iloc[:, 1]      Nominal Gross Domestic Product
-    df.iloc[:, 2]      Real Gross Domestic Product
-    df.iloc[:, 3]      Prime Rate
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Gross Domestic Investment
+        df.iloc[:, 1]      Nominal Gross Domestic Product
+        df.iloc[:, 2]      Real Gross Domestic Product
+        df.iloc[:, 3]      Prime Rate
+        ================== =================================
     """
     _df = df.copy()
     # =========================================================================
@@ -112,19 +112,19 @@ def plot_investment(df: DataFrame) -> None:
     )
     plt.xlabel('Percentage')
     plt.ylabel('Millions of Dollars')
-    plt.grid(True)
+    plt.grid()
     plt.show()
 
 
 def plot_c(df: DataFrame) -> None:
     """
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Gross Domestic Investment
-    df.iloc[:, 1]      Nominal Gross Domestic Product
-    df.iloc[:, 2]      Real Gross Domestic Product
-    df.iloc[:, 3]      M1
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Gross Domestic Investment
+        df.iloc[:, 1]      Nominal Gross Domestic Product
+        df.iloc[:, 2]      Real Gross Domestic Product
+        df.iloc[:, 3]      M1
+        ================== =================================
     """
     # =========================================================================
     # "Real" Investment
@@ -141,20 +141,20 @@ def plot_c(df: DataFrame) -> None:
     plt.xlabel('Period')
     plt.ylabel('Index')
     plt.legend()
-    plt.grid(True)
+    plt.grid()
     plt.show()
 
 
 def plot_d(df: DataFrame) -> None:
     """
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Gross Domestic Investment
-    df.iloc[:, 1]      Gross Domestic Investment Price Index
-    df.iloc[:, 2]      Fixed Investment
-    df.iloc[:, 3]      Fixed Investment Price Index
-    df.iloc[:, 4]      Real Gross Domestic Product
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Gross Domestic Investment
+        df.iloc[:, 1]      Gross Domestic Investment Price Index
+        df.iloc[:, 2]      Fixed Investment
+        df.iloc[:, 3]      Fixed Investment Price Index
+        df.iloc[:, 4]      Real Gross Domestic Product
+        ================== =================================
     """
     # =========================================================================
     # Basic Year
@@ -188,39 +188,39 @@ def plot_d(df: DataFrame) -> None:
     plt.xlabel('Period')
     plt.ylabel('Billions of Dollars')
     plt.legend()
-    plt.grid(True)
+    plt.grid()
     plt.figure(2)
     plt.plot(df.iloc[:, 4])
     plt.title(
         'Real Gross Domestic Product $GDP$, {}=100, {}$-${}'.format(*df.index[[_b, 0, -1]]))
     plt.xlabel('Period')
     plt.ylabel('Billions of Dollars')
-    plt.grid(True)
+    plt.grid()
     plt.figure(3)
     plt.plot(df.iloc[:, -2], df.iloc[:, 4])
     plt.title(
         '$GPDI$ & $GPFI(n)$, {}=100, {}$-${}'.format(*df.index[[_b, 0, -1]]))
     plt.xlabel('Billions of Dollars')
     plt.ylabel('Billions of Dollars')
-    plt.grid(True)
+    plt.grid()
     plt.figure(4)
     plt.plot(df.iloc[:, -1], df.iloc[:, 4])
     plt.title(
         '$GPFI(n)$ & $GDP$, {}=100, {}$-${}'.format(*df.index[[_b, 0, -1]]))
     plt.xlabel('Billions of Dollars')
     plt.ylabel('Billions of Dollars')
-    plt.grid(True)
+    plt.grid()
     plt.show()
 
 
 def plot_e(df: DataFrame) -> None:
     """
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Investment
-    df.iloc[:, 1]      Production
-    df.iloc[:, 2]      Capital
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Investment
+        df.iloc[:, 1]      Production
+        df.iloc[:, 2]      Capital
+        ================== =================================
     """
     # =========================================================================
     # Investment to Production Ratio
@@ -252,7 +252,7 @@ def plot_e(df: DataFrame) -> None:
     )
     plt.xlabel('Investment, Billions of Dollars')
     plt.ylabel('Gross Domestic Product, Billions of Dollars')
-    plt.grid(True)
+    plt.grid()
     plt.legend(
         [
             '$P(I)$',
@@ -266,7 +266,7 @@ def plot_e(df: DataFrame) -> None:
     plt.show()
 
 
-def plot_uscb_manufacturing(df: DataFrame, base: int) -> None:
+def plot_uscb_manufacturing(df: DataFrame, year_base: int) -> None:
     plt.figure()
     plt.plot(df.iloc[:, [0, 2]], label=[
         'Fabricant S., Shiskin J., NBER',
@@ -274,15 +274,15 @@ def plot_uscb_manufacturing(df: DataFrame, base: int) -> None:
     ]
     )
     plt.plot(df.iloc[:, 1], color='red', linewidth=4, label='W.M. Persons')
-    plt.axvline(x=df.index[base], linestyle=':')
+    plt.axvline(x=df.index[year_base], linestyle=':')
     plt.title(
         'US Manufacturing Indexes Of Physical Production Of Manufacturing, {}=100, {}$-${}'.format(
-            df.index[base], *df.index[[0, -1]]
+            df.index[year_base], *df.index[[0, -1]]
         )
     )
     plt.xlabel('Period')
     plt.ylabel('Percentage')
-    plt.grid(True)
+    plt.grid()
     plt.legend()
     plt.show()
 
@@ -298,7 +298,7 @@ def plot_uscb_cap(df: DataFrame) -> None:
     )
     plt.xlabel('Period')
     plt.ylabel('Millions of Dollars')
-    plt.grid(True)
+    plt.grid()
     plt.legend()
     plt.show()
 
@@ -314,11 +314,11 @@ def plot_uscb_cap_deflator(df: DataFrame) -> None:
     )
     plt.xlabel('Period')
     plt.ylabel('Index')
-    plt.grid(True)
+    plt.grid()
     plt.show()
 
 
-def plot_uscb_metals(df: DataFrame, base: tuple[int]) -> None:
+def plot_uscb_metals(df: DataFrame, years_base: tuple[int]) -> None:
     _DESCS_RAW = (
         'P262 - Rails Produced, {}=100',
         'P265 - Raw Steel Produced - Total, {}=100',
@@ -330,7 +330,7 @@ def plot_uscb_metals(df: DataFrame, base: tuple[int]) -> None:
         'P294 - Railroad Passenger Cars Produced, {}=100',
         'P295 - Railroad Freight Cars Produced, {}=100',
     )
-    _DESCS = [_desc.format(_b) for _desc, _b in zip(_DESCS_RAW, base)]
+    _DESCS = [_desc.format(_b) for _desc, _b in zip(_DESCS_RAW, years_base)]
     _MAPPING = dict(zip(df.columns, _DESCS))
     _COLUMN_LOCS = [_ for _ in range(df.shape[1]) if _ not in range(1, 6)]
     plt.figure(1)
@@ -339,11 +339,11 @@ def plot_uscb_metals(df: DataFrame, base: tuple[int]) -> None:
         label=[_MAPPING[_] for _ in df.columns[range(1, 6)]]
     )
     for _ in range(1, 6):
-        plt.axvline(x=base[_], linestyle=':')
+        plt.axvline(x=years_base[_], linestyle=':')
     plt.title('Steel Production')
     plt.xlabel('Period')
     plt.ylabel('Percentage')
-    plt.grid(True)
+    plt.grid()
     plt.legend()
     plt.figure(2)
     plt.semilogy(
@@ -351,11 +351,11 @@ def plot_uscb_metals(df: DataFrame, base: tuple[int]) -> None:
         label=[_MAPPING[_] for _ in df.columns[_COLUMN_LOCS]]
     )
     for _ in _COLUMN_LOCS:
-        plt.axvline(x=base[_], linestyle=':')
+        plt.axvline(x=years_base[_], linestyle=':')
     plt.title('Rails & Cars Production')
     plt.xlabel('Period')
     plt.ylabel('Percentage')
-    plt.grid(True)
+    plt.grid()
     plt.legend()
     plt.show()
 
@@ -384,7 +384,7 @@ def plot_uscb_commodities(series_ids: tuple[str]) -> None:
     plt.title(_title)
     plt.xlabel('Period')
     plt.ylabel('Percentage')
-    plt.grid(True)
+    plt.grid()
     plt.legend(series_ids)
     plt.show()
 
@@ -395,7 +395,7 @@ def plot_uscb_immigration(df: DataFrame) -> None:
     plt.title('Total Immigration, {}$-${}'.format(*df.index[[0, -1]]))
     plt.xlabel('Period')
     plt.ylabel('People')
-    plt.grid(True)
+    plt.grid()
     plt.show()
 
 
@@ -405,20 +405,20 @@ def plot_uscb_unemployment_hours_worked(df: DataFrame) -> None:
     plt.title('Unemployment, Percent of Civilian Labor Force')
     plt.xlabel('Period')
     plt.ylabel('Percentage')
-    plt.grid(True)
+    plt.grid()
     plt.figure(2)
     plt.plot(df.iloc[:, [2, 3]], label=['Bureau of Labour', 'Wolman'])
     plt.title('All Manufacturing, Average Full-Time Weekly Hours, 1890-1899=100')
     plt.xlabel('Period')
     plt.ylabel('Percentage')
-    plt.grid(True)
+    plt.grid()
     plt.legend()
     plt.figure(3)
     plt.plot(df.iloc[:, 4])
     plt.title('Implicit Number of Workers')
     plt.xlabel('Period')
     plt.ylabel('Persons')
-    plt.grid(True)
+    plt.grid()
     plt.show()
 
 
@@ -458,20 +458,20 @@ def plot_uscb_gnp(df: DataFrame) -> None:
     )
     plt.xlabel('Period')
     plt.ylabel('Percentage')
-    plt.grid(True)
+    plt.grid()
     plt.legend()
     plt.show()
 
 
 def plot_uscb_farm_lands() -> None:
     """Census 1975, Land in Farms"""
-    ARCHIVE_NAME, SERIES_ID = 'dataset_uscb.zip', 'K0005'
+    SERIES_ID = {'K0005': 'dataset_uscb.zip'}
     plt.figure()
-    plt.plot(read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, SERIES_ID))
+    plt.plot(collect_usa_hist(SERIES_ID))
     plt.title('Land in Farms')
     plt.xlabel('Period')
     plt.ylabel('1,000 acres')
-    plt.grid(True)
+    plt.grid()
     plt.show()
 
 
@@ -492,7 +492,7 @@ def plot_uscb_trade(df: DataFrame) -> None:
     )
     plt.xlabel('Period')
     plt.ylabel('Millions of Dollars')
-    plt.grid(True)
+    plt.grid()
     plt.legend()
     plt.show()
 
@@ -514,7 +514,7 @@ def plot_uscb_trade_gold_silver(df: DataFrame) -> None:
     )
     plt.xlabel('Period')
     plt.ylabel('Millions of Dollars')
-    plt.grid(True)
+    plt.grid()
     plt.legend()
     plt.show()
 
@@ -542,14 +542,14 @@ def plot_uscb_trade_by_countries(df: DataFrame) -> None:
     plt.title('Net Exports by Regions')
     plt.xlabel('Period')
     plt.ylabel('Millions of Dollars')
-    plt.grid(True)
+    plt.grid()
     plt.legend()
     plt.figure(2)
     plt.semilogy(df.iloc[:, -len(_LABELS):], label=_LABELS)
     plt.title('Net Exports by Regions to Overall Net Exports')
     plt.xlabel('Period')
     plt.ylabel('Index')
-    plt.grid(True)
+    plt.grid()
     plt.legend()
     plt.show()
 
@@ -569,7 +569,7 @@ def plot_uscb_money_stock(df: DataFrame) -> None:
     plt.title('Currency Dynamics, {}=100'.format(YEAR_BASE))
     plt.xlabel('Period')
     plt.ylabel('Percentage')
-    plt.grid(True)
+    plt.grid()
     plt.legend()
     plt.show()
 
@@ -577,15 +577,17 @@ def plot_uscb_money_stock(df: DataFrame) -> None:
 def plot_uscb_finance() -> None:
     """Census Financial Markets & Institutions Series"""
     ARCHIVE_NAME = 'dataset_uscb.zip'
-    ids = itertools.chain(
-        range(410, 424),
-        range(580, 588),
-        range(610, 634),
-        range(741, 756),
-        range(879, 933),
-        range(947, 957),
-    )
-    SERIES_IDS = {f'X{_:04n}': ARCHIVE_NAME for _ in ids}
+    SERIES_IDS = {
+        f'X{_:04n}': ARCHIVE_NAME
+        for _ in itertools.chain(
+            range(410, 424),
+            range(580, 588),
+            range(610, 634),
+            range(741, 756),
+            range(879, 933),
+            range(947, 957),
+        )
+    }
     for _, series_id in enumerate(SERIES_IDS, start=1):
         df = read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
         df = df.div(df.iloc[0, :]).mul(100)
@@ -595,20 +597,20 @@ def plot_uscb_finance() -> None:
         plt.title('{}, {}$-${}'.format(descr, *df.index[[0, -1]]))
         plt.xlabel('Period')
         plt.ylabel('Percentage')
-        plt.grid(True)
+        plt.grid()
         plt.legend()
         plt.show()
 
 
 def plot_approx_linear(df: DataFrame) -> None:
     """
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Real Values for Price Deflator
-    df.iloc[:, 1]      Nominal Values for Price Deflator
-    df.iloc[:, 2]      Regressor
-    df.iloc[:, 3]      Regressand
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Real Values for Price Deflator
+        df.iloc[:, 1]      Nominal Values for Price Deflator
+        df.iloc[:, 2]      Regressor
+        df.iloc[:, 3]      Regressand
+        ================== =================================
     """
     df.iloc[:, -1] = df.iloc[:, -1].apply(pd.to_numeric, errors='coerce')
     df.dropna(inplace=True)
@@ -657,20 +659,20 @@ def plot_approx_linear(df: DataFrame) -> None:
         df.iloc[:, -3], df.iloc[:, -1],
         label='$\\hat Y = {:.4f}+{:.4f}X$'.format(*_p1[::-1])
     )
-    plt.grid(True)
+    plt.grid()
     plt.legend()
     plt.show()
 
 
 def plot_approx_log_linear(df: DataFrame) -> None:
     """
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Real Values for Price Deflator
-    df.iloc[:, 1]      Nominal Values for Price Deflator
-    df.iloc[:, 2]      Regressor
-    df.iloc[:, 3]      Regressand
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Real Values for Price Deflator
+        df.iloc[:, 1]      Nominal Values for Price Deflator
+        df.iloc[:, 2]      Regressor
+        df.iloc[:, 3]      Regressand
+        ================== =================================
     """
     MAP_DESC = {
         'A032RC1': 'National Income',
@@ -725,7 +727,7 @@ def plot_approx_log_linear(df: DataFrame) -> None:
         df.iloc[:, -3], df.iloc[:, -1],
         label='$\\hat Y = {:.4f}+{:.4f}X$'.format(*_p1[::-1])
     )
-    plt.grid(True)
+    plt.grid()
     plt.legend()
     plt.show()
 
@@ -737,11 +739,11 @@ def plot_lab_cap_inty_lab_prty_closure(df: DataFrame) -> None:
     Parameters
     ----------
     df : DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Labor Capital Intensity
-    df.iloc[:, 1]      Labor Productivity
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Labor Capital Intensity
+        df.iloc[:, 1]      Labor Productivity
+        ================== =================================
     Returns
     -------
     None
@@ -763,10 +765,10 @@ def plot_lab_cap_inty(df: DataFrame) -> None:
     Parameters
     ----------
     df : DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Labor Capital Intensity
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Labor Capital Intensity
+        ================== =================================
     Returns
     -------
     None
@@ -829,7 +831,7 @@ def plot_lab_cap_inty(df: DataFrame) -> None:
     plt.xlabel('Period')
     plt.ylabel('Index')
     plt.legend()
-    plt.grid(True)
+    plt.grid()
     plt.show()
 
 
@@ -840,10 +842,10 @@ def plot_lab_prty(df: DataFrame) -> None:
     Parameters
     ----------
     df : DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Labor Productivity
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Labor Productivity
+        ================== =================================
     Returns
     -------
     None
@@ -915,7 +917,7 @@ def plot_lab_prty(df: DataFrame) -> None:
     plt.xlabel('Period')
     plt.ylabel('Index')
     plt.legend()
-    plt.grid(True)
+    plt.grid()
     plt.show()
 
 
@@ -945,12 +947,12 @@ def plot_built_in() -> None:
     _df = read_worldbank(SOURCE_ID)
     for func in FUNCTIONS:
         for _, country in enumerate(_df.columns, start=1):
-            chunk = _df.loc[:, [country]].dropna()
+            chunk = _df.loc[:, [country]].dropna(axis=0)
             if not chunk.empty:
                 plt.figure(_)
                 partial(func, chunk)()
                 plt.title(country)
-                plt.grid(True)
+                plt.grid()
         plt.show()
 
 
@@ -960,19 +962,19 @@ def plot_can_test(df: DataFrame) -> None:
     plt.title('Discrepancy')
     plt.xlabel('Period')
     plt.ylabel('Index')
-    plt.grid(True)
+    plt.grid()
     plt.show()
 
 
-def plot_capital_modelling(df: DataFrame, base: int) -> None:
+def plot_capital_modelling(df: DataFrame, year_base: int) -> None:
     """
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Investment
-    df.iloc[:, 1]      Production
-    df.iloc[:, 2]      Capital
-    df.iloc[:, 3]      Capital Retirement
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Investment
+        df.iloc[:, 1]      Production
+        df.iloc[:, 2]      Capital
+        df.iloc[:, 3]      Capital Retirement
+        ================== =================================
     """
     _params_i = np.polyfit(
         df.index.to_series().astype(int),
@@ -1010,7 +1012,7 @@ def plot_capital_modelling(df: DataFrame, base: int) -> None:
     label = '$\\lambda = {1:,.4f}\\ {0:,.4f}\\times t$'.format(
         *_params_t) if _params_t[0] < 0 else '$\\lambda = {1:,.4f} + {0:,.4f} \\times t$'.format(*_params_t)
     plt.plot(_df.iloc[:, -4], label=label)
-    plt.grid(True)
+    plt.grid()
     plt.legend()
     plt.figure(2)
     plt.title(
@@ -1024,7 +1026,7 @@ def plot_capital_modelling(df: DataFrame, base: int) -> None:
     label = '$S = {1:,.4f}\\ {0:,.4f}\\times t$'.format(
         *_params_i) if _params_i[0] < 0 else '$S = {1:,.4f} + {0:,.4f} \\times t$'.format(*_params_i)
     plt.plot(_df.iloc[:, -5], label=label)
-    plt.grid(True)
+    plt.grid()
     plt.legend()
     plt.figure(3)
     plt.title(
@@ -1035,19 +1037,19 @@ def plot_capital_modelling(df: DataFrame, base: int) -> None:
     plt.xlabel('Period')
     plt.ylabel('Index')
     plt.plot(_df.iloc[:, 3], label='$\\alpha$')
-    plt.grid(True)
+    plt.grid()
     plt.legend()
     plt.figure(4)
     plt.title('$K$ for the US, {}$-${}'.format(*_df.index[[0, -2]]))
     plt.xlabel('Period')
-    plt.ylabel('Billions of Dollars, {}=100'.format(base))
+    plt.ylabel('Billions of Dollars, {}=100'.format(year_base))
     plt.semilogy(
         _df.iloc[:, -3:],
         label=['$K\\left(\\pi = \\frac{7}{8}\\right)$',
                '$K\\left(\\pi = 1\\right)$',
                '$K\\left(\\pi = \\frac{9}{8}\\right)$', ]
     )
-    plt.grid(True)
+    plt.grid()
     plt.legend()
     plt.show()
 
@@ -1068,7 +1070,7 @@ def plot_capital_purchases(df: DataFrame) -> None:
     plt.xlabel('Period')
     plt.ylabel('Millions of Dollars')
     plt.legend()
-    plt.grid(True)
+    plt.grid()
     plt.show()
 
 
@@ -1102,9 +1104,9 @@ def plot_cobb_douglas(df: DataFrame, params: tuple[float], mapping: dict) -> Non
     plt.xlabel('Period')
     plt.ylabel('Indexes')
     plt.title(mapping['fg_a'].format(*df.index[[0, -1]],
-                                     mapping['year_price']))
+                                     mapping['year_base']))
     plt.legend()
-    plt.grid(True)
+    plt.grid()
     plt.figure(2)
     plt.semilogy(
         df.iloc[:, [2, 9]],
@@ -1120,9 +1122,9 @@ def plot_cobb_douglas(df: DataFrame, params: tuple[float], mapping: dict) -> Non
     plt.xlabel('Period')
     plt.ylabel('Production')
     plt.title(mapping['fg_b'].format(*df.index[[0, -1]],
-                                     mapping['year_price']))
+                                     mapping['year_base']))
     plt.legend()
-    plt.grid(True)
+    plt.grid()
     plt.figure(3)
     plt.plot(
         df.iloc[:, [8, 11]],
@@ -1138,13 +1140,13 @@ def plot_cobb_douglas(df: DataFrame, params: tuple[float], mapping: dict) -> Non
     plt.ylabel('Percentage Deviation')
     plt.title(mapping['fg_c'])
     plt.legend()
-    plt.grid(True)
+    plt.grid()
     plt.figure(4)
     plt.plot(df.iloc[:, 9].div(df.iloc[:, 2]).sub(1))
     plt.xlabel('Period')
     plt.ylabel('Percentage Deviation')
     plt.title(mapping['fg_d'].format(*df.index[[0, -1]]))
-    plt.grid(True)
+    plt.grid()
     plt.figure(5, figsize=(5, 8))
     plt.scatter(df.iloc[:, 5], df.iloc[:, 4])
     plt.scatter(df.iloc[:, 5], df.iloc[:, 6])
@@ -1163,7 +1165,7 @@ def plot_cobb_douglas(df: DataFrame, params: tuple[float], mapping: dict) -> Non
     plt.ylabel('Indexes')
     plt.title(mapping['fg_e'])
     plt.legend()
-    plt.grid(True)
+    plt.grid()
     plt.show()
 
 
@@ -1174,12 +1176,12 @@ def plot_cobb_douglas_3d(df: DataFrame) -> None:
     Parameters
     ----------
     df : DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Capital
-    df.iloc[:, 1]      Labor
-    df.iloc[:, 2]      Product
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Capital
+        df.iloc[:, 1]      Labor
+        df.iloc[:, 2]      Product
+        ================== =================================
     Returns
     -------
     None
@@ -1215,9 +1217,9 @@ def plot_cobb_douglas_alt(df: DataFrame, params: tuple[float], mapping: dict) ->
     plt.xlabel('Period')
     plt.ylabel('Indexes')
     plt.title(mapping['fg_a'].format(*df.index[[0, -1]],
-                                     mapping['year_price']))
+                                     mapping['year_base']))
     plt.legend()
-    plt.grid(True)
+    plt.grid()
     plt.figure(2)
     plt.plot(
         df.iloc[:, [3, 17]],
@@ -1233,9 +1235,9 @@ def plot_cobb_douglas_alt(df: DataFrame, params: tuple[float], mapping: dict) ->
     plt.xlabel('Period')
     plt.ylabel('Production')
     plt.title(mapping['fg_b'].format(*df.index[[0, -1]],
-                                     mapping['year_price']))
+                                     mapping['year_base']))
     plt.legend()
-    plt.grid(True)
+    plt.grid()
     plt.figure(3)
     plt.plot(
         df.iloc[:, [15, 18]],
@@ -1251,13 +1253,13 @@ def plot_cobb_douglas_alt(df: DataFrame, params: tuple[float], mapping: dict) ->
     plt.ylabel('Percentage Deviation')
     plt.title(mapping['fg_c'])
     plt.legend()
-    plt.grid(True)
+    plt.grid()
     plt.figure(4)
     plt.plot(df.iloc[:, 17].div(df.iloc[:, 3]).sub(1))
     plt.xlabel('Period')
     plt.ylabel('Percentage Deviation')
     plt.title(mapping['fg_d'].format(*df.index[[0, -1]]))
-    plt.grid(True)
+    plt.grid()
     plt.figure(5, figsize=(5, 8))
     plt.scatter(df.iloc[:, 6], df.iloc[:, 13])
     plt.scatter(df.iloc[:, 6], df.iloc[:, 14])
@@ -1276,7 +1278,7 @@ def plot_cobb_douglas_alt(df: DataFrame, params: tuple[float], mapping: dict) ->
     plt.ylabel('Indexes')
     plt.title(mapping['fg_e'])
     plt.legend()
-    plt.grid(True)
+    plt.grid()
     plt.show()
 
 
@@ -1287,12 +1289,12 @@ def plot_cobb_douglas_complex(df: DataFrame) -> None:
     Parameters
     ----------
     df : DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Capital
-    df.iloc[:, 1]      Labor
-    df.iloc[:, 2]      Product
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Capital
+        df.iloc[:, 1]      Labor
+        df.iloc[:, 2]      Product
+        ================== =================================
     Returns
     -------
     None
@@ -1303,7 +1305,7 @@ def plot_cobb_douglas_complex(df: DataFrame) -> None:
         'fg_c': 'Chart III Percentage Deviations of $P$ and $P\'$ from Their Trend Lines\nTrend Lines=3 Year Moving Average',
         'fg_d': 'Chart IV Percentage Deviations of Computed from Actual Product {}$-${}',
         'fg_e': 'Chart V Relative Final Productivities of Labor and Capital',
-        'year_price': 1899,
+        'year_base': 1899,
     }
     _df, _params = df.pipe(transform_cobb_douglas, year_base=1899)
     plot_cobb_douglas(
@@ -1337,7 +1339,7 @@ def plot_cobb_douglas_tight_layout(df: DataFrame, params: tuple[float], mapping:
     axes[0].set_xlabel('Period')
     axes[0].set_ylabel('Indexes')
     axes[0].set_title(mapping['fg_a'].format(*df.index[[0, -1]],
-                                             mapping['year_price']))
+                                             mapping['year_base']))
     axes[0].legend()
     axes[0].grid(True)
     axes[1].plot(
@@ -1351,7 +1353,7 @@ def plot_cobb_douglas_tight_layout(df: DataFrame, params: tuple[float], mapping:
     axes[1].set_xlabel('Period')
     axes[1].set_ylabel('Production')
     axes[1].set_title(mapping['fg_b'].format(*df.index[[0, -1]],
-                                             mapping['year_price']))
+                                             mapping['year_base']))
     axes[1].legend()
     axes[1].grid(True)
     axes[2].plot(
@@ -1454,7 +1456,7 @@ def plot_douglas(
             plt.title(_tt)
             plt.xlabel('Period')
             plt.ylabel(_mr)
-            plt.grid(True)
+            plt.grid()
             if not _lb is None:
                 plt.legend(_lb)
             plt.show()
@@ -1480,7 +1482,7 @@ def plot_douglas(
             plt.title(_tt)
             plt.xlabel('Period')
             plt.ylabel(_mr)
-            plt.grid(True)
+            plt.grid()
             plt.show()
 
 
@@ -1489,12 +1491,12 @@ def plot_elasticity(df: DataFrame) -> None:
     Parameters
     ----------
     df : DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Real Values for Price Deflator
-    df.iloc[:, 1]      Nominal Values for Price Deflator
-    df.iloc[:, 2]      Target Series
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Real Values for Price Deflator
+        df.iloc[:, 1]      Nominal Values for Price Deflator
+        df.iloc[:, 2]      Target Series
+        ================== =================================
     Returns
     -------
     None
@@ -1545,7 +1547,7 @@ def plot_elasticity(df: DataFrame) -> None:
         df.iloc[:, 4],
         label=f'{_title[1]}, Rolling Mean, Window = 2'
     )
-    plt.grid(True)
+    plt.grid()
     plt.legend()
     plt.figure(2)
     plt.title('Elasticity: {}, {}, {}=100'.format(*_title))
@@ -1563,14 +1565,14 @@ def plot_elasticity(df: DataFrame) -> None:
         df.iloc[:, 8],
         label='$\\overline{\\epsilon(E_{T+\\frac{1}{2}})}$'
     )
-    plt.grid(True)
+    plt.grid()
     plt.legend()
     plt.figure(3)
     plt.title('Elasticity: {}, {}, {}=100'.format(*_title))
     plt.xlabel('{}, {}, {}=100'.format(*_title))
     plt.ylabel('Elasticity: {}, {}, {}=100'.format(*_title))
     plt.plot(df.iloc[:, 3], df.iloc[:, 8], label='$\\frac{\\epsilon(X)}{X}$')
-    plt.grid(True)
+    plt.grid()
     plt.legend()
     plt.show()
 
@@ -1578,10 +1580,10 @@ def plot_elasticity(df: DataFrame) -> None:
 def plot_ewm(df: DataFrame, step: float = 0.1) -> None:
     """Single Exponential Smoothing
     Robert Goodell Brown, 1956
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Target Series
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Target Series
+        ================== =================================
     """
     _alpha = 0.25
     # =========================================================================
@@ -1608,12 +1610,12 @@ def plot_ewm(df: DataFrame, step: float = 0.1) -> None:
     _deltas = pd.concat(
         [
             _smooth.iloc[:, [_]].div(
-                _smooth.iloc[:, [_]].shift(-1)).rsub(1).dropna()
+                _smooth.iloc[:, [_]].shift(-1)).rsub(1).dropna(axis=0)
             for _ in range(_smooth.shape[1])
         ],
         axis=1
     )
-    _deltas.index = _smooth.index.to_series().rolling(2).mean().dropna()
+    _deltas.index = _smooth.index.to_series().rolling(2).mean().dropna(axis=0)
     # =========================================================================
     # Plotting
     # =========================================================================
@@ -1629,7 +1631,7 @@ def plot_ewm(df: DataFrame, step: float = 0.1) -> None:
     plt.ylabel('Index')
     plt.scatter(_smooth.index, _smooth.iloc[:, 0])
     plt.plot(_smooth.iloc[:, 1:])
-    plt.grid(True)
+    plt.grid()
     plt.legend(_labels)
     plt.figure(2)
     plt.title('Deltas of Exponentially Smoothed Series')
@@ -1637,7 +1639,7 @@ def plot_ewm(df: DataFrame, step: float = 0.1) -> None:
     plt.ylabel('Index')
     plt.scatter(_deltas.index, _deltas.iloc[:, 0])
     plt.plot(_deltas.iloc[:, 1:])
-    plt.grid(True)
+    plt.grid()
     plt.legend(_labels)
     plt.show()
 
@@ -1645,10 +1647,10 @@ def plot_ewm(df: DataFrame, step: float = 0.1) -> None:
 def plot_fourier_discrete(df: DataFrame, precision: int = 10) -> None:
     """
     Discrete Fourier Transform based on Simpson's Rule
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Target Series
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Target Series
+        ================== =================================
     """
     _df = df.copy()
     precision += 1
@@ -1686,7 +1688,7 @@ def plot_fourier_discrete(df: DataFrame, precision: int = 10) -> None:
             _fourier.loc[_, 'cos'])).add(np.sin(_df.iloc[:, 1].mul(_)).mul(_fourier.loc[_, 'sin']))
         plt.plot(_df.iloc[:, 2].add(_df.iloc[:, -1]),
                  label=f'$FT_{{{_:02}}}(\\alpha)$')
-    plt.grid(True)
+    plt.grid()
     plt.legend()
     plt.show()
 
@@ -1698,10 +1700,10 @@ def plot_grigoriev(df: DataFrame) -> None:
 
 def plot_growth_elasticity(df: DataFrame) -> None:
     """Growth Elasticity Plotting
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Target Series
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Target Series
+        ================== =================================
     """
     # =========================================================================
     # TODO: Increase Cohesion of This Code: Send Plotting to Separate Function
@@ -1735,13 +1737,13 @@ def plot_growth_elasticity(df: DataFrame) -> None:
     plt.title('Growth & Elasticity Rates')
     plt.xlabel('Period')
     plt.ylabel('Index')
-    plt.grid(True)
+    plt.grid()
     plt.legend()
     plt.show()
 
 
 def plot_increment(df: DataFrame) -> None:
-    FLAG = False
+    savefig = False
     DIR = '/media/green-machine/KINGSTON'
     FILE_NAME = 'fig_file_name.pdf'
     fig, axes = plt.subplots(2, 1)
@@ -1763,11 +1765,8 @@ def plot_increment(df: DataFrame) -> None:
         axes[1].annotate(df.index[_], (df.iloc[_, 2], df.iloc[_, 3]))
     fig.set_size_inches(10., 20.)
     fig.tight_layout()
-    if FLAG:
-        fig.savefig(
-            Path(DIR).joinpath(FILE_NAME),
-            format='pdf', dpi=900
-        )
+    if savefig:
+        fig.savefig(Path(DIR).joinpath(FILE_NAME), format='pdf', dpi=900)
     else:
         plt.show()
 
@@ -1792,7 +1791,7 @@ def plot_rus_is_lm(df: DataFrame) -> None:
     plt.xlabel('Percentage')
     plt.ylabel('RUB, Millions')
     plt.title('M1 Dependency on Prime Rate')
-    plt.grid(True)
+    plt.grid()
     plt.show()
 
 
@@ -1803,10 +1802,10 @@ def plot_kol_zur_filter(df: DataFrame) -> None:
     Parameters
     ----------
     df : DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Target Series
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Target Series
+        ================== =================================
     Returns
     -------
     None
@@ -1832,7 +1831,7 @@ def plot_kol_zur_filter(df: DataFrame) -> None:
         label=['$KZF(\\lambda = {})$'.format(int(_.split('_')[-1], 16))
                for _ in df_e.columns]
     )
-    plt.grid(True)
+    plt.grid()
     plt.legend()
     plt.figure(2)
     plt.title('Kolmogorov$-$Zurbenko Filter Residuals')
@@ -1853,7 +1852,7 @@ def plot_kol_zur_filter(df: DataFrame) -> None:
         label=['$\\delta KZF(\\lambda = {})$'.format(int(_.split('_')[-1], 16))
                for _ in residuals_e.columns]
     )
-    plt.grid(True)
+    plt.grid()
     plt.legend()
     plt.show()
 
@@ -1931,11 +1930,11 @@ def plot_lab_prod_polynomial(df: DataFrame) -> None:
     Parameters
     ----------
     df : DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Labor Capital Intensity
-    df.iloc[:, 1]      Labor Productivity
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Labor Capital Intensity
+        df.iloc[:, 1]      Labor Productivity
+        ================== =================================
     Returns
     ------
     None
@@ -2044,7 +2043,7 @@ def plot_lab_prod_polynomial(df: DataFrame) -> None:
         *df.index[[0, -1]]))
     plt.xlabel('Labor Capital Intensity')
     plt.ylabel('Labor Productivity')
-    plt.grid(True)
+    plt.grid()
     plt.legend()
     plt.figure(2)
     plt.plot(
@@ -2093,7 +2092,7 @@ def plot_lab_prod_polynomial(df: DataFrame) -> None:
     )
     plt.xlabel('Labor Capital Intensity')
     plt.ylabel('Labor Productivity')
-    plt.grid(True)
+    plt.grid()
     plt.legend()
     plt.show()
 
@@ -2101,10 +2100,10 @@ def plot_lab_prod_polynomial(df: DataFrame) -> None:
 def plot_pearson_r_test(df: DataFrame) -> None:
     """
     Left-Side & Right-Side Rolling Means' Calculation & Plotting
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Target Series
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Target Series
+        ================== =================================
     """
     _pearson = DataFrame(columns=['right_to_left_ratio'])
     for _ in range(1 + df.shape[0] // 2):
@@ -2117,9 +2116,9 @@ def plot_pearson_r_test(df: DataFrame) -> None:
         # =====================================================================
         _r_frame = df.iloc[:, 0].rolling(1 + _).mean()
         _pearson.loc[_] = [
-            stats.pearsonr(df.iloc[:, 0][_r_frame.notna()], _r_frame.dropna())[0] /
+            stats.pearsonr(df.iloc[:, 0][_r_frame.notna()], _r_frame.dropna(axis=0))[0] /
             stats.pearsonr(
-                df.iloc[:, 0][_l_frame.notna()], _l_frame.dropna())[0]
+                df.iloc[:, 0][_l_frame.notna()], _l_frame.dropna(axis=0))[0]
         ]
     # =========================================================================
     # Plot 'Window' to 'Right-Side to Left-Side Pearson R
@@ -2129,7 +2128,7 @@ def plot_pearson_r_test(df: DataFrame) -> None:
     plt.xlabel('`Window`')
     plt.ylabel('Index')
     plt.plot(_pearson, label='Right-Side to Left-Side Pearson R Ratio')
-    plt.grid(True)
+    plt.grid()
     plt.legend()
     plt.show()
 
@@ -2141,10 +2140,10 @@ def plot_rolling_mean_filter(df: DataFrame) -> None:
     Parameters
     ----------
     df : DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Target Series
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Target Series
+        ================== =================================
     Returns
     -------
     None
@@ -2172,7 +2171,7 @@ def plot_rolling_mean_filter(df: DataFrame) -> None:
         label=['$\\hat Y_{{m = {}}}$'.format(int(_.split('_')[-1], 16))
                for _ in df_e.columns]
     )
-    plt.grid(True)
+    plt.grid()
     plt.legend()
     plt.figure(2)
     plt.title(
@@ -2195,19 +2194,19 @@ def plot_rolling_mean_filter(df: DataFrame) -> None:
         label=['$\\delta(\\hat Y_{{m = {}}})$'.format(int(_.split('_')[-1], 16))
                for _ in residuals_e.columns]
     )
-    plt.grid(True)
+    plt.grid()
     plt.legend()
     plt.show()
 
 
 def plot_lab_cap_inty_lab_prty(df: DataFrame, params: tuple[float], option: str) -> None:
     """
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      [Logarithm] Labor Capital Intensity
-    df.iloc[:, 1]      [Logarithm] Labor Productivity
-    df.iloc[:, 2]      [Logarithm] Labor Productivity : Estimate
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      [Logarithm] Labor Capital Intensity
+        df.iloc[:, 1]      [Logarithm] Labor Productivity
+        df.iloc[:, 2]      [Logarithm] Labor Productivity : Estimate
+        ================== =================================
     """
     MAP = {
         'Original': {
@@ -2248,7 +2247,7 @@ def plot_lab_cap_inty_lab_prty(df: DataFrame, params: tuple[float], option: str)
     plt.title(MAP[option][1]['title'].format(*df.index[[0, -1]]))
     plt.xlabel(MAP[option][1]['xlabel'])
     plt.ylabel(MAP[option][1]['ylabel'])
-    plt.grid(True)
+    plt.grid()
     plt.legend()
     plt.figure(2)
     plt.plot(
@@ -2259,17 +2258,17 @@ def plot_lab_cap_inty_lab_prty(df: DataFrame, params: tuple[float], option: str)
         *params[::-1], *df.index[[0, -1]]))
     plt.xlabel(MAP[option][2]['xlabel'])
     plt.ylabel(MAP[option][2]['ylabel'])
-    plt.grid(True)
+    plt.grid()
     plt.legend()
     plt.show()
 
 
 def plot_turnover(df: DataFrame) -> None:
     """Static Fixed Assets Turnover Approximation
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Fixed Assets Turnover
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Fixed Assets Turnover
+        ================== =================================
     """
     # =========================================================================
     # Linear: Fixed Assets Turnover
@@ -2304,7 +2303,7 @@ def plot_turnover(df: DataFrame) -> None:
     )
     plt.xlabel('Fixed Assets Turnover')
     plt.ylabel('Fixed Assets Volume')
-    plt.grid(True)
+    plt.grid()
     plt.figure(2)
     plt.scatter(
         df.index,
@@ -2332,7 +2331,7 @@ def plot_turnover(df: DataFrame) -> None:
     )
     plt.xlabel('Period')
     plt.ylabel('Index')
-    plt.grid(True)
+    plt.grid()
     plt.legend()
     plt.figure(3)
     plt.plot(
@@ -2356,7 +2355,7 @@ def plot_turnover(df: DataFrame) -> None:
     )
     plt.xlabel('Period')
     plt.ylabel('Index')
-    plt.grid(True)
+    plt.grid()
     plt.legend()
     plt.show()
 
@@ -2373,7 +2372,7 @@ def plot_usa_nber(df_sic: DataFrame, df_naics: DataFrame, agg: str) -> None:
         plt.title('NBER CES: {} {}'.format(*series_id, agg))
         plt.xlabel('Period')
         plt.ylabel('Dimension')
-        plt.grid(True)
+        plt.grid()
         plt.legend()
         plt.show()
 
@@ -2397,15 +2396,15 @@ def plot_capital_acquisition(df: DataFrame) -> None:
     Parameters
     ----------
     df : DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Nominal Investment
-    df.iloc[:, 1]      Nominal Production
-    df.iloc[:, 2]      Real Production
-    df.iloc[:, 3]      Maximum Real Production
-    df.iloc[:, 4]      Nominal Capital
-    df.iloc[:, 5]      Labor
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Nominal Investment
+        df.iloc[:, 1]      Nominal Production
+        df.iloc[:, 2]      Real Production
+        df.iloc[:, 3]      Maximum Real Production
+        df.iloc[:, 4]      Nominal Capital
+        df.iloc[:, 5]      Labor
+        ================== =================================
 
     Returns
     -------
@@ -2564,7 +2563,7 @@ def plot_capital_acquisition(df: DataFrame) -> None:
     )
     plt.xlabel('Labor Capital Intensity')
     plt.ylabel(f'Labor Productivity, {_df.index[_b]}=100')
-    plt.grid(True)
+    plt.grid()
     plt.figure(2)
     plt.plot(_df.iloc[:, 10], _df.iloc[:, 11])
     plt.plot(_df.iloc[:, 10], _df.iloc[:, 15])
@@ -2575,7 +2574,7 @@ def plot_capital_acquisition(df: DataFrame) -> None:
     )
     plt.xlabel('Log Labor Capital Intensity')
     plt.ylabel(f'Log Labor Productivity, {_df.index[_b]}=100')
-    plt.grid(True)
+    plt.grid()
     plt.figure(3)
     plt.plot(_df.iloc[:, 6])
     plt.plot(_df.iloc[:, 12])
@@ -2586,7 +2585,7 @@ def plot_capital_acquisition(df: DataFrame) -> None:
     )
     plt.xlabel('Period')
     plt.ylabel(f'Fixed Assets Turnover ($\\lambda$), {_df.index[_b]}=100')
-    plt.grid(True)
+    plt.grid()
     plt.figure(4)
     plt.plot(_df.iloc[:, 7])
     plt.plot(_df.iloc[:, 13])
@@ -2598,7 +2597,7 @@ def plot_capital_acquisition(df: DataFrame) -> None:
     plt.xlabel('Period')
     plt.ylabel(
         f'Investment to Gross Domestic Product Ratio, {_df.index[_b]}=100')
-    plt.grid(True)
+    plt.grid()
     plt.figure(5)
     plt.plot(_df.iloc[:, 16])
     plt.title(
@@ -2608,7 +2607,7 @@ def plot_capital_acquisition(df: DataFrame) -> None:
     )
     plt.xlabel('Period')
     plt.ylabel(f'GCF or CA, {_df.index[_b]}=100')
-    plt.grid(True)
+    plt.grid()
     plt.show()
 
 
@@ -2619,14 +2618,14 @@ def plot_capital_retirement(df: DataFrame) -> None:
     Parameters
     ----------
     df : DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Nominal Investment
-    df.iloc[:, 1]      Nominal Production
-    df.iloc[:, 2]      Real Production
-    df.iloc[:, 3]      Nominal Capital
-    df.iloc[:, 4]      Labor
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Nominal Investment
+        df.iloc[:, 1]      Nominal Production
+        df.iloc[:, 2]      Real Production
+        df.iloc[:, 3]      Nominal Capital
+        df.iloc[:, 4]      Labor
+        ================== =================================
 
     Returns
     -------
@@ -2795,13 +2794,13 @@ def plot_capital_retirement(df: DataFrame) -> None:
     plt.xlabel('Period')
     plt.ylabel(f'Product, {_df.index[_b]}=100')
     plt.plot(_df.iloc[:, 2])
-    plt.grid(True)
+    plt.grid()
     plt.figure(2)
     plt.title('Capital, {}=100, {}$-${}'.format(*df.index[[_b, 0, -1]]))
     plt.xlabel('Period')
     plt.ylabel(f'Capital, {_df.index[_b]}=100')
     plt.plot(_df.iloc[:, 3])
-    plt.grid(True)
+    plt.grid()
     plt.figure(3)
     plt.title(
         'Fixed Assets Turnover ($\\lambda$), {}=100, {}$-${}'.format(
@@ -2811,7 +2810,7 @@ def plot_capital_retirement(df: DataFrame) -> None:
     plt.xlabel('Period')
     plt.ylabel(f'Fixed Assets Turnover ($\\lambda$), {_df.index[_b]}=100')
     plt.plot(_df.iloc[:, 2].div(_df.iloc[:, 3]))
-    plt.grid(True)
+    plt.grid()
     plt.figure(4)
     plt.title(
         'Investment to Gross Domestic Product Ratio, {}=100, {}$-${}'.format(
@@ -2823,7 +2822,7 @@ def plot_capital_retirement(df: DataFrame) -> None:
         f'Investment to Gross Domestic Product Ratio, {_df.index[_b]}=100'
     )
     plt.plot(_df.iloc[:, 7])
-    plt.grid(True)
+    plt.grid()
     plt.figure(5)
     plt.title(
         '$\\alpha(t)$, Fixed Assets Retirement Ratio, {}=100, {}$-${}'.format(
@@ -2833,7 +2832,7 @@ def plot_capital_retirement(df: DataFrame) -> None:
     plt.xlabel('Period')
     plt.ylabel(f'$\\alpha(t)$, {_df.index[_b]}=100')
     plt.plot(_df.iloc[:, 9])
-    plt.grid(True)
+    plt.grid()
     plt.figure(6)
     plt.title(
         'Fixed Assets Retirement Ratio to Fixed Assets Retirement Value, {}=100, {}$-${}'.format(
@@ -2843,12 +2842,12 @@ def plot_capital_retirement(df: DataFrame) -> None:
     plt.xlabel(f'$\\alpha(t)$, {_df.index[_b]}=100')
     plt.ylabel(f'Fixed Assets Retirement Value, {_df.index[_b]}=100')
     plt.plot(_df.iloc[:, 9], _df.iloc[:, 8])
-    plt.grid(True)
+    plt.grid()
     plt.figure(7)
     plt.title(
         'Labor Capital Intensity, {}=100, {}$-${}'.format(*df.index[[_b, 0, -1]]))
     plt.xlabel(f'Labor Capital Intensity, {_df.index[_b]}=100')
     plt.ylabel(f'Labor Productivity, {_df.index[_b]}=100')
     plt.plot(np.exp(_df.iloc[:, 5]), np.exp(_df.iloc[:, 6]))
-    plt.grid(True)
+    plt.grid()
     plt.show()

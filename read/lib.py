@@ -29,11 +29,11 @@ def read_can(archive_id: int) -> DataFrame:
     Returns
     -------
     DataFrame
-    ================== =================================
-    df.index           Period
-    ...                ...
-    df.iloc[:, -1]     Values
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        ...                ...
+        df.iloc[:, -1]     Values
+        ================== =================================
     """
     MAP = {
         310004: {
@@ -210,11 +210,11 @@ def read_usa_bea(url: str) -> DataFrame:
     Returns
     -------
     DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Series IDs
-    df.iloc[:, 1]      Values
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Series IDs
+        df.iloc[:, 1]      Values
+        ================== =================================
     """
     kwargs = {
         'header': 0,
@@ -243,10 +243,10 @@ def read_usa_bea_excel(archive_name: str, wb_name: str, sh_name: str) -> DataFra
     Returns
     -------
     DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, ...]    Series
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, ...]    Series
+        ================== =================================
     """
     kwargs = {
         'sheet_name': sh_name,
@@ -277,11 +277,11 @@ def read_usa_bls(file_name: str) -> DataFrame:
     Returns
     -------
     DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Series IDs
-    df.iloc[:, 1]      Values
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Series IDs
+        df.iloc[:, 1]      Values
+        ================== =================================
     """
     kwargs = {
         'filepath_or_buffer': file_name,
@@ -325,10 +325,10 @@ def read_usa_frb() -> DataFrame:
     Returns
     -------
     DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, ...]    Series
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, ...]    Series
+        ================== =================================
     """
     kwargs = {
         'filepath_or_buffer': 'dataset_usa_frb_invest_capital.csv',
@@ -354,10 +354,10 @@ def read_usa_frb_g17() -> DataFrame:
     Returns
     -------
     DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, ...]    Series
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, ...]    Series
+        ================== =================================
     """
     _start = 5
     kwargs = {
@@ -387,10 +387,10 @@ def read_usa_frb_h6() -> DataFrame:
     Returns
     -------
     DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      M1
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      M1
+        ================== =================================
     """
     # =========================================================================
     # hex(3**3 * 23 * 197 * 2039 * 445466883143470280668577791313)
@@ -416,10 +416,10 @@ def read_usa_frb_us3() -> DataFrame:
     Returns
     -------
     DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, ...]    Series
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, ...]    Series
+        ================== =================================
     """
     # =========================================================================
     # TODO: https://www.federalreserve.gov/datadownload/Output.aspx?rel=g17&filetype=zip
@@ -453,10 +453,10 @@ def read_usa_fred(series_id: str) -> DataFrame:
     Returns
     -------
     DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Series
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Series
+        ================== =================================
     """
     url = f'https://fred.stlouisfed.org/graph/fredgraph.csv?id={series_id}'
     kwargs = {
@@ -481,11 +481,11 @@ def read_usa_hist(archive_name: str) -> DataFrame:
     Returns
     -------
     DataFrame
-    ================== =================================
-    df.index           Period
-    df.iloc[:, 0]      Series IDs
-    df.iloc[:, 1]      Values
-    ================== =================================
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Series IDs
+        df.iloc[:, 1]      Values
+        ================== =================================
     """
     MAP = {
         'dataset_douglas.zip': {'series_id': 4, 'period': 5, 'value': 6},
