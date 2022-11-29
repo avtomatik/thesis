@@ -138,41 +138,53 @@ def main():
     # Option 1: 1967--2012
     # =========================================================================
     df = data_transform_add_dx_dy(
-        pd.concat([_df.loc[:, ['K160491']].mul(_defl), L, prd_a_a], axis=1)
+        pd.concat([_df.loc[:, ('K160491',)].mul(_defl), L, prd_a_a], axis=1)
     )
     # =========================================================================
     # Option 2: 1967--2012
     # =========================================================================
     df = data_transform_add_dx_dy(
-        pd.concat([_df.loc[:, ['K160491']].mul(_defl), L, prd_a_b], axis=1)
+        pd.concat([_df.loc[:, ('K160491',)].mul(_defl), L, prd_a_b], axis=1)
     )
     # =========================================================================
     # Option 3: 1967--2012
     # =========================================================================
-    df = data_transform_add_dx_dy(pd.concat([cap_a_b, L, prd_a_a], axis=1))
+    df = pd.concat([cap_a_b, L, prd_a_a], axis=1).pipe(
+        data_transform_add_dx_dy
+    )
     # =========================================================================
     # Option 4: 1967--2012
     # =========================================================================
-    df = data_transform_add_dx_dy(pd.concat([cap_a_b, L, prd_a_b], axis=1))
+    df = pd.concat([cap_a_b, L, prd_a_b], axis=1).pipe(
+        data_transform_add_dx_dy
+    )
     # =========================================================================
     # TODO: test `k1ntotl1si000`
     # =========================================================================
     # =========================================================================
     # Option 1: 1929--2013
     # =========================================================================
-    df = data_transform_add_dx_dy(pd.concat([cap_b_a, L, prd_b_a], axis=1))
+    df = pd.concat([cap_b_a, L, prd_b_a], axis=1).pipe(
+        data_transform_add_dx_dy
+    )
     # =========================================================================
     # Option 2: 1929--2013
     # =========================================================================
-    df = data_transform_add_dx_dy(pd.concat([cap_b_b, L, prd_b_b], axis=1))
+    df = pd.concat([cap_b_b, L, prd_b_b], axis=1).pipe(
+        data_transform_add_dx_dy
+    )
     # =========================================================================
     # Option 5: 1929--2013
     # =========================================================================
-    df = data_transform_add_dx_dy(pd.concat([cap_b_c, L, prd_b_a], axis=1))
+    df = pd.concat([cap_b_c, L, prd_b_a], axis=1).pipe(
+        data_transform_add_dx_dy
+    )
     # =========================================================================
     # Option 6: 1929--2013
     # =========================================================================
-    df = data_transform_add_dx_dy(pd.concat([cap_b_d, L, prd_b_b], axis=1))
+    df = pd.concat([cap_b_d, L, prd_b_b], axis=1).pipe(
+        data_transform_add_dx_dy
+    )
     plot_increment(df)
     plot_local(df)
 
@@ -180,7 +192,7 @@ def main():
     # Update from `project.py`
     # =========================================================================
 
-    _df = data_transform_add_dx_dy(collect_version_c())
+    _df = collect_version_c().pipe(data_transform_add_dx_dy)
     plot_increment(_df)
     plot_local(_df)
 

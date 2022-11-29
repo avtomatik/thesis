@@ -357,13 +357,13 @@ def kol_zur_filter(df: DataFrame, k: int = None) -> tuple[DataFrame]:
 def m_spline_ea(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFrame, tuple[float]]:
     """
     Exponential Spline, Type A
-    ================== =================================
-    df.iloc[:, 0]      Period
-    df.iloc[:, 1]      Target Series
-    ================== =================================
-    n_spans            Number of Spans
-    knots              Interpolation Knots
-    ================== =================================
+        ================== =================================
+        df.iloc[:, 0]      Period
+        df.iloc[:, 1]      Target Series
+        ================== =================================
+        n_spans            Number of Spans
+        knots              Interpolation Knots
+        ================== =================================
     """
     _params_a, _params_k, _splined = [], [], []
     # =========================================================================
@@ -420,13 +420,13 @@ def m_spline_ea(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFra
 def m_spline_eb(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFrame, tuple[float]]:
     """
     Exponential Spline, Type B
-    ================== =================================
-    df.iloc[:, 0]      Period
-    df.iloc[:, 1]      Target Series
-    ================== =================================
-    n_spans            Number of Spans
-    knots              Interpolation Knots
-    ================== =================================
+        ================== =================================
+        df.iloc[:, 0]      Period
+        df.iloc[:, 1]      Target Series
+        ================== =================================
+        n_spans            Number of Spans
+        knots              Interpolation Knots
+        ================== =================================
     """
     # =========================================================================
     # TODO: Rework Algorithm To Make It More Clear Possibly Using `continue` Statement
@@ -477,13 +477,13 @@ def _m_spline_error_metrics(df: DataFrame) -> None:
 def m_spline_la(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFrame, tuple[float]]:
     """
     Linear Spline, Type A
-    ================== =================================
-    df.iloc[:, 0]      Period
-    df.iloc[:, 1]      Target Series
-    ================== =================================
-    n_spans            Number of Spans
-    knots              Interpolation Knots
-    ================== =================================
+        ================== =================================
+        df.iloc[:, 0]      Period
+        df.iloc[:, 1]      Target Series
+        ================== =================================
+        n_spans            Number of Spans
+        knots              Interpolation Knots
+        ================== =================================
     """
     # =========================================================================
     # TODO: Rework Algorithm To Make It More Clear Possibly Using `continue` Statement
@@ -532,13 +532,13 @@ def m_spline_la(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFra
 def m_spline_lb(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFrame, tuple[float]]:
     """
     Linear Spline, Type B
-    ================== =================================
-    df.iloc[:, 0]      Period
-    df.iloc[:, 1]      Target Series
-    ================== =================================
-    n_spans            Number of Spans
-    knots              Interpolation Knots
-    ================== =================================
+        ================== =================================
+        df.iloc[:, 0]      Period
+        df.iloc[:, 1]      Target Series
+        ================== =================================
+        n_spans            Number of Spans
+        knots              Interpolation Knots
+        ================== =================================
     """
     # =========================================================================
     # TODO: Rework Algorithm To Make It More Clear Possibly Using `continue` Statement
@@ -577,13 +577,13 @@ def m_spline_lb(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFra
 def m_spline_lls(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFrame, tuple[float]]:
     """
     Linear Spline, Linear Regression Kernel
-    ================== =================================
-    df.iloc[:, 0]      Period
-    df.iloc[:, 1]      Target Series
-    ================== =================================
-    n_spans            Number of Spans
-    knots              Interpolation Knots
-    ================== =================================
+        ================== =================================
+        df.iloc[:, 0]      Period
+        df.iloc[:, 1]      Target Series
+        ================== =================================
+        n_spans            Number of Spans
+        knots              Interpolation Knots
+        ================== =================================
     """
     _params_a, _params_k, _splined = [], [], []
     # =========================================================================

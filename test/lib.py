@@ -172,24 +172,23 @@ def test_data_consistency_b():
 
 def test_data_consistency_c():
     """Project III: USA BLS Unemployment Rate & Producer Price Index Manufacturing"""
-    FILE_NAMES = (
-        'dataset_usa_bls-2015-02-23-ln.data.1.AllData',
-        'dataset_usa_bls-2017-07-06-ln.data.1.AllData',
-        'dataset_usa_bls-pc.data.0.Current',
-    )
-    SERIES_IDS = (
-        # =====================================================================
+    SERIES_IDS = {
+        # =========================================================================
         # LNU04000000: Bureau of Labor Statistics Unemployment Rate
+        # =========================================================================
+        'dataset_usa_bls-2015-02-23-ln.data.1.AllData': 'LNU04000000',
+        # =========================================================================
         # LNU04000000: Bureau of Labor Statistics Unemployment Rate
+        # =========================================================================
+        'dataset_usa_bls-2017-07-06-ln.data.1.AllData': 'LNU04000000',
+        # =========================================================================
         # PCUOMFG--OMFG--: Bureau of Labor Statistics Producer Price Index Manufacturing
-        # =====================================================================
-        'LNU04000000',
-        'LNU04000000',
-        'PCUOMFG--OMFG',
-    )
+        # =========================================================================
+        'dataset_usa_bls-pc.data.0.Current': 'PCUOMFG--OMFG'
+    }
     [
         print(read_usa_bls(file_name).pipe(pull_by_series_id, series_id))
-        for file_name, series_id in zip(FILE_NAMES, SERIES_IDS)
+        for file_name, series_id in SERIES_IDS.items()
     ]
 
 
@@ -218,8 +217,8 @@ def test_data_consistency_d():
     # =========================================================================
     ARCHIVE_NAME = 'dataset_usa_bea-release-2019-12-19-Survey.zip'
     WB_NAME = 'Section1all_xls.xlsx'
-    SH_NAMES = ('T10705-A', 'T11200-A', 'T10705-A',)
-    SERIES_IDS = ('A051RC', 'A052RC', 'A262RC',)
+    SH_NAMES = ('T10705-A', 'T11200-A', 'T10705-A')
+    SERIES_IDS = ('A051RC', 'A052RC', 'A262RC')
     test_procedure(
         _generate_kwargs_list(ARCHIVE_NAME, WB_NAME, SH_NAMES, SERIES_IDS)
     )
@@ -228,15 +227,15 @@ def test_data_consistency_d():
     # =========================================================================
     ARCHIVE_NAME = 'dataset_usa_bea-release-2019-12-19-Survey.zip'
     WB_NAME = 'Section1all_xls.xlsx'
-    SH_NAMES = ('T10105-A', 'T10105-A', 'T10105-A',)
-    SERIES_IDS = ('A822RC', 'A823RC', 'A829RC',)
+    SH_NAMES = ('T10105-A', 'T10105-A', 'T10105-A')
+    SERIES_IDS = ('A822RC', 'A823RC', 'A829RC')
     test_procedure(
         _generate_kwargs_list(ARCHIVE_NAME, WB_NAME, SH_NAMES, SERIES_IDS)
     )
     ARCHIVE_NAME = 'dataset_usa_bea-release-2019-12-19-Survey.zip'
     WB_NAME = 'Section3all_xls.xlsx'
-    SH_NAMES = ('T30100-A', 'T30200-A', 'T30300-A',)
-    SERIES_IDS = ('A955RC', 'A957RC', 'A991RC',)
+    SH_NAMES = ('T30100-A', 'T30200-A', 'T30300-A')
+    SERIES_IDS = ('A955RC', 'A957RC', 'A991RC')
     test_procedure(
         _generate_kwargs_list(ARCHIVE_NAME, WB_NAME, SH_NAMES, SERIES_IDS)
     )
@@ -245,15 +244,15 @@ def test_data_consistency_d():
     # # =========================================================================
     ARCHIVE_NAME = 'dataset_usa_bea-release-2019-12-19-Survey.zip'
     WB_NAME = 'Section1all_xls.xlsx'
-    SH_NAMES = ('T10105-A', 'T10105-A', 'T10105-A',)
-    SERIES_IDS = ('A823RC', 'A824RC', 'A825RC',)
+    SH_NAMES = ('T10105-A', 'T10105-A', 'T10105-A')
+    SERIES_IDS = ('A823RC', 'A824RC', 'A825RC')
     test_procedure(
         _generate_kwargs_list(ARCHIVE_NAME, WB_NAME, SH_NAMES, SERIES_IDS)
     )
     ARCHIVE_NAME = 'dataset_usa_bea-release-2019-12-19-Survey.zip'
     WB_NAME = 'Section3all_xls.xlsx'
-    SH_NAMES = ('T30200-A', 'T30905-A', 'T30905-A',)
-    SERIES_IDS = ('A957RC', 'A997RC', 'A542RC',)
+    SH_NAMES = ('T30200-A', 'T30905-A', 'T30905-A')
+    SERIES_IDS = ('A957RC', 'A997RC', 'A542RC')
     test_procedure(
         _generate_kwargs_list(ARCHIVE_NAME, WB_NAME, SH_NAMES, SERIES_IDS)
     )

@@ -9,6 +9,7 @@ Created on Wed Dec 18 21:04:02 2019
 import os
 
 from plot.lib import plot_grigoriev, plot_rus_is_lm
+from rad.lib import read_rus_grigoriev, read_rus_is_lm
 
 
 def main():

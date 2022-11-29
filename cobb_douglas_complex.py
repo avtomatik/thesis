@@ -23,7 +23,7 @@ def main():
     # On Original Dataset
     # =========================================================================
     _df = collect_cobb_douglas()
-    _df_a = _df.iloc[:, [0, 1, 2]]
+    _df_a = _df.iloc[:, range(3)]
     _df_b = _df.iloc[:, [0, 1, 3]]
     _df_c = _df.iloc[:, [0, 1, 4]]
     # =========================================================================
@@ -31,7 +31,6 @@ def main():
     # =========================================================================
     _df_d, _df_e = collect_usa_manufacturing_two_fold()
     _df_f, _df_g, _df_h = collect_usa_manufacturing_three_fold()
-    _df_i = collect_usa_manufacturing_latest()
     plot_cobb_douglas_complex(_df_a)
     plot_cobb_douglas_complex(_df_b)
     plot_cobb_douglas_complex(_df_c)
@@ -55,7 +54,7 @@ def main():
     # Option: 1967--2012, Capacity Utilization Adjustment
     # =========================================================================
     plot_cobb_douglas_complex(_df_h)
-    plot_cobb_douglas_complex(_df_i)
+    plot_cobb_douglas_complex(collect_usa_manufacturing_latest())
 
 
 if __name__ == '__main__':

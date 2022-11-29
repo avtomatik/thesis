@@ -9,7 +9,8 @@ Created on Sat Jan 18 00:13:17 2020
 import itertools
 import os
 
-from collect.lib import (collect_uscb_cap, collect_uscb_cap_deflator,
+from collect.lib import (collect_usa_hist, collect_uscb_cap,
+                         collect_uscb_cap_deflator,
                          collect_uscb_employment_conflicts, collect_uscb_gnp,
                          collect_uscb_immigration, collect_uscb_manufacturing,
                          collect_uscb_metals, collect_uscb_money_stock,
@@ -24,17 +25,19 @@ from plot.lib import (plot_uscb_cap, plot_uscb_cap_deflator,
                       plot_uscb_trade_by_countries,
                       plot_uscb_trade_gold_silver,
                       plot_uscb_unemployment_hours_worked)
+from transform.lib import transform_mean_wide, transform_sum_wide
 
 
 def main():
     DIR = '/media/green-machine/KINGSTON'
     ARCHIVE_NAME = 'dataset_uscb.zip'
 
-
     os.chdir(DIR)
     plot_uscb_manufacturing(*collect_uscb_manufacturing())
     plot_uscb_cap(collect_uscb_cap())
-    plot_uscb_cap_deflator(collect_uscb_cap_deflator().pipe(transform_mean_wide, name="census_fused"))
+    plot_uscb_cap_deflator(
+        collect_uscb_cap_deflator().pipe(transform_mean_wide, name="census_fused")
+    )
     plot_uscb_metals(*collect_uscb_metals())
     # =========================================================================
     # Census Production Series
@@ -75,7 +78,8 @@ def main():
             range(117, 120),
         )
     }
-    plot_uscb_immigration(collect_usa_hist(SERIES_IDS).pipe(transform_sum_wide, name="C89"))
+    plot_uscb_immigration(collect_usa_hist(
+        SERIES_IDS).pipe(transform_sum_wide, name="C89"))
     plot_uscb_unemployment_hours_worked(
         collect_uscb_unemployment_hours_worked()
     )

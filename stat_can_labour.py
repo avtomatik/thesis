@@ -6,32 +6,35 @@ Created on Tue Nov  2 21:10:29 2021
 """
 
 
-import os
+from collect.lib import collect_usa_hist, construct_deflator
+from read.lib import read_temporary
 
-import pandas as pd
-from collect.lib import (collect_can_price_a, collect_can_price_b,
-                         construct_deflator)
-from pandas import DataFrame
+
+def prices_cobb_douglas():
+    SERIES_IDS = {
+        'CDT2S1': 'dataset_usa_cobb-douglas.zip',
+        'CDT2S3': 'dataset_usa_cobb-douglas.zip'
+    }
+    return collect_usa_hist(SERIES_IDS).pipe(construct_deflator)
+
+
+def prices_census():
+    SERIES_IDS = {
+        'P0107': 'dataset_uscb.zip',
+        'P0110': 'dataset_uscb.zip'
+    }
+    return collect_usa_hist(SERIES_IDS).pipe(construct_deflator)
 
 
 def main():
     DIR = '/media/green-machine/KINGSTON'
     _DIR = '/media/green-machine/KINGSTON'
 
-    SERIES_IDS = {
-        'CDT2S1': 'dataset_usa_cobb-douglas.zip',
-        'CDT2S3': 'dataset_usa_cobb-douglas.zip'
-    }
-    SERIES_IDS = {
-        'P0107': 'dataset_uscb.zip',
-        'P0110': 'dataset_uscb.zip'
-    }
-
     # =============================================================================
     # CALLS = (
     #     # =========================================================================
-    #     # construct_deflator,
-    #     # construct_deflator,
+    #     # prices_cobb_douglas,
+    #     # prices_census,
     #     # =========================================================================
     #     collect_can_price_a,
     #     collect_can_price_b,
@@ -180,16 +183,16 @@ def main():
         'v46445844',
     )
     for series_id in SERIES_IDS[::3]:
-        chunk = data.loc[:, [series_id]].dropna(axis=0, how='all')
+        chunk = data.loc[:, (series_id,)].dropna(axis=0, how='all')
         chunk.plot(grid=True)
 
         # chunk.plot(grid=True).get_figure().savefig(
         #     'temporary.pdf', format='pdf', dpi=900)
     # for series_id in SERIES_IDS[1::3]:
-    #     chunk = data.loc[:, [series_id]].dropna(axis=0, how='all')
+    #     chunk = data.loc[:, (series_id,)].dropna(axis=0, how='all')
     #     chunk.plot(grid=True)
     # for series_id in SERIES_IDS[2::3]:
-    #     chunk = data.loc[:, [series_id]].dropna(axis=0, how='all')
+    #     chunk = data.loc[:, (series_id,)].dropna(axis=0, how='all')
     #     chunk.plot(grid=True)
 
 

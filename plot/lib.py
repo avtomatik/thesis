@@ -14,16 +14,18 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from collect.lib import collect_usa_hist
 from pandas import DataFrame
 from pandas.plotting import autocorrelation_plot, bootstrap_plot, lag_plot
 from pull.lib import (pull_by_series_id, pull_series_ids_description,
                       pull_uscb_description)
-from read.lib import read_usa_hist, read_worldbank
+from read.lib import read_usa_hist, read_usa_nber, read_worldbank
 from scipy import stats
 from sklearn.metrics import r2_score
+from transform.lib import transform_cobb_douglas
+
 from toolkit.lib import (calculate_capital, kol_zur_filter,
                          rolling_mean_filter, simple_linear_regression)
-from transform.lib import transform_cobb_douglas
 
 ARCHIVE_NAMES_UTILISED = (
     'dataset_rus_m1.zip',
@@ -62,7 +64,8 @@ def plot_investment_manufacturing(df: DataFrame) -> None:
     # =========================================================================
     # `Real` Production
     # =========================================================================
-    _df['manufacturing'] = _df.iloc[:, 1].mul(_df.iloc[:, 3]).div(_df.iloc[:, 2])
+    _df['manufacturing'] = _df.iloc[:, 1].mul(
+        _df.iloc[:, 3]).div(_df.iloc[:, 2])
     _df['inv_roll_mean'] = _df.iloc[:, -2].rolling(2).mean()
     _df['prd_roll_mean'] = _df.iloc[:, -2].rolling(2).mean()
     plt.figure()
@@ -947,7 +950,7 @@ def plot_built_in() -> None:
     _df = read_worldbank(SOURCE_ID)
     for func in FUNCTIONS:
         for _, country in enumerate(_df.columns, start=1):
-            chunk = _df.loc[:, [country]].dropna(axis=0)
+            chunk = _df.loc[:, (country,)].dropna(axis=0)
             if not chunk.empty:
                 plt.figure(_)
                 partial(func, chunk)()
@@ -1058,7 +1061,7 @@ def plot_capital_purchases(df: DataFrame) -> None:
     assert df.shape[1] == 27, 'Works on DataFrame Produced with `get_data_capital_purchases()`'
     plt.figure()
     plt.semilogy(
-        df.loc[:, [df.columns[0], *df.columns[-3:]]],
+        df.loc[:, (df.columns[0], *df.columns[-3:])],
         label=[
             '$s^{2;1}_{Cobb-Douglas}$',
             'Total',

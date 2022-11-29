@@ -31,7 +31,7 @@ def append_series_ids_sum(df, chunk, series_ids):
         _chunk = pd.concat(
             [
                 _chunk,
-                df.loc[:, [series_id]].dropna(axis=0)
+                df.loc[:, (series_id,)].dropna(axis=0)
             ],
             axis=1
         )
@@ -347,7 +347,7 @@ def extract_read_usa_bea_pull_by_series_id(series_id: str) -> DataFrame:
         stmt = f"""
         SELECT * FROM temporary
         WHERE
-            vector = '{series_id}'
+            series_id = '{series_id}'
             AND subperiod = 0
             ;
         """
@@ -487,7 +487,7 @@ def collect_capital_combined_archived() -> DataFrame:
             # =================================================================
             # Capacity Utilization Series: CAPUTL.B50001.A, 1967--2012
             # =================================================================
-            read_usa_frb_g17().loc[:, [SERIES_ID]].dropna(axis=0),
+            read_usa_frb_g17().loc[:, (SERIES_ID,)].dropna(axis=0),
             # =================================================================
             # Manufacturing Labor Series: _4313C0, 1929--2020
             # =================================================================
@@ -534,7 +534,7 @@ kwargs = {
     'sh_name': '50900 Ann',
 }
 SERIES_ID = 'K160021'
-_df_sub_a = read_usa_bea_excel(**kwargs).loc[:, [SERIES_ID]]
+_df_sub_a = read_usa_bea_excel(**kwargs).loc[:, (SERIES_ID,)]
 
 # =============================================================================
 # Not Clear
@@ -560,7 +560,7 @@ kwargs = {
     'sh_name': '303ES Ann',
 }
 SERIES_ID = 'k3n31gd1es000'
-_df_semi_c = read_usa_bea_excel(**kwargs).loc[:, [SERIES_ID]]
+_df_semi_c = read_usa_bea_excel(**kwargs).loc[:, (SERIES_ID,)]
 KWARGS = (
     # =========================================================================
     # Nominal Gross Domestic Product Series: A191RC1, 1929--1969
@@ -581,7 +581,7 @@ KWARGS = (
 )
 SERIES_ID = 'A191RC1'
 _df_semi_d = pd.concat(
-    [read_usa_bea_excel(**kwargs).loc[:, [SERIES_ID]] for kwargs in KWARGS],
+    [read_usa_bea_excel(**kwargs).loc[:, (SERIES_ID,)] for kwargs in KWARGS],
     sort=True
 ).drop_duplicates()
 # =============================================================================

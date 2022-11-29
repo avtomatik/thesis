@@ -437,7 +437,7 @@ def read_usa_frb_us3() -> DataFrame:
     # =========================================================================
     df = pd.read_csv(**kwargs)
     kwargs['header'] = 0
-    kwargs['names'] = ['period', *map(str.strip, df.columns[1:])]
+    kwargs['names'] = ('period', *map(str.strip, df.columns[1:]))
     kwargs['index_col'] = 0
     # =========================================================================
     # Re-Load
@@ -448,7 +448,7 @@ def read_usa_frb_us3() -> DataFrame:
 
 def read_usa_fred(series_id: str) -> DataFrame:
     """
-    ('PPIACO', 'PRIME',)
+    ('PPIACO', 'PRIME')
 
     Returns
     -------

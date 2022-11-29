@@ -6,8 +6,9 @@
 import os
 
 from collect.lib import collect_cobb_douglas
-from toolkit.lib import calculate_plot_uspline
 from transform.lib import transform_cobb_douglas
+
+from toolkit.lib import calculate_plot_uspline
 
 
 def main():

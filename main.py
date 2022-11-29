@@ -20,9 +20,9 @@ from collect.lib import (collect_cobb_douglas, collect_usa_general,
                          collect_usa_mcconnel, collect_uscb_cap,
                          collect_uscb_cap_deflator,
                          collect_uscb_employment_conflicts, collect_uscb_gnp,
-                         collect_uscb_immigration, collect_uscb_manufacturing,
-                         collect_uscb_metals, collect_uscb_money_stock,
-                         collect_uscb_trade, collect_uscb_trade_by_countries,
+                         collect_uscb_manufacturing, collect_uscb_metals,
+                         collect_uscb_money_stock, collect_uscb_trade,
+                         collect_uscb_trade_by_countries,
                          collect_uscb_trade_gold_silver,
                          collect_uscb_unemployment_hours_worked, construct_can)
 from plot.lib import (plot_approx_linear, plot_approx_log_linear, plot_c,
@@ -44,14 +44,16 @@ from plot.lib import (plot_approx_linear, plot_approx_log_linear, plot_c,
                       plot_uscb_unemployment_hours_worked)
 from pull.lib import pull_by_series_id
 from read.lib import read_usa_hist
+from transform.lib import (combine_kurenkov, transform_a, transform_b,
+                           transform_cobb_douglas, transform_d, transform_e,
+                           transform_manufacturing_money, transform_mean_wide,
+                           transform_sum_wide)
+
 from toolkit.lib import (calculate_power_function_fit_params_a,
                          calculate_power_function_fit_params_b,
                          calculate_power_function_fit_params_c, m_spline_ea,
                          m_spline_eb, m_spline_la, m_spline_lb, m_spline_lls,
                          m_spline_manager)
-from transform.lib import (combine_kurenkov, transform_a, transform_b,
-                           transform_cobb_douglas, transform_d, transform_e,
-                           transform_manufacturing_money)
 
 ARCHIVE_NAMES_UTILISED = (
     'dataset_can_00310004-eng.zip',
@@ -113,21 +115,21 @@ def main():
 
     SERIES_IDS = ('Валовой внутренний продукт, млрд долл. США',)
     calculate_power_function_fit_params_a(
-        collect_usa_mcconnel(SERIES_IDS), (2800, 0.01, 0.5,)
+        collect_usa_mcconnel(SERIES_IDS), (2800, 0.01, 0.5)
     )
     SERIES_IDS = (
         'Ставка прайм-рейт, %',
         'Национальный доход, млрд долл. США',
     )
     calculate_power_function_fit_params_b(
-        collect_usa_mcconnel(SERIES_IDS), (4, 12, 9000, 3000, 0.87,)
+        collect_usa_mcconnel(SERIES_IDS), (4, 12, 9000, 3000, 0.87)
     )
     SERIES_IDS = (
         'Ставка прайм-рейт, %',
         'Валовой объем внутренних частных инвестиций, млрд долл. США',
     )
     calculate_power_function_fit_params_c(
-        collect_usa_mcconnel(SERIES_IDS), (1.5, 19, 1.7, 1760,)
+        collect_usa_mcconnel(SERIES_IDS), (1.5, 19, 1.7, 1760)
     )
 
     # =========================================================================
@@ -276,7 +278,8 @@ def main():
     # =========================================================================
     # Fixed Assets Turnover
     # =========================================================================
-    df = collect_cobb_douglas().pipe(transform_cobb_douglas, year_base=1899)[0].iloc[:, [6]]
+    df = collect_cobb_douglas().pipe(transform_cobb_douglas,
+                                     year_base=1899)[0].iloc[:, [6]]
     # =========================================================================
     # Option 1
     # =========================================================================
@@ -307,7 +310,8 @@ def main():
         plot_census_complex(df.iloc[:, [_]])
 
     ARCHIVE_NAME = 'dataset_uscb.zip'
-    SERIES_IDS = {'D0004': 'dataset_uscb.zip', 'D0130': 'dataset_uscb.zip', 'F0003': 'dataset_uscb.zip', 'F0004': 'dataset_uscb.zip', 'P0110': 'dataset_uscb.zip', 'U0001': 'dataset_uscb.zip', 'U0008': 'dataset_uscb.zip', 'X0414': 'dataset_uscb.zip', 'X0415': 'dataset_uscb.zip'}
+    SERIES_IDS = {'D0004': 'dataset_uscb.zip', 'D0130': 'dataset_uscb.zip', 'F0003': 'dataset_uscb.zip', 'F0004': 'dataset_uscb.zip',
+                  'P0110': 'dataset_uscb.zip', 'U0001': 'dataset_uscb.zip', 'U0008': 'dataset_uscb.zip', 'X0414': 'dataset_uscb.zip', 'X0415': 'dataset_uscb.zip'}
     for series_id in SERIES_IDS:
         print(f'Processing {series_id}')
         df = read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
@@ -357,7 +361,8 @@ def main():
     # =========================================================================
     plot_uscb_manufacturing(*collect_uscb_manufacturing())
     plot_uscb_cap(collect_uscb_cap())
-    plot_uscb_cap_deflator(collect_uscb_cap_deflator().pipe(transform_mean_wide, name="census_fused"))
+    plot_uscb_cap_deflator(collect_uscb_cap_deflator().pipe(
+        transform_mean_wide, name="census_fused"))
     plot_uscb_metals(*collect_uscb_metals())
     # =========================================================================
     # Census Production Series
@@ -398,8 +403,10 @@ def main():
             range(117, 120),
         )
     }
-    plot_uscb_immigration(collect_usa_hist(SERIES_IDS).pipe(transform_sum_wide, name="C89"))
-    plot_uscb_unemployment_hours_worked(collect_uscb_unemployment_hours_worked())
+    plot_uscb_immigration(collect_usa_hist(
+        SERIES_IDS).pipe(transform_sum_wide, name="C89"))
+    plot_uscb_unemployment_hours_worked(
+        collect_uscb_unemployment_hours_worked())
     plot_uscb_employment_conflicts(collect_uscb_employment_conflicts())
     plot_uscb_gnp(collect_uscb_gnp())
     plot_uscb_farm_lands()
@@ -609,7 +616,8 @@ def main():
         'DT19AS02': 'dataset_douglas.zip',
         'DT19AS01': 'dataset_douglas.zip'
     }
-    plot_cobb_douglas(*collect_usa_hist(SERIES_IDS).pipe(transform_cobb_douglas, year_base=1899), MAP_FIG)
+    plot_cobb_douglas(
+        *collect_usa_hist(SERIES_IDS).pipe(transform_cobb_douglas, year_base=1899), MAP_FIG)
     # =========================================================================
     # Kendrick Macroeconomic Series
     # =========================================================================

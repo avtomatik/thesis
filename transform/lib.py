@@ -8,11 +8,12 @@ Created on Sun Nov 20 17:42:38 2022
 
 import numpy as np
 import pandas as pd
+from collect.lib import collect_usa_hist
 from pandas import DataFrame
 from pull.lib import pull_by_series_id
-from read.lib import read_temporary, read_usa_frb_g17, read_usa_frb_us3
+from read.lib import (read_temporary, read_usa_frb_g17, read_usa_frb_h6,
+                      read_usa_frb_us3)
 from sklearn.linear_model import Lasso, LassoCV, LinearRegression, Ridge
-from toolkit.lib import price_inverse_single
 from transform.lib import numerify
 
 
@@ -89,7 +90,7 @@ def transform_cobb_douglas(df: DataFrame, year_base: int) -> tuple[DataFrame, tu
     #     print(f"R**2: {r2_score(df.iloc[:, 2], df.iloc[:, 3]):,.4f}")
     #     print(df.iloc[:, 3].div(df.iloc[:, 2]).sub(1).abs().mean())
     # =========================================================================
-    return df, (k, np.exp(b),)
+    return df, (k, np.exp(b))
 
 
 def transform_cobb_douglas_alt(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
@@ -173,7 +174,7 @@ def transform_cobb_douglas_alt(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
     df['_prod_comp_roll'] = df.iloc[:, -
                                     1].rolling(window=3, center=True).mean()
     df['_prod_comp_roll_sub'] = df.iloc[:, -2].sub(df.iloc[:, -1])
-    return df, (k, np.exp(b)), (_k, np.exp(_b),)
+    return df, (k, np.exp(b)), (_k, np.exp(_b))
 
 
 def transform_cobb_douglas_extension_capital(df: DataFrame) -> DataFrame:
@@ -347,7 +348,7 @@ def transform_cobb_douglas_sklearn(df: DataFrame) -> DataFrame:
     df['prod_comp_roll'] = df.iloc[:, -1].rolling(window=3, center=True).mean()
     df['prod_comp_roll_sub'] = df.iloc[:, -2].sub(df.iloc[:, -1])
     # =========================================================================
-    return df, (k, np.exp(b),)
+    return df, (k, np.exp(b))
 
 
 def transform_d(df: DataFrame) -> DataFrame:
@@ -389,8 +390,8 @@ def combine_kurenkov(data_testing: DataFrame) -> tuple[DataFrame]:
     data_a = pd.concat(
         [
             data_control.iloc[:, [0]],
-            data_testing.loc[:, ['A191RX']],
-            read_usa_frb_us3().loc[:, ['AIPMA_SA_IX']],
+            data_testing.loc[:, ('A191RX',)],
+            read_usa_frb_us3().loc[:, ('AIPMA_SA_IX',)],
         ],
         axis=1,
         sort=True
@@ -402,7 +403,7 @@ def combine_kurenkov(data_testing: DataFrame) -> tuple[DataFrame]:
     data_b = pd.concat(
         [
             data_control.iloc[:, [1]],
-            data_testing.loc[:, ['bea_labor_mfg']],
+            data_testing.loc[:, ('bea_labor_mfg',)],
         ],
         axis=1,
         sort=True
@@ -413,7 +414,7 @@ def combine_kurenkov(data_testing: DataFrame) -> tuple[DataFrame]:
     data_c = pd.concat(
         [
             data_control.iloc[:, [2]],
-            data_testing.loc[:, ['K10002']],
+            data_testing.loc[:, ('K10002',)],
         ],
         axis=1,
         sort=True
@@ -425,7 +426,7 @@ def combine_kurenkov(data_testing: DataFrame) -> tuple[DataFrame]:
     data_d = pd.concat(
         [
             data_control.iloc[:, [3]],
-            read_usa_frb_g17().loc[:, [SERIES_ID]].dropna(axis=0),
+            read_usa_frb_g17().loc[:, (SERIES_ID,)].dropna(axis=0),
         ],
         axis=1,
         sort=True

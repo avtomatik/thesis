@@ -19,10 +19,11 @@ from read.lib import (read_can, read_temporary, read_usa_bea,
                       read_usa_hist)
 from scipy.signal import wiener
 from sklearn.impute import SimpleImputer
-from toolkit.lib import price_inverse_single
 from transform.lib import (numerify, transform_cobb_douglas_extension_capital,
                            transform_mean_wide, transform_sum_long,
                            transform_usa_frb_fa, transform_usa_frb_fa_def)
+
+from toolkit.lib import price_inverse_single
 
 ARCHIVE_NAMES_UTILISED = (
     'dataset_douglas.zip',
@@ -59,7 +60,7 @@ def collect_cobb_douglas(series_number: int = 3) -> DataFrame:
         df.iloc[:, 2]      Product
         ================== =================================
     """
-    SERIES_IDS = {
+    SERIES_IDS_EXT = {
         # =====================================================================
         # Cobb C.W., Douglas P.H. Capital Series: Total Fixed Capital in 1880 dollars (4)
         # =====================================================================
@@ -81,17 +82,12 @@ def collect_cobb_douglas(series_number: int = 3) -> DataFrame:
         # =====================================================================
         'DT24AS01': ('dataset_douglas.zip', 'product_rev'),
     }
-    df = pd.concat(
-        [
-            read_usa_hist(archive_name).pipe(pull_by_series_id, series_id)
-            for series_id, (archive_name, _) in SERIES_IDS.items()
-        ],
-        axis=1,
-        verify_integrity=True,
-        sort=True
-    ).dropna(axis=0)
-    df.columns = map(itemgetter(1), SERIES_IDS.values())
-    return df.iloc[:, range(series_number)]
+    SERIES_IDS = dict(zip(
+        SERIES_IDS_EXT, map(itemgetter(0), SERIES_IDS_EXT.values())
+    ))
+    df = collect_usa_hist(SERIES_IDS)
+    df.columns = map(itemgetter(1), SERIES_IDS_EXT.values())
+    return df.iloc[:, range(series_number)].dropna(axis=0)
 
 
 def collect_cobb_douglas_deflator() -> DataFrame:
@@ -196,7 +192,7 @@ def collect_cobb_douglas_deflator() -> DataFrame:
     # =========================================================================
     return pd.concat(
         [
-            df.loc[:, [column]].pipe(price_inverse_single)
+            df.loc[:, (column,)].pipe(price_inverse_single)
             for column in df.columns
         ],
         axis=1
@@ -317,7 +313,7 @@ def collect_cobb_douglas_extension_manufacturing() -> DataFrame:
             # =================================================================
             # Federal Reserve, AIPMASAIX
             # =================================================================
-            read_usa_frb_us3().loc[:, ['AIPMA_SA_IX']],
+            read_usa_frb_us3().loc[:, ('AIPMA_SA_IX',)],
         ],
         axis=1
     )
@@ -369,7 +365,7 @@ def collect_usa_brown() -> DataFrame:
         'Чистый основной капитал (в млн. долл., 1929 г.)': 'dataset_usa_brown.zip',
     }
     b_frame = collect_usa_hist(SERIES_IDS)
-    b_frame.columns = [f'series_{hex(_)}' for _ in range(len(SERIES_IDS))]
+    b_frame.columns = (f'series_{hex(_)}' for _ in range(len(SERIES_IDS)))
     SERIES_IDS = {
         'KTA03S07': 'dataset_usa_kendrick.zip',
         'KTA03S08': 'dataset_usa_kendrick.zip',
@@ -450,7 +446,7 @@ def collect_usa_capital() -> DataFrame:
 
 
 def collect_usa_capital_purchases() -> DataFrame:
-    SERIES_IDS = {
+    SERIES_IDS_EXT = {
         'CDT2S1': ('dataset_usa_cobb-douglas.zip', 1, 'nominal, millions'),
         'CDT2S3': ('dataset_usa_cobb-douglas.zip', 1, '1880=100, millions'),
         'DT63AS01': ('dataset_douglas.zip', 1, '1880=100, millions'),
@@ -476,24 +472,20 @@ def collect_usa_capital_purchases() -> DataFrame:
         'P0121': ('dataset_uscb.zip', 1000, '1958=100, billions'),
         'P0122': ('dataset_uscb.zip', 1000, '1958=100, billions'),
     }
-    df = pd.concat(
-        [
-            read_usa_hist(archive_name).pipe(
-                pull_by_series_id, series_id).mul(factor)
-            for series_id, (archive_name, factor, _) in SERIES_IDS.items()
-        ],
-        axis=1,
-        verify_integrity=True,
-        sort=True
+    SERIES_IDS = dict(zip(
+        SERIES_IDS_EXT, map(itemgetter(0), SERIES_IDS_EXT.values())
+    ))
+    df = collect_usa_hist(SERIES_IDS).mul(
+        tuple(map(itemgetter(1), SERIES_IDS_EXT.values()))
     ).truncate(before=1875)
     df['total'] = wiener(
-        df.loc[:, ['CDT2S1', 'J0149', 'P0107']].mean(axis=1)
+        df.loc[:, ('CDT2S1', 'J0149', 'P0107')].mean(axis=1)
     ).round()
     df['struc'] = wiener(
-        df.loc[:, ['J0150', 'P0108']].mean(axis=1)
+        df.loc[:, ('J0150', 'P0108')].mean(axis=1)
     ).round()
     df['equip'] = wiener(
-        df.loc[:, ['J0151', 'P0109']].mean(axis=1)
+        df.loc[:, ('J0151', 'P0109')].mean(axis=1)
     ).round()
     return df
 
@@ -663,7 +655,7 @@ def collect_usa_investment_turnover_bls() -> DataFrame:
     return (
         df.loc[:, ['investment', 'A191RX',
                    'capital', 'ratio_mu']].dropna(axis=0),
-        df.loc[:, ['ratio_mu']].dropna(axis=0),
+        df.loc[:, ('ratio_mu',)].dropna(axis=0),
     )
 
 
@@ -701,7 +693,7 @@ def collect_usa_investment_turnover() -> DataFrame:
     return (
         df.loc[:, ['_investment', 'A191RX',
                    '_capital', '_ratio_mu']].dropna(axis=0),
-        df.loc[:, ['_ratio_mu']].dropna(axis=0),
+        df.loc[:, ('_ratio_mu',)].dropna(axis=0),
     )
 
 
@@ -785,7 +777,7 @@ def collect_usa_macroeconomics() -> DataFrame:
             # =====================================================================
             # Capacity Utilization Series: CAPUTL.B50001.A, 1967--2012
             # =====================================================================
-            read_usa_frb_g17().loc[:, [SERIES_ID]].dropna(axis=0),
+            read_usa_frb_g17().loc[:, (SERIES_ID,)].dropna(axis=0),
         ],
         axis=1,
         sort=True
@@ -861,7 +853,7 @@ def collect_usa_manufacturing_two_fold() -> tuple[DataFrame]:
             # =================================================================
             # Capacity Utilization Series: CAPUTL.B50001.A, 1967--2012
             # =================================================================
-            read_usa_frb_g17().loc[:, [SERIES_ID]].dropna(axis=0),
+            read_usa_frb_g17().loc[:, (SERIES_ID,)].dropna(axis=0),
         ],
         axis=1
     ).dropna(axis=0)
@@ -935,7 +927,7 @@ def collect_usa_manufacturing_three_fold() -> tuple[DataFrame]:
             # =================================================================
             # Manufacturing Series: FRB G17 IP, AIPMA_SA_IX, 1919--2018
             # =================================================================
-            read_usa_frb_us3().loc[:, ['AIPMA_SA_IX']],
+            read_usa_frb_us3().loc[:, ('AIPMA_SA_IX',)],
         ],
         axis=1
     ).dropna(axis=0)
@@ -946,7 +938,7 @@ def collect_usa_manufacturing_three_fold() -> tuple[DataFrame]:
             # =================================================================
             # Capacity Utilization Series: CAPUTL.B50001.A, 1967--2012
             # =================================================================
-            read_usa_frb_g17().loc[:, [SERIES_ID]].dropna(axis=0),
+            read_usa_frb_g17().loc[:, (SERIES_ID,)].dropna(axis=0),
         ],
         axis=1
     ).dropna(axis=0)
@@ -1019,13 +1011,13 @@ def collect_usa_mcconnel(series_ids: tuple[str]) -> DataFrame:
 
 def collect_uscb_cap_deflator() -> DataFrame:
     """Returns Census Fused Capital Deflator"""
-    SERIES_IDS = {
+    SERIES_IDS_EXT = {
         'P0107': ('dataset_uscb.zip', 1000, 'nominal, billions'),
         'P0108': ('dataset_uscb.zip', 1000, 'nominal, billions'),
         'P0109': ('dataset_uscb.zip', 1000, 'nominal, billions'),
         'P0110': ('dataset_uscb.zip', 1000, '1958=100, billions'),
         'P0111': ('dataset_uscb.zip', 1000, '1958=100, billions'),
-        'P0112': ('dataset_uscb.zip', 1000, '1958=100, billions'),
+        'P0113': ('dataset_uscb.zip', 1000, '1958=100, billions'),
         'P0113': ('dataset_uscb.zip', 1000, 'nominal, billions'),
         'P0114': ('dataset_uscb.zip', 1000, 'nominal, billions'),
         'P0115': ('dataset_uscb.zip', 1000, 'nominal, billions'),
@@ -1033,14 +1025,11 @@ def collect_uscb_cap_deflator() -> DataFrame:
         'P0117': ('dataset_uscb.zip', 1000, '1958=100, billions'),
         'P0118': ('dataset_uscb.zip', 1000, '1958=100, billions'),
     }
-    df = pd.concat(
-        [
-            read_usa_hist(archive_name).pipe(pull_by_series_id, series_id)
-            for series_id, (archive_name, *_) in SERIES_IDS.items()
-        ],
-        axis=1,
-        verify_integrity=True,
-        sort=True
+    SERIES_IDS = dict(zip(
+        SERIES_IDS_EXT, map(itemgetter(0), SERIES_IDS_EXT.values())
+    ))
+    df = collect_usa_hist(SERIES_IDS).mul(
+        tuple(map(itemgetter(1), SERIES_IDS_EXT.values()))
     ).truncate(before=1879)
     df['total_purchases'] = df.iloc[:, 0].div(df.iloc[:, 3])
     df['struc_purchases'] = df.iloc[:, 1].div(df.iloc[:, 4])
@@ -1061,7 +1050,7 @@ def collect_uscb_cap_deflator() -> DataFrame:
 
 def collect_uscb_cap(smoothing: bool = False) -> DataFrame:
     """Returns Nominal Million-Dollar Capital, Including Structures & Equipment, Series"""
-    SERIES_IDS = {
+    SERIES_IDS_EXT = {
         'J0149': ('dataset_uscb.zip', 1, 'nominal, millions'),
         'J0150': ('dataset_uscb.zip', 1, 'nominal, millions'),
         'J0151': ('dataset_uscb.zip', 1, 'nominal, millions'),
@@ -1082,30 +1071,26 @@ def collect_uscb_cap(smoothing: bool = False) -> DataFrame:
         'P0121': ('dataset_uscb.zip', 1000, '1958=100, billions'),
         'P0122': ('dataset_uscb.zip', 1000, '1958=100, billions'),
     }
-    df = pd.concat(
-        [
-            read_usa_hist(archive_name).pipe(
-                pull_by_series_id, series_id).mul(factor)
-            for series_id, (archive_name, factor, _) in SERIES_IDS.items()
-        ],
-        axis=1,
-        verify_integrity=True,
-        sort=True
+    SERIES_IDS = dict(zip(
+        SERIES_IDS_EXT, map(itemgetter(0), SERIES_IDS_EXT.values())
+    ))
+    df = collect_usa_hist(SERIES_IDS).mul(
+        tuple(map(itemgetter(1), SERIES_IDS_EXT.values()))
     ).truncate(before=1875)
     if smoothing:
         df['total'] = wiener(
-            df.loc[:, ['J0149', 'P0107']].mean(axis=1)
+            df.loc[:, ('J0149', 'P0107')].mean(axis=1)
         ).round()
         df['struc'] = wiener(
-            df.loc[:, ['J0150', 'P0108']].mean(axis=1)
+            df.loc[:, ('J0150', 'P0108')].mean(axis=1)
         ).round()
         df['equip'] = wiener(
-            df.loc[:, ['J0151', 'P0109']].mean(axis=1)
+            df.loc[:, ('J0151', 'P0109')].mean(axis=1)
         ).round()
     else:
-        df['total'] = df.loc[:, ['J0149', 'P0107']].mean(axis=1)
-        df['struc'] = df.loc[:, ['J0150', 'P0108']].mean(axis=1)
-        df['equip'] = df.loc[:, ['J0151', 'P0109']].mean(axis=1)
+        df['total'] = df.loc[:, ('J0149', 'P0107')].mean(axis=1)
+        df['struc'] = df.loc[:, ('J0150', 'P0108')].mean(axis=1)
+        df['equip'] = df.loc[:, ('J0151', 'P0109')].mean(axis=1)
     return df.iloc[:, -3:]
 
 
@@ -1170,32 +1155,29 @@ def collect_uscb_manufacturing() -> tuple[DataFrame, int]:
 
 def collect_uscb_metals() -> tuple[DataFrame, tuple[int]]:
     """Census Primary Metals & Railroad-Related Products Manufacturing Series"""
-    ARCHIVE_NAME = 'dataset_uscb.zip'
-    SERIES_IDS = {
-        'P0262': 1875,
-        'P0265': 1875,
-        'P0266': 1875,
-        'P0267': 1875,
-        'P0268': 1875,
-        'P0269': 1909,
-        'P0293': 1880,
-        'P0294': 1875,
-        'P0295': 1875,
+    SERIES_IDS_EXT = {
+        'P0262': ('dataset_uscb.zip', 1875),
+        'P0265': ('dataset_uscb.zip', 1875),
+        'P0266': ('dataset_uscb.zip', 1875),
+        'P0267': ('dataset_uscb.zip', 1875),
+        'P0268': ('dataset_uscb.zip', 1875),
+        'P0269': ('dataset_uscb.zip', 1909),
+        'P0293': ('dataset_uscb.zip', 1880),
+        'P0294': ('dataset_uscb.zip', 1875),
+        'P0295': ('dataset_uscb.zip', 1875)
     }
-    df = pd.concat(
-        [
-            read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
-            for series_id in SERIES_IDS
-        ],
-        axis=1,
-        verify_integrity=True,
-        sort=True
-    )
+    SERIES_IDS = dict(zip(
+        SERIES_IDS_EXT, map(itemgetter(0), SERIES_IDS_EXT.values())
+    ))
+    df = collect_usa_hist(SERIES_IDS)
+    SERIES_IDS = dict(zip(
+        SERIES_IDS_EXT, map(itemgetter(1), SERIES_IDS_EXT.values())
+    ))
     for series_id, year in SERIES_IDS.items():
-        df.loc[:, series_id] = df.loc[:, [series_id]].div(
+        df.loc[:, series_id] = df.loc[:, (series_id,)].div(
             df.loc[year, series_id]
-        ).mul(100)
-    return df, tuple(SERIES_IDS.values())
+        )
+    return df.mul(100), tuple(map(itemgetter(1), SERIES_IDS_EXT.values()))
 
 
 def collect_uscb_money_stock() -> DataFrame:
@@ -1386,7 +1368,7 @@ def get_mean_for_min_std():
     _df = read_temporary(FILE_NAME)
     df = pd.concat(
         [
-            _df.loc[:, [series_id]].dropna(axis=0) for series_id in SERIES_IDS
+            _df.loc[:, (series_id,)].dropna(axis=0) for series_id in SERIES_IDS
         ],
         axis=1
     ).dropna(axis=0)

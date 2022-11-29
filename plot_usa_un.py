@@ -6,8 +6,6 @@ Created on Sat May  2 22:26:24 2020
 """
 
 
-import io
-
 import pandas as pd
 from read.lib import read_unstats
 
