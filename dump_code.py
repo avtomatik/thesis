@@ -600,5 +600,5 @@ _df_semi_d = pd.concat(
 extract_can_group_a(7931814471809016759, skiprows=241)
 extract_can_group_a(8448814858763853126, skiprows=81)
 extract_can_group_b(5245628780870031920, skiprows=3)
-read_can(3800068).pipe(pull_can_quarter_former, 'v62143969')
-read_can(3800068).pipe(pull_can_quarter_former, 'v62143990')
+read_can(3800068).pipe(pull_can_aggregate, 'v62143969')
+read_can(3800068).pipe(pull_can_aggregate, 'v62143990')

@@ -15,7 +15,7 @@ from collect.lib import collect_usa_hist
 from pandas.plotting import autocorrelation_plot
 from pull.lib import pull_by_series_id
 from read.lib import read_usa_bls
-from transform.lib import numerify, transform_mean_wide
+from transform.lib import transform_mean_wide
 
 
 def main(
@@ -36,12 +36,11 @@ def main(
             collect_usa_hist(SERIES_ID_CB),
             pd.concat(
                 [
-                    read_usa_bls(file_name).pipe(
-                        pull_by_series_id, series_id).pipe(numerify)
+                    read_usa_bls(file_name).pipe(pull_by_series_id, series_id)
                     for series_id, file_name in SERIES_ID_LS.items()
                 ],
                 axis=1
-            ),
+            ).apply(pd.to_numeric, errors='coerce'),
         ],
         axis=1
     )

@@ -481,7 +481,7 @@ def transform_mean_wide(df: DataFrame, name: str) -> DataFrame:
     return df.iloc[:, [-1]]
 
 
-def transform_sum_long(df: DataFrame, name: str) -> DataFrame:
+def stockpile_by_series_ids(df: DataFrame) -> DataFrame:
     """
 
 
@@ -505,18 +505,13 @@ def transform_sum_long(df: DataFrame, name: str) -> DataFrame:
         ================== =================================
     """
     series_ids = sorted(set(df.iloc[:, 0]))
-    df = pd.concat(
+    return pd.concat(
         [
-            df.pipe(pull_by_series_id, series_id).pipe(numerify)
+            df.pipe(pull_by_series_id, series_id)
             for series_id in series_ids
         ],
         axis=1
-    )
-    # =========================================================================
-    # df.columns = series_ids
-    # =========================================================================
-    df[name] = df.sum(axis=1)
-    return df.iloc[:, [-1]]
+    ).apply(pd.to_numeric, errors='coerce')
 
 
 def transform_sum_wide(df: DataFrame, name: str) -> DataFrame:
@@ -597,28 +592,3 @@ def transform_usa_frb_fa_def(df: DataFrame) -> DataFrame:
     df['fa_def_frb'] = (df.iloc[:, [1, 4]].sum(axis=1)).div(
         df.iloc[:, [0, 3]].sum(axis=1))
     return df.iloc[:, [-1]]
-
-
-def numerify(df: DataFrame) -> DataFrame:
-    """
-
-
-    Parameters
-    ----------
-    df : DataFrame
-        ================== =================================
-        df.index           Period
-        df.iloc[:, 0]      Series
-        ================== =================================
-
-    Returns
-    -------
-    DataFrame
-        ================== =================================
-        df.index           Period
-        df.iloc[:, 0]      Series
-        ================== =================================
-    """
-    assert df.shape[1] == 1
-    df.iloc[:, 0] = df.iloc[:, 0].apply(pd.to_numeric, errors='coerce')
-    return df

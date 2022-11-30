@@ -867,7 +867,7 @@ def string_to_url(string: str) -> str:
 
 def build_push_data_frame(file_name: str, blueprint: dict) -> None:
     """
-    Builds DataFrame & Loads It To Excel
+    Builds DataFrame & Loads It To CSV
 
     Parameters
     ----------

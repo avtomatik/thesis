@@ -12,7 +12,6 @@ from pathlib import Path
 
 import pandas as pd
 from pandas import DataFrame
-from transform.lib import numerify
 
 
 def pull_by_series_id(df: DataFrame, series_id: str) -> DataFrame:
@@ -60,7 +59,7 @@ def pull_can_aggregate(df: DataFrame, series_id: str) -> DataFrame:
         ================== =================================
     """
     _df = df.loc[:, ('series_id', 'value')].pipe(
-        pull_by_series_id, series_id).pipe(numerify)
+        pull_by_series_id, series_id).apply(pd.to_numeric, errors='coerce')
     if 'seas' in df.columns:
         return _df.groupby(_df.index.year).sum()
     return _df.groupby(_df.index.year).mean()

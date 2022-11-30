@@ -58,7 +58,7 @@ def main():
     # # v41707775 # Not Useful: Capital Input
     # # v42189387 # Not Useful: Capital Input
     # # =============================================================================
-    # result = pd.DataFrame()
+    # df = pd.DataFrame()
     # combined = pd.DataFrame()
     FILE_NAME = 'stat_can_prd.csv'
     # data = read_temporary(FILE_NAME)
@@ -74,9 +74,9 @@ def main():
     # combined = combined.div(combined.loc[1997]).mul(100)
     # combined['mean_comb'] = combined.mean(axis=1)
     # combined = combined.iloc[:, [-1]]
-    # result = pd.concat([result, combined], axis=1)
+    # df = pd.concat([df, combined], axis=1)
     # # combined.plot(grid=True).get_figure().savefig('view.pdf', format='pdf', dpi=900)
-    # # combined.to_csv(Path(_DIR).joinpath('result.csv'))
+    # # combined.to_csv(Path(_DIR).joinpath('df.csv'))
 
     FILE_NAME = 'stat_can_cap.csv'
     # data = read_temporary(FILE_NAME)
@@ -90,11 +90,11 @@ def main():
     #
     #
     # =============================================================================
-    # result = pd.DataFrame(columns=['series_id_1', 'series_id_2', 'r_2'])
+    # df = pd.DataFrame(columns=['series_id_1', 'series_id_2', 'r_2'])
     # for pair in combinations(data.columns, 2):
     #     chunk = data.loc[:, list(pair)].dropna(axis=0)
     #     if not chunk.empty:
-    #         result = result.append(
+    #         df = df.append(
     #             {
     #                 'series_id_1': pair[0],
     #                 'series_id_2': pair[1],
@@ -102,7 +102,7 @@ def main():
     #             },
     #             ignore_index=True
     #         )
-    # result.to_csv(Path(_DIR).joinpath('result.csv'), index=False)
+    # df.to_csv(Path(_DIR).joinpath('df.csv'), index=False)
     # =============================================================================
 
     # # combined = pd.DataFrame()
@@ -143,7 +143,7 @@ def main():
     # # # combined = combined.div(combined.loc[1997]).mul(100)
     # # # combined.plot(grid=True).get_figure().savefig(
     # # #     'view.pdf', format='pdf', dpi=900)
-    # # # combined.to_csv(Path(_DIR).joinpath('result.csv'))
+    # # # combined.to_csv(Path(_DIR).joinpath('df.csv'))
 
     # =============================================================================
     # FILE_NAME = 'stat_can_cap.csv'
@@ -155,8 +155,8 @@ def main():
     # combined = combined.div(combined.loc[1997]).mul(100)
     # combined['mean'] = combined.sum(axis=1)
     # combined = combined.iloc[:, [-1]]
-    # result = pd.concat([result, combined], axis=1)
-    # result.plot(grid=True).get_figure().savefig('view.pdf', format='pdf', dpi=900)
+    # df = pd.concat([df, combined], axis=1)
+    # df.plot(grid=True).get_figure().savefig('view.pdf', format='pdf', dpi=900)
     # =============================================================================
 
     FILE_NAME = 'stat_can_cap_matching.csv'
