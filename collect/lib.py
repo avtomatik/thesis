@@ -1285,8 +1285,7 @@ def collect_can_price_b():
     df = DataFrame()
     for _ in range(21, 24):
         chunk = _df.iloc[:, [_]].dropna(axis=0)
-        chunk[f'{_df.columns[_]}_prc'] = chunk.iloc[:, 0].div(
-            chunk.iloc[:, 0].shift(1)).sub(1)
+        chunk[f'{_df.columns[_]}_prc'] = chunk.iloc[:, 0].pct_change()
         df = pd.concat([df, chunk.iloc[:, [1]].dropna(axis=0)], axis=1)
     return df
 
@@ -1481,7 +1480,7 @@ def construct_deflator(df: DataFrame) -> DataFrame:
     """
     assert df.shape[1] == 2
     df['deflator'] = df.iloc[:, 0].div(df.iloc[:, 1])
-    df['prc'] = df.iloc[:, -1].div(df.iloc[:, -1].shift(1)).sub(1)
+    df['prc'] = df.iloc[:, -1].pct_change()
     return df.iloc[:, [-1]].dropna(axis=0)
 
 

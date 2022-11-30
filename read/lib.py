@@ -339,7 +339,7 @@ def read_usa_frb() -> DataFrame:
     # =========================================================================
     df = pd.read_csv(**kwargs)
     kwargs['header'] = 0
-    kwargs['names'] = ['period', *map(int, df.columns[1:])]
+    kwargs['names'] = ('period', *map(int, df.columns[1:]))
     kwargs['index_col'] = 0
     # =========================================================================
     # Re-Load
@@ -369,9 +369,9 @@ def read_usa_frb_g17() -> DataFrame:
     # =========================================================================
     df = pd.read_csv(**kwargs)
     kwargs['header'] = 0
-    kwargs['names'] = [
+    kwargs['names'] = (
         'period', *map(int, map(float, df.columns[1 + _start:df.shape[1]]))
-    ]
+    )
     kwargs['index_col'] = 0
     kwargs['usecols'] = range(_start, df.shape[1])
     # =========================================================================

@@ -1523,23 +1523,20 @@ def plot_elasticity(df: DataFrame) -> None:
     # =========================================================================
     # \dfrac{x_{k} - x_{k-1}}{\dfrac{x_{k} + x_{k-1}}{2}}
     # =========================================================================
-    df[f'{df.columns[2]}_elasticity_a'] = df.iloc[:, 3].sub(
-        df.iloc[:, 3].shift(1)).div(df.iloc[:, -1])
+    df[f'{df.columns[2]}_elasticity_a'] = df.iloc[:, 3].diff().div(df.iloc[:, -1])
     # =========================================================================
     # \frac{x_{k+1} - x_{k-1}}{2 x_{k}}
     # =========================================================================
-    df[f'{df.columns[2]}_elasticity_b'] = df.iloc[:,
-                                                  3].shift(-1).sub(df.iloc[:, 3].shift(1)).div(df.iloc[:, 3]).div(2)
+    df[f'{df.columns[2]}_elasticity_b'] = df.iloc[:, 3].diff(2).shift(-1).div(df.iloc[:, 3]).div(2)
     # =========================================================================
     # 2 \times \frac{x_{k+1} - x_{k-1}}{x_{k-1} + 2 x_{k} + x_{k+1}}
     # =========================================================================
-    df[f'{df.columns[2]}_elasticity_c'] = df.iloc[:, 3].shift(-1).sub(df.iloc[:, 3].shift(1)).div(
+    df[f'{df.columns[2]}_elasticity_c'] = df.iloc[:, 3].diff(2).shift(-1).div(
         df.iloc[:, 3].mul(2).add(df.iloc[:, 3].shift(-1)).add(df.iloc[:, 3].shift(1))).mul(2)
     # =========================================================================
     # \frac{-x_{k-1} - x_{k} + x_{k+1} + x_{k+2}}{2 \times (x_{k} + x_{k+1})}
     # =========================================================================
-    df[f'{df.columns[2]}_elasticity_d'] = df.iloc[:, 3].shift(-1).add(df.iloc[:, 3].shift(-2)).sub(
-        df.iloc[:, 3].shift(1)).sub(df.iloc[:, 3]).div(df.iloc[:, 3].add(df.iloc[:, 3].shift(-1)).mul(2))
+    df[f'{df.columns[2]}_elasticity_d'] = df.iloc[:, 3].shift(-1).add(df.iloc[:, 3].shift(-2)).sub(df.iloc[:, 3].shift(1)).sub(df.iloc[:, 3]).div(df.iloc[:, 3].add(df.iloc[:, 3].shift(-1)).mul(2))
     plt.figure(1)
     plt.title('{}, {}, {}=100'.format(*_title))
     plt.xlabel('Period')
@@ -1725,8 +1722,7 @@ def plot_growth_elasticity(df: DataFrame) -> None:
     # =========================================================================
     # Series, Growth Rate
     # =========================================================================
-    _df[f'{df.columns[1]}_growth_rate'] = df.iloc[:, [1]].sub(
-        df.iloc[:, [1]].shift(2)).div(df.iloc[:, [1]].rolling(2).sum().shift(1))
+    _df[f'{df.columns[1]}_growth_rate'] = df.iloc[:, [1]].diff(2).div(df.iloc[:, [1]].rolling(2).sum().shift(1))
     # =========================================================================
     # Series, Elasticity
     # =========================================================================
@@ -2781,8 +2777,7 @@ def plot_capital_retirement(df: DataFrame) -> None:
     _df.set_index(_df.columns[0], inplace=True)
     _df['_ratio_deviation_abs'] = _df.iloc[:, 10].sub(
         _df.iloc[:, 10].mean()).abs()
-    _df['_ratio_increment_abs'] = _df.iloc[:, 10].sub(
-        _df.iloc[:, 10].shift(1)).abs()
+    _df['_ratio_increment_abs'] = _df.iloc[:, 10].diff().abs()
     for _ in range(N):
         if 1 + _ == N:
             print(

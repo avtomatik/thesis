@@ -94,12 +94,7 @@ def build_push_data_frame(file_name: str, blueprint: dict) -> None:
     """
     df = DataFrame()
     for item in blueprint:
-        _df = read_can(
-            string_to_url(item['archive_name']),
-            index_col=0,
-            usecols=range(14),
-            parse_dates=True
-        )
+        _df = read_can(string_to_url(item['archive_name']))
         _df = _df[_df['VECTOR'].isin(item['series_ids'])]
         for series_id in item['series_ids']:
             chunk = _df[_df['VECTOR'] == series_id][['VALUE']]

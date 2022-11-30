@@ -207,8 +207,8 @@ def collect_usa_bls_cpiu() -> DataFrame:
     # Tests
     # =========================================================================
     df['mean_less_sqrt'] = df.iloc[:, -2].sub(df.iloc[:, -1])
-    df['dec_on_dec'] = df.iloc[:, -3].div(df.iloc[:, -3].shift(1)).sub(1)
-    df['mean_on_mean'] = df.iloc[:, -4].div(df.iloc[:, -4].shift(1)).sub(1)
+    df['dec_on_dec'] = df.iloc[:, -3].pct_change()
+    df['mean_on_mean'] = df.iloc[:, -4].pct_change()
     return df.iloc[:, [-1]].dropna(axis=0)
 
 
