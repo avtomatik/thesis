@@ -17,91 +17,74 @@ from toolkit.lib import build_push_data_frame, string_to_url
 
 # =============================================================================
 # Capital
-# # 16100077-eng.xlsx: NO;
-# # 16100088-eng.xlsx: NO;
-# # 16100118-eng.xlsx: NO;
-# # 34100278-eng.xlsx: NO;
-# # 34100279-eng.xlsx: NO;
-# # 36100096-eng.xlsx: YES;
-# # 36100097-eng.xlsx: NO;
-# # 36100109-eng.xlsx: NO;
-# # 36100174-eng.xlsx: NO;
-# # 36100210-eng.xlsx: NO;
-# # 36100236-eng.xlsx: YES ALTERNATIVE;
-# # 36100237-eng.xlsx: YES ALTERNATIVE;
-# # 36100238-eng.xlsx: NO;
 # =============================================================================
+# =============================================================================
+# 16100077-eng.xlsx: NO;
+# 16100088-eng.xlsx: NO;
+# 16100118-eng.xlsx: NO;
+# 34100278-eng.xlsx: NO;
+# 34100279-eng.xlsx: NO;
+# 36100096-eng.xlsx: YES;
+# 36100097-eng.xlsx: NO;
+# 36100109-eng.xlsx: NO;
+# 36100174-eng.xlsx: NO;
+# 36100210-eng.xlsx: NO;
+# 36100236-eng.xlsx: YES ALTERNATIVE;
+# 36100237-eng.xlsx: YES ALTERNATIVE;
+# 36100238-eng.xlsx: NO;
+# =============================================================================
+
 # =============================================================================
 # Labor
-# # 14100027-eng.xlsx: YES;
-# # 14100036-eng.xlsx: NO;
-# # 14100221-eng.xlsx: NO;
-# # 14100235-eng.xlsx: YES;
-# # 14100238-eng.xlsx: NO;
-# # 14100242-eng.xlsx: NO;
-# # 14100243-eng.xlsx: NO;
-# # 14100259-eng.xlsx: MAYBE;
-# # 14100265-eng.xlsx: YES;
-# # 14100355-eng.xlsx: MAYBE;
-# # 14100392-eng.xlsx: NO;
-# # 36100489-eng.xlsx: NO;
 # =============================================================================
+# =============================================================================
+# 14100027-eng.xlsx: YES;
+# 14100036-eng.xlsx: NO;
+# 14100221-eng.xlsx: NO;
+# 14100235-eng.xlsx: YES;
+# 14100238-eng.xlsx: NO;
+# 14100242-eng.xlsx: NO;
+# 14100243-eng.xlsx: NO;
+# 14100259-eng.xlsx: MAYBE;
+# 14100265-eng.xlsx: YES;
+# 14100355-eng.xlsx: MAYBE;
+# 14100392-eng.xlsx: NO;
+# 36100489-eng.xlsx: NO;
+# =============================================================================
+
 # =============================================================================
 # Production
-# # 10100094-eng.xlsx: Capacity utilization rates (Bank of Canada calculated series), seasonally adjusted
-# # 16100013-eng.xlsx: NO;
-# # 16100038-eng.xlsx: NO;
-# # 16100047-eng.xlsx: NO;
-# # 16100052-eng.xlsx: NO;
-# # 16100053-eng.xlsx: NO;
-# # 16100054-eng.xlsx: NO;
-# # 16100056-eng.xlsx: NO;
-# # 16100079-eng.xlsx: NO;
-# # 16100109-eng.xlsx: Industrial capacity utilization rates, by industry
-# # 16100111-eng.xlsx: Industrial capacity utilization rates, by Standard Industrial Classification, 1980 (SIC)
-# # 16100117-eng.xlsx: NO;
-# # 16100119-eng.xlsx: NO;
-# # 36100207-eng.xlsx: NO;
-# # 36100208-eng.xlsx: Capital stock: v41713073;
-# # 36100217-eng.xlsx: NO;
-# # 36100303-eng.xlsx: NO;
-# # 36100305-eng.xlsx: NO;
-# # 36100309-eng.xlsx: NO;
-# # 36100310-eng.xlsx: NO;
-# # 36100383-eng.xlsx: NO;
-# # 36100384-eng.xlsx: NO;
-# # 36100385-eng.xlsx: YES;
-# # 36100386-eng.xlsx: YES;
-# # 36100480-eng.xlsx: Total number of jobs: v111382232;
-# # 36100488-eng.xlsx: Output, by sector and industry, provincial and territorial: v64602050;
+# =============================================================================
+# =============================================================================
+# 10100094-eng.xlsx: Capacity utilization rates (Bank of Canada calculated series), seasonally adjusted
+# 16100013-eng.xlsx: NO;
+# 16100038-eng.xlsx: NO;
+# 16100047-eng.xlsx: NO;
+# 16100052-eng.xlsx: NO;
+# 16100053-eng.xlsx: NO;
+# 16100054-eng.xlsx: NO;
+# 16100056-eng.xlsx: NO;
+# 16100079-eng.xlsx: NO;
+# 16100109-eng.xlsx: Industrial capacity utilization rates, by industry
+# 16100111-eng.xlsx: Industrial capacity utilization rates, by Standard Industrial Classification, 1980 (SIC)
+# 16100117-eng.xlsx: NO;
+# 16100119-eng.xlsx: NO;
+# 36100207-eng.xlsx: NO;
+# 36100208-eng.xlsx: Capital stock: v41713073;
+# 36100217-eng.xlsx: NO;
+# 36100303-eng.xlsx: NO;
+# 36100305-eng.xlsx: NO;
+# 36100309-eng.xlsx: NO;
+# 36100310-eng.xlsx: NO;
+# 36100383-eng.xlsx: NO;
+# 36100384-eng.xlsx: NO;
+# 36100385-eng.xlsx: YES;
+# 36100386-eng.xlsx: YES;
+# 36100480-eng.xlsx: Total number of jobs: v111382232;
+# 36100488-eng.xlsx: Output, by sector and industry, provincial and territorial: v64602050;
 # =============================================================================
 
 
-def build_push_data_frame(file_name: str, blueprint: dict) -> None:
-    """
-    Builds DataFrame & Loads It To Excel
-
-    Parameters
-    ----------
-    file_name : str
-        Excel File Name.
-    blueprint : dict
-        DESCRIPTION.
-
-    Returns
-    -------
-    None
-    """
-    df = DataFrame()
-    for item in blueprint:
-        _df = read_can(string_to_url(item['archive_name']))
-        _df = _df[_df['VECTOR'].isin(item['series_ids'])]
-        for series_id in item['series_ids']:
-            chunk = _df[_df['VECTOR'] == series_id][['VALUE']]
-            chunk = chunk.groupby(chunk.index.year).mean()
-            df = pd.concat([df, chunk], axis=1, sort=True)
-        df.columns = item['series_ids']
-    # df.to_csv(archive_name)
 
 
 CAPITAL = (

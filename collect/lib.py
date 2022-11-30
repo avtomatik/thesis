@@ -19,9 +19,10 @@ from read.lib import (read_can, read_temporary, read_usa_bea,
                       read_usa_hist)
 from scipy.signal import wiener
 from sklearn.impute import SimpleImputer
-from transform.lib import (numerify, transform_cobb_douglas_extension_capital,
-                           transform_mean_wide, transform_sum_long,
-                           transform_usa_frb_fa, transform_usa_frb_fa_def)
+from transform.lib import (stockpile_by_series_ids,
+                           transform_cobb_douglas_extension_capital,
+                           transform_mean_wide, transform_usa_frb_fa,
+                           transform_usa_frb_fa_def)
 
 from toolkit.lib import price_inverse_single
 
@@ -1329,10 +1330,9 @@ def construct_can(archive_ids: dict) -> DataFrame:
         _df = _df.set_index(_df.iloc[:, 0])
     df = pd.concat(
         [
-            _df.loc[:, ('series_id', 'value')].pipe(
-                transform_sum_long, name="capital"),
+            _df.loc[:, ('series_id', 'value')].pipe(stockpile_by_series_ids).pipe(transform_sum_wide, name="capital"),
             read_can(tuple(archive_ids)[1]).pipe(
-                pull_by_series_id, archive_ids.get(tuple(archive_ids)[1])).pipe(numerify),
+                pull_by_series_id, archive_ids.get(tuple(archive_ids)[1])).apply(pd.to_numeric, errors='coerce'),
             read_can(tuple(archive_ids)[-1]).pipe(
                 pull_can_aggregate,
                 archive_ids.get(tuple(archive_ids)[-1])),

@@ -13,9 +13,8 @@ import pandas as pd
 from pandas import DataFrame
 from pandas.plotting import autocorrelation_plot
 from plot.lib import plot_can_test
-from pull.lib import pull_by_series_id, pull_can_quarter_former
+from pull.lib import pull_by_series_id, pull_can_aggregate
 from read.lib import read_can, read_usa_bea_excel, read_usa_bls, read_usa_hist
-from transform.lib import numerify
 
 ARCHIVE_NAMES_UTILISED = (
     'dataset_douglas.zip',
@@ -95,7 +94,7 @@ def test_data_consistency_a():
         [
             pd.concat(
                 [
-                    pull_can_quarter_former(read_can(_args[0]), _args[1])
+                    read_can(_args[0]).pipe(pull_can_aggregate, _args[1])
                     for _args in ARGS[:3]
                 ],
                 axis=1,
@@ -103,12 +102,12 @@ def test_data_consistency_a():
             ),
             pd.concat(
                 [
-                    numerify(pull_by_series_id(read_can(_args[0]), _args[1]))
+                    read_can(_args[0]).pipe(pull_by_series_id, _args[1])
                     for _args in ARGS[3:]
                 ],
                 axis=1,
                 sort=True
-            ),
+            ).apply(pd.to_numeric, errors='coerce'),
         ],
         axis=1,
         sort=True
