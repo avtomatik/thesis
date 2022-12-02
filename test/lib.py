@@ -7,9 +7,8 @@ Created on Sun Jun 12 12:19:54 2022
 """
 
 
-from functools import partial
-
 import pandas as pd
+from collect.lib import stockpile_usa_hist
 from pandas import DataFrame
 from pandas.plotting import autocorrelation_plot
 from plot.lib import plot_can_test
@@ -50,9 +49,9 @@ def options():
     )
     [
         print(read_usa_hist(ARCHIVE_NAME, series_id))
-# =============================================================================
-#         stockpile_usa_hist(SERIES_ID)
-# =============================================================================
+        # =============================================================================
+        #         stockpile_usa_hist(SERIES_ID)
+        # =============================================================================
         for series_id in SERIES_IDS
     ]
 
@@ -284,55 +283,26 @@ def test_douglas() -> None:
     None
 
     """
-    _kwargs = (
-        {
-            'archive_name': 'dataset_uscb.zip',
-            'series_id': 'J0014',
-        },
-        {
-            'archive_name': 'dataset_douglas.zip',
-            'series_id': 'DT24AS01',
-        },
-    )
-    df = pd.concat(
-        [
-            partial(read_usa_hist, **_kwargs[0])(),
-            partial(read_usa_hist, **_kwargs[1])(),
-# =============================================================================
-#             stockpile_usa_hist(SERIES_ID)
-# =============================================================================
-        ],
-        axis=1
-    )
-    _loc = _kwargs[0]['series_id']
-    df.loc[:, [_loc]] = df.loc[:, [_loc]].div(
-        df.loc[1899, [_loc]]).mul(100).round(0)
+    SERIES_IDS = {
+        'J0014': 'dataset_uscb.zip',
+        'DT24AS01': 'dataset_douglas.zip'
+    }
+    df = stockpile_usa_hist(SERIES_IDS)
+    df.loc[:, [0]] = df.loc[:, [0]].div(df.loc[1899, [0]]).mul(100).round(0)
     df['dif'] = df.iloc[:, 1].sub(df.iloc[:, 0])
-    df.dropna(axis=0).plot(title='Cobb--Douglas Data Comparison', legend=True, grid=True)
-    _kwargs = (
-        {
-            # =================================================================
-            # Cobb C.W., Douglas P.H. Capital Series: Total Fixed Capital in 1880 dollars (4)
-            # =================================================================
-            'archive_name': 'dataset_usa_cobb-douglas.zip',
-            'series_id': 'CDT2S4',
-        },
-        {
-            'archive_name': 'dataset_douglas.zip',
-            'series_id': 'DT63AS01',
-        },
-    )
-    df = pd.concat(
-        [
-            partial(read_usa_hist, **kwargs)() for kwargs in _kwargs
-# =============================================================================
-#             stockpile_usa_hist(SERIES_ID)
-# =============================================================================
-        ],
-        axis=1
-    )
+    df.dropna(axis=0).plot(
+        title='Cobb--Douglas Data Comparison', legend=True, grid=True)
+    SERIES_IDS = {
+        # =================================================================
+        # Cobb C.W., Douglas P.H. Capital Series: Total Fixed Capital in 1880 dollars (4)
+        # =================================================================
+        'CDT2S4': 'dataset_usa_cobb-douglas.zip',
+        'DT63AS01': 'dataset_douglas.zip'
+    }
+    df = stockpile_usa_hist(SERIES_IDS)
     df['div'] = df.iloc[:, 0].div(df.iloc[:, 1])
-    df.dropna(axis=0).plot(title='Cobb--Douglas Data Comparison', legend=True, grid=True)
+    df.dropna(axis=0).plot(
+        title='Cobb--Douglas Data Comparison', legend=True, grid=True)
 
 
 def test_procedure(kwargs_list: list[dict]) -> None:

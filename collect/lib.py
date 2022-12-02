@@ -31,15 +31,10 @@ ARCHIVE_NAMES_UTILISED = (
     'dataset_usa_brown.zip',
     'dataset_uscb.zip',
     'dataset_usa_cobb-douglas.zip',
-    'dataset_usa_infcf16652007.zip',
     'dataset_usa_kendrick.zip',
 )
 FILE_NAMES_UTILISED = (
     'dataset_usa_0025_p_r.txt',
-    'dataset_usa_davis-j-h-ip-total.xls',
-    'dataset_usa_frb_g17_all_annual_2013_06_23.csv',
-    'dataset_usa_frb_invest_capital.csv',
-    'dataset_usa_frb_us3_ip_2018_09_02.csv',
     'dataset_usa_reference_ru_kurenkov_yu_v.csv',
 )
 

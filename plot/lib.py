@@ -27,11 +27,9 @@ from toolkit.lib import (calculate_capital, kol_zur_filter,
                          rolling_mean_filter, simple_linear_regression)
 
 ARCHIVE_NAMES_UTILISED = (
-    'dataset_rus_m1.zip',
     'dataset_uscb.zip',
 )
 FILE_NAMES_UTILISED = (
-    'dataset_rus_grigoriev_v.csv',
     'dataset_usa_nber_ces_mid_naics5811.csv',
     'dataset_usa_nber_ces_mid_sic5811.csv',
 )

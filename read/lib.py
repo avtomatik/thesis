@@ -551,6 +551,10 @@ def read_worldbank(
     DataFrame
 
     """
+    kwargs = {
+        'index_col': 0,
+        'skiprows': 4
+    }
     with ZipFile(io.BytesIO(requests.get(url_template.format(source_id)).content)) as archive:
         # =====================================================================
         # Select the Largest File with `min()` Function
@@ -558,10 +562,6 @@ def read_worldbank(
         with archive.open(
             min({_.filename: _.file_size for _ in archive.filelist})
         ) as f:
-            kwargs = {
-                'filepath_or_buffer': f,
-                'index_col': 0,
-                'skiprows': 4
-            }
+            kwargs['filepath_or_buffer'] = f
             df = pd.read_csv(**kwargs).dropna(axis=1, how='all').transpose()
             return df.drop(df.index[:3]).rename_axis('period')
