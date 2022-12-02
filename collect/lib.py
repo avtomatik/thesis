@@ -1062,14 +1062,6 @@ def collect_uscb_employment_conflicts() -> DataFrame:
         columns=df.columns
     )
 
-
-def collect_uscb_gnp() -> DataFrame:
-    """Census Gross National Product Series"""
-    SERIES_IDS = {'F0003': 'dataset_uscb.zip', 'F0004': 'dataset_uscb.zip'}
-    df = stockpile_usa_hist(SERIES_IDS).truncate(before=1889)
-    return df.div(df.iloc[0, :]).mul(100)
-
-
 def collect_uscb_manufacturing() -> tuple[DataFrame, int]:
     """
     Census Manufacturing Indexes, 1899=100

@@ -32,11 +32,15 @@ def main():
 
     os.chdir(DIR)
     plot_uscb_manufacturing(*collect_uscb_manufacturing())
+
     plot_uscb_cap(collect_uscb_cap())
+
     plot_uscb_cap_deflator(
         collect_uscb_cap_deflator().pipe(transform_mean, name="census_fused")
     )
+
     plot_uscb_metals(*collect_uscb_metals())
+
     # =========================================================================
     # Census Production Series
     # =========================================================================
@@ -66,6 +70,7 @@ def main():
     }
 
     plot_uscb_commodities(SERIES_IDS)
+
     ARCHIVE_NAME = 'dataset_uscb.zip'
     SERIES_IDS = {
         f'C{_:04n}': ARCHIVE_NAME
@@ -77,14 +82,27 @@ def main():
         )
     }
     plot_uscb_immigration(stockpile_usa_hist(
-        SERIES_IDS).pipe(transform_sum, name="C89"))
+        SERIES_IDS).pipe(transform_sum, name="C0089"))
+
     plot_uscb_unemployment_hours_worked(
         collect_uscb_unemployment_hours_worked()
     )
+
     plot_uscb_employment_conflicts(collect_uscb_employment_conflicts())
+
     plot_uscb_unemployment_hours_worked(df)
+
     plot_uscb_employment_conflicts(df)
-    plot_uscb_gnp(collect_uscb_gnp())
+
+    SERIES_IDS = {
+        # =========================================================================
+        # Census Gross National Product Series
+        # =========================================================================
+        'F0003': 'dataset_uscb.zip', 'F0004': 'dataset_uscb.zip'
+    }
+    df = stockpile_usa_hist(SERIES_IDS).truncate(before=1889)
+    df.div(df.iloc[0, :]).mul(100).pipe(plot_uscb_gnp)
+
     SERIES_ID = {
         # =========================================================================
         # Census 1975, Land in Farms
@@ -92,6 +110,7 @@ def main():
         'K0005': 'dataset_uscb.zip'
     }
     stockpile_usa_hist(SERIES_ID).pipe(plot_uscb_farm_lands)
+
     SERIES_IDS = {
         # =========================================================================
         # Census Foreign Trade Series
@@ -99,6 +118,7 @@ def main():
         'U0001': 'dataset_uscb.zip', 'U0008': 'dataset_uscb.zip', 'U0015': 'dataset_uscb.zip'
     }
     stockpile_usa_hist(SERIES_IDS).pipe(plot_uscb_trade)
+
     SERIES_IDS = {
         # =========================================================================
         # Census Foreign Trade Series
@@ -106,7 +126,9 @@ def main():
         'U0187': 'dataset_uscb.zip', 'U0188': 'dataset_uscb.zip', 'U0189': 'dataset_uscb.zip'
     }
     stockpile_usa_hist(SERIES_IDS).pipe(plot_uscb_trade_gold_silver)
+
     plot_uscb_trade_by_countries(collect_uscb_trade_by_countries())
+
     SERIES_IDS = {
         # =========================================================================
         # Census Money Supply Aggregates
@@ -116,6 +138,7 @@ def main():
     YEAR_BASE = 1915
     df = stockpile_usa_hist(SERIES_IDS)
     df.div(df.loc[YEAR_BASE, :]).mul(100).pipe(plot_uscb_money_stock)
+
     plot_uscb_finance()
 
 
