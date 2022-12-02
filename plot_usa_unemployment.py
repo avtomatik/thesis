@@ -11,11 +11,11 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import pandas as pd
-from collect.lib import collect_usa_hist
+from collect.lib import stockpile_usa_hist
 from pandas.plotting import autocorrelation_plot
 from pull.lib import pull_by_series_id
 from read.lib import read_usa_bls
-from transform.lib import transform_mean_wide
+from transform.lib import transform_mean
 
 
 def main(
@@ -33,7 +33,7 @@ def main(
 
     df = pd.concat(
         [
-            collect_usa_hist(SERIES_ID_CB),
+            stockpile_usa_hist(SERIES_ID_CB),
             pd.concat(
                 [
                     read_usa_bls(file_name).pipe(pull_by_series_id, series_id)
@@ -45,7 +45,7 @@ def main(
         axis=1
     )
     df.plot(title='US Unemployment, {}$-${}'.format(*df.index[[0, -1]]))
-    df.pipe(transform_mean_wide, name="fused").pipe(autocorrelation_plot)
+    df.pipe(transform_mean, name="fused").pipe(autocorrelation_plot)
 
     if savefig:
         plt.savefig(Path(DIR).joinpath(FILE_NAME), format='pdf', dpi=900)

@@ -14,9 +14,8 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from collect.lib import collect_usa_hist
 from pandas import DataFrame
-from pandas.plotting import autocorrelation_plot, bootstrap_plot, lag_plot
+from pandas.plotting import autocorrelation_plot, lag_plot
 from pull.lib import (pull_by_series_id, pull_series_ids_description,
                       pull_uscb_description)
 from read.lib import read_usa_hist, read_usa_nber, read_worldbank
@@ -271,7 +270,7 @@ def plot_e(df: DataFrame) -> None:
 
 def plot_uscb_manufacturing(df: DataFrame, year_base: int) -> None:
     plt.figure()
-    plt.plot(df.iloc[:, [0, 2]], label=[
+    plt.plot(df.iloc[:, (0, 2)], label=[
         'Fabricant S., Shiskin J., NBER',
         'E. Frickey',
     ]
@@ -410,7 +409,7 @@ def plot_uscb_unemployment_hours_worked(df: DataFrame) -> None:
     plt.ylabel('Percentage')
     plt.grid()
     plt.figure(2)
-    plt.plot(df.iloc[:, [2, 3]], label=['Bureau of Labour', 'Wolman'])
+    plt.plot(df.iloc[:, (2, 3)], label=['Bureau of Labour', 'Wolman'])
     plt.title('All Manufacturing, Average Full-Time Weekly Hours, 1890-1899=100')
     plt.xlabel('Period')
     plt.ylabel('Percentage')
@@ -466,11 +465,9 @@ def plot_uscb_gnp(df: DataFrame) -> None:
     plt.show()
 
 
-def plot_uscb_farm_lands() -> None:
-    """Census 1975, Land in Farms"""
-    SERIES_ID = {'K0005': 'dataset_uscb.zip'}
+def plot_uscb_farm_lands(df: DataFrame) -> None:
     plt.figure()
-    plt.plot(collect_usa_hist(SERIES_ID))
+    df.plot()
     plt.title('Land in Farms')
     plt.xlabel('Period')
     plt.ylabel('1,000 acres')
@@ -1112,7 +1109,7 @@ def plot_cobb_douglas(df: DataFrame, params: tuple[float], mapping: dict) -> Non
     plt.grid()
     plt.figure(2)
     plt.semilogy(
-        df.iloc[:, [2, 9]],
+        df.iloc[:, (2, 9)],
         label=[
             'Actual Product',
             'Computed Product, $P\' = {:,.4f}L^{{{:,.4f}}}C^{{{:,.4f}}}$'.format(
@@ -1130,7 +1127,7 @@ def plot_cobb_douglas(df: DataFrame, params: tuple[float], mapping: dict) -> Non
     plt.grid()
     plt.figure(3)
     plt.plot(
-        df.iloc[:, [8, 11]],
+        df.iloc[:, (8, 11)],
         label=[
             'Deviations of $P$',
             'Deviations of $P\'$',
@@ -1225,7 +1222,7 @@ def plot_cobb_douglas_alt(df: DataFrame, params: tuple[float], mapping: dict) ->
     plt.grid()
     plt.figure(2)
     plt.plot(
-        df.iloc[:, [3, 17]],
+        df.iloc[:, (3, 17)],
         label=[
             'Actual Product',
             'Computed Product, $P\' = {:,.4f}L^{{{:,.4f}}}C^{{{:,.4f}}}$'.format(
@@ -1243,7 +1240,7 @@ def plot_cobb_douglas_alt(df: DataFrame, params: tuple[float], mapping: dict) ->
     plt.grid()
     plt.figure(3)
     plt.plot(
-        df.iloc[:, [15, 18]],
+        df.iloc[:, (15, 18)],
         label=[
             'Deviations of $P$',
             'Deviations of $P\'$',
@@ -1317,8 +1314,8 @@ def plot_cobb_douglas_complex(df: DataFrame) -> None:
         MAP_FIG
     )
     plot_cobb_douglas_3d(df.iloc[:, range(3)])
-    plot_lab_prod_polynomial(_df.iloc[:, [3, 4]])
-    plot_lab_cap_inty_lab_prty_closure(_df.iloc[:, [3, 4]])
+    plot_lab_prod_polynomial(_df.iloc[:, (3, 4)])
+    plot_lab_cap_inty_lab_prty_closure(_df.iloc[:, (3, 4)])
     plot_lab_cap_inty(_df.iloc[:, [3]])
     plot_lab_prty(_df.iloc[:, [4]])
     plot_turnover(_df.iloc[:, [6]])
@@ -1346,7 +1343,7 @@ def plot_cobb_douglas_tight_layout(df: DataFrame, params: tuple[float], mapping:
     axes[0].legend()
     axes[0].grid(True)
     axes[1].plot(
-        df.iloc[:, [2, 5]],
+        df.iloc[:, (2, 5)],
         label=[
             'Actual Product',
             'Computed Product, $P\' = {:,.4f}L^{{{:,.4f}}}C^{{{:,.4f}}}$'.format(
@@ -1360,7 +1357,7 @@ def plot_cobb_douglas_tight_layout(df: DataFrame, params: tuple[float], mapping:
     axes[1].legend()
     axes[1].grid(True)
     axes[2].plot(
-        df.iloc[:, [8, 9]],
+        df.iloc[:, (8, 9)],
         label=[
             'Deviations of $P$',
             'Deviations of $P\'$',

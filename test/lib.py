@@ -51,7 +51,7 @@ def options():
     [
         print(read_usa_hist(ARCHIVE_NAME, series_id))
 # =============================================================================
-#         collect_usa_hist(SERIES_ID)
+#         stockpile_usa_hist(SERIES_ID)
 # =============================================================================
         for series_id in SERIES_IDS
     ]
@@ -121,15 +121,15 @@ def test_data_consistency_a():
     # =========================================================================
     # Option 1
     # =========================================================================
-    plot_can_test(df.iloc[:, [-5, -3]])
+    plot_can_test(df.iloc[:, (-5, -3)])
     # =========================================================================
     # Option 2
     # =========================================================================
-    plot_can_test(df.iloc[:, [-2, -1]])
+    plot_can_test(df.iloc[:, (-2, -1)])
     # =========================================================================
     # Option 3
     # =========================================================================
-    plot_can_test(df.iloc[:, [-4, -1]])
+    plot_can_test(df.iloc[:, (-4, -1)])
     # =========================================================================
     # Option 4: What?
     # =========================================================================
@@ -299,7 +299,7 @@ def test_douglas() -> None:
             partial(read_usa_hist, **_kwargs[0])(),
             partial(read_usa_hist, **_kwargs[1])(),
 # =============================================================================
-#             collect_usa_hist(SERIES_ID)
+#             stockpile_usa_hist(SERIES_ID)
 # =============================================================================
         ],
         axis=1
@@ -326,7 +326,7 @@ def test_douglas() -> None:
         [
             partial(read_usa_hist, **kwargs)() for kwargs in _kwargs
 # =============================================================================
-#             collect_usa_hist(SERIES_ID)
+#             stockpile_usa_hist(SERIES_ID)
 # =============================================================================
         ],
         axis=1
@@ -351,7 +351,7 @@ def test_procedure(kwargs_list: list[dict]) -> None:
 
 
 def test_substitute_a(df: DataFrame):
-    df['delta_sm'] = df.iloc[:, 0].sub(df.iloc[:, [3, 4, 5]].sum(axis=1))
+    df['delta_sm'] = df.iloc[:, 0].sub(df.iloc[:, (3, 4, 5)].sum(axis=1))
     df.dropna(axis=0, inplace=True)
     autocorrelation_plot(df.iloc[:, [-1]])
 

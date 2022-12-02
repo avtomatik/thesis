@@ -8,22 +8,22 @@ Created on Sun Nov 20 17:42:38 2022
 
 import numpy as np
 import pandas as pd
-from collect.lib import collect_usa_hist
+from collect.lib import stockpile_usa_hist
 from pandas import DataFrame
 from pull.lib import pull_by_series_id
 from read.lib import (read_temporary, read_usa_frb_g17, read_usa_frb_h6,
                       read_usa_frb_us3)
-from sklearn.linear_model import Lasso, LassoCV, LinearRegression, Ridge
+from sklearn.linear_model import LinearRegression
 
 
 def transform_a(df: DataFrame) -> DataFrame:
-    df = df.iloc[:, [0, 4, 6, 7]].dropna(axis=0)
+    df = df.iloc[:, (0, 4, 6, 7)].dropna(axis=0)
     df.iloc[:, 1] = df.iloc[:, 1].apply(pd.to_numeric, errors='coerce')
     return df.div(df.iloc[0, :]).dropna(axis=0)
 
 
 def transform_b(df: DataFrame) -> DataFrame:
-    return df.iloc[:, [0, 6, 7, 20]].dropna(axis=0)
+    return df.iloc[:, (0, 6, 7, 20)].dropna(axis=0)
 
 
 def transform_cobb_douglas(df: DataFrame, year_base: int) -> tuple[DataFrame, tuple[float]]:
@@ -223,7 +223,7 @@ def transform_cobb_douglas_extension_capital(df: DataFrame) -> DataFrame:
     # =========================================================================
     # Cobb C.W., Douglas P.H. -- FRB (Blended) Series
     # =========================================================================
-    df['nominal_cbb_dg_frb'] = df.iloc[:, [8, -5]].mean(axis=1)
+    df['nominal_cbb_dg_frb'] = df.iloc[:, (8, -5)].mean(axis=1)
     # =========================================================================
     # Capital Structure Series: `Cobb C.W., Douglas P.H. -- FRB (Blended) Series` to `Douglas P.H. -- Kendrick J.W. (Blended) Series`
     # =========================================================================
@@ -252,7 +252,7 @@ def transform_cobb_douglas_extension_capital(df: DataFrame) -> DataFrame:
     # =========================================================================
     # Blending Previous Series with 'nominal_extended'
     # =========================================================================
-    df.iloc[:, -1] = df.iloc[:, [-8, -1]].mean(axis=1)
+    df.iloc[:, -1] = df.iloc[:, (-8, -1)].mean(axis=1)
     return df.iloc[:, [-1]].dropna(axis=0)
 
 
@@ -354,7 +354,7 @@ def transform_d(df: DataFrame) -> DataFrame:
     # =========================================================================
     # TODO: Eliminate This Function
     # =========================================================================
-    return df.iloc[:, [0, 1, 2, 3, 7]].dropna(axis=0)
+    return df.iloc[:, (0, 1, 2, 3, 7)].dropna(axis=0)
 
 
 def transform_e(df: DataFrame) -> tuple[DataFrame]:
@@ -371,18 +371,19 @@ def transform_e(df: DataFrame) -> tuple[DataFrame]:
         # =====================================================================
         # DataFrame Nominal
         # =====================================================================
-        df.iloc[:, [0, 6, 11]].dropna(axis=0),
+        df.iloc[:, (0, 6, 11)].dropna(axis=0),
         # =====================================================================
         # DataFrame `Real`
         # =====================================================================
-        df.iloc[:, [-2, 7, -1]].dropna(axis=0),
+        df.iloc[:, (-2, 7, -1)].dropna(axis=0),
     )
 
 
 def combine_kurenkov(data_testing: DataFrame) -> tuple[DataFrame]:
     """Returns Four DataFrames with Comparison of data_testing: DataFrame and Kurenkov Yu.V. Data"""
     SERIES_ID = 'CAPUTL.B50001.A'
-    data_control = read_temporary('dataset_usa_reference_ru_kurenkov_yu_v.csv')
+    FILE_NAME = 'dataset_usa_reference_ru_kurenkov_yu_v.csv'
+    data_control = read_temporary(FILE_NAME)
     # =========================================================================
     # Production
     # =========================================================================
@@ -435,15 +436,15 @@ def combine_kurenkov(data_testing: DataFrame) -> tuple[DataFrame]:
 
 def transform_manufacturing_money(df: DataFrame) -> DataFrame:
     SERIES_ID = {'X0414': 'dataset_uscb.zip'}
-    df_manufacturing = df.iloc[:, [0, 6, 7]].dropna(axis=0)
+    df_manufacturing = df.iloc[:, (0, 6, 7)].dropna(axis=0)
     df_manufacturing = df_manufacturing.div(df_manufacturing.iloc[0, :])
     df_money = pd.concat(
         [
             read_usa_frb_h6(),
-            collect_usa_hist(SERIES_ID)
+            stockpile_usa_hist(SERIES_ID)
         ],
         axis=1
-    ).pipe(transform_mean_wide, name="m1_fused").sort_index()
+    ).pipe(transform_mean, name="m1_fused").sort_index()
     df = pd.concat(
         [
             df_manufacturing,
@@ -454,7 +455,7 @@ def transform_manufacturing_money(df: DataFrame) -> DataFrame:
     return df.div(df.iloc[0, :])
 
 
-def transform_mean_wide(df: DataFrame, name: str) -> DataFrame:
+def transform_mean(df: DataFrame, name: str) -> DataFrame:
     """
 
 
@@ -513,7 +514,7 @@ def stockpile_by_series_ids(df: DataFrame) -> DataFrame:
     ).apply(pd.to_numeric, errors='coerce')
 
 
-def transform_sum_wide(df: DataFrame, name: str) -> DataFrame:
+def transform_sum(df: DataFrame, name: str) -> DataFrame:
     """
 
 
@@ -562,7 +563,7 @@ def transform_usa_frb_fa(df: DataFrame) -> DataFrame:
     """
     df['frb_nominal'] = ((df.iloc[:, 1].mul(df.iloc[:, 2]).div(df.iloc[:, 0])).add(
         df.iloc[:, 4].mul(df.iloc[:, 5]).div(df.iloc[:, 3]))).div(1000)
-    df['frb_real'] = df.iloc[:, [2, 5]].sum(axis=1).div(1000)
+    df['frb_real'] = df.iloc[:, (2, 5)].sum(axis=1).div(1000)
     return df.iloc[:, -2:]
 
 
@@ -588,6 +589,6 @@ def transform_usa_frb_fa_def(df: DataFrame) -> DataFrame:
         ================== =================================
 
     """
-    df['fa_def_frb'] = (df.iloc[:, [1, 4]].sum(axis=1)).div(
-        df.iloc[:, [0, 3]].sum(axis=1))
+    df['fa_def_frb'] = (df.iloc[:, (1, 4)].sum(axis=1)).div(
+        df.iloc[:, (0, 3)].sum(axis=1))
     return df.iloc[:, [-1]]

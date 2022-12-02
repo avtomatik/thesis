@@ -7,10 +7,11 @@ Created on Wed Feb  5 22:19:02 2020
 
 import os
 
-from collect.lib import (collect_cobb_douglas, collect_usa_capital_purchases,
+from collect.lib import (collect_usa_capital_purchases,
                          collect_usa_manufacturing_latest,
                          collect_usa_manufacturing_three_fold,
-                         collect_usa_manufacturing_two_fold)
+                         collect_usa_manufacturing_two_fold,
+                         stockpile_cobb_douglas)
 from plot.lib import (plot_capital_purchases, plot_cobb_douglas,
                       plot_cobb_douglas_alt)
 from transform.lib import transform_cobb_douglas, transform_cobb_douglas_alt
@@ -33,20 +34,20 @@ def main():
     # =========================================================================
     # Project I. Classified
     # =========================================================================
-    df = collect_cobb_douglas(5)
-    _df_b = df.iloc[:, [0, 1, 3]]
+    df = stockpile_cobb_douglas(5)
+    _df_b = df.iloc[:, (0, 1, 3)]
     plot_cobb_douglas_alt(*df.pipe(transform_cobb_douglas_alt), MAP_FIG)
     plot_cobb_douglas_alt(*_df_b.pipe(transform_cobb_douglas_alt), MAP_FIG)
 
     _df_a = df.iloc[:, range(3)]
-    _df_b = df.iloc[:, [0, 1, 3]]
-    _df_c = df.iloc[:, [0, 1, 4]]
+    _df_b = df.iloc[:, (0, 1, 3)]
+    _df_c = df.iloc[:, (0, 1, 4)]
     _df_d, _df_e = collect_usa_manufacturing_two_fold()
     _df_f, _df_g, _df_h = collect_usa_manufacturing_three_fold()
     _df_i = collect_usa_manufacturing_latest()
 
 # =============================================================================
-#     df = collect_cobb_douglas().pipe(transform_cobb_douglas, year_base=1899)[0].iloc[:, [3, 4]]
+#     df = collect_cobb_douglas().pipe(transform_cobb_douglas, year_base=1899)[0].iloc[:, (3, 4)]
 #     calculate_curve_fit_params(df)
 # =============================================================================
 

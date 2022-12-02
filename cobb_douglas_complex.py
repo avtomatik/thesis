@@ -8,10 +8,10 @@ Created on Sun Mar 15 16:17:13 2020
 
 import os
 
-from collect.lib import (collect_cobb_douglas,
-                         collect_usa_manufacturing_latest,
+from collect.lib import (collect_usa_manufacturing_latest,
                          collect_usa_manufacturing_three_fold,
-                         collect_usa_manufacturing_two_fold)
+                         collect_usa_manufacturing_two_fold,
+                         stockpile_cobb_douglas)
 from plot.lib import plot_cobb_douglas_complex
 
 
@@ -22,10 +22,10 @@ def main():
     # =========================================================================
     # On Original Dataset
     # =========================================================================
-    _df = collect_cobb_douglas()
+    _df = stockpile_cobb_douglas()
     _df_a = _df.iloc[:, range(3)]
-    _df_b = _df.iloc[:, [0, 1, 3]]
-    _df_c = _df.iloc[:, [0, 1, 4]]
+    _df_b = _df.iloc[:, (0, 1, 3)]
+    _df_c = _df.iloc[:, (0, 1, 4)]
     # =========================================================================
     # On Expanded Dataset
     # =========================================================================

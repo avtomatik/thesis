@@ -9,14 +9,12 @@ Created on Sat Jan 18 00:13:17 2020
 import itertools
 import os
 
-from collect.lib import (collect_usa_hist, collect_uscb_cap,
-                         collect_uscb_cap_deflator,
+from collect.lib import (collect_uscb_cap, collect_uscb_cap_deflator,
                          collect_uscb_employment_conflicts, collect_uscb_gnp,
-                         collect_uscb_immigration, collect_uscb_manufacturing,
-                         collect_uscb_metals, collect_uscb_money_stock,
-                         collect_uscb_trade, collect_uscb_trade_by_countries,
-                         collect_uscb_trade_gold_silver,
-                         collect_uscb_unemployment_hours_worked)
+                         collect_uscb_manufacturing, collect_uscb_metals,
+                         collect_uscb_trade_by_countries,
+                         collect_uscb_unemployment_hours_worked,
+                         stockpile_usa_hist)
 from plot.lib import (plot_uscb_cap, plot_uscb_cap_deflator,
                       plot_uscb_commodities, plot_uscb_employment_conflicts,
                       plot_uscb_farm_lands, plot_uscb_finance, plot_uscb_gnp,
@@ -25,7 +23,7 @@ from plot.lib import (plot_uscb_cap, plot_uscb_cap_deflator,
                       plot_uscb_trade_by_countries,
                       plot_uscb_trade_gold_silver,
                       plot_uscb_unemployment_hours_worked)
-from transform.lib import transform_mean_wide, transform_sum_wide
+from transform.lib import transform_mean, transform_sum
 
 
 def main():
@@ -36,7 +34,7 @@ def main():
     plot_uscb_manufacturing(*collect_uscb_manufacturing())
     plot_uscb_cap(collect_uscb_cap())
     plot_uscb_cap_deflator(
-        collect_uscb_cap_deflator().pipe(transform_mean_wide, name="census_fused")
+        collect_uscb_cap_deflator().pipe(transform_mean, name="census_fused")
     )
     plot_uscb_metals(*collect_uscb_metals())
     # =========================================================================
@@ -78,8 +76,8 @@ def main():
             range(117, 120),
         )
     }
-    plot_uscb_immigration(collect_usa_hist(
-        SERIES_IDS).pipe(transform_sum_wide, name="C89"))
+    plot_uscb_immigration(stockpile_usa_hist(
+        SERIES_IDS).pipe(transform_sum, name="C89"))
     plot_uscb_unemployment_hours_worked(
         collect_uscb_unemployment_hours_worked()
     )
@@ -87,11 +85,37 @@ def main():
     plot_uscb_unemployment_hours_worked(df)
     plot_uscb_employment_conflicts(df)
     plot_uscb_gnp(collect_uscb_gnp())
-    plot_uscb_farm_lands()
-    plot_uscb_trade(collect_uscb_trade())
-    plot_uscb_trade_gold_silver(collect_uscb_trade_gold_silver())
+    SERIES_ID = {
+        # =========================================================================
+        # Census 1975, Land in Farms
+        # =========================================================================
+        'K0005': 'dataset_uscb.zip'
+    }
+    stockpile_usa_hist(SERIES_ID).pipe(plot_uscb_farm_lands)
+    SERIES_IDS = {
+        # =========================================================================
+        # Census Foreign Trade Series
+        # =========================================================================
+        'U0001': 'dataset_uscb.zip', 'U0008': 'dataset_uscb.zip', 'U0015': 'dataset_uscb.zip'
+    }
+    stockpile_usa_hist(SERIES_IDS).pipe(plot_uscb_trade)
+    SERIES_IDS = {
+        # =========================================================================
+        # Census Foreign Trade Series
+        # =========================================================================
+        'U0187': 'dataset_uscb.zip', 'U0188': 'dataset_uscb.zip', 'U0189': 'dataset_uscb.zip'
+    }
+    stockpile_usa_hist(SERIES_IDS).pipe(plot_uscb_trade_gold_silver)
     plot_uscb_trade_by_countries(collect_uscb_trade_by_countries())
-    plot_uscb_money_stock(collect_uscb_money_stock())
+    SERIES_IDS = {
+        # =========================================================================
+        # Census Money Supply Aggregates
+        # =========================================================================
+        'X0410': 'dataset_uscb.zip', 'X0414': 'dataset_uscb.zip', 'X0415': 'dataset_uscb.zip'
+    }
+    YEAR_BASE = 1915
+    df = stockpile_usa_hist(SERIES_IDS)
+    df.div(df.loc[YEAR_BASE, :]).mul(100).pipe(plot_uscb_money_stock)
     plot_uscb_finance()
 
 

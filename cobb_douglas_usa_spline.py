@@ -5,7 +5,7 @@
 
 import os
 
-from collect.lib import collect_cobb_douglas
+from collect.lib import stockpile_cobb_douglas
 from transform.lib import transform_cobb_douglas
 
 from toolkit.lib import calculate_plot_uspline
@@ -16,7 +16,7 @@ def main():
 
     os.chdir(DIR)
     calculate_plot_uspline(
-        collect_cobb_douglas().pipe(transform_cobb_douglas, year_base=1899)[0].iloc[:, [3, 4]]
+        stockpile_cobb_douglas().pipe(transform_cobb_douglas, year_base=1899)[0].iloc[:, (3, 4)]
     )
 
 

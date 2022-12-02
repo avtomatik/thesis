@@ -8,7 +8,7 @@ Created on Sun Jul 12 18:28:15 2020
 
 import os
 
-from collect.lib import collect_cobb_douglas
+from collect.lib import stockpile_cobb_douglas
 from plot.lib import plot_cobb_douglas
 from transform.lib import transform_cobb_douglas
 
@@ -36,7 +36,7 @@ def main():
 
     os.chdir(DIR)
     plot_cobb_douglas(
-        *collect_cobb_douglas().pipe(transform_cobb_douglas, year_base=1899),
+        *stockpile_cobb_douglas().pipe(transform_cobb_douglas, year_base=1899),
         MAP_FIG
     )
 

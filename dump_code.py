@@ -15,11 +15,13 @@ import sqlite3
 from pathlib import Path
 
 import pandas as pd
-from collect.lib import collect_usa_bea, collect_usa_bea_labor_mfg
 from pandas import DataFrame
-from pull.lib import pull_by_series_id
-from read.lib import (read_can, read_temporary, read_usa_bea,
-                      read_usa_bea_excel, read_usa_frb_g17)
+
+from .collect.lib import collect_usa_bea, stockpile_usa_bea
+from .pull.lib import pull_can_aggregate
+from .read.lib import (read_can, read_temporary, read_usa_bea_excel,
+                       read_usa_frb_g17)
+from .transform.lib import transform_mean
 
 # =============================================================================
 # Separate Chunk of Code
@@ -373,6 +375,7 @@ def extract_read_usa_bea_pull_by_series_id(series_id: str) -> DataFrame:
 
 
 def collect_usa_xlsm() -> DataFrame:
+    FILE_NAME = 'dataset_usa_0025_p_r.txt'
     SERIES_IDS = {
         # =====================================================================
         # Nominal Investment Series: A006RC, 1929--2021
@@ -393,8 +396,8 @@ def collect_usa_xlsm() -> DataFrame:
     }
     return pd.concat(
         [
-            collect_usa_bea(SERIES_IDS),
-            read_temporary('dataset_usa_0025_p_r.txt'),
+            stockpile_usa_bea(SERIES_IDS),
+            read_temporary(FILE_NAME),
         ],
         axis=1
     )
@@ -483,7 +486,7 @@ def collect_capital_combined_archived() -> DataFrame:
     }
     return pd.concat(
         [
-            collect_usa_bea(SERIES_IDS),
+            stockpile_usa_bea(SERIES_IDS),
             # =================================================================
             # Capacity Utilization Series: CAPUTL.B50001.A, 1967--2012
             # =================================================================
@@ -491,7 +494,7 @@ def collect_capital_combined_archived() -> DataFrame:
             # =================================================================
             # Manufacturing Labor Series: _4313C0, 1929--2020
             # =================================================================
-            collect_usa_bea(SERIES_IDS_LAB).pipe(transform_mean_wide, name="bea_labor_mfg"),
+            stockpile_usa_bea(SERIES_IDS_LAB).pipe(transform_mean, name="bea_labor_mfg"),
             # =================================================================
             # For Overall Labor Series, See: A4601C0, 1929--2020
             # =================================================================
@@ -509,7 +512,7 @@ def collect_usa_bea_labor() -> DataFrame:
     SERIES_IDS = {
         'A4601C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
     }
-    return collect_usa_bea(SERIES_IDS)
+    return stockpile_usa_bea(SERIES_IDS)
 
 
 DIR = '/media/green-machine/KINGSTON'

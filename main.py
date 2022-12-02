@@ -11,28 +11,24 @@ Thesis Project
 import itertools
 import os
 
-from collect.lib import (collect_cobb_douglas, collect_usa_general,
-                         collect_usa_hist, collect_usa_investment_turnover,
+from collect.lib import (collect_usa_general, collect_usa_investment_turnover,
                          collect_usa_investment_turnover_bls,
-                         collect_usa_manufacturing_latest,
                          collect_usa_manufacturing_three_fold,
-                         collect_usa_manufacturing_two_fold,
-                         collect_usa_mcconnel, collect_uscb_cap,
+                         collect_usa_manufacturing_two_fold, collect_uscb_cap,
                          collect_uscb_cap_deflator,
                          collect_uscb_employment_conflicts, collect_uscb_gnp,
                          collect_uscb_manufacturing, collect_uscb_metals,
-                         collect_uscb_money_stock, collect_uscb_trade,
                          collect_uscb_trade_by_countries,
-                         collect_uscb_trade_gold_silver,
-                         collect_uscb_unemployment_hours_worked, construct_can)
+                         collect_uscb_unemployment_hours_worked, construct_can,
+                         stockpile_cobb_douglas, stockpile_usa_hist,
+                         stockpile_usa_mcconnel)
 from plot.lib import (plot_approx_linear, plot_approx_log_linear, plot_c,
                       plot_capital_modelling, plot_census_complex,
                       plot_cobb_douglas, plot_cobb_douglas_3d,
                       plot_cobb_douglas_complex, plot_d, plot_douglas, plot_e,
-                      plot_elasticity, plot_ewm, plot_fourier_discrete,
+                      plot_elasticity, plot_fourier_discrete,
                       plot_growth_elasticity, plot_investment,
-                      plot_investment_manufacturing, plot_kol_zur_filter,
-                      plot_kurenkov, plot_pearson_r_test,
+                      plot_investment_manufacturing, plot_kurenkov,
                       plot_rolling_mean_filter, plot_uscb_cap,
                       plot_uscb_cap_deflator, plot_uscb_commodities,
                       plot_uscb_employment_conflicts, plot_uscb_farm_lands,
@@ -46,8 +42,8 @@ from pull.lib import pull_by_series_id
 from read.lib import read_usa_hist
 from transform.lib import (combine_kurenkov, transform_a, transform_b,
                            transform_cobb_douglas, transform_d, transform_e,
-                           transform_manufacturing_money, transform_mean_wide,
-                           transform_sum_wide)
+                           transform_manufacturing_money, transform_mean,
+                           transform_sum)
 
 from toolkit.lib import (calculate_power_function_fit_params_a,
                          calculate_power_function_fit_params_b,
@@ -109,27 +105,27 @@ def main():
     # `calculate_power_function_fit_params_c`: Power Function Approximation
     # =============================================================================
     _df = collect_usa_general()
-    plot_approx_linear(_df.iloc[:, [7, 6, 0, 6]].dropna(axis=0))
-    plot_approx_log_linear(_df.iloc[:, [7, 6, 20, 4]].dropna(axis=0))
-    plot_approx_log_linear(_df.iloc[:, [7, 6, 20, 6]].dropna(axis=0))
+    plot_approx_linear(_df.iloc[:, (7, 6, 0, 6)].dropna(axis=0))
+    plot_approx_log_linear(_df.iloc[:, (7, 6, 20, 4)].dropna(axis=0))
+    plot_approx_log_linear(_df.iloc[:, (7, 6, 20, 6)].dropna(axis=0))
 
     SERIES_IDS = ('Валовой внутренний продукт, млрд долл. США',)
     calculate_power_function_fit_params_a(
-        collect_usa_mcconnel(SERIES_IDS), (2800, 0.01, 0.5)
+        stockpile_usa_mcconnel(SERIES_IDS), (2800, 0.01, 0.5)
     )
     SERIES_IDS = (
         'Ставка прайм-рейт, %',
         'Национальный доход, млрд долл. США',
     )
     calculate_power_function_fit_params_b(
-        collect_usa_mcconnel(SERIES_IDS), (4, 12, 9000, 3000, 0.87)
+        stockpile_usa_mcconnel(SERIES_IDS), (4, 12, 9000, 3000, 0.87)
     )
     SERIES_IDS = (
         'Ставка прайм-рейт, %',
         'Валовой объем внутренних частных инвестиций, млрд долл. США',
     )
     calculate_power_function_fit_params_c(
-        collect_usa_mcconnel(SERIES_IDS), (1.5, 19, 1.7, 1760)
+        stockpile_usa_mcconnel(SERIES_IDS), (1.5, 19, 1.7, 1760)
     )
 
     # =========================================================================
@@ -168,10 +164,10 @@ def main():
     # =========================================================================
     # On Original Dataset
     # =========================================================================
-    _df = collect_cobb_douglas(5)
+    _df = stockpile_cobb_douglas(5)
     df_a = _df.iloc[:, range(3)]
-    df_b = _df.iloc[:, [0, 1, 3]]
-    df_c = _df.iloc[:, [0, 1, 4]]
+    df_b = _df.iloc[:, (0, 1, 3)]
+    df_c = _df.iloc[:, (0, 1, 4)]
     # =========================================================================
     # On Expanded Dataset
     # =========================================================================
@@ -264,7 +260,7 @@ def main():
     # Subproject VI. Elasticity
     # =========================================================================
     _df = collect_usa_general()
-    df_a = _df.iloc[:, [7, 6, 4]].dropna(axis=0)
+    df_a = _df.iloc[:, (7, 6, 4)].dropna(axis=0)
     df_b = _df.iloc[:, [4]].dropna(axis=0)
     plot_elasticity(df_a)
     # plot_growth_elasticity(df_b)
@@ -278,7 +274,7 @@ def main():
     # =========================================================================
     # Fixed Assets Turnover
     # =========================================================================
-    df = collect_cobb_douglas().pipe(transform_cobb_douglas,
+    df = stockpile_cobb_douglas().pipe(transform_cobb_douglas,
                                      year_base=1899)[0].iloc[:, [6]]
     # =========================================================================
     # Option 1
@@ -304,23 +300,20 @@ def main():
     # =========================================================================
     # Subproject VIII. Multiple
     # =========================================================================
-    df = collect_cobb_douglas()
+    df = stockpile_cobb_douglas().pipe(transform_cobb_douglas).iloc[:, range(5)]
 
-    for _, column in enumerate(df.columns):
-        plot_census_complex(df.iloc[:, [_]])
+    for col in df.columns:
+        plot_census_complex(df.loc[:, [col]])
 
-    ARCHIVE_NAME = 'dataset_uscb.zip'
+
     SERIES_IDS = {'D0004': 'dataset_uscb.zip', 'D0130': 'dataset_uscb.zip', 'F0003': 'dataset_uscb.zip', 'F0004': 'dataset_uscb.zip',
                   'P0110': 'dataset_uscb.zip', 'U0001': 'dataset_uscb.zip', 'U0008': 'dataset_uscb.zip', 'X0414': 'dataset_uscb.zip', 'X0415': 'dataset_uscb.zip'}
-    for series_id in SERIES_IDS:
+
+    for series_id, archive_name in SERIES_IDS.items():
         print(f'Processing {series_id}')
-        df = read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
-        _df = df.copy()
-        plot_pearson_r_test(_df)
-        _df = df.copy()
-        plot_kol_zur_filter(_df)
-        _df = df.copy()
-        plot_ewm(_df)
+        df = read_usa_hist(archive_name).pipe(pull_by_series_id, series_id)
+        plot_census_complex(df)
+
 
     # =========================================================================
     # Subproject IX. USA BEA
@@ -362,7 +355,7 @@ def main():
     plot_uscb_manufacturing(*collect_uscb_manufacturing())
     plot_uscb_cap(collect_uscb_cap())
     plot_uscb_cap_deflator(collect_uscb_cap_deflator().pipe(
-        transform_mean_wide, name="census_fused"))
+        transform_mean, name="census_fused"))
     plot_uscb_metals(*collect_uscb_metals())
     # =========================================================================
     # Census Production Series
@@ -403,17 +396,43 @@ def main():
             range(117, 120),
         )
     }
-    plot_uscb_immigration(collect_usa_hist(
-        SERIES_IDS).pipe(transform_sum_wide, name="C89"))
+    plot_uscb_immigration(stockpile_usa_hist(
+        SERIES_IDS).pipe(transform_sum, name="C89"))
     plot_uscb_unemployment_hours_worked(
         collect_uscb_unemployment_hours_worked())
     plot_uscb_employment_conflicts(collect_uscb_employment_conflicts())
     plot_uscb_gnp(collect_uscb_gnp())
-    plot_uscb_farm_lands()
-    plot_uscb_trade(collect_uscb_trade())
-    plot_uscb_trade_gold_silver(collect_uscb_trade_gold_silver())
+    SERIES_ID = {
+        # =========================================================================
+        # Census 1975, Land in Farms
+        # =========================================================================
+        'K0005': 'dataset_uscb.zip'
+    }
+    stockpile_usa_hist(SERIES_ID).pipe(plot_uscb_farm_lands)
+    SERIES_IDS = {
+        # =========================================================================
+        # Census Foreign Trade Series
+        # =========================================================================
+        'U0001': 'dataset_uscb.zip', 'U0008': 'dataset_uscb.zip', 'U0015': 'dataset_uscb.zip'
+    }
+    stockpile_usa_hist(SERIES_IDS).pipe(plot_uscb_trade)
+    SERIES_IDS = {
+        # =========================================================================
+        # Census Foreign Trade Series
+        # =========================================================================
+        'U0187': 'dataset_uscb.zip', 'U0188': 'dataset_uscb.zip', 'U0189': 'dataset_uscb.zip'
+    }
+    stockpile_usa_hist(SERIES_IDS).pipe(plot_uscb_trade_gold_silver)
     plot_uscb_trade_by_countries(collect_uscb_trade_by_countries())
-    plot_uscb_money_stock(collect_uscb_money_stock())
+    SERIES_IDS = {
+        # =========================================================================
+        # Census Money Supply Aggregates
+        # =========================================================================
+        'X0410': 'dataset_uscb.zip', 'X0414': 'dataset_uscb.zip', 'X0415': 'dataset_uscb.zip'
+    }
+    YEAR_BASE = 1915
+    df = stockpile_usa_hist(SERIES_IDS)
+    df.div(df.loc[YEAR_BASE, :]).mul(100).pipe(plot_uscb_money_stock)
     plot_uscb_finance()
 
     # =========================================================================
@@ -421,7 +440,7 @@ def main():
     # =========================================================================
     SERIES_ID = {'J0014': 'dataset_uscb.zip'}
 
-    df = collect_usa_hist(SERIES_ID)
+    df = stockpile_usa_hist(SERIES_ID)
     _df = df.copy()
     plot_growth_elasticity(_df)
     _df = df.copy()
@@ -617,7 +636,7 @@ def main():
         'DT19AS01': 'dataset_douglas.zip'
     }
     plot_cobb_douglas(
-        *collect_usa_hist(SERIES_IDS).pipe(transform_cobb_douglas, year_base=1899), MAP_FIG)
+        *stockpile_usa_hist(SERIES_IDS).pipe(transform_cobb_douglas, year_base=1899), MAP_FIG)
     # =========================================================================
     # Kendrick Macroeconomic Series
     # =========================================================================

@@ -6,7 +6,7 @@ Created on Tue Nov  2 21:10:29 2021
 """
 
 
-from collect.lib import collect_usa_hist, construct_deflator
+from collect.lib import construct_deflator, stockpile_usa_hist
 from read.lib import read_temporary
 
 
@@ -15,7 +15,7 @@ def prices_cobb_douglas():
         'CDT2S1': 'dataset_usa_cobb-douglas.zip',
         'CDT2S3': 'dataset_usa_cobb-douglas.zip'
     }
-    return collect_usa_hist(SERIES_IDS).pipe(construct_deflator)
+    return stockpile_usa_hist(SERIES_IDS).pipe(construct_deflator)
 
 
 def prices_census():
@@ -23,7 +23,7 @@ def prices_census():
         'P0107': 'dataset_uscb.zip',
         'P0110': 'dataset_uscb.zip'
     }
-    return collect_usa_hist(SERIES_IDS).pipe(construct_deflator)
+    return stockpile_usa_hist(SERIES_IDS).pipe(construct_deflator)
 
 
 def main():
