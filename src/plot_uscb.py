@@ -9,21 +9,21 @@ Created on Sat Jan 18 00:13:17 2020
 import itertools
 import os
 
-from .lib.collect import (collect_uscb_cap, collect_uscb_cap_deflator,
-                          collect_uscb_employment_conflicts, collect_uscb_gnp,
-                          collect_uscb_manufacturing, collect_uscb_metals,
-                          collect_uscb_trade_by_countries,
-                          collect_uscb_unemployment_hours_worked,
-                          stockpile_usa_hist)
-from .lib.plot import (plot_uscb_cap, plot_uscb_cap_deflator,
-                       plot_uscb_commodities, plot_uscb_employment_conflicts,
-                       plot_uscb_farm_lands, plot_uscb_finance, plot_uscb_gnp,
-                       plot_uscb_immigration, plot_uscb_manufacturing,
-                       plot_uscb_metals, plot_uscb_money_stock,
-                       plot_uscb_trade, plot_uscb_trade_by_countries,
-                       plot_uscb_trade_gold_silver,
-                       plot_uscb_unemployment_hours_worked)
-from .lib.transform import transform_mean, transform_sum
+from lib.collect import (collect_uscb_cap, collect_uscb_cap_deflator,
+                         collect_uscb_employment_conflicts, collect_uscb_gnp,
+                         collect_uscb_manufacturing, collect_uscb_metals,
+                         collect_uscb_trade_by_countries,
+                         collect_uscb_unemployment_hours_worked,
+                         stockpile_usa_hist)
+from lib.plot import (plot_uscb_cap, plot_uscb_cap_deflator,
+                      plot_uscb_commodities, plot_uscb_employment_conflicts,
+                      plot_uscb_farm_lands, plot_uscb_finance, plot_uscb_gnp,
+                      plot_uscb_immigration, plot_uscb_manufacturing,
+                      plot_uscb_metals, plot_uscb_money_stock, plot_uscb_trade,
+                      plot_uscb_trade_by_countries,
+                      plot_uscb_trade_gold_silver,
+                      plot_uscb_unemployment_hours_worked)
+from lib.transform import transform_mean, transform_sum
 
 
 def main():
@@ -42,7 +42,7 @@ def main():
     plot_uscb_metals(*collect_uscb_metals())
 
     # =========================================================================
-    # Census Production Series
+    # Census Manufacturing Series
     # =========================================================================
     SERIES_IDS = {
         f'P{_:04n}': ARCHIVE_NAME

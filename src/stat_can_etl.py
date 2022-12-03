@@ -8,7 +8,7 @@ Created on Sat Sep 18 22:20:54 2021
 
 import os
 
-from .lib.tools import build_push_data_frame
+from lib.tools import build_push_data_frame
 
 # =============================================================================
 # Capital
@@ -48,7 +48,7 @@ from .lib.tools import build_push_data_frame
 # =============================================================================
 
 # =============================================================================
-# Production
+# Manufacturing
 # =============================================================================
 # =============================================================================
 # 10100094-eng.xlsx: Capacity utilization rates (Bank of Canada calculated series), seasonally adjusted

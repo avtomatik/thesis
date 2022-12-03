@@ -11,10 +11,10 @@ import pandas as pd
 from pandas import DataFrame
 from sklearn.linear_model import LinearRegression
 
-from .lib.collect import stockpile_usa_hist
-from .lib.pull import pull_by_series_id
-from .lib.read import (read_temporary, read_usa_frb_g17, read_usa_frb_h6,
-                       read_usa_frb_us3)
+from .collect import stockpile_usa_hist
+from .pull import pull_by_series_id
+from .read import (read_temporary, read_usa_frb_g17, read_usa_frb_h6,
+                   read_usa_frb_us3)
 
 
 def transform_a(df: DataFrame) -> DataFrame:
@@ -386,7 +386,7 @@ def combine_kurenkov(data_testing: DataFrame) -> tuple[DataFrame]:
     FILE_NAME = 'dataset_usa_reference_ru_kurenkov_yu_v.csv'
     data_control = read_temporary(FILE_NAME)
     # =========================================================================
-    # Production
+    # Manufacturing
     # =========================================================================
     data_a = pd.concat(
         [

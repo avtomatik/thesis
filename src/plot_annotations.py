@@ -8,9 +8,9 @@ import os
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from .lib.collect import (collect_usa_macroeconomics,
-                          collect_usa_manufacturing_latest)
-from .lib.plot import plot_increment
+from lib.collect import (collect_usa_macroeconomics,
+                         collect_usa_manufacturing_latest)
+from lib.plot import plot_increment
 
 
 def transform_add_dx_dy(df: pd.DataFrame) -> pd.DataFrame:
@@ -126,11 +126,11 @@ def main():
     cap_b_d = _df.loc[:, ['k3n31gd1es000']].mul(_defl)
     L = _df.loc[:, ['bea_labor_mfg']]
     # =========================================================================
-    # Production
+    # Manufacturing
     # =========================================================================
     prd_a_a = _df.loc[:, ['A032RC1']].mul(_defl)
     # =========================================================================
-    # Production Maximum
+    # Manufacturing Maximum
     # =========================================================================
     prd_a_b = _df.loc[:, ['A032RC1']].div(
         _df.loc[:, ['CAPUTLB50001A']]).mul(_defl).mul(100)

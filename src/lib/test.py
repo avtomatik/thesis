@@ -11,10 +11,10 @@ import pandas as pd
 from pandas import DataFrame
 from pandas.plotting import autocorrelation_plot
 
-from .lib.collect import stockpile_usa_hist
-from .lib.plot import plot_can_test
-from .lib.pull import pull_by_series_id, pull_can_aggregate
-from .lib.read import read_can, read_usa_bea_excel, read_usa_bls, read_usa_hist
+from .collect import stockpile_usa_hist
+from .plot import plot_can_test
+from .pull import pull_by_series_id, pull_can_aggregate
+from .read import read_can, read_usa_bea_excel, read_usa_bls, read_usa_hist
 
 ARCHIVE_NAMES_UTILISED = (
     'dataset_douglas.zip',

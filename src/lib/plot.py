@@ -19,12 +19,12 @@ from pandas.plotting import autocorrelation_plot, lag_plot
 from scipy import stats
 from sklearn.metrics import r2_score
 
-from .lib.pull import (pull_by_series_id, pull_series_ids_description,
-                       pull_uscb_description)
-from .lib.read import read_usa_hist, read_usa_nber, read_worldbank
-from .lib.tools import (calculate_capital, kol_zur_filter, rolling_mean_filter,
-                        simple_linear_regression)
-from .lib.transform import transform_agg, transform_cobb_douglas
+from .pull import (pull_by_series_id, pull_series_ids_description,
+                   pull_uscb_description)
+from .read import read_usa_hist, read_usa_nber, read_worldbank
+from .tools import (calculate_capital, kol_zur_filter, rolling_mean_filter,
+                    simple_linear_regression)
+from .transform import transform_agg, transform_cobb_douglas
 
 ARCHIVE_NAMES_UTILISED = (
     'dataset_uscb.zip',
@@ -59,7 +59,7 @@ def plot_investment_manufacturing(df: DataFrame) -> None:
     # =========================================================================
     _df['investment'] = _df.iloc[:, 0].mul(_df.iloc[:, 3]).div(_df.iloc[:, 2])
     # =========================================================================
-    # `Real` Production
+    # `Real` Manufacturing
     # =========================================================================
     _df['manufacturing'] = _df.iloc[:, 1].mul(
         _df.iloc[:, 3]).div(_df.iloc[:, 2])
@@ -340,7 +340,7 @@ def plot_uscb_metals(df: DataFrame, years_base: tuple[int]) -> None:
     )
     for _ in range(1, 6):
         plt.axvline(x=years_base[_], linestyle=':')
-    plt.title('Steel Production')
+    plt.title('Steel Manufacturing')
     plt.xlabel('Period')
     plt.ylabel('Percentage')
     plt.grid()
@@ -352,7 +352,7 @@ def plot_uscb_metals(df: DataFrame, years_base: tuple[int]) -> None:
     )
     for _ in _COLUMN_LOCS:
         plt.axvline(x=years_base[_], linestyle=':')
-    plt.title('Rails & Cars Production')
+    plt.title('Rails & Cars Manufacturing')
     plt.xlabel('Period')
     plt.ylabel('Percentage')
     plt.grid()

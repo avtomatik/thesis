@@ -13,10 +13,10 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from pandas.plotting import autocorrelation_plot
 
-from .lib.collect import stockpile_usa_hist
-from .lib.pull import pull_by_series_id
-from .lib.read import read_usa_bls
-from .lib.transform import transform_mean
+from lib.collect import stockpile_usa_hist
+from lib.pull import pull_by_series_id
+from lib.read import read_usa_bls
+from lib.transform import transform_mean
 
 
 def main(

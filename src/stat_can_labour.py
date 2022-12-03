@@ -6,8 +6,8 @@ Created on Tue Nov  2 21:10:29 2021
 """
 
 
-from .lib.collect import construct_deflator, stockpile_usa_hist
-from .lib.read import read_temporary
+from lib.collect import construct_deflator, stockpile_usa_hist
+from lib.read import read_temporary
 
 
 def prices_cobb_douglas():
@@ -109,7 +109,7 @@ def main():
     FILE_NAME = 'stat_can_prd.csv'
     # # data = read_temporary(FILE_NAME)
     # # # =============================================================================
-    # # # Production Indexes
+    # # # Manufacturing Indexes
     # # # =============================================================================
     # # # =============================================================================
     # # # v11567 # Production Indexes

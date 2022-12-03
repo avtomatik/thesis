@@ -8,12 +8,12 @@ Created on Thu Jan  9 21:17:48 2020
 
 import os
 
-from .lib.collect import collect_usa_general
-from .lib.plot import (plot_c, plot_d, plot_e, plot_investment,
-                       plot_investment_manufacturing, plot_kurenkov)
-from .lib.transform import (combine_kurenkov, transform_a, transform_b,
-                            transform_d, transform_e,
-                            transform_manufacturing_money)
+from lib.collect import collect_usa_general
+from lib.plot import (plot_c, plot_d, plot_e, plot_investment,
+                      plot_investment_manufacturing, plot_kurenkov)
+from lib.transform import (combine_kurenkov, transform_a, transform_b,
+                           transform_d, transform_e,
+                           transform_manufacturing_money)
 
 
 def main():

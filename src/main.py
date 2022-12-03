@@ -11,44 +11,44 @@ Thesis Project
 import itertools
 import os
 
-from .lib.collect import (collect_usa_general, collect_usa_investment_turnover,
-                          collect_usa_investment_turnover_bls,
-                          collect_usa_manufacturing_three_fold,
-                          collect_usa_manufacturing_two_fold, collect_uscb_cap,
-                          collect_uscb_cap_deflator,
-                          collect_uscb_employment_conflicts, collect_uscb_gnp,
-                          collect_uscb_manufacturing, collect_uscb_metals,
-                          collect_uscb_trade_by_countries,
-                          collect_uscb_unemployment_hours_worked,
-                          construct_can, stockpile_cobb_douglas,
-                          stockpile_usa_hist, stockpile_usa_mcconnel)
-from .lib.plot import (plot_approx_linear, plot_approx_log_linear, plot_c,
-                       plot_capital_modelling, plot_census_complex,
-                       plot_cobb_douglas, plot_cobb_douglas_3d,
-                       plot_cobb_douglas_complex, plot_d, plot_douglas, plot_e,
-                       plot_elasticity, plot_fourier_discrete,
-                       plot_growth_elasticity, plot_investment,
-                       plot_investment_manufacturing, plot_kurenkov,
-                       plot_rolling_mean_filter, plot_uscb_cap,
-                       plot_uscb_cap_deflator, plot_uscb_commodities,
-                       plot_uscb_employment_conflicts, plot_uscb_farm_lands,
-                       plot_uscb_finance, plot_uscb_gnp, plot_uscb_immigration,
-                       plot_uscb_manufacturing, plot_uscb_metals,
-                       plot_uscb_money_stock, plot_uscb_trade,
-                       plot_uscb_trade_by_countries,
-                       plot_uscb_trade_gold_silver,
-                       plot_uscb_unemployment_hours_worked)
-from .lib.pull import pull_by_series_id
-from .lib.read import read_usa_hist
-from .lib.tools import (calculate_power_function_fit_params_a,
-                        calculate_power_function_fit_params_b,
-                        calculate_power_function_fit_params_c, m_spline_ea,
-                        m_spline_eb, m_spline_la, m_spline_lb, m_spline_lls,
-                        m_spline_manager)
-from .lib.transform import (combine_kurenkov, transform_a, transform_b,
-                            transform_cobb_douglas, transform_d, transform_e,
-                            transform_manufacturing_money, transform_mean,
-                            transform_sum)
+from lib.collect import (collect_usa_general, collect_usa_investment_turnover,
+                         collect_usa_investment_turnover_bls,
+                         collect_usa_manufacturing_three_fold,
+                         collect_usa_manufacturing_two_fold, collect_uscb_cap,
+                         collect_uscb_cap_deflator,
+                         collect_uscb_employment_conflicts, collect_uscb_gnp,
+                         collect_uscb_manufacturing, collect_uscb_metals,
+                         collect_uscb_trade_by_countries,
+                         collect_uscb_unemployment_hours_worked, construct_can,
+                         stockpile_cobb_douglas, stockpile_usa_hist,
+                         stockpile_usa_mcconnel)
+from lib.plot import (plot_approx_linear, plot_approx_log_linear, plot_c,
+                      plot_capital_modelling, plot_census_complex,
+                      plot_cobb_douglas, plot_cobb_douglas_3d,
+                      plot_cobb_douglas_complex, plot_d, plot_douglas, plot_e,
+                      plot_elasticity, plot_fourier_discrete,
+                      plot_growth_elasticity, plot_investment,
+                      plot_investment_manufacturing, plot_kurenkov,
+                      plot_rolling_mean_filter, plot_uscb_cap,
+                      plot_uscb_cap_deflator, plot_uscb_commodities,
+                      plot_uscb_employment_conflicts, plot_uscb_farm_lands,
+                      plot_uscb_finance, plot_uscb_gnp, plot_uscb_immigration,
+                      plot_uscb_manufacturing, plot_uscb_metals,
+                      plot_uscb_money_stock, plot_uscb_trade,
+                      plot_uscb_trade_by_countries,
+                      plot_uscb_trade_gold_silver,
+                      plot_uscb_unemployment_hours_worked)
+from lib.pull import pull_by_series_id
+from lib.read import read_usa_hist
+from lib.tools import (calculate_power_function_fit_params_a,
+                       calculate_power_function_fit_params_b,
+                       calculate_power_function_fit_params_c, m_spline_ea,
+                       m_spline_eb, m_spline_la, m_spline_lb, m_spline_lls,
+                       m_spline_manager)
+from lib.transform import (combine_kurenkov, transform_a, transform_b,
+                           transform_cobb_douglas, transform_d, transform_e,
+                           transform_manufacturing_money, transform_mean,
+                           transform_sum)
 
 ARCHIVE_NAMES_UTILISED = (
     'dataset_can_00310004-eng.zip',
@@ -221,7 +221,7 @@ def main():
         # =====================================================================
         2820012: 'v2523012',
         # =====================================================================
-        # Production
+        # Manufacturing
         # =====================================================================
         3790031: 'v65201809',
     }
@@ -244,7 +244,7 @@ def main():
         # =====================================================================
         14100027: 'v2523012',
         # =====================================================================
-        # Production
+        # Manufacturing
         # =====================================================================
         36100434: 'v65201809',
     }
@@ -274,7 +274,7 @@ def main():
     # Fixed Assets Turnover
     # =========================================================================
     df = stockpile_cobb_douglas().pipe(transform_cobb_douglas,
-                                     year_base=1899)[0].iloc[:, [6]]
+                                       year_base=1899)[0].iloc[:, [6]]
     # =========================================================================
     # Option 1
     # =========================================================================
@@ -299,11 +299,11 @@ def main():
     # =========================================================================
     # Subproject VIII. Multiple
     # =========================================================================
-    df = stockpile_cobb_douglas().pipe(transform_cobb_douglas).iloc[:, range(5)]
+    df = stockpile_cobb_douglas().pipe(
+        transform_cobb_douglas).iloc[:, range(5)]
 
     for col in df.columns:
         plot_census_complex(df.loc[:, [col]])
-
 
     SERIES_IDS = {'D0004': 'dataset_uscb.zip', 'D0130': 'dataset_uscb.zip', 'F0003': 'dataset_uscb.zip', 'F0004': 'dataset_uscb.zip',
                   'P0110': 'dataset_uscb.zip', 'U0001': 'dataset_uscb.zip', 'U0008': 'dataset_uscb.zip', 'X0414': 'dataset_uscb.zip', 'X0415': 'dataset_uscb.zip'}
@@ -312,7 +312,6 @@ def main():
         print(f'Processing {series_id}')
         df = read_usa_hist(archive_name).pipe(pull_by_series_id, series_id)
         plot_census_complex(df)
-
 
     # =========================================================================
     # Subproject IX. USA BEA
@@ -361,7 +360,7 @@ def main():
     plot_uscb_metals(*collect_uscb_metals())
 
     # =========================================================================
-    # Census Production Series
+    # Census Manufacturing Series
     # =========================================================================
     SERIES_IDS = {
         f'P{_:04n}': ARCHIVE_NAME

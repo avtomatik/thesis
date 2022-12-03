@@ -8,8 +8,8 @@ Created on Sat Nov 16 20:45:44 2019
 
 import os
 
-from .lib.collect import stockpile_usa_hist
-from .lib.plot import plot_growth_elasticity, plot_rolling_mean_filter
+from lib.collect import stockpile_usa_hist
+from lib.plot import plot_growth_elasticity, plot_rolling_mean_filter
 
 
 def main(

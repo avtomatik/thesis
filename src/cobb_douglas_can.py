@@ -6,9 +6,9 @@ Created on Sat Jun 18 11:29:40 2022
 @author: Alexander Mikhailov
 """
 
-from .lib.collect import construct_can
-from .lib.plot import plot_cobb_douglas, plot_cobb_douglas_3d
-from .lib.transform import transform_cobb_douglas
+from lib.collect import construct_can
+from lib.plot import plot_cobb_douglas, plot_cobb_douglas_3d
+from lib.transform import transform_cobb_douglas
 
 
 def main():
@@ -33,7 +33,7 @@ def main():
         # =====================================================================
         2820012: 'v2523012',
         # =====================================================================
-        # Production
+        # Manufacturing
         # =====================================================================
         3790031: 'v65201809',
     }
@@ -56,7 +56,7 @@ def main():
         # =====================================================================
         14100027: 'v2523012',
         # =====================================================================
-        # Production
+        # Manufacturing
         # =====================================================================
         36100434: 'v65201809',
     }

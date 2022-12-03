@@ -17,11 +17,11 @@ from pathlib import Path
 import pandas as pd
 from pandas import DataFrame
 
-from .lib.collect import collect_usa_bea, stockpile_usa_bea
-from .lib.pull import pull_can_aggregate
-from .lib.read import (read_can, read_temporary, read_usa_bea_excel,
-                       read_usa_frb_g17)
-from .lib.transform import transform_mean
+from lib.collect import stockpile_usa_bea
+from lib.pull import pull_can_aggregate
+from lib.read import (read_can, read_temporary, read_usa_bea_excel,
+                      read_usa_frb_g17)
+from lib.transform import transform_mean
 
 # =============================================================================
 # Separate Chunk of Code
@@ -444,7 +444,7 @@ def collect_bea_gdp() -> DataFrame:
         # =====================================================================
         'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
     }
-    return collect_usa_bea(SERIES_IDS)
+    return stockpile_usa_bea(SERIES_IDS)
 
 
 def collect_capital_combined_archived() -> DataFrame:

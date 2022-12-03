@@ -8,9 +8,9 @@ Created on Mon Apr 12 22:46:08 2021
 
 import os
 
-from .lib.collect import collect_usa_manufacturing_latest
-from .lib.plot import plot_cobb_douglas
-from .lib.transform import transform_cobb_douglas
+from lib.collect import collect_usa_manufacturing_latest
+from lib.plot import plot_cobb_douglas
+from lib.transform import transform_cobb_douglas
 
 
 def main():

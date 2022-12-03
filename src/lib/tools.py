@@ -15,7 +15,7 @@ from pandas import DataFrame
 from scipy.interpolate import UnivariateSpline
 from sklearn.metrics import mean_squared_error, r2_score
 
-from .lib.read import read_can
+from .read import read_can
 
 
 def calculate_capital(df: DataFrame, p_i: tuple[float], p_t: tuple[float], ratio: float):
