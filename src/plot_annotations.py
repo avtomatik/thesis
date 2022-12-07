@@ -13,13 +13,13 @@ from lib.collect import (collect_usa_macroeconomics,
 from lib.plot import plot_increment
 
 
-def transform_add_dx_dy(df: pd.DataFrame) -> pd.DataFrame:
+def transform_add_dx_dy(df: DataFrame) -> DataFrame:
     """
 
 
     Parameters
     ----------
-    df : pd.DataFrame
+    df : DataFrame
         ================== =================================
         df.index           Period
         df.iloc[:, 0]      Capital
@@ -28,7 +28,7 @@ def transform_add_dx_dy(df: pd.DataFrame) -> pd.DataFrame:
         ================== =================================
     Returns
     -------
-    df : pd.DataFrame
+    df : DataFrame
         ================== =================================
         df.index           Period
         df.iloc[:, 0]      Labor Capital Intensity
@@ -58,13 +58,13 @@ def transform_add_dx_dy(df: pd.DataFrame) -> pd.DataFrame:
     return _df.iloc[:, -4:].dropna(axis=0)
 
 
-def plot_local(df: pd.DataFrame) -> None:
+def plot_local(df: DataFrame) -> None:
     """
 
 
     Parameters
     ----------
-    df : pd.DataFrame
+    df : DataFrame
         ================== =================================
         df.index           Period
         df.iloc[:, 0]      Labor Capital Intensity

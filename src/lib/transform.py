@@ -210,7 +210,7 @@ def transform_cobb_douglas_extension_capital(df: DataFrame) -> DataFrame:
     # =========================================================================
     df['nominal_cbb_dg'] = df.iloc[:, 0].mul(
         df.iloc[:, 2]).div(df.iloc[:, 1]).div(1000)
-    df['nominal_census'] = df.iloc[:, 3].mul(df.iloc[:, 5]).div(df.iloc[:, 4])
+    df['nominal_uscb'] = df.iloc[:, 3].mul(df.iloc[:, 5]).div(df.iloc[:, 4])
     df['nominal_dougls'] = df.iloc[:, 0].mul(
         df.iloc[:, 7]).div(df.iloc[:, 1]).div(1000)
     df['nominal_kndrck'] = df.iloc[:, 3].mul(

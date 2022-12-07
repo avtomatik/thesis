@@ -100,7 +100,7 @@ def pull_can_capital(df: DataFrame, params: tuple[int, str]) -> DataFrame:
         cursor = conn.cursor()
         df.to_sql(DBNAME, conn, if_exists="replace", index=True)
         cursor = conn.execute(stmt)
-        return pd.DataFrame(
+        return DataFrame(
             cursor.fetchall(),
             columns=("period", "geo", "prices", "industry", "category",
                      "component", "series_id", "value")
@@ -139,7 +139,7 @@ def pull_can_capital_former(df: DataFrame, params: tuple[int, str]) -> DataFrame
         cursor = conn.cursor()
         df.to_sql(DBNAME, conn, if_exists="replace", index=True)
         cursor = conn.execute(stmt)
-        return pd.DataFrame(
+        return DataFrame(
             cursor.fetchall(),
             columns=("period", "prices", "category", "component",
                      "series_id", "value")

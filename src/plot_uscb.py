@@ -36,7 +36,7 @@ def main():
     plot_uscb_cap(collect_uscb_cap())
 
     plot_uscb_cap_deflator(
-        collect_uscb_cap_deflator().pipe(transform_mean, name="census_fused")
+        collect_uscb_cap_deflator().pipe(transform_mean, name="uscb_fused")
     )
 
     plot_uscb_metals(*collect_uscb_metals())
@@ -44,6 +44,7 @@ def main():
     # =========================================================================
     # Census Manufacturing Series
     # =========================================================================
+    ARCHIVE_NAME = 'dataset_uscb.zip'
     SERIES_IDS = {
         f'P{_:04n}': ARCHIVE_NAME
         for _ in itertools.chain(

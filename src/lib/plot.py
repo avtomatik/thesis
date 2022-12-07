@@ -1072,7 +1072,7 @@ def plot_capital_purchases(df: DataFrame) -> None:
     plt.show()
 
 
-def plot_census_complex(df: DataFrame) -> None:
+def plot_uscb_complex(df: DataFrame) -> None:
     # =========================================================================
     # TODO: Eliminate This Function
     # =========================================================================

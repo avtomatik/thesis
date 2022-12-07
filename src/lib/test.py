@@ -28,33 +28,28 @@ FILE_NAMES_UTILISED = (
 )
 
 
-def options():
-    ARCHIVE_NAME = 'dataset_douglas.zip'
-    SERIES_IDS = (
+def options_reviewed():
+    SERIES_IDS = {
         # =====================================================================
         # The Revised Index of Physical Production for All Manufacturing In the United States, 1899--1926
         # =====================================================================
-        'DT24AS01',
+        'DT24AS01': 'dataset_douglas.zip',
         # =====================================================================
         # Not Suitable: Total Capital (in millions of 1880 dollars)
         # =====================================================================
-        'DT63AS01',
+        'DT63AS01': 'dataset_douglas.zip',
         # =====================================================================
         # Not Suitable: Annual Increase (in millions of 1880 dollars)
         # =====================================================================
-        'DT63AS02',
+        'DT63AS02': 'dataset_douglas.zip',
         # =====================================================================
         # Not Suitable: Percentage Rate of Growth
         # =====================================================================
-        'DT63AS03',
-    )
-    [
-        print(read_usa_hist(ARCHIVE_NAME, series_id))
-        # =============================================================================
-        #         stockpile_usa_hist(SERIES_ID)
-        # =============================================================================
-        for series_id in SERIES_IDS
-    ]
+        'DT63AS03': 'dataset_douglas.zip'
+    }
+
+    for series_id, archive_name in SERIES_IDS.items():
+        print(read_usa_hist(archive_name).pipe(pull_by_series_id, series_id))
 
 
 def test_data_consistency_a():

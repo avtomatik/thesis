@@ -203,7 +203,6 @@ def main():
         'stat_can_lab.csv',
         'stat_can_prd.csv',
     )
-    _FILE_NAME = 'stat_can_desc.csv'
 
     # =========================================================================
     # Construct Excel File from Specification

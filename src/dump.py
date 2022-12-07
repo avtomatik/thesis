@@ -28,17 +28,30 @@ from lib.transform import transform_mean
 # =============================================================================
 
 
-def append_series_ids_sum(df, chunk, series_ids):
-    for series_id in series_ids:
-        _chunk = pd.concat(
-            [
-                _chunk,
-                df.loc[:, (series_id,)].dropna(axis=0)
-            ],
-            axis=1
-        )
-    series_ids.extend(['sum'])
-    _chunk['_'.join(series_ids)] = _chunk.sum(axis=1)
+def append_series_ids_sum(df: DataFrame, chunk: DataFrame, series_ids: tuple[str]) -> None:
+    """
+    
+
+    Parameters
+    ----------
+    df : DataFrame
+        DESCRIPTION.
+    chunk : DataFrame
+        DESCRIPTION.
+    series_ids : tuple[str]
+        DESCRIPTION.
+
+    Returns
+    -------
+    None
+        DESCRIPTION.
+
+    """
+    _chunk = pd.concat(
+        [df.loc[:, (series_id,)].dropna(axis=0) for series_id in series_ids],
+        axis=1
+    )
+    _chunk["_".join((*series_ids, "sum"))] = _chunk.sum(axis=1)
     return pd.concat(
         [
             chunk,
@@ -563,7 +576,7 @@ kwargs = {
     'sh_name': '303ES Ann',
 }
 SERIES_ID = 'k3n31gd1es000'
-_df_semi_c = read_usa_bea_excel(**kwargs).loc[:, (SERIES_ID,)]
+df = read_usa_bea_excel(**kwargs).loc[:, (SERIES_ID,)]
 KWARGS = (
     # =========================================================================
     # Nominal Gross Domestic Product Series: A191RC1, 1929--1969

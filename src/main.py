@@ -23,7 +23,7 @@ from lib.collect import (collect_usa_general, collect_usa_investment_turnover,
                          stockpile_cobb_douglas, stockpile_usa_hist,
                          stockpile_usa_mcconnel)
 from lib.plot import (plot_approx_linear, plot_approx_log_linear, plot_c,
-                      plot_capital_modelling, plot_census_complex,
+                      plot_capital_modelling, plot_uscb_complex,
                       plot_cobb_douglas, plot_cobb_douglas_3d,
                       plot_cobb_douglas_complex, plot_d, plot_douglas, plot_e,
                       plot_elasticity, plot_fourier_discrete,
@@ -300,10 +300,10 @@ def main():
     # Subproject VIII. Multiple
     # =========================================================================
     df = stockpile_cobb_douglas().pipe(
-        transform_cobb_douglas).iloc[:, range(5)]
+        transform_cobb_douglas, year_base=1899).iloc[:, range(5)]
 
     for col in df.columns:
-        plot_census_complex(df.loc[:, [col]])
+        plot_uscb_complex(df.loc[:, [col]])
 
     SERIES_IDS = {'D0004': 'dataset_uscb.zip', 'D0130': 'dataset_uscb.zip', 'F0003': 'dataset_uscb.zip', 'F0004': 'dataset_uscb.zip',
                   'P0110': 'dataset_uscb.zip', 'U0001': 'dataset_uscb.zip', 'U0008': 'dataset_uscb.zip', 'X0414': 'dataset_uscb.zip', 'X0415': 'dataset_uscb.zip'}
@@ -311,7 +311,7 @@ def main():
     for series_id, archive_name in SERIES_IDS.items():
         print(f'Processing {series_id}')
         df = read_usa_hist(archive_name).pipe(pull_by_series_id, series_id)
-        plot_census_complex(df)
+        plot_uscb_complex(df)
 
     # =========================================================================
     # Subproject IX. USA BEA
@@ -339,13 +339,10 @@ def main():
     # =========================================================================
     # Project: Initial Version Dated: 17 February 2013
     # =========================================================================
-    df_e_a, df_e_b = transform_e(_df_a)
+    df_e_a, df_e_b = _df_a.pipe(transform_e)
     plot_e(df_e_a)
     plot_e(df_e_b)
-    # =========================================================================
-    # Project: BEA Data Compared with Kurenkov Yu.V. Data
-    # =========================================================================
-    plot_kurenkov(_df_a.pipe(combine_kurenkov))
+
 
     # =========================================================================
     # Subproject X. USA Census
@@ -355,13 +352,14 @@ def main():
     plot_uscb_cap(collect_uscb_cap())
 
     plot_uscb_cap_deflator(collect_uscb_cap_deflator().pipe(
-        transform_mean, name="census_fused"))
+        transform_mean, name="uscb_fused"))
 
     plot_uscb_metals(*collect_uscb_metals())
 
     # =========================================================================
     # Census Manufacturing Series
     # =========================================================================
+    ARCHIVE_NAME = 'dataset_uscb.zip'
     SERIES_IDS = {
         f'P{_:04n}': ARCHIVE_NAME
         for _ in itertools.chain(
@@ -454,7 +452,7 @@ def main():
     plot_uscb_finance()
 
     # =========================================================================
-    # Subproject XI. USA Census J14
+    # Subproject XI. USA Census J0014
     # =========================================================================
     SERIES_ID = {'J0014': 'dataset_uscb.zip'}
 

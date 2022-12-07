@@ -18,7 +18,7 @@ def prices_cobb_douglas():
     return stockpile_usa_hist(SERIES_IDS).pipe(construct_deflator)
 
 
-def prices_census():
+def prices_uscb():
     SERIES_IDS = {
         'P0107': 'dataset_uscb.zip',
         'P0110': 'dataset_uscb.zip'
@@ -34,7 +34,7 @@ def main():
     # CALLS = (
     #     # =========================================================================
     #     # prices_cobb_douglas,
-    #     # prices_census,
+    #     # prices_uscb,
     #     # =========================================================================
     #     collect_can_price_a,
     #     collect_can_price_b,
@@ -58,8 +58,8 @@ def main():
     # # v41707775 # Not Useful: Capital Input
     # # v42189387 # Not Useful: Capital Input
     # # =============================================================================
-    # df = pd.DataFrame()
-    # combined = pd.DataFrame()
+    # df = DataFrame()
+    # combined = DataFrame()
     FILE_NAME = 'stat_can_prd.csv'
     # data = read_temporary(FILE_NAME)
     # # =============================================================================
@@ -90,7 +90,7 @@ def main():
     #
     #
     # =============================================================================
-    # df = pd.DataFrame(columns=['series_id_1', 'series_id_2', 'r_2'])
+    # df = DataFrame(columns=['series_id_1', 'series_id_2', 'r_2'])
     # for pair in combinations(data.columns, 2):
     #     chunk = data.loc[:, list(pair)].dropna(axis=0)
     #     if not chunk.empty:
@@ -105,7 +105,7 @@ def main():
     # df.to_csv(Path(_DIR).joinpath('df.csv'), index=False)
     # =============================================================================
 
-    # # combined = pd.DataFrame()
+    # # combined = DataFrame()
     FILE_NAME = 'stat_can_prd.csv'
     # # data = read_temporary(FILE_NAME)
     # # # =============================================================================
