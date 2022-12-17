@@ -8,36 +8,21 @@ Thesis Project
 """
 
 
-import itertools
 import os
 
 from lib.collect import (collect_usa_general, collect_usa_investment_turnover,
                          collect_usa_investment_turnover_bls,
                          collect_usa_manufacturing_three_fold,
-                         collect_usa_manufacturing_two_fold, collect_uscb_cap,
-                         collect_uscb_cap_deflator,
-                         collect_uscb_employment_conflicts, collect_uscb_gnp,
-                         collect_uscb_manufacturing, collect_uscb_metals,
-                         collect_uscb_trade_by_countries,
-                         collect_uscb_unemployment_hours_worked, construct_can,
+                         collect_usa_manufacturing_two_fold, construct_can,
                          stockpile_cobb_douglas, stockpile_usa_hist,
                          stockpile_usa_mcconnel)
 from lib.plot import (plot_approx_linear, plot_approx_log_linear, plot_c,
-                      plot_capital_modelling, plot_uscb_complex,
-                      plot_cobb_douglas, plot_cobb_douglas_3d,
-                      plot_cobb_douglas_complex, plot_d, plot_douglas, plot_e,
-                      plot_elasticity, plot_fourier_discrete,
-                      plot_growth_elasticity, plot_investment,
-                      plot_investment_manufacturing, plot_kurenkov,
-                      plot_rolling_mean_filter, plot_uscb_cap,
-                      plot_uscb_cap_deflator, plot_uscb_commodities,
-                      plot_uscb_employment_conflicts, plot_uscb_farm_lands,
-                      plot_uscb_finance, plot_uscb_gnp, plot_uscb_immigration,
-                      plot_uscb_manufacturing, plot_uscb_metals,
-                      plot_uscb_money_stock, plot_uscb_trade,
-                      plot_uscb_trade_by_countries,
-                      plot_uscb_trade_gold_silver,
-                      plot_uscb_unemployment_hours_worked)
+                      plot_capital_modelling, plot_cobb_douglas,
+                      plot_cobb_douglas_3d, plot_cobb_douglas_complex, plot_d,
+                      plot_douglas, plot_e, plot_elasticity,
+                      plot_fourier_discrete, plot_growth_elasticity,
+                      plot_investment, plot_investment_manufacturing,
+                      plot_rolling_mean_filter, plot_uscb_complex)
 from lib.pull import pull_by_series_id
 from lib.read import read_usa_hist
 from lib.tools import (calculate_power_function_fit_params_a,
@@ -45,10 +30,9 @@ from lib.tools import (calculate_power_function_fit_params_a,
                        calculate_power_function_fit_params_c, m_spline_ea,
                        m_spline_eb, m_spline_la, m_spline_lb, m_spline_lls,
                        m_spline_manager)
-from lib.transform import (combine_kurenkov, transform_a, transform_b,
-                           transform_cobb_douglas, transform_d, transform_e,
-                           transform_manufacturing_money, transform_mean,
-                           transform_sum)
+from lib.transform import (transform_a, transform_b, transform_cobb_douglas,
+                           transform_d, transform_e,
+                           transform_manufacturing_money)
 
 ARCHIVE_NAMES_UTILISED = (
     'dataset_can_00310004-eng.zip',
@@ -91,17 +75,16 @@ print(__doc__)
 
 
 def main():
-    DIR = '/media/green-machine/KINGSTON'
-    os.chdir(DIR)
+
     # =========================================================================
     # Subproject I. Approximation
     # =========================================================================
     # =============================================================================
-    # `plot_approx_linear`: Linear Approximation,
-    # `plot_approx_log_linear`: Log-Linear Approximation,
-    # `calculate_power_function_fit_params_a`: Power Function Approximation,
-    # `calculate_power_function_fit_params_b`: Power Function Approximation,
-    # `calculate_power_function_fit_params_c`: Power Function Approximation
+    # 'plot_approx_linear': Linear Approximation,
+    # 'plot_approx_log_linear': Log-Linear Approximation,
+    # 'calculate_power_function_fit_params_a': Power Function Approximation,
+    # 'calculate_power_function_fit_params_b': Power Function Approximation,
+    # 'calculate_power_function_fit_params_c': Power Function Approximation
     # =============================================================================
     _df = collect_usa_general()
     plot_approx_linear(_df.iloc[:, (7, 6, 0, 6)].dropna(axis=0))
@@ -201,7 +184,7 @@ def main():
     # Subproject V. Cobb--Douglas CAN
     # =========================================================================
     # =========================================================================
-    # First Figure: Exact Correspondence with `Note INTH05 2014-07-10.docx`
+    # First Figure: Exact Correspondence with 'Note INTH05 2014-07-10.docx'
     # =========================================================================
     MAP_FIG = {
         'fg_a': 'Chart I Progress in Manufacturing {}$-${} ({}=100)',
@@ -316,30 +299,30 @@ def main():
     # =========================================================================
     # Subproject IX. USA BEA
     # =========================================================================
-    _df_a = collect_usa_general()
+    df_a = collect_usa_general()
     # =========================================================================
     # Project: Initial Version Dated: 05 October 2012
     # =========================================================================
-    df_a_a = _df_a.pipe(transform_a)
+    df_a_a = df_a.pipe(transform_a)
     plot_investment_manufacturing(df_a_a)
     # =========================================================================
     # Project: Initial Version Dated: 23 November 2012
     # =========================================================================
-    df_b_a = _df_a.pipe(transform_b)
+    df_b_a = df_a.pipe(transform_b)
     plot_investment(df_b_a)
     # =========================================================================
     # Project: Initial Version Dated: 16 June 2013
     # =========================================================================
-    df_c_a = _df_a.pipe(transform_manufacturing_money)
+    df_c_a = df_a.pipe(transform_manufacturing_money)
     plot_c(df_c_a)
     # =========================================================================
     # Project: Initial Version Dated: 15 June 2015
     # =========================================================================
-    plot_d(_df_a.pipe(transform_d))
+    plot_d(df_a.pipe(transform_d))
     # =========================================================================
     # Project: Initial Version Dated: 17 February 2013
     # =========================================================================
-    df_e_a, df_e_b = _df_a.pipe(transform_e)
+    df_e_a, df_e_b = df_a.pipe(transform_e)
     plot_e(df_e_a)
     plot_e(df_e_b)
 
@@ -347,110 +330,6 @@ def main():
     # =========================================================================
     # Subproject X. USA Census
     # =========================================================================
-    plot_uscb_manufacturing(*collect_uscb_manufacturing())
-
-    plot_uscb_cap(collect_uscb_cap())
-
-    plot_uscb_cap_deflator(collect_uscb_cap_deflator().pipe(
-        transform_mean, name="uscb_fused"))
-
-    plot_uscb_metals(*collect_uscb_metals())
-
-    # =========================================================================
-    # Census Manufacturing Series
-    # =========================================================================
-    ARCHIVE_NAME = 'dataset_uscb.zip'
-    SERIES_IDS = {
-        f'P{_:04n}': ARCHIVE_NAME
-        for _ in itertools.chain(
-            range(248, 252),
-            (262,),
-            range(265, 270),
-            range(293, 296),
-        )
-    }
-    SERIES_IDS_ALT = {
-        f'P{_:04n}': ARCHIVE_NAME
-        for _ in itertools.chain(
-            range(231, 242),
-            range(244, 245),
-            range(247, 272),
-            range(277, 278),
-            range(279, 280),
-            range(281, 285),
-            range(286, 287),
-            range(288, 289),
-            range(290, 291),
-            range(293, 301),
-        )
-    }
-
-    plot_uscb_commodities(SERIES_IDS)
-
-    ARCHIVE_NAME = 'dataset_uscb.zip'
-    SERIES_IDS = {
-        f'C{_:04n}': ARCHIVE_NAME
-        for _ in itertools.chain(
-            range(91, 102),
-            range(103, 110),
-            range(111, 116),
-            range(117, 120),
-        )
-    }
-    plot_uscb_immigration(stockpile_usa_hist(
-        SERIES_IDS).pipe(transform_sum, name="C0089"))
-
-    plot_uscb_unemployment_hours_worked(
-        collect_uscb_unemployment_hours_worked())
-
-    plot_uscb_employment_conflicts(collect_uscb_employment_conflicts())
-
-    SERIES_IDS = {
-        # =========================================================================
-        # Census Gross National Product Series
-        # =========================================================================
-        'F0003': 'dataset_uscb.zip', 'F0004': 'dataset_uscb.zip'
-    }
-    df = stockpile_usa_hist(SERIES_IDS).truncate(before=1889)
-    df.div(df.iloc[0, :]).mul(100).pipe(plot_uscb_gnp)
-
-    SERIES_ID = {
-        # =========================================================================
-        # Census 1975, Land in Farms
-        # =========================================================================
-        'K0005': 'dataset_uscb.zip'
-    }
-    stockpile_usa_hist(SERIES_ID).pipe(plot_uscb_farm_lands)
-
-    SERIES_IDS = {
-        # =========================================================================
-        # Census Foreign Trade Series
-        # =========================================================================
-        'U0001': 'dataset_uscb.zip', 'U0008': 'dataset_uscb.zip', 'U0015': 'dataset_uscb.zip'
-    }
-    stockpile_usa_hist(SERIES_IDS).pipe(plot_uscb_trade)
-
-    SERIES_IDS = {
-        # =========================================================================
-        # Census Foreign Trade Series
-        # =========================================================================
-        'U0187': 'dataset_uscb.zip', 'U0188': 'dataset_uscb.zip', 'U0189': 'dataset_uscb.zip'
-    }
-    stockpile_usa_hist(SERIES_IDS).pipe(plot_uscb_trade_gold_silver)
-
-    plot_uscb_trade_by_countries(collect_uscb_trade_by_countries())
-
-    SERIES_IDS = {
-        # =========================================================================
-        # Census Money Supply Aggregates
-        # =========================================================================
-        'X0410': 'dataset_uscb.zip', 'X0414': 'dataset_uscb.zip', 'X0415': 'dataset_uscb.zip'
-    }
-    YEAR_BASE = 1915
-    df = stockpile_usa_hist(SERIES_IDS)
-    df.div(df.loc[YEAR_BASE, :]).mul(100).pipe(plot_uscb_money_stock)
-    plot_uscb_finance()
-
     # =========================================================================
     # Subproject XI. USA Census J0014
     # =========================================================================
@@ -639,8 +518,8 @@ def main():
     # Cobb--Douglas Algorithm as per C.W. Cobb, P.H. Douglas. A Theory of Production, 1928 & P.H. Douglas. The Theory of Wages, 1934;
     # =========================================================================
     MAP_FIG = {
-        'fg_a': 'Chart 15 Relative Increase in Capital, Labor, and Physical Product in Manufacturing Industries of Massachussets, {}$-${} ({}=100',
-        'fg_b': 'Chart 16 Theoretical and Actual Curves of Production, Massachusetts, {}$-${} ({}=100',
+        'fg_a': 'Chart 15 Relative Increase in Capital, Labor, and Physical Product in Manufacturing Industries of Massachussets, {}$-${} ({}=100)',
+        'fg_b': 'Chart 16 Theoretical and Actual Curves of Production, Massachusetts, {}$-${} ({}=100)',
         'fg_c': 'Chart III Percentage Deviations of $P$ and $P\'$ from Their Trend Lines, Massachusetts\nTrend Lines = 3 Year Moving Average',
         'fg_d': 'Chart 17 The Percentage Deviations of the Computed Product ($P\'$) from the Actual Product ($P$) in Massachusetts Manufacturing, {}$-${}',
         'fg_e': 'Chart V Relative Final Productivities of Labor and Capital',

@@ -46,7 +46,7 @@ def plot_discrete_fourier_transform(array: np.ndarray) -> None:
         'r:',
         label='Fourier Transform',
     )
-    plt.grid(True)
+    plt.grid()
     plt.legend()
     plt.show()
 
@@ -180,7 +180,7 @@ print(*stockpile_cobb_douglas().pipe(transform_cobb_douglas_sklearn))
 # k, b = np.polyfit(X, y, 1)
 # Z = b + k*X
 # plt.plot(X, Z, label='Test {:02d}'.format(0))
-# plt.grid(True)
+# plt.grid()
 # plt.legend()
 # plt.show()
 
@@ -195,7 +195,7 @@ print(*stockpile_cobb_douglas().pipe(transform_cobb_douglas_sklearn))
 # # X = np.log(X)
 # # =============================================================================
 # y = np.log(y)
-# loo = cross_validation.LeaveOneOut(len(y))
+# loo = cross_validation.LeaveOneOut(y.shape[0])
 # regr = linear_model.LinearRegression()
 # scores = cross_validation.cross_val_score(
 #     regr, X, y, scoring='mean_squared_error', cv=loo,)
@@ -225,7 +225,7 @@ print(*stockpile_cobb_douglas().pipe(transform_cobb_douglas_sklearn))
 # plt.title('Labor Capital Intensity & Labor Productivity, 1899--1922')
 # plt.xlabel('Labor Capital Intensity')
 # plt.ylabel('Labor Productivity')
-# plt.grid(True)
+# plt.grid()
 # plt.legend()
 # plt.show()
 # =============================================================================

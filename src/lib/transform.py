@@ -226,7 +226,7 @@ def transform_cobb_douglas_extension_capital(df: DataFrame) -> DataFrame:
     # =========================================================================
     df['nominal_cbb_dg_frb'] = df.iloc[:, (8, -5)].mean(axis=1)
     # =========================================================================
-    # Capital Structure Series: `Cobb C.W., Douglas P.H. -- FRB (Blended) Series` to `Douglas P.H. -- Kendrick J.W. (Blended) Series`
+    # Capital Structure Series: "Cobb C.W., Douglas P.H. -- FRB (Blended) Series" to "Douglas P.H. -- Kendrick J.W. (Blended) Series"
     # =========================================================================
     df['struct_ratio'] = df.iloc[:, -1].div(df.iloc[:, -2])
     # =========================================================================
@@ -237,11 +237,11 @@ def transform_cobb_douglas_extension_capital(df: DataFrame) -> DataFrame:
         df.loc[1899, df.columns[-1]], inplace=True
     )
     # =========================================================================
-    # Patch Series `Douglas P.H. -- Kendrick J.W. (Blended) Series` Multiplied by `Capital Structure Series`
+    # Patch Series "Douglas P.H. -- Kendrick J.W. (Blended) Series" Multiplied by "Capital Structure Series"
     # =========================================================================
     df['nominal_patch'] = df.iloc[:, -3].mul(df.iloc[:, -1])
     # =========================================================================
-    # `Cobb C.W., Douglas P.H. -- FRB (Blended) Series` Patched with `Patch Series`
+    # "Cobb C.W., Douglas P.H. -- FRB (Blended) Series" Patched with "Patch Series"
     # =========================================================================
     df['nominal_extended'] = df.iloc[:, -3::2].mean(axis=1)
     # =========================================================================
@@ -359,13 +359,13 @@ def transform_d(df: DataFrame) -> DataFrame:
 
 
 def transform_e(df: DataFrame) -> tuple[DataFrame]:
-    assert df.shape[1] == 21, 'Works on DataFrame Produced with "collect_usa_general()"'
+    assert df.shape[1] == 21, "Works on DataFrame Produced with collect_usa_general()"
     # =========================================================================
     # "Real" Investment
     # =========================================================================
     df['investment'] = df.iloc[:, 0].mul(df.iloc[:, 7]).div(df.iloc[:, 6])
     # =========================================================================
-    # `Real` Capital
+    # "Real" Capital
     # =========================================================================
     df['capital'] = df.iloc[:, 11].mul(df.iloc[:, 7]).div(df.iloc[:, 6])
     return (
@@ -374,7 +374,7 @@ def transform_e(df: DataFrame) -> tuple[DataFrame]:
         # =====================================================================
         df.iloc[:, (0, 6, 11)].dropna(axis=0),
         # =====================================================================
-        # DataFrame `Real`
+        # DataFrame "Real"
         # =====================================================================
         df.iloc[:, (-2, 7, -1)].dropna(axis=0),
     )

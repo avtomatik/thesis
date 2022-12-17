@@ -27,7 +27,7 @@ from lib.transform import transform_mean, transform_sum
 
 
 def main():
-    DIR = '/media/green-machine/KINGSTON'
+
     ARCHIVE_NAME = 'dataset_uscb.zip'
 
     os.chdir(DIR)
@@ -82,18 +82,15 @@ def main():
             range(117, 120),
         )
     }
-    plot_uscb_immigration(stockpile_usa_hist(
-        SERIES_IDS).pipe(transform_sum, name="C0089"))
+    plot_uscb_immigration(
+        stockpile_usa_hist(SERIES_IDS).pipe(transform_sum, name="C0089")
+    )
 
     plot_uscb_unemployment_hours_worked(
         collect_uscb_unemployment_hours_worked()
     )
 
     plot_uscb_employment_conflicts(collect_uscb_employment_conflicts())
-
-    plot_uscb_unemployment_hours_worked(df)
-
-    plot_uscb_employment_conflicts(df)
 
     SERIES_IDS = {
         # =========================================================================

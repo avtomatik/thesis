@@ -69,9 +69,9 @@ def collect_cobb_douglas_deflator() -> DataFrame:
     # =========================================================================
     # =========================================================================
     # Correlation Test:
-    # `df.corr(method='kendall')`
-    # `df.corr(method='pearson')`
-    # `df.corr(method='spearman')`
+    # 'df.corr(method='kendall')'
+    # 'df.corr(method='pearson')'
+    # 'df.corr(method='spearman')'
     # Correlation Test Result: kendall & pearson & spearman: L2, L15, E7, E23, E40, E68
     # =========================================================================
     SERIES_IDS_CB = {
@@ -189,7 +189,7 @@ def collect_cobb_douglas_extension_labor() -> DataFrame:
         # =====================================================================
         'P0062': 'dataset_uscb.zip',
         # =====================================================================
-        # Kendrick J.W., Productivity Trends in the United States, Table D-II, `Persons Engaged` Column, pp. 465--466
+        # Kendrick J.W., Productivity Trends in the United States, Table D-II, 'Persons Engaged' Column, pp. 465--466
         # =====================================================================
         'KTD02S02': 'dataset_usa_kendrick.zip',
     }
@@ -313,7 +313,7 @@ def collect_usa_brown() -> DataFrame:
         'Чистый основной капитал (в млн. долл., 1929 г.)': 'dataset_usa_brown.zip',
     }
     b_frame = stockpile_usa_hist(SERIES_IDS)
-    b_frame.columns = (f'series_{hex(_)}' for _ in range(len(SERIES_IDS)))
+    b_frame.columns = (f'series_{hex(_)}' for _, series_id in enumerate(SERIES_IDS))
     SERIES_IDS = {
         'KTA03S07': 'dataset_usa_kendrick.zip',
         'KTA03S08': 'dataset_usa_kendrick.zip',
@@ -1323,7 +1323,7 @@ def stockpile_usa_mcconnel(series_ids: tuple[str]) -> DataFrame:
 
 def stockpile_usa_sahr_infcf(df: DataFrame) -> DataFrame:
     """
-    Retrieves Yearly Price Rates from `dataset_usa_infcf16652007.zip`
+    Retrieves Yearly Price Rates from 'dataset_usa_infcf16652007.zip'
 
     Returns
     -------

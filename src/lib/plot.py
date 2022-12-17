@@ -59,7 +59,7 @@ def plot_investment_manufacturing(df: DataFrame) -> None:
     # =========================================================================
     _df['investment'] = _df.iloc[:, 0].mul(_df.iloc[:, 3]).div(_df.iloc[:, 2])
     # =========================================================================
-    # `Real` Manufacturing
+    # 'Real' Manufacturing
     # =========================================================================
     _df['manufacturing'] = _df.iloc[:, 1].mul(
         _df.iloc[:, 3]).div(_df.iloc[:, 2])
@@ -134,7 +134,7 @@ def plot_c(df: DataFrame) -> None:
     plt.plot(df.iloc[:, range(2, 5)], label=[
         'Real Gross Domestic Product',
         'Money Supply',
-        '`Real` Gross Domestic Investment',
+        ''Real' Gross Domestic Investment',
     ]
     )
     plt.title('Indexes, {}$-${}'.format(*df.index[[0, -1]]))
@@ -429,7 +429,7 @@ def plot_uscb_employment_conflicts(df: DataFrame) -> None:
     axes_stoppages.set_ylabel('Number', color=color)
     axes_stoppages.plot(df.iloc[:, 0], color=color, label='Stoppages')
     axes_stoppages.set_title('Work Conflicts')
-    axes_stoppages.grid(True)
+    axes_stoppages.grid()
     axes_stoppages.legend(loc=2)
     axes_stoppages.tick_params(axis='y', labelcolor=color)
     axes_workers = axes_stoppages.twinx()
@@ -518,7 +518,7 @@ def plot_uscb_trade_gold_silver(df: DataFrame) -> None:
 
 
 def plot_uscb_trade_by_countries(df: DataFrame) -> None:
-    assert df.shape[1] == 58, 'Works on DataFrame Produced with `collect_uscb_trade_by_countries()`'
+    assert df.shape[1] == 58, "Works on DataFrame Produced with collect_uscb_trade_by_countries()"
     _LABELS = (
         'America-Canada',
         'America-Cuba',
@@ -776,7 +776,7 @@ def plot_lab_cap_inty(df: DataFrame) -> None:
     # =========================================================================
     _k = 2
     # =========================================================================
-    # Odd Frame
+    # Odd DataFrame
     # =========================================================================
     df_o = pd.concat(
         [
@@ -788,7 +788,7 @@ def plot_lab_cap_inty(df: DataFrame) -> None:
         axis=1,
     )
     # =========================================================================
-    # Even Frame
+    # Even DataFrame
     # =========================================================================
     df_e = pd.concat(
         [
@@ -850,7 +850,7 @@ def plot_lab_prty(df: DataFrame) -> None:
     """
     _k = 3
     # =========================================================================
-    # Odd Frame
+    # Odd DataFrame
     # =========================================================================
     df_o = pd.concat(
         [
@@ -864,7 +864,7 @@ def plot_lab_prty(df: DataFrame) -> None:
         axis=1,
     )
     # =========================================================================
-    # Even Frame
+    # Even DataFrame
     # =========================================================================
     df_e = pd.concat(
         [
@@ -1053,7 +1053,7 @@ def plot_capital_modelling(df: DataFrame, year_base: int) -> None:
 
 
 def plot_capital_purchases(df: DataFrame) -> None:
-    assert df.shape[1] == 27, 'Works on DataFrame Produced with `get_data_capital_purchases()`'
+    assert df.shape[1] == 27, "Works on DataFrame Produced with 'get_data_capital_purchases()"
     plt.figure()
     plt.semilogy(
         df.loc[:, (df.columns[0], *df.columns[-3:])],
@@ -1339,7 +1339,7 @@ def plot_cobb_douglas_tight_layout(df: DataFrame, params: tuple[float], mapping:
     axes[0].set_title(mapping['fg_a'].format(*df.index[[0, -1]],
                                              mapping['year_base']))
     axes[0].legend()
-    axes[0].grid(True)
+    axes[0].grid()
     axes[1].plot(
         df.iloc[:, (2, 5)],
         label=[
@@ -1353,7 +1353,7 @@ def plot_cobb_douglas_tight_layout(df: DataFrame, params: tuple[float], mapping:
     axes[1].set_title(mapping['fg_b'].format(*df.index[[0, -1]],
                                              mapping['year_base']))
     axes[1].legend()
-    axes[1].grid(True)
+    axes[1].grid()
     axes[2].plot(
         df.iloc[:, (8, 9)],
         label=[
@@ -1368,12 +1368,12 @@ def plot_cobb_douglas_tight_layout(df: DataFrame, params: tuple[float], mapping:
     axes[2].set_ylabel('Percentage Deviation')
     axes[2].set_title(mapping['fg_c'])
     axes[2].legend()
-    axes[2].grid(True)
+    axes[2].grid()
     axes[3].plot(df.iloc[:, 5].div(df.iloc[:, 2]).sub(1))
     axes[3].set_xlabel('Period')
     axes[3].set_ylabel('Percentage Deviation')
     axes[3].set_title(mapping['fg_d'].format(*df.index[[0, -1]]))
-    axes[3].grid(True)
+    axes[3].grid()
     axes[4].scatter(df.iloc[:, 10], df.iloc[:, 4])
     axes[4].scatter(df.iloc[:, 10], df.iloc[:, 11])
     lc = np.arange(0.2, 1.0, 0.005)
@@ -1391,7 +1391,7 @@ def plot_cobb_douglas_tight_layout(df: DataFrame, params: tuple[float], mapping:
     axes[4].set_ylabel('Indexes')
     axes[4].set_title(mapping['fg_e'])
     axes[4].legend()
-    axes[4].grid(True)
+    axes[4].grid()
     plt.tight_layout()
     plt.show()
 
@@ -1691,7 +1691,7 @@ def plot_fourier_discrete(df: DataFrame, precision: int = 10) -> None:
     plt.show()
 
 
-def plot_grigoriev(df: DataFrame) -> None:
+def plot_rus_grigoriev(df: DataFrame) -> None:
     for series_id in sorted(set(df.loc[:, "series"])):
         df.pipe(pull_by_series_id, series_id).plot(grid=True)
 
@@ -1750,13 +1750,13 @@ def plot_increment(df: DataFrame) -> None:
     axes[0].set_ylabel('Labor Productivity')
     axes[0].set_title('Labor Capital Intensity to Labor Productivity Relation')
     axes[0].legend()
-    axes[0].grid(True)
+    axes[0].grid()
     axes[1].plot(df.iloc[:, 2], df.iloc[:, 3], label='Curve')
     axes[1].set_xlabel('Labor Capital Intensity Increment')
     axes[1].set_ylabel('Labor Productivity Increment')
     axes[1].set_title(
         'Labor Capital Intensity to Labor Productivity Increments Relation')
-    axes[1].grid(True)
+    axes[1].grid()
     axes[1].legend()
     for _ in range(3, df.shape[0], 5):
         axes[0].annotate(df.index[_], (df.iloc[_, 0], df.iloc[_, 1]))
@@ -1878,7 +1878,7 @@ def plot_kurenkov(data_frames: tuple[DataFrame]) -> None:
     axes[0].set_xlabel('Period')
     axes[0].set_ylabel('Percentage')
     axes[0].legend()
-    axes[0].grid(True)
+    axes[0].grid()
     axes[1].plot(
         data_frames[1],
         label=[
@@ -1890,7 +1890,7 @@ def plot_kurenkov(data_frames: tuple[DataFrame]) -> None:
     axes[1].set_xlabel('Period')
     axes[1].set_ylabel('Thousands of Persons')
     axes[1].legend()
-    axes[1].grid(True)
+    axes[1].grid()
     # =========================================================================
     # Revised Capital
     # =========================================================================
@@ -1905,7 +1905,7 @@ def plot_kurenkov(data_frames: tuple[DataFrame]) -> None:
     axes[2].set_xlabel('Period')
     axes[2].set_ylabel('Percentage')
     axes[2].legend()
-    axes[2].grid(True)
+    axes[2].grid()
     axes[3].plot(
         data_frames[3],
         label=[
@@ -1917,7 +1917,7 @@ def plot_kurenkov(data_frames: tuple[DataFrame]) -> None:
     axes[3].set_xlabel('Period')
     axes[3].set_ylabel('Percentage')
     axes[3].legend()
-    axes[3].grid(True)
+    axes[3].grid()
     fig.set_size_inches(10., 20.)
 
 
@@ -2123,7 +2123,7 @@ def plot_pearson_r_test(df: DataFrame) -> None:
     # =========================================================================
     plt.figure()
     plt.title('Right-Side to Left-Side Pearson R Ratio')
-    plt.xlabel('`Window`')
+    plt.xlabel('Window')
     plt.ylabel('Index')
     plt.plot(_pearson, label='Right-Side to Left-Side Pearson R Ratio')
     plt.grid()
@@ -2498,7 +2498,7 @@ def plot_capital_acquisition(df: DataFrame) -> None:
                         _df.iloc[_knots[_], 0], _df.iloc[_knots[1 + _], 0]))))
             _ += 1
     else:
-        print('Error')
+        print("Error")
     # =========================================================================
     # Calculate Dynamic Values
     # =========================================================================
@@ -2540,8 +2540,10 @@ def plot_capital_acquisition(df: DataFrame) -> None:
         axis=1)
     _df.set_index(_df.columns[0], inplace=True)
     # =========================================================================
-    # `-` Gross Capital Formation
-    # `+` Capital Acquisitions
+    # {
+    #     '-': 'Gross Capital Formation',
+    #     '+': 'Capital Acquisitions'
+    # }
     # =========================================================================
     for _ in range(N):
         if 1 + _ == N:
@@ -2704,7 +2706,7 @@ def plot_capital_retirement(df: DataFrame) -> None:
                         _df.iloc[_knots[_], 0], _df.iloc[_knots[1 + _], 0]))))
             _ += 1
     else:
-        print('Error')
+        print("Error")
     # =========================================================================
     # Calculate Dynamic Values
     # =========================================================================

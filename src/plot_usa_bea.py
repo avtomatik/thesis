@@ -20,36 +20,36 @@ def main():
     DIR = '/media/green-machine/KINGSTON'
 
     os.chdir(DIR)
-    _df_a = collect_usa_general()
+    df_a = collect_usa_general()
     # =========================================================================
     # Project: Initial Version Dated: 05 October 2012
     # =========================================================================
-    df_a_a = _df_a.pipe(transform_a)
+    df_a_a = df_a.pipe(transform_a)
     plot_investment_manufacturing(df_a_a)
     # =========================================================================
     # Project: Initial Version Dated: 23 November 2012
     # =========================================================================
-    df_b_a = _df_a.pipe(transform_b)
+    df_b_a = df_a.pipe(transform_b)
     plot_investment(df_b_a)
     # =========================================================================
     # Project: Initial Version Dated: 16 June 2013
     # =========================================================================
-    df_c_a = _df_a.pipe(transform_manufacturing_money)
+    df_c_a = df_a.pipe(transform_manufacturing_money)
     plot_c(df_c_a)
     # =========================================================================
     # Project: Initial Version Dated: 15 June 2015
     # =========================================================================
-    plot_d(_df_a.pipe(transform_d))
+    plot_d(df_a.pipe(transform_d))
     # =========================================================================
     # Project: Initial Version Dated: 17 February 2013
     # =========================================================================
-    df_e_a, df_e_b = _df_a.pipe(transform_e)
+    df_e_a, df_e_b = df_a.pipe(transform_e)
     plot_e(df_e_a)
     plot_e(df_e_b)
     # =========================================================================
     # Project: BEA Data Compared with Kurenkov Yu.V. Data
     # =========================================================================
-    plot_kurenkov(_df_a.pipe(combine_kurenkov))
+    plot_kurenkov(df_a.pipe(combine_kurenkov))
 
 
 if __name__ == '__main__':

@@ -195,8 +195,7 @@ BLUEPRINT_PRODUCT = (
 
 
 def main():
-    DIR = '/home/green-machine/data_science/data/interim'
-    os.chdir(DIR)
+
     FILE_NAME = 'stat_can_desc.csv'
     FILE_NAMES = (
         'stat_can_cap.csv',

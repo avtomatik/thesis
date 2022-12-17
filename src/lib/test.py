@@ -155,8 +155,8 @@ def test_data_consistency_b():
             # =================================================================
             # TODO: UPDATE ACCORDING TO NEW SIGNATURE
             # =================================================================
-            read_usa_bea_excel(ARCHIVE_NAME, WB_NAME, sh, series_id)
-            for sh, series_id in zip(SH_NAMES, SERIES_IDS)
+            read_usa_bea_excel(ARCHIVE_NAME, WB_NAME, sh_name).loc[:, series_id]
+            for sh_name, series_id in zip(SH_NAMES, SERIES_IDS)
         ],
         axis=1,
         sort=True
@@ -207,7 +207,7 @@ def test_data_consistency_d():
         ]
 
     # =========================================================================
-    # Tested: `A051RC1` != `A052RC1` + `A262RC1`
+    # Tested: "A051RC1" != "A052RC1" + "A262RC1"
     # =========================================================================
     ARCHIVE_NAME = 'dataset_usa_bea-release-2019-12-19-Survey.zip'
     WB_NAME = 'Section1all_xls.xlsx'
@@ -217,7 +217,7 @@ def test_data_consistency_d():
         _generate_kwargs_list(ARCHIVE_NAME, WB_NAME, SH_NAMES, SERIES_IDS)
     )
     # =========================================================================
-    # Tested: `Government` = `Federal` + `State and local`
+    # Tested: "Government" = "Federal" + "State and local"
     # =========================================================================
     ARCHIVE_NAME = 'dataset_usa_bea-release-2019-12-19-Survey.zip'
     WB_NAME = 'Section1all_xls.xlsx'
@@ -233,9 +233,9 @@ def test_data_consistency_d():
     test_procedure(
         _generate_kwargs_list(ARCHIVE_NAME, WB_NAME, SH_NAMES, SERIES_IDS)
     )
-    # # =========================================================================
-    # # Tested: `Federal` = `National defense` + `Nondefense`
-    # # =========================================================================
+    # =========================================================================
+    # Tested: "Federal" = "National defense" + "Nondefense"
+    # =========================================================================
     ARCHIVE_NAME = 'dataset_usa_bea-release-2019-12-19-Survey.zip'
     WB_NAME = 'Section1all_xls.xlsx'
     SH_NAMES = ('T10105-A', 'T10105-A', 'T10105-A')
@@ -255,11 +255,11 @@ def test_data_consistency_d():
     # =========================================================================
     df = test_read_usa_bea_sfat_series()
     # =========================================================================
-    # Tested: `k3n31gd1es000` = `k3n31gd1eq000` + `k3n31gd1ip000` + `k3n31gd1st000`
+    # Tested: "k3n31gd1es000" = "k3n31gd1eq000" + "k3n31gd1ip000" + "k3n31gd1st000"
     # =========================================================================
     test_substitute_a(df)
     # =========================================================================
-    # Comparison of `k3n31gd1es000` out of control_frame with `k3n31gd1es000` out of test_frame
+    # Comparison of "k3n31gd1es000" out of control_frame with "k3n31gd1es000" out of test_frame
     # =========================================================================
     test_substitute_b(df)
     # =========================================================================
@@ -361,7 +361,7 @@ def test_read_usa_bea_sfat_series() -> DataFrame:
             # =================================================================
             # TODO: UPDATE ACCORDING TO NEW SIGNATURE
             # =================================================================
-            read_usa_bea_excel(ARCHIVE_NAME, WB_NAME, SH_NAME, series_id)
+            read_usa_bea_excel(ARCHIVE_NAME, WB_NAME, SH_NAME).loc[:, series_id]
             for series_id in SERIES_IDS
         ],
         axis=1,

@@ -626,7 +626,7 @@ def read_worldbank(
     }
     with ZipFile(io.BytesIO(requests.get(url_template.format(source_id)).content)) as archive:
         # =====================================================================
-        # Select the Largest File with `min()` Function
+        # Select the Largest File with min() Function
         # =====================================================================
         with archive.open(
             min({_.filename: _.file_size for _ in archive.filelist})

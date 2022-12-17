@@ -141,9 +141,9 @@ def test_data_capital_combined_archived():
     )
 
     if _control.equals(_test):
-        print('Series `A006RC1` & `A191RC1` @ Worksheet `10105 Ann` Equals Series `A006RC1` & `A191RC1` @ Worksheet `10505 Ann` for Period 1929--1969')
+        print("Series 'A006RC1' & 'A191RC1' @ Worksheet '10105 Ann' Equals Series 'A006RC1' & 'A191RC1' @ Worksheet '10505 Ann' for Period 1929--1969")
     else:
-        print('Data Varies from Worksheet `10105 Ann` to Worksheet `10505 Ann`')
+        print("Data Varies from Worksheet '10105 Ann' to Worksheet '10505 Ann'")
 
     # =========================================================================
     # Nominal Investment Series: A006RC1, 1969--2012
@@ -200,9 +200,9 @@ def test_data_capital_combined_archived():
     )
 
     if _control.equals(_test):
-        print('Series `A006RC1` & `A191RC1` @ Worksheet `10105 Ann` Equals Series `A006RC1` & `A191RC1` @ Worksheet `10505 Ann` for Period 1969--2012')
+        print("Series 'A006RC1' & 'A191RC1' @ Worksheet '10105 Ann' Equals Series 'A006RC1' & 'A191RC1' @ Worksheet '10505 Ann' for Period 1969--2012")
     else:
-        print('Data Varies from Worksheet `10105 Ann` to Worksheet `10505 Ann`')
+        print("Data Varies from Worksheet '10105 Ann' to Worksheet '10505 Ann'")
 
 
 def collect_usa_bls_cpiu() -> DataFrame:
@@ -227,7 +227,7 @@ def collect_usa_bls_cpiu() -> DataFrame:
     return df.iloc[:, [-1]].dropna(axis=0)
 
 
-def extract_can_group_a(file_id: int, **kwargs) -> DataFrame:
+def read_can_group_a(file_id: int, **kwargs) -> DataFrame:
     """
 
 
@@ -261,7 +261,7 @@ def extract_can_group_a(file_id: int, **kwargs) -> DataFrame:
     return df.groupby(df.columns[-1]).mean()
 
 
-def extract_can_group_b(file_id: int, **kwargs) -> DataFrame:
+def read_can_group_b(file_id: int, **kwargs) -> DataFrame:
     """
 
 
@@ -539,7 +539,7 @@ os.chdir(DIR)
 # www.bea.gov/histdata/Releases/GDP_and_PI/2012/Q1/Second_May-31-2012/Section5ALL_Hist.xls
 # =============================================================================
 # =============================================================================
-# Metadata: `Section5ALL_Hist.xls`@[`dataset_usa_bea-release-2010-08-05 Section5ALL_Hist.xls` Offsets `dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip`]"""
+# Metadata: 'Section5ALL_Hist.xls'@['dataset_usa_bea-release-2010-08-05 Section5ALL_Hist.xls' Offsets 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip']"""
 # =============================================================================
 # =============================================================================
 # Fixed Assets Series: K160021, 1951--1969
@@ -550,7 +550,7 @@ kwargs = {
     'sh_name': '50900 Ann',
 }
 SERIES_ID = 'K160021'
-_df_sub_a = read_usa_bea_excel(**kwargs).loc[:, (SERIES_ID,)]
+df_sub_a = read_usa_bea_excel(**kwargs).loc[:, (SERIES_ID,)]
 
 # =============================================================================
 # Not Clear
@@ -596,7 +596,7 @@ KWARGS = (
     },
 )
 SERIES_ID = 'A191RC1'
-_df_semi_d = pd.concat(
+df_semi_d = pd.concat(
     [read_usa_bea_excel(**kwargs).loc[:, (SERIES_ID,)] for kwargs in KWARGS],
     sort=True
 ).drop_duplicates()
@@ -613,8 +613,8 @@ _df_semi_d = pd.concat(
 # Chained (2007) dollars; Seasonally adjusted at annual rates; Industrial\
 # machinery and equipment (x 1,000,000) (quarterly, 1961-03-01 to 2017-09-01)
 # =============================================================================
-extract_can_group_a(7931814471809016759, skiprows=241)
-extract_can_group_a(8448814858763853126, skiprows=81)
-extract_can_group_b(5245628780870031920, skiprows=3)
+read_can_group_a(7931814471809016759, skiprows=241)
+read_can_group_a(8448814858763853126, skiprows=81)
+read_can_group_b(5245628780870031920, skiprows=3)
 read_can(3800068).pipe(pull_can_aggregate, 'v62143969')
 read_can(3800068).pipe(pull_can_aggregate, 'v62143990')

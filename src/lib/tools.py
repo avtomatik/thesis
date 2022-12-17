@@ -369,7 +369,7 @@ def m_spline_ea(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFra
     """
     _params_a, _params_k, _splined = [], [], []
     # =========================================================================
-    # TODO: Rework Algorithm To Make It More Clear Possibly Using `continue` Statement
+    # TODO: Rework Algorithm To Make It More Clear Possibly Using "continue" Statement
     # =========================================================================
     # =========================================================================
     # Coefficient Section
@@ -431,7 +431,7 @@ def m_spline_eb(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFra
         ================== =================================
     """
     # =========================================================================
-    # TODO: Rework Algorithm To Make It More Clear Possibly Using `continue` Statement
+    # TODO: Rework Algorithm To Make It More Clear Possibly Using "continue" Statement
     # =========================================================================
     _params_k, _splined = [], []
     # =========================================================================
@@ -488,7 +488,7 @@ def m_spline_la(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFra
         ================== =================================
     """
     # =========================================================================
-    # TODO: Rework Algorithm To Make It More Clear Possibly Using `continue` Statement
+    # TODO: Rework Algorithm To Make It More Clear Possibly Using "continue" Statement
     # =========================================================================
     _params_a, _params_k, _splined = [], [], []
     for j in range(n_spans):
@@ -543,7 +543,7 @@ def m_spline_lb(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFra
         ================== =================================
     """
     # =========================================================================
-    # TODO: Rework Algorithm To Make It More Clear Possibly Using `continue` Statement
+    # TODO: Rework Algorithm To Make It More Clear Possibly Using "continue" Statement
     # =========================================================================
     _params_k, _splined = [], []
     for j in range(n_spans):
@@ -589,7 +589,7 @@ def m_spline_lls(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFr
     """
     _params_a, _params_k, _splined = [], [], []
     # =========================================================================
-    # TODO: Rework Algorithm To Make It More Clear Possibly Using `continue` Statement
+    # TODO: Rework Algorithm To Make It More Clear Possibly Using "continue" Statement
     # =========================================================================
     for _ in range(n_spans):
         if 1 + _ == n_spans:
@@ -715,7 +715,7 @@ def m_spline_manager(df: DataFrame, kernel: callable) -> None:
         # =====================================================================
         # Should Never Happen
         # =====================================================================
-        print('Error')
+        print("Error")
     _knots = tuple(_knots)
     splined_frame, _params = kernel(df, N, _knots)
     _m_spline_print_params(N, _params)
