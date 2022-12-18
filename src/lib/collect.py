@@ -36,6 +36,27 @@ FILE_NAMES_UTILISED = (
     'dataset_usa_0025_p_r.txt',
     'dataset_usa_reference_ru_kurenkov_yu_v.csv',
 )
+# =============================================================================
+# U.S. Bureau of Economic Analysis (BEA), Manufacturing Labor Series
+# =============================================================================
+SERIES_IDS_LAB = {
+    # =========================================================================
+    # 1929--1948
+    # =========================================================================
+    'H4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+    # =========================================================================
+    # 1948--1987
+    # =========================================================================
+    'J4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+    # =========================================================================
+    # 1987--2000
+    # =========================================================================
+    'A4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+    # =========================================================================
+    # 1998--2020
+    # =========================================================================
+    'N4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+}
 
 
 def collect_cobb_douglas_deflator() -> DataFrame:
@@ -193,30 +214,9 @@ def collect_cobb_douglas_extension_labor() -> DataFrame:
         # =====================================================================
         'KTD02S02': 'dataset_usa_kendrick.zip',
     }
-    SERIES_IDS_LAB = {
-        # =====================================================================
-        # Manufacturing Labor Series: H4313C, 1929--1948
-        # =====================================================================
-        'H4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        # =====================================================================
-        # Manufacturing Labor Series: J4313C, 1948--1987
-        # =====================================================================
-        'J4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        # =====================================================================
-        # Manufacturing Labor Series: A4313C, 1987--2000
-        # =====================================================================
-        'A4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        # =====================================================================
-        # Manufacturing Labor Series: N4313C, 1998--2020
-        # =====================================================================
-        'N4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-    }
     df = pd.concat(
         [
             stockpile_usa_hist(SERIES_IDS),
-            # =========================================================================
-            # Bureau of Economic Analysis, H4313C & J4313C & A4313C & N4313C
-            # =========================================================================
             stockpile_usa_bea(SERIES_IDS_LAB).pipe(
                 transform_mean, name="bea_labor_mfg"),
             # =================================================================
@@ -313,7 +313,8 @@ def collect_usa_brown() -> DataFrame:
         'Чистый основной капитал (в млн. долл., 1929 г.)': 'dataset_usa_brown.zip',
     }
     b_frame = stockpile_usa_hist(SERIES_IDS)
-    b_frame.columns = (f'series_{hex(_)}' for _, series_id in enumerate(SERIES_IDS))
+    b_frame.columns = (f'series_{hex(_)}' for _,
+                       series_id in enumerate(SERIES_IDS))
     SERIES_IDS = {
         'KTA03S07': 'dataset_usa_kendrick.zip',
         'KTA03S08': 'dataset_usa_kendrick.zip',
@@ -505,24 +506,6 @@ def collect_usa_general() -> DataFrame:
         # =====================================================================
         'k3ptotl1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
     }
-    SERIES_IDS_LAB = {
-        # =====================================================================
-        # Manufacturing Labor Series: H4313C, 1929--1948
-        # =====================================================================
-        'H4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        # =====================================================================
-        # Manufacturing Labor Series: J4313C, 1948--1987
-        # =====================================================================
-        'J4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        # =====================================================================
-        # Manufacturing Labor Series: A4313C, 1987--2000
-        # =====================================================================
-        'A4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        # =====================================================================
-        # Manufacturing Labor Series: N4313C, 1998--2020
-        # =====================================================================
-        'N4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-    }
     return pd.concat(
         [
             pd.concat(
@@ -688,24 +671,6 @@ def collect_usa_macroeconomics() -> DataFrame:
         # =====================================================================
         'k3n31gd1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
     }
-    SERIES_IDS_LAB = {
-        # =====================================================================
-        # Manufacturing Labor Series: H4313C, 1929--1948
-        # =====================================================================
-        'H4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        # =====================================================================
-        # Manufacturing Labor Series: J4313C, 1948--1987
-        # =====================================================================
-        'J4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        # =====================================================================
-        # Manufacturing Labor Series: A4313C, 1987--2000
-        # =====================================================================
-        'A4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        # =====================================================================
-        # Manufacturing Labor Series: N4313C, 1998--2020
-        # =====================================================================
-        'N4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-    }
     return pd.concat(
         [
             pd.concat(
@@ -720,14 +685,11 @@ def collect_usa_macroeconomics() -> DataFrame:
                 axis=1,
                 sort=True
             ),
-            # =================================================================
-            # Manufacturing Labor Series: _4313C0, 1929--2020
-            # =================================================================
             stockpile_usa_bea(SERIES_IDS_LAB).pipe(
                 transform_mean, name="bea_labor_mfg"),
-            # =====================================================================
+            # =================================================================
             # Capacity Utilization Series: CAPUTL.B50001.A, 1967--2012
-            # =====================================================================
+            # =================================================================
             read_usa_frb_g17().loc[:, (SERIES_ID,)].dropna(axis=0),
         ],
         axis=1,
@@ -766,30 +728,9 @@ def collect_usa_manufacturing_two_fold() -> tuple[DataFrame]:
         # =================================================================
         'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
     }
-    SERIES_IDS_LAB = {
-        # =====================================================================
-        # Manufacturing Labor Series: H4313C, 1929--1948
-        # =====================================================================
-        'H4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        # =====================================================================
-        # Manufacturing Labor Series: J4313C, 1948--1987
-        # =====================================================================
-        'J4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        # =====================================================================
-        # Manufacturing Labor Series: A4313C, 1987--2000
-        # =====================================================================
-        'A4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        # =====================================================================
-        # Manufacturing Labor Series: N4313C, 1998--2020
-        # =====================================================================
-        'N4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-    }
     df = pd.concat(
         [
             stockpile_usa_bea(SERIES_IDS),
-            # =================================================================
-            # Manufacturing Labor Series: _4313C0, 1929--2020
-            # =================================================================
             stockpile_usa_bea(SERIES_IDS_LAB).pipe(
                 transform_mean, name="bea_labor_mfg"),
         ],
@@ -849,33 +790,12 @@ def collect_usa_manufacturing_three_fold() -> tuple[DataFrame]:
     SERIES_IDS = {
         'kcn31gd1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt'
     }
-    SERIES_IDS_LAB = {
-        # =====================================================================
-        # Manufacturing Labor Series: H4313C, 1929--1948
-        # =====================================================================
-        'H4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        # =====================================================================
-        # Manufacturing Labor Series: J4313C, 1948--1987
-        # =====================================================================
-        'J4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        # =====================================================================
-        # Manufacturing Labor Series: A4313C, 1987--2000
-        # =====================================================================
-        'A4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        # =====================================================================
-        # Manufacturing Labor Series: N4313C, 1998--2020
-        # =====================================================================
-        'N4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-    }
     df = pd.concat(
         [
             # =================================================================
             # Fixed Assets: kcn31gd1es00, 1925--2016, Table 4.2. Chain-Type Quantity Indexes for Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
             # =================================================================
             stockpile_usa_bea(SERIES_IDS),
-            # =================================================================
-            # Manufacturing Labor Series: _4313C0, 1929--2020
-            # =================================================================
             stockpile_usa_bea(SERIES_IDS_LAB).pipe(
                 transform_mean, name="bea_labor_mfg"),
             # =================================================================

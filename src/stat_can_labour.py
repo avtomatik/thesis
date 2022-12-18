@@ -30,7 +30,7 @@ def main():
     DIR = '/media/green-machine/KINGSTON'
     _DIR = '/media/green-machine/KINGSTON'
 
-    # =============================================================================
+    # =========================================================================
     # CALLS = (
     #     # =========================================================================
     #     # prices_cobb_douglas,
@@ -43,7 +43,7 @@ def main():
     # data['mean'] = data.mean(axis=1)
     # data['cum_mean'] = df.iloc[:, -1].add(1).cumprod()
     # data = data.div(data.loc[2012])
-    # =============================================================================
+    # =========================================================================
 
     # # =============================================================================
     # # Product
@@ -89,7 +89,7 @@ def main():
     # data = read_temporary(FILE_NAME)
     #
     #
-    # =============================================================================
+    # =========================================================================
     # df = DataFrame(columns=['series_id_1', 'series_id_2', 'r_2'])
     # for pair in combinations(data.columns, 2):
     #     chunk = data.loc[:, list(pair)].dropna(axis=0)
@@ -103,7 +103,7 @@ def main():
     #             ignore_index=True
     #         )
     # df.to_csv(Path(_DIR).joinpath('df.csv'), index=False)
-    # =============================================================================
+    # =========================================================================
 
     # # combined = DataFrame()
     FILE_NAME = 'stat_can_prd.csv'
@@ -145,7 +145,7 @@ def main():
     # # #     'view.pdf', format='pdf', dpi=900)
     # # # combined.to_csv(Path(_DIR).joinpath('df.csv'))
 
-    # =============================================================================
+    # =========================================================================
     # FILE_NAME = 'stat_can_cap.csv'
     # data = read_temporary(FILE_NAME)
     # combined = pd.concat(
@@ -157,7 +157,7 @@ def main():
     # combined = combined.iloc[:, [-1]]
     # df = pd.concat([df, combined], axis=1)
     # df.plot(grid=True).get_figure().savefig('view.pdf', format='pdf', dpi=900)
-    # =============================================================================
+    # =========================================================================
 
     FILE_NAME = 'stat_can_cap_matching.csv'
     # data = read_temporary(FILE_NAME)

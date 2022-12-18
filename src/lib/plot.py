@@ -134,7 +134,7 @@ def plot_c(df: DataFrame) -> None:
     plt.plot(df.iloc[:, range(2, 5)], label=[
         'Real Gross Domestic Product',
         'Money Supply',
-        ''Real' Gross Domestic Investment',
+        'Real Gross Domestic Investment',
     ]
     )
     plt.title('Indexes, {}$-${}'.format(*df.index[[0, -1]]))
@@ -1744,7 +1744,7 @@ def plot_increment(df: DataFrame) -> None:
     savefig = False
     DIR = '/media/green-machine/KINGSTON'
     FILE_NAME = 'fig_file_name.pdf'
-    fig, axes = plt.subplots(2, 1)
+    fig, axes = plt.subplots(2, 1, figsize=(10, 20))
     axes[0].plot(df.iloc[:, 0], df.iloc[:, 1], label='Curve')
     axes[0].set_xlabel('Labor Capital Intensity')
     axes[0].set_ylabel('Labor Productivity')
@@ -1761,7 +1761,7 @@ def plot_increment(df: DataFrame) -> None:
     for _ in range(3, df.shape[0], 5):
         axes[0].annotate(df.index[_], (df.iloc[_, 0], df.iloc[_, 1]))
         axes[1].annotate(df.index[_], (df.iloc[_, 2], df.iloc[_, 3]))
-    fig.set_size_inches(10., 20.)
+
     fig.tight_layout()
     if savefig:
         fig.savefig(Path(DIR).joinpath(FILE_NAME), format='pdf', dpi=900)
@@ -1865,26 +1865,19 @@ def plot_kurenkov(data_frames: tuple[DataFrame]) -> None:
     # =========================================================================
     # Plotting
     # =========================================================================
-    fig, axes = plt.subplots(4, 1)
+    fig, axes = plt.subplots(4, 1, figsize=(10, 20))
     axes[0].plot(
         data_frames[0],
-        label=[
-            'Kurenkov Data, 1950=100',
-            'BEA Data, 1950=100',
-            'FRB Data, 1950=100',
-        ]
+        label=['Kurenkov Data', 'BEA Data', 'FRB Data']
     )
-    axes[0].set_title('Production')
+    axes[0].set_title('Production, 1950=100')
     axes[0].set_xlabel('Period')
     axes[0].set_ylabel('Percentage')
     axes[0].legend()
     axes[0].grid()
     axes[1].plot(
         data_frames[1],
-        label=[
-            'Kurenkov Data',
-            'BEA Data',
-        ]
+        label=['Kurenkov Data', 'BEA Data']
     )
     axes[1].set_title('Labor')
     axes[1].set_xlabel('Period')
@@ -1896,29 +1889,22 @@ def plot_kurenkov(data_frames: tuple[DataFrame]) -> None:
     # =========================================================================
     axes[2].plot(
         data_frames[2],
-        label=[
-            'Kurenkov Data, 1951=100',
-            'BEA Data, 1951=100',
-        ]
+        label=['Kurenkov Data', 'BEA Data']
     )
-    axes[2].set_title('Capital')
+    axes[2].set_title('Capital, 1951=100')
     axes[2].set_xlabel('Period')
     axes[2].set_ylabel('Percentage')
     axes[2].legend()
     axes[2].grid()
     axes[3].plot(
         data_frames[3],
-        label=[
-            'Kurenkov Data',
-            'FRB Data',
-        ]
+        label=['Kurenkov Data', 'FRB Data']
     )
     axes[3].set_title('Capacity Utilization')
     axes[3].set_xlabel('Period')
     axes[3].set_ylabel('Percentage')
     axes[3].legend()
     axes[3].grid()
-    fig.set_size_inches(10., 20.)
 
 
 def plot_lab_prod_polynomial(df: DataFrame) -> None:

@@ -71,7 +71,7 @@ FILE_NAMES_UTILISED = (
 )
 
 
-print(__doc__)
+
 
 
 def main():
@@ -79,13 +79,13 @@ def main():
     # =========================================================================
     # Subproject I. Approximation
     # =========================================================================
-    # =============================================================================
+    # =========================================================================
     # 'plot_approx_linear': Linear Approximation,
     # 'plot_approx_log_linear': Log-Linear Approximation,
     # 'calculate_power_function_fit_params_a': Power Function Approximation,
     # 'calculate_power_function_fit_params_b': Power Function Approximation,
     # 'calculate_power_function_fit_params_c': Power Function Approximation
-    # =============================================================================
+    # =========================================================================
     _df = collect_usa_general()
     plot_approx_linear(_df.iloc[:, (7, 6, 0, 6)].dropna(axis=0))
     plot_approx_log_linear(_df.iloc[:, (7, 6, 20, 4)].dropna(axis=0))
@@ -113,7 +113,7 @@ def main():
     # =========================================================================
     # Subproject II. Capital
     # =========================================================================
-    # =============================================================================
+    # =========================================================================
     # Project: Fixed Assets Dynamics Modelling:
     # Fixed Assets Turnover Linear Approximation
     # Gross Fixed Investment to Gross Domestic Product Ratio Linear Approximation
@@ -129,14 +129,14 @@ def main():
     #     'λ2': 1.18883834418742,
     #
     # }
-    # =============================================================================
+    # =========================================================================
     df_a, df_b = collect_usa_investment_turnover_bls()
     df_c, df_d = collect_usa_investment_turnover()
     plot_capital_modelling(df_a, 2005)
     plot_capital_modelling(df_c, 2012)
-    # =============================================================================
+    # =========================================================================
     # Project: Discrete Fourier Transform based on Simpson's Rule Applied to Fixed Assets of the US
-    # =============================================================================
+    # =========================================================================
     plot_fourier_discrete(df_b)
     plot_fourier_discrete(df_d)
 
