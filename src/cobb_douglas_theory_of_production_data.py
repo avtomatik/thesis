@@ -885,9 +885,9 @@ def main():
         page_0xa3_table_0xa: None,
         page_0xa4_table_0xb: 'data_cobb_douglas_theory_of_production_page_0xa4_table_0xb.dat',
     }
-    for func, file_name in MAP.items():
-        if file_name is not None:
-            func().to_csv(file_name, sep='\t')
+    for func, path_or_buf in MAP.items():
+        if path_or_buf is not None:
+            func().to_csv(path_or_buf, sep='\t')
 
 
 if __name__ == '__main__':

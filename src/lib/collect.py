@@ -312,9 +312,9 @@ def collect_usa_brown() -> DataFrame:
         # =====================================================================
         'Чистый основной капитал (в млн. долл., 1929 г.)': 'dataset_usa_brown.zip',
     }
-    b_frame = stockpile_usa_hist(SERIES_IDS)
-    b_frame.columns = (f'series_{hex(_)}' for _,
-                       series_id in enumerate(SERIES_IDS))
+    df_b = stockpile_usa_hist(SERIES_IDS)
+    df_b.columns = (f'series_{hex(_)}' for _,
+                    series_id in enumerate(SERIES_IDS))
     SERIES_IDS = {
         'KTA03S07': 'dataset_usa_kendrick.zip',
         'KTA03S08': 'dataset_usa_kendrick.zip',
@@ -322,17 +322,17 @@ def collect_usa_brown() -> DataFrame:
         'KTA15S07': 'dataset_usa_kendrick.zip',
         'KTA15S08': 'dataset_usa_kendrick.zip'
     }
-    k_frame = stockpile_usa_hist(SERIES_IDS)
+    df_k = stockpile_usa_hist(SERIES_IDS)
     df = pd.concat(
         [
             # =================================================================
             # Omit Two Last Rows
             # =================================================================
-            k_frame[:-2].truncate(before=1889),
+            df_k[:-2].truncate(before=1889),
             # =================================================================
             # Первая аппроксимация рядов загрузки мощностей, полученная с помощью метода Уортонской школы
             # =================================================================
-            b_frame.iloc[:, [-2]].truncate(after=1953)
+            df_b.iloc[:, [-2]].truncate(after=1953)
         ],
         axis=1,
         sort=True
@@ -350,7 +350,7 @@ def collect_usa_brown() -> DataFrame:
             # =================================================================
             # Brown M. Numbers Not Found in Kendrick J.W. For Years Starting From 1954 Inclusive
             # =================================================================
-            b_frame.iloc[:, range(4)].truncate(before=1954)
+            df_b.iloc[:, range(4)].truncate(before=1954)
         ]
     ).round()
 
@@ -737,7 +737,7 @@ def collect_usa_manufacturing_two_fold() -> tuple[DataFrame]:
         axis=1
     ).dropna(axis=0)
     # =========================================================================
-    # Below Method Is Not So Robust, But Changes the Ordering as Expected
+    # Below Method Is Not So Robust, But Changes the Ordering as Expected: ('kcn31gd1es00', 'bea_labor_mfg', 'A191RX')
     # =========================================================================
     df = df.reindex(columns=sorted(df.columns)[::-1])
     df_adjusted = pd.concat(
@@ -1343,7 +1343,7 @@ def construct_deflator(df: DataFrame) -> DataFrame:
     return df.iloc[:, [-1]].dropna(axis=0)
 
 
-def filter_data_frame(df: DataFrame, query: dict[str]) -> DataFrame:
+def filter_datdf_a(df: DataFrame, query: dict[str]) -> DataFrame:
     for column, criterion in query['filter'].items():
         df = df[df.iloc[:, column] == criterion]
     return df

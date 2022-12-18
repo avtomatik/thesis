@@ -868,13 +868,13 @@ def string_to_url(string: str) -> str:
     return f'https://www150.statcan.gc.ca/n1/tbl/csv/{string}'
 
 
-def build_push_data_frame(file_name: str, blueprint: dict) -> None:
+def build_push_data_frame(path_or_buf: str, blueprint: dict) -> None:
     """
     Builds DataFrame & Loads It To CSV
 
     Parameters
     ----------
-    file_name : str
+    path_or_buf : str
         Excel File Name.
     blueprint : dict
         DESCRIPTION.
@@ -892,7 +892,7 @@ def build_push_data_frame(file_name: str, blueprint: dict) -> None:
             chunk = chunk.groupby(chunk.index.year).mean()
             df = pd.concat([df, chunk], axis=1, sort=True)
         df.columns = item['series_ids']
-    df.to_csv(file_name)
+    df.to_csv(path_or_buf)
 
 
 def rolling_mean_filter(df: DataFrame, k: int = None) -> tuple[DataFrame]:

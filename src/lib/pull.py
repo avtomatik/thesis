@@ -146,10 +146,10 @@ def pull_can_capital_former(df: DataFrame, params: tuple[int, str]) -> DataFrame
         )
 
 
-def pull_series_ids_description(archive_name: str) -> dict[str, str]:
+def pull_series_ids_description(filepath_or_buffer: str) -> dict[str, str]:
     """Returns Dictionary for Series from Douglas's & Kendrick's Databases"""
     kwargs = {
-        'filepath_or_buffer': archive_name,
+        'filepath_or_buffer': filepath_or_buffer,
         'index_col': 1,
         'usecols': (3, 4),
     }

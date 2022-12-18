@@ -310,13 +310,13 @@ def read_usa_bea_excel_web(
         return pd.read_excel(**kwargs).dropna(axis=0).transpose()
 
 
-def read_usa_bls(file_name: str) -> DataFrame:
+def read_usa_bls(filepath_or_buffer: str) -> DataFrame:
     """
     Bureau of Labor Statistics Data Fetch
 
     Parameters
     ----------
-    file_name : str
+    filepath_or_buffer : str
 
     Returns
     -------
@@ -328,7 +328,7 @@ def read_usa_bls(file_name: str) -> DataFrame:
         ================== =================================
     """
     kwargs = {
-        'filepath_or_buffer': file_name,
+        'filepath_or_buffer': filepath_or_buffer,
         'sep': '\t',
         'header': 0,
         'names': ('series_id', 'period', 'sub_period', 'value'),
@@ -515,12 +515,12 @@ def read_usa_fred(series_id: str) -> DataFrame:
 
 
 @cache
-def read_usa_hist(archive_name: str) -> DataFrame:
+def read_usa_hist(filepath_or_buffer: str) -> DataFrame:
     """
     Retrieves Data from Enumerated Historical Datasets
     Parameters
     ----------
-    archive_name : str
+    filepath_or_buffer : str
 
     Returns
     -------
@@ -540,12 +540,12 @@ def read_usa_hist(archive_name: str) -> DataFrame:
         'dataset_uscb.zip': {'series_id': 9, 'period': 10, 'value': 11},
     }
     kwargs = {
-        'filepath_or_buffer': archive_name,
+        'filepath_or_buffer': filepath_or_buffer,
         'header': 0,
-        'names': tuple(MAP.get(archive_name).keys()),
+        'names': tuple(MAP.get(filepath_or_buffer).keys()),
         'index_col': 1,
-        'skiprows': (0, 4)[archive_name == 'dataset_usa_brown.zip'],
-        'usecols': tuple(MAP.get(archive_name).values()),
+        'skiprows': (0, 4)[filepath_or_buffer == 'dataset_usa_brown.zip'],
+        'usecols': tuple(MAP.get(filepath_or_buffer).values()),
     }
     return pd.read_csv(**kwargs)
 

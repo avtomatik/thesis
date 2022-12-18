@@ -380,31 +380,31 @@ def transform_e(df: DataFrame) -> tuple[DataFrame]:
     )
 
 
-def combine_kurenkov(data_testing: DataFrame) -> tuple[DataFrame]:
-    """Returns Four DataFrames with Comparison of data_testing: DataFrame and Kurenkov Yu.V. Data"""
+def combine_kurenkov(df: DataFrame) -> tuple[DataFrame]:
+    """Returns Four DataFrames with Comparison of df: DataFrame and Kurenkov Yu.V. Data"""
     SERIES_ID = 'CAPUTL.B50001.A'
     FILE_NAME = 'dataset_usa_reference_ru_kurenkov_yu_v.csv'
-    data_control = read_temporary(FILE_NAME)
+    df_control = read_temporary(FILE_NAME)
     # =========================================================================
     # Manufacturing
     # =========================================================================
-    data_a = pd.concat(
+    df_a = pd.concat(
         [
-            data_control.iloc[:, [0]],
-            data_testing.loc[:, ('A191RX',)],
+            df_control.iloc[:, [0]],
+            df_testing.loc[:, ('A191RX',)],
             read_usa_frb_us3().loc[:, ('AIPMA_SA_IX',)],
         ],
         axis=1,
         sort=True
     ).dropna(how='all')
-    data_a = data_a.div(data_a.loc[1950, :]).mul(100)
+    df_a = df_a.div(df_a.loc[1950, :]).mul(100)
     # =========================================================================
     # Labor
     # =========================================================================
-    data_b = pd.concat(
+    df_b = pd.concat(
         [
-            data_control.iloc[:, [1]],
-            data_testing.loc[:, ('bea_labor_mfg',)],
+            df_control.iloc[:, [1]],
+            df.loc[:, ('bea_labor_mfg',)],
         ],
         axis=1,
         sort=True
@@ -412,27 +412,27 @@ def combine_kurenkov(data_testing: DataFrame) -> tuple[DataFrame]:
     # =========================================================================
     # Capital
     # =========================================================================
-    data_c = pd.concat(
+    df_c = pd.concat(
         [
-            data_control.iloc[:, [2]],
-            data_testing.loc[:, ('K10002',)],
+            df_control.iloc[:, [2]],
+            df.loc[:, ('K10002',)],
         ],
         axis=1,
         sort=True
     ).dropna(how='all')
-    data_c = data_c.div(data_c.loc[1951, :]).mul(100)
+    df_c = df_c.div(df_c.loc[1951, :]).mul(100)
     # =========================================================================
     # Capacity Utilization
     # =========================================================================
-    data_d = pd.concat(
+    df_d = pd.concat(
         [
-            data_control.iloc[:, [3]],
+            df_control.iloc[:, [3]],
             read_usa_frb_g17().loc[:, (SERIES_ID,)].dropna(axis=0),
         ],
         axis=1,
         sort=True
     )
-    return data_a, data_b, data_c, data_d
+    return df_a, df_b, df_c, df_d
 
 
 def transform_manufacturing_money(df: DataFrame) -> DataFrame:
