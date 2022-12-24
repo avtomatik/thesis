@@ -58,7 +58,7 @@ def transform_add_dx_dy(df: DataFrame) -> DataFrame:
     return _df.iloc[:, -4:].dropna(axis=0)
 
 
-def plot_local(df: DataFrame) -> None:
+def plot_increment(df: DataFrame) -> None:
     """
 
 
@@ -174,7 +174,7 @@ def main():
     # =========================================================================
     df = pd.concat([cap_b_d, L, prd_b_b], axis=1).pipe(transform_add_dx_dy)
     plot_increment(df)
-    plot_local(df)
+    plot_increment(df)
 
     # =========================================================================
     # Update from 'project.py'
@@ -182,7 +182,7 @@ def main():
 
     _df = collect_usa_manufacturing_latest().pipe(transform_add_dx_dy)
     plot_increment(_df)
-    plot_local(_df)
+    plot_increment(_df)
 
 
 if __name__ == '__main__':

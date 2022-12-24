@@ -16,13 +16,13 @@ from lib.collect import (collect_usa_general, collect_usa_investment_turnover,
                          collect_usa_manufacturing_two_fold, construct_can,
                          stockpile_cobb_douglas, stockpile_usa_hist,
                          stockpile_usa_mcconnel)
-from lib.plot import (plot_approx_linear, plot_approx_log_linear, plot_c,
+from lib.plot import (plot_approx_linear, plot_approx_linear_log, plot_c,
                       plot_capital_modelling, plot_cobb_douglas,
                       plot_cobb_douglas_3d, plot_cobb_douglas_complex, plot_d,
                       plot_douglas, plot_e, plot_elasticity,
                       plot_fourier_discrete, plot_growth_elasticity,
                       plot_investment, plot_investment_manufacturing,
-                      plot_rolling_mean_filter, plot_uscb_complex)
+                      plot_filter_rolling_mean, plot_uscb_complex)
 from lib.pull import pull_by_series_id
 from lib.read import read_usa_hist
 from lib.tools import (calculate_power_function_fit_params_a,
@@ -30,8 +30,8 @@ from lib.tools import (calculate_power_function_fit_params_a,
                        calculate_power_function_fit_params_c, m_spline_ea,
                        m_spline_eb, m_spline_la, m_spline_lb, m_spline_lls,
                        m_spline_manager)
-from lib.transform import (transform_a, transform_b, transform_cobb_douglas,
-                           transform_d, transform_e,
+from lib.transform import (transform_b, transform_cobb_douglas, transform_d,
+                           transform_e, transform_investment_manufacturing,
                            transform_manufacturing_money)
 
 ARCHIVE_NAMES_UTILISED = (
@@ -81,15 +81,15 @@ def main():
     # =========================================================================
     # =========================================================================
     # 'plot_approx_linear': Linear Approximation,
-    # 'plot_approx_log_linear': Log-Linear Approximation,
+    # 'plot_approx_linear_log': Log-Linear Approximation,
     # 'calculate_power_function_fit_params_a': Power Function Approximation,
     # 'calculate_power_function_fit_params_b': Power Function Approximation,
     # 'calculate_power_function_fit_params_c': Power Function Approximation
     # =========================================================================
     _df = collect_usa_general()
     plot_approx_linear(_df.iloc[:, (7, 6, 0, 6)].dropna(axis=0))
-    plot_approx_log_linear(_df.iloc[:, (7, 6, 20, 4)].dropna(axis=0))
-    plot_approx_log_linear(_df.iloc[:, (7, 6, 20, 6)].dropna(axis=0))
+    plot_approx_linear_log(_df.iloc[:, (7, 6, 20, 4)].dropna(axis=0))
+    plot_approx_linear_log(_df.iloc[:, (7, 6, 20, 6)].dropna(axis=0))
 
     SERIES_IDS = ('Валовой внутренний продукт, млрд долл. США',)
     calculate_power_function_fit_params_a(
@@ -303,7 +303,7 @@ def main():
     # =========================================================================
     # Project: Initial Version Dated: 05 October 2012
     # =========================================================================
-    df_a_a = df_a.pipe(transform_a)
+    df_a_a = df_a.pipe(transform_investment_manufacturing)
     plot_investment_manufacturing(df_a_a)
     # =========================================================================
     # Project: Initial Version Dated: 23 November 2012

@@ -236,7 +236,7 @@ def calculate_power_function_fit_params_c(df: DataFrame, params: tuple[float]):
     )
 
 
-def kol_zur_filter(df: DataFrame, k: int = None) -> tuple[DataFrame]:
+def filter_kol_zur(df: DataFrame, k: int = None) -> tuple[DataFrame]:
     """
     Kolmogorov--Zurbenko Filter
         ================== =================================
@@ -340,8 +340,7 @@ def kol_zur_filter(df: DataFrame, k: int = None) -> tuple[DataFrame]:
             residuals_e = pd.concat(
                 [
                     residuals_e,
-                    df_e.iloc[:, [-1]
-                              ].shift(-1).div(df_e.iloc[:, [-1]]).sub(1),
+                    df_e.iloc[:, [-1]].pct_change(-1).mul(-1),
                 ],
                 axis=1
             )
@@ -895,7 +894,7 @@ def build_push_data_frame(path_or_buf: str, blueprint: dict) -> None:
     df.to_csv(path_or_buf)
 
 
-def rolling_mean_filter(df: DataFrame, k: int = None) -> tuple[DataFrame]:
+def filter_rolling_mean(df: DataFrame, k: int = None) -> tuple[DataFrame]:
     """
     Rolling Mean Filter
 
@@ -1009,8 +1008,7 @@ def rolling_mean_filter(df: DataFrame, k: int = None) -> tuple[DataFrame]:
             residuals_e = pd.concat(
                 [
                     residuals_e,
-                    df_e.iloc[:, [-1]
-                              ].shift(-1).div(df_e.iloc[:, [-1]]).sub(1),
+                    df_e.iloc[:, [-1]].pct_change(-1).mul(-1),
                 ],
                 axis=1,
             )

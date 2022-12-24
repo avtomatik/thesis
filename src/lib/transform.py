@@ -17,8 +17,8 @@ from .read import (read_temporary, read_usa_frb_g17, read_usa_frb_h6,
                    read_usa_frb_us3)
 
 
-def transform_a(df: DataFrame) -> DataFrame:
-    df = df.iloc[:, (0, 4, 6, 7)].dropna(axis=0)
+def transform_investment_manufacturing(df: DataFrame) -> DataFrame:
+    df = df.iloc[:, [0, 4, 6, 7]].dropna(axis=0)
     df.iloc[:, 1] = df.iloc[:, 1].apply(pd.to_numeric, errors='coerce')
     return df.div(df.iloc[0, :]).dropna(axis=0)
 

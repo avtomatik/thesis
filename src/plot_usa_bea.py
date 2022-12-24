@@ -11,8 +11,8 @@ import os
 from lib.collect import collect_usa_general
 from lib.plot import (plot_c, plot_d, plot_e, plot_investment,
                       plot_investment_manufacturing, plot_kurenkov)
-from lib.transform import (combine_kurenkov, transform_a, transform_b,
-                           transform_d, transform_e,
+from lib.transform import (combine_kurenkov, transform_b, transform_d,
+                           transform_e, transform_investment_manufacturing,
                            transform_manufacturing_money)
 
 
@@ -24,7 +24,7 @@ def main():
     # =========================================================================
     # Project: Initial Version Dated: 05 October 2012
     # =========================================================================
-    df_a_a = df_a.pipe(transform_a)
+    df_a_a = df_a.pipe(transform_investment_manufacturing)
     plot_investment_manufacturing(df_a_a)
     # =========================================================================
     # Project: Initial Version Dated: 23 November 2012

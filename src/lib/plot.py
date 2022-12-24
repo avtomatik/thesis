@@ -22,7 +22,7 @@ from sklearn.metrics import r2_score
 from .pull import (pull_by_series_id, pull_series_ids_description,
                    pull_uscb_description)
 from .read import read_usa_hist, read_usa_nber, read_worldbank
-from .tools import (calculate_capital, kol_zur_filter, rolling_mean_filter,
+from .tools import (calculate_capital, filter_kol_zur, filter_rolling_mean,
                     simple_linear_regression)
 from .transform import transform_agg, transform_cobb_douglas
 
@@ -59,7 +59,7 @@ def plot_investment_manufacturing(df: DataFrame) -> None:
     # =========================================================================
     _df['investment'] = _df.iloc[:, 0].mul(_df.iloc[:, 3]).div(_df.iloc[:, 2])
     # =========================================================================
-    # 'Real' Manufacturing
+    # "Real" Manufacturing
     # =========================================================================
     _df['manufacturing'] = _df.iloc[:, 1].mul(
         _df.iloc[:, 3]).div(_df.iloc[:, 2])
@@ -80,8 +80,8 @@ def plot_investment_manufacturing(df: DataFrame) -> None:
     plt.ylabel('Index')
     _df.index = _df.index.to_series().rolling(2).mean()
     plt.plot(
-        _df.index, _df.iloc[:, -2], '--',
-        _df.index, _df.iloc[:, -1], '--'
+        _df.iloc[:, -2], '--',
+        _df.iloc[:, -1], '--'
     )
     plt.grid()
     plt.legend()
@@ -662,7 +662,7 @@ def plot_approx_linear(df: DataFrame) -> None:
     plt.show()
 
 
-def plot_approx_log_linear(df: DataFrame) -> None:
+def plot_approx_linear_log(df: DataFrame) -> None:
     """
         ================== =================================
         df.index           Period
@@ -781,8 +781,8 @@ def plot_lab_cap_inty(df: DataFrame) -> None:
     df_o = pd.concat(
         [
             df.iloc[:, [-1]],
-            rolling_mean_filter(df.iloc[:, [-1]], _k)[0].iloc[:, [-1]],
-            kol_zur_filter(df.iloc[:, [-1]], _k)[0].iloc[:, [-1]],
+            filter_rolling_mean(df.iloc[:, [-1]], _k)[0].iloc[:, [-1]],
+            filter_kol_zur(df.iloc[:, [-1]], _k)[0].iloc[:, [-1]],
             df.iloc[:, [-1]].ewm(alpha=0.25, adjust=False).mean(),
         ],
         axis=1,
@@ -792,8 +792,8 @@ def plot_lab_cap_inty(df: DataFrame) -> None:
     # =========================================================================
     df_e = pd.concat(
         [
-            rolling_mean_filter(df.iloc[:, [-1]], _k)[1].iloc[:, [-1]],
-            kol_zur_filter(df.iloc[:, [-1]], _k)[1].iloc[:, [-1]],
+            filter_rolling_mean(df.iloc[:, [-1]], _k)[1].iloc[:, [-1]],
+            filter_kol_zur(df.iloc[:, [-1]], _k)[1].iloc[:, [-1]],
         ],
         axis=1,
     )
@@ -855,8 +855,8 @@ def plot_lab_prty(df: DataFrame) -> None:
     df_o = pd.concat(
         [
             df.iloc[:, [-1]],
-            rolling_mean_filter(df.iloc[:, [-1]], _k)[0].iloc[:, [-1]],
-            kol_zur_filter(df.iloc[:, [-1]], _k)[0].iloc[:, [1]],
+            filter_rolling_mean(df.iloc[:, [-1]], _k)[0].iloc[:, [-1]],
+            filter_kol_zur(df.iloc[:, [-1]], _k)[0].iloc[:, [1]],
             df.iloc[:, [-1]].ewm(alpha=0.25, adjust=False).mean(),
             df.iloc[:, [-1]].ewm(alpha=0.35, adjust=False).mean(),
             df.iloc[:, [-1]].ewm(alpha=0.45, adjust=False).mean(),
@@ -868,8 +868,8 @@ def plot_lab_prty(df: DataFrame) -> None:
     # =========================================================================
     df_e = pd.concat(
         [
-            rolling_mean_filter(df.iloc[:, [-1]], _k)[1],
-            kol_zur_filter(df.iloc[:, [-1]], _k)[1],
+            filter_rolling_mean(df.iloc[:, [-1]], _k)[1],
+            filter_kol_zur(df.iloc[:, [-1]], _k)[1],
         ],
         axis=1,
     )
@@ -1607,8 +1607,7 @@ def plot_ewm(df: DataFrame, step: float = 0.1) -> None:
     # =========================================================================
     _deltas = pd.concat(
         [
-            _smooth.iloc[:, [_]].div(
-                _smooth.iloc[:, [_]].shift(-1)).rsub(1).dropna(axis=0)
+            _smooth.iloc[:, [_]].pct_change(-1).mul(-1).dropna(axis=0)
             for _ in range(_smooth.shape[1])
         ],
         axis=1
@@ -1808,7 +1807,7 @@ def plot_kol_zur_filter(df: DataFrame) -> None:
     -------
     None
     """
-    df_o, df_e, residuals_o, residuals_e = kol_zur_filter(df)
+    df_o, df_e, residuals_o, residuals_e = filter_kol_zur(df)
 
     plt.figure(1)
     plt.title('Kolmogorov$-$Zurbenko Filter')
@@ -1821,12 +1820,12 @@ def plot_kol_zur_filter(df: DataFrame) -> None:
     )
     plt.plot(
         df_o.iloc[:, 1:],
-        label=['$KZF(\\lambda = {})$'.format(int(_.split('_')[-1], 16))
+        label=['$filter_kol_zur(\\lambda = {})$'.format(int(_.split('_')[-1], 16))
                for _ in df_o.columns[1:]]
     )
     plt.plot(
         df_e,
-        label=['$KZF(\\lambda = {})$'.format(int(_.split('_')[-1], 16))
+        label=['$filter_kol_zur(\\lambda = {})$'.format(int(_.split('_')[-1], 16))
                for _ in df_e.columns]
     )
     plt.grid()
@@ -1842,12 +1841,12 @@ def plot_kol_zur_filter(df: DataFrame) -> None:
     )
     plt.plot(
         residuals_o.iloc[:, 1:],
-        label=['$\\delta KZF(\\lambda = {})$'.format(int(_.split('_')[-1], 16))
+        label=['$\\delta filter_kol_zur(\\lambda = {})$'.format(int(_.split('_')[-1], 16))
                for _ in residuals_o.columns[1:]]
     )
     plt.plot(
         residuals_e,
-        label=['$\\delta KZF(\\lambda = {})$'.format(int(_.split('_')[-1], 16))
+        label=['$\\delta filter_kol_zur(\\lambda = {})$'.format(int(_.split('_')[-1], 16))
                for _ in residuals_e.columns]
     )
     plt.grid()
@@ -2133,7 +2132,7 @@ def plot_rolling_mean_filter(df: DataFrame) -> None:
     None
     """
     _df = df.copy()
-    df_o, df_e, residuals_o, residuals_e = rolling_mean_filter(_df)
+    df_o, df_e, residuals_o, residuals_e = filter_rolling_mean(_df)
     plt.figure(1)
     plt.title(
         f'Rolling Mean {df_o.index[0]}$-${df_o.index[-1]}'

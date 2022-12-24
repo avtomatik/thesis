@@ -450,12 +450,12 @@ def collect_bea_def() -> DataFrame:
         ================== =================================
 
     """
-    df = collect_bea_gdp()
+    df = collect_usa_bea_gdp()
     df['deflator_gdp'] = df.iloc[:, 0].div(df.iloc[:, 1]).mul(100)
     return df.iloc[:, [-1]]
 
 
-def collect_bea_gdp() -> DataFrame:
+def collect_usa_bea_gdp() -> DataFrame:
     """
     USA BEA Gross Domestic Product
 
