@@ -1079,7 +1079,7 @@ def plot_uscb_complex(df: DataFrame) -> None:
     _df = df.copy()
     plot_pearson_r_test(_df)
     _df = df.copy()
-    plot_kol_zur_filter(_df)
+    plot_filter_kol_zur(_df)
     _df = df.copy()
     plot_ewm(_df)
 
@@ -1576,7 +1576,8 @@ def plot_elasticity(df: DataFrame) -> None:
 
 
 def plot_ewm(df: DataFrame, step: float = 0.1) -> None:
-    """Single Exponential Smoothing
+    """
+    Single Exponential Smoothing
     Robert Goodell Brown, 1956
         ================== =================================
         df.index           Period
@@ -1792,7 +1793,7 @@ def plot_rus_is_lm(df: DataFrame) -> None:
     plt.show()
 
 
-def plot_kol_zur_filter(df: DataFrame) -> None:
+def plot_filter_kol_zur(df: DataFrame) -> None:
     """
     Kolmogorov--Zurbenko Filter
 
@@ -2116,7 +2117,7 @@ def plot_pearson_r_test(df: DataFrame) -> None:
     plt.show()
 
 
-def plot_rolling_mean_filter(df: DataFrame) -> None:
+def plot_filter_rolling_mean(df: DataFrame) -> None:
     """
     Rolling Mean Filter
 

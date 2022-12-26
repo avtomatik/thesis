@@ -9,7 +9,7 @@ Created on Sat Nov 16 20:45:44 2019
 import os
 
 from lib.collect import stockpile_usa_hist
-from lib.plot import plot_growth_elasticity, plot_filter_rolling_mean
+from lib.plot import plot_filter_rolling_mean, plot_growth_elasticity
 
 
 def main(
@@ -20,7 +20,7 @@ def main(
     os.chdir(directory)
     df = stockpile_usa_hist(series_id)
     plot_growth_elasticity(df)
-    plot_rolling_mean_filter(df)
+    plot_filter_rolling_mean(df)
 
 
 if __name__ == '__main__':

@@ -213,7 +213,7 @@ def test_data_consistency_d():
     WB_NAME = 'Section1all_xls.xlsx'
     SH_NAMES = ('T10705-A', 'T11200-A', 'T10705-A')
     SERIES_IDS = ('A051RC', 'A052RC', 'A262RC')
-    test_usa_bea_diff(
+    test_usa_bea_subtract(
         _generate_kwargs_list(ARCHIVE_NAME, WB_NAME, SH_NAMES, SERIES_IDS)
     )
     # =========================================================================
@@ -223,14 +223,14 @@ def test_data_consistency_d():
     WB_NAME = 'Section1all_xls.xlsx'
     SH_NAMES = ('T10105-A', 'T10105-A', 'T10105-A')
     SERIES_IDS = ('A822RC', 'A823RC', 'A829RC')
-    test_usa_bea_diff(
+    test_usa_bea_subtract(
         _generate_kwargs_list(ARCHIVE_NAME, WB_NAME, SH_NAMES, SERIES_IDS)
     )
     ARCHIVE_NAME = 'dataset_usa_bea-release-2019-12-19-Survey.zip'
     WB_NAME = 'Section3all_xls.xlsx'
     SH_NAMES = ('T30100-A', 'T30200-A', 'T30300-A')
     SERIES_IDS = ('A955RC', 'A957RC', 'A991RC')
-    test_usa_bea_diff(
+    test_usa_bea_subtract(
         _generate_kwargs_list(ARCHIVE_NAME, WB_NAME, SH_NAMES, SERIES_IDS)
     )
     # =========================================================================
@@ -240,14 +240,14 @@ def test_data_consistency_d():
     WB_NAME = 'Section1all_xls.xlsx'
     SH_NAMES = ('T10105-A', 'T10105-A', 'T10105-A')
     SERIES_IDS = ('A823RC', 'A824RC', 'A825RC')
-    test_usa_bea_diff(
+    test_usa_bea_subtract(
         _generate_kwargs_list(ARCHIVE_NAME, WB_NAME, SH_NAMES, SERIES_IDS)
     )
     ARCHIVE_NAME = 'dataset_usa_bea-release-2019-12-19-Survey.zip'
     WB_NAME = 'Section3all_xls.xlsx'
     SH_NAMES = ('T30200-A', 'T30905-A', 'T30905-A')
     SERIES_IDS = ('A957RC', 'A997RC', 'A542RC')
-    test_usa_bea_diff(
+    test_usa_bea_subtract(
         _generate_kwargs_list(ARCHIVE_NAME, WB_NAME, SH_NAMES, SERIES_IDS)
     )
     # =========================================================================
@@ -257,11 +257,11 @@ def test_data_consistency_d():
     # =========================================================================
     # Tested: "k3n31gd1es000" = "k3n31gd1eq000" + "k3n31gd1ip000" + "k3n31gd1st000"
     # =========================================================================
-    test_substitute_a(df)
+    test_subtract_a(df)
     # =========================================================================
     # Comparison of "k3n31gd1es000" out of control_frame with "k3n31gd1es000" out of test_frame
     # =========================================================================
-    test_substitute_b(df)
+    test_subtract_b(df)
     # =========================================================================
     # Future Project: Test Ratio of Manufacturing Fixed Assets to Overall Fixed Assets
     # =========================================================================
@@ -301,7 +301,7 @@ def test_douglas() -> None:
         title='Cobb--Douglas Data Comparison', legend=True, grid=True)
 
 
-def test_usa_bea_diff(kwargs_list: list[dict]) -> None:
+def test_usa_bea_subtract(kwargs_list: list[dict]) -> None:
     df = pd.concat(
         [
             # =================================================================
@@ -316,18 +316,18 @@ def test_usa_bea_diff(kwargs_list: list[dict]) -> None:
     df.iloc[:, [-1]].dropna(axis=0).plot(grid=True)
 
 
-def test_substitute_a(df: DataFrame):
+def test_subtract_a(df: DataFrame):
     df['delta_sm'] = df.iloc[:, 0].sub(df.iloc[:, (3, 4, 5)].sum(axis=1))
-    df.dropna(axis=0, inplace=True)
-    autocorrelation_plot(df.iloc[:, [-1]])
+    df.iloc[:, [-1]].dropna(axis=0).pipe(autocorrelation_plot)
 
 
-def test_substitute_b(df: DataFrame):
+def test_subtract_b(df: DataFrame):
+    # =========================================================================
     # df['delta_eq'] = df.iloc[:, 0].sub(df.iloc[:, -1])
+    # =========================================================================
     df['delta_eq'] = df.iloc[:, 0].mul(4).div(
         df.iloc[:, 0].add(df.iloc[:, -1])).sub(2)
-    df.dropna(axis=0, inplace=True)
-    df.iloc[:, [-1]].plot(grid=True)
+    df.iloc[:, [-1]].dropna(axis=0).plot(grid=True)
 
 
 def test_read_usa_bea_sfat_series() -> DataFrame:

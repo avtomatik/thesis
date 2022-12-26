@@ -226,6 +226,60 @@ def test_data_capital_combined_archived():
         print("Data Varies from Worksheet '10105 Ann' to Worksheet '10505 Ann'")
 
 
+def test_data_capital_combined_archived():
+    """Data Test"""
+    # =========================================================================
+    # Nominal Investment Series: A006RC1, 1929--1969
+    # =========================================================================
+    ARCHIVE_NAMES = (
+        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
+        'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
+    )
+    WB_NAMES = (
+        'Section1ALL_Hist.xls',
+        'Section1all_xls.xls',
+    )
+    SH_NAME_CONTROL, SH_NAME_TEST = '10105 Ann', '10505 Ann'
+    SERIES_IDS = (
+        # =====================================================================
+        # Nominal Investment Series: A006RC1
+        # =====================================================================
+        'A006RC1',
+        # =====================================================================
+        # Nominal Gross Domestic Product Series: A191RC1
+        # =====================================================================
+        'A191RC1'
+    )
+    df_control = pd.concat(
+        [
+            read_usa_bea_excel(
+                archive_name, wb_name, SH_NAME_CONTROL
+            ).loc[:, SERIES_IDS]
+            for archive_name, wb_name in zip(ARCHIVE_NAMES, WB_NAMES)
+        ]
+    ).drop_duplicates()
+    df_test = pd.concat(
+        [
+            read_usa_bea_excel(
+                archive_name, wb_name, SH_NAME_TEST
+            ).loc[:, SERIES_IDS]
+            for archive_name, wb_name in zip(ARCHIVE_NAMES, WB_NAMES)
+        ]
+    ).drop_duplicates()
+    if df_control.equals(df_test):
+        print(
+            """
+            Series "A006RC1" & "A191RC1" @ Worksheet "10105 Ann" Equals Series "A006RC1" & "A191RC1" @ Worksheet "10505 Ann"
+            """
+        )
+    else:
+        print(
+            """
+            Data Varies from Worksheet "10105 Ann" to Worksheet "10505 Ann"
+            """
+        )
+
+
 def collect_usa_bls_cpiu() -> DataFrame:
     """BLS CPI-U Price Index Fetch"""
     kwargs = {
@@ -358,7 +412,7 @@ def transform_center_by_period(df: DataFrame) -> DataFrame:
     return _df
 
 
-def extract_read_usa_bea_pull_by_series_id(series_id: str) -> DataFrame:
+def read_usa_bea_pull_by_series_id(series_id: str) -> DataFrame:
     """
     Retrieves Yearly Data for BEA Series' series_id
     Parameters
@@ -536,36 +590,32 @@ DIR = '/media/green-machine/KINGSTON'
 os.chdir(DIR)
 
 # =============================================================================
-# Section5ALL_Hist
-# =============================================================================
-# =============================================================================
 # www.bea.gov/histdata/Releases/GDP_and_PI/2012/Q1/Second_May-31-2012/Section5ALL_Hist.xls
 # =============================================================================
 # =============================================================================
 # Metadata: 'Section5ALL_Hist.xls'@['dataset_usa_bea-release-2010-08-05 Section5ALL_Hist.xls' Offsets 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip']"""
-# =============================================================================
-# =============================================================================
-# Fixed Assets Series: K160021, 1951--1969
 # =============================================================================
 kwargs = {
     'archive_name': 'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
     'wb_name': 'Section5ALL_Hist.xls',
     'sh_name': '50900 Ann',
 }
+# =============================================================================
+# Fixed Assets Series: K160021, 1951--1969
+# =============================================================================
 SERIES_ID = 'K160021'
-df_sub_a = read_usa_bea_excel(**kwargs).loc[:, (SERIES_ID,)]
+df = read_usa_bea_excel(**kwargs).loc[:, (SERIES_ID, )]
 
 # =============================================================================
 # Not Clear
 # =============================================================================
-
 kwargs = {
     'filepath_or_buffer': 'dataset_read_can-{:08n}-eng-{}.csv'.format(
         310003, 7591839622055840674
     ),
     'skiprows': 3,
 }
-_df = pd.read_csv(**kwargs)
+df = pd.read_csv(**kwargs)
 
 # =============================================================================
 # Unallocated

@@ -20,9 +20,9 @@ from lib.plot import (plot_approx_linear, plot_approx_linear_log, plot_c,
                       plot_capital_modelling, plot_cobb_douglas,
                       plot_cobb_douglas_3d, plot_cobb_douglas_complex, plot_d,
                       plot_douglas, plot_e, plot_elasticity,
-                      plot_fourier_discrete, plot_growth_elasticity,
-                      plot_investment, plot_investment_manufacturing,
-                      plot_filter_rolling_mean, plot_uscb_complex)
+                      plot_filter_rolling_mean, plot_fourier_discrete,
+                      plot_growth_elasticity, plot_investment,
+                      plot_investment_manufacturing, plot_uscb_complex)
 from lib.pull import pull_by_series_id
 from lib.read import read_usa_hist
 from lib.tools import (calculate_power_function_fit_params_a,
@@ -339,7 +339,7 @@ def main():
     _df = df.copy()
     plot_growth_elasticity(_df)
     _df = df.copy()
-    plot_rolling_mean_filter(_df)
+    plot_filter_rolling_mean(_df)
     # =========================================================================
     # Subproject XII. USA Douglas & Kendrick
     # =========================================================================
