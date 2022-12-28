@@ -24,7 +24,7 @@ def transform_investment_manufacturing(df: DataFrame) -> DataFrame:
 
 
 def transform_b(df: DataFrame) -> DataFrame:
-    return df.iloc[:, (0, 6, 7, 20)].dropna(axis=0)
+    return df.iloc[:, [0, 6, 7, 20]].dropna(axis=0)
 
 
 def transform_cobb_douglas(df: DataFrame, year_base: int) -> tuple[DataFrame, tuple[float]]:

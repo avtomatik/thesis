@@ -184,7 +184,7 @@ def plot_d(df: DataFrame) -> None:
         color='red',
         label='Real Gross Private Fixed Investment, Nonresidential $GPFI(n)$'
     )
-    plt.title('Real Indexes, {}=100, {}$-${}'.format(*df.index[[_b, 0, -1]]))
+    plt.title('Real Indexes, {}=100, {}$-${}'.format(_b, *df.index[[0, -1]]))
     plt.xlabel('Period')
     plt.ylabel('Billions of Dollars')
     plt.legend()
@@ -192,21 +192,21 @@ def plot_d(df: DataFrame) -> None:
     plt.figure(2)
     plt.plot(df.iloc[:, 4])
     plt.title(
-        'Real Gross Domestic Product $GDP$, {}=100, {}$-${}'.format(*df.index[[_b, 0, -1]]))
+        'Real Gross Domestic Product $GDP$, {}=100, {}$-${}'.format(_b, *df.index[[0, -1]]))
     plt.xlabel('Period')
     plt.ylabel('Billions of Dollars')
     plt.grid()
     plt.figure(3)
     plt.plot(df.iloc[:, -2], df.iloc[:, 4])
     plt.title(
-        '$GPDI$ & $GPFI(n)$, {}=100, {}$-${}'.format(*df.index[[_b, 0, -1]]))
+        '$GPDI$ & $GPFI(n)$, {}=100, {}$-${}'.format(_b, *df.index[[0, -1]]))
     plt.xlabel('Billions of Dollars')
     plt.ylabel('Billions of Dollars')
     plt.grid()
     plt.figure(4)
     plt.plot(df.iloc[:, -1], df.iloc[:, 4])
     plt.title(
-        '$GPFI(n)$ & $GDP$, {}=100, {}$-${}'.format(*df.index[[_b, 0, -1]]))
+        '$GPFI(n)$ & $GDP$, {}=100, {}$-${}'.format(_b, *df.index[[0, -1]]))
     plt.xlabel('Billions of Dollars')
     plt.ylabel('Billions of Dollars')
     plt.grid()
@@ -613,10 +613,9 @@ def plot_approx_linear(df: DataFrame) -> None:
     df.iloc[:, -1] = df.iloc[:, -1].apply(pd.to_numeric, errors='coerce')
     df.dropna(inplace=True)
     # =========================================================================
-    # TODO: Separate Basic Year Function
+    # Basic Year
     # =========================================================================
-    df['__deflator'] = df.iloc[:, 0].div(df.iloc[:, 1]).sub(1).abs()
-    _b = df.iloc[:, -1].astype(float).argmin()
+    _b = df.pipe(get_price_base_nr)
     df.drop(df.columns[-1], axis=1, inplace=True)
     # =========================================================================
     # Deflator
@@ -636,21 +635,17 @@ def plot_approx_linear(df: DataFrame) -> None:
     # =========================================================================
     df[f'{df.columns[3]}_estimate'] = df.iloc[:, -2].mul(_p1[0]).add(_p1[1])
     print('Period From: {} Through: {}'.format(*df.index[[0, -1]]))
-    print('Prices: {}=100'.format(df.index[_b]))
+    print(f'Prices: {_b}=100')
     print('Model: Yhat = {:.4f} + {:.4f}*X'.format(*_p1[::-1]))
-    print('Model Parameter: A_0 = {:.4f}'.format(_p1[1]))
-    print('Model Parameter: A_1 = {:.4f}'.format(_p1[0]))
+    print(f'Model Parameter: A_0 = {_p1[1]:.4f}')
+    print(f'Model Parameter: A_1 = {_p1[0]:.4f}')
     plt.figure()
-    plt.title('$Y(X)$, {}=100, {}$-${}'.format(*df.index[[_b, 0, -1]]))
+    plt.title('$Y(X)$, {}=100, {}$-${}'.format(_b, *df.index[[0, -1]]))
     plt.xlabel(
-        'Gross Private Domestic Investment, $X(\\tau)$, {}=100, {}=100'.format(
-            *df.index[[_b, 0]]
-        )
+        f'Gross Private Domestic Investment, $X(\\tau)$, {_b}=100, {df.index[0]}=100'
     )
     plt.ylabel(
-        'Gross Domestic Product, $Y(\\tau)$, {}=100, {}=100'.format(
-            *df.index[[_b, 0]]
-        )
+        f'Gross Domestic Product, $Y(\\tau)$, {_b}=100, {df.index[0]}=100'
     )
     plt.plot(df.iloc[:, -3], df.iloc[:, -2])
     plt.plot(
@@ -679,10 +674,9 @@ def plot_approx_linear_log(df: DataFrame) -> None:
     df.iloc[:, -1] = df.iloc[:, -1].apply(pd.to_numeric, errors='coerce')
     df.dropna(inplace=True)
     # =========================================================================
-    # TODO: Separate Basic Year Function
+    # Basic Year
     # =========================================================================
-    df['__deflator'] = df.iloc[:, 0].div(df.iloc[:, 1]).sub(1).abs()
-    _b = df.iloc[:, -1].astype(float).argmin()
+    _b = df.pipe(get_price_base_nr)
     df.drop(df.columns[-1], axis=1, inplace=True)
     # =========================================================================
     # Deflator
@@ -704,20 +698,20 @@ def plot_approx_linear_log(df: DataFrame) -> None:
     # Delivery Block
     # =========================================================================
     print('Period From: {} Through: {}'.format(*df.index[[0, -1]]))
-    print('Prices: {}=100'.format(df.index[_b]))
+    print(f'Prices: {_b}=100')
     print('Model: Yhat = {:.4f} + {:.4f}*Ln(X)'.format(*_p1[::-1]))
-    print('Model Parameter: A_0 = {:.4f}'.format(_p1[1]))
-    print('Model Parameter: A_1 = {:.4f}'.format(_p1[0]))
+    print(f'Model Parameter: A_0 = {_p1[1]:.4f}')
+    print(f'Model Parameter: A_1 = {_p1[0]:.4f}')
     plt.figure()
     plt.title(
         '$Y(X)$, {}=100, {}$-${}'.format(
-            *df.index[[_b, 0, -1]]
+            _b, *df.index[[0, -1]]
         )
     )
     plt.xlabel('Logarithm Prime Rate, $X(\\tau)$, {}=100'.format(df.index[0]))
     plt.ylabel(
         'Logarithm {}, $Y(\\tau)$, {}=100, {}=100'.format(
-            MAP_DESC[df.columns[3]], *df.index[[_b, 0]]
+            MAP_DESC[df.columns[3]], _b, df.index[0]
         )
     )
     plt.plot(df.iloc[:, -3], df.iloc[:, -2])
@@ -1502,10 +1496,9 @@ def plot_elasticity(df: DataFrame) -> None:
     df.iloc[:, -1] = df.iloc[:, -1].apply(pd.to_numeric, errors='coerce')
     df.dropna(inplace=True)
     # =========================================================================
-    # TODO: Separate Basic Year Function
+    # Basic Year
     # =========================================================================
-    df['__deflator'] = df.iloc[:, 0].div(df.iloc[:, 1]).sub(1).abs()
-    _b = df.iloc[:, -1].astype(float).argmin()
+    _b = df.pipe(get_price_base_nr)
     df.drop(df.columns[-1], axis=1, inplace=True)
     _title = (
         'National Income' if df.columns[2] == 'A032RC1' else 'Series',
@@ -2401,10 +2394,9 @@ def plot_capital_acquisition(df: DataFrame) -> None:
     _df.reset_index(level=0, inplace=True)
     _df.columns = ('period', *_df.columns[1:])
     # =========================================================================
-    # TODO: Separate Basic Year Function
+    # Basic Year
     # =========================================================================
-    _df['__deflator'] = _df.iloc[:, 2].div(_df.iloc[:, 3]).sub(1).abs()
-    _b = _df.iloc[:, -1].astype(float).argmin()
+    _b = _df.pipe(get_price_base_nr, columns=(2, 3))
     _df.drop(_df.columns[-1], axis=1, inplace=True)
     # =========================================================================
     # Calculate Static Values
@@ -2545,55 +2537,55 @@ def plot_capital_acquisition(df: DataFrame) -> None:
     plt.plot(_df.iloc[:, 8], _df.iloc[:, 14])
     plt.title(
         'Labor Productivity, Observed & Max, {}=100, {}$-${}'.format(
-            *df.index[[_b, 0, -1]]
+            _b, *df.index[[0, -1]]
         )
     )
     plt.xlabel('Labor Capital Intensity')
-    plt.ylabel(f'Labor Productivity, {_df.index[_b]}=100')
+    plt.ylabel(f'Labor Productivity, {_b}=100')
     plt.grid()
     plt.figure(2)
     plt.plot(_df.iloc[:, 10], _df.iloc[:, 11])
     plt.plot(_df.iloc[:, 10], _df.iloc[:, 15])
     plt.title(
         'Log Labor Productivity, Observed & Max, {}=100, {}$-${}'.format(
-            *df.index[[_b, 0, -1]]
+            _b, *df.index[[0, -1]]
         )
     )
     plt.xlabel('Log Labor Capital Intensity')
-    plt.ylabel(f'Log Labor Productivity, {_df.index[_b]}=100')
+    plt.ylabel(f'Log Labor Productivity, {_b}=100')
     plt.grid()
     plt.figure(3)
     plt.plot(_df.iloc[:, 6])
     plt.plot(_df.iloc[:, 12])
     plt.title(
         'Fixed Assets Turnover ($\\lambda$), Observed & Max, {}=100, {}$-${}'.format(
-            *df.index[[_b, 0, -1]]
+            _b, *df.index[[0, -1]]
         )
     )
     plt.xlabel('Period')
-    plt.ylabel(f'Fixed Assets Turnover ($\\lambda$), {_df.index[_b]}=100')
+    plt.ylabel(f'Fixed Assets Turnover ($\\lambda$), {_b}=100')
     plt.grid()
     plt.figure(4)
     plt.plot(_df.iloc[:, 7])
     plt.plot(_df.iloc[:, 13])
     plt.title(
         'Investment to Gross Domestic Product Ratio, \nObserved & Max, {}=100, {}$-${}'.format(
-            *df.index[[_b, 0, -1]]
+            _b, *df.index[[0, -1]]
         )
     )
     plt.xlabel('Period')
     plt.ylabel(
-        f'Investment to Gross Domestic Product Ratio, {_df.index[_b]}=100')
+        f'Investment to Gross Domestic Product Ratio, {_b}=100')
     plt.grid()
     plt.figure(5)
     plt.plot(_df.iloc[:, 16])
     plt.title(
         'Gross Capital Formation (GCF) or\nCapital Acquisitions (CA), {}=100, {}$-${}'.format(
-            *df.index[[_b, 0, -1]]
+            _b, *df.index[[0, -1]]
         )
     )
     plt.xlabel('Period')
-    plt.ylabel(f'GCF or CA, {_df.index[_b]}=100')
+    plt.ylabel(f'GCF or CA, {_b}=100')
     plt.grid()
     plt.show()
 
@@ -2627,10 +2619,9 @@ def plot_capital_retirement(df: DataFrame) -> None:
     # Define Basic Year for Deflator
     # =========================================================================
     # =========================================================================
-    # TODO: Separate Basic Year Function
+    # Basic Year
     # =========================================================================
-    _df['__deflator'] = _df.iloc[:, 2].div(_df.iloc[:, 3]).sub(1).abs()
-    _b = _df.iloc[:, -1].astype(float).argmin()
+    _b = _df.pipe(get_price_base_nr, columns=(2, 3))
     _df.drop(_df.columns[-1], axis=1, inplace=True)
     # =========================================================================
     # Calculate Static Values
@@ -2776,64 +2767,64 @@ def plot_capital_retirement(df: DataFrame) -> None:
             f'Model Parameter: Pi for Period from {_df.index[_knots[_]]} to {_df.index[_knots[1 + _]]}: {pi[_]:.6f}'
         )
     plt.figure(1)
-    plt.title('Product, {}=100, {}$-${}'.format(*df.index[[_b, 0, -1]]))
+    plt.title('Product, {}=100, {}$-${}'.format(_b, *df.index[[0, -1]]))
     plt.xlabel('Period')
-    plt.ylabel(f'Product, {_df.index[_b]}=100')
+    plt.ylabel(f'Product, {_b}=100')
     plt.plot(_df.iloc[:, 2])
     plt.grid()
     plt.figure(2)
-    plt.title('Capital, {}=100, {}$-${}'.format(*df.index[[_b, 0, -1]]))
+    plt.title('Capital, {}=100, {}$-${}'.format(_b, *df.index[[0, -1]]))
     plt.xlabel('Period')
-    plt.ylabel(f'Capital, {_df.index[_b]}=100')
+    plt.ylabel(f'Capital, {_b}=100')
     plt.plot(_df.iloc[:, 3])
     plt.grid()
     plt.figure(3)
     plt.title(
         'Fixed Assets Turnover ($\\lambda$), {}=100, {}$-${}'.format(
-            *df.index[[_b, 0, -1]]
+            _b, *df.index[[0, -1]]
         )
     )
     plt.xlabel('Period')
-    plt.ylabel(f'Fixed Assets Turnover ($\\lambda$), {_df.index[_b]}=100')
+    plt.ylabel(f'Fixed Assets Turnover ($\\lambda$), {_b}=100')
     plt.plot(_df.iloc[:, 2].div(_df.iloc[:, 3]))
     plt.grid()
     plt.figure(4)
     plt.title(
         'Investment to Gross Domestic Product Ratio, {}=100, {}$-${}'.format(
-            *df.index[[_b, 0, -1]]
+            _b, *df.index[[0, -1]]
         )
     )
     plt.xlabel('Period')
     plt.ylabel(
-        f'Investment to Gross Domestic Product Ratio, {_df.index[_b]}=100'
+        f'Investment to Gross Domestic Product Ratio, {_b}=100'
     )
     plt.plot(_df.iloc[:, 7])
     plt.grid()
     plt.figure(5)
     plt.title(
         '$\\alpha(t)$, Fixed Assets Retirement Ratio, {}=100, {}$-${}'.format(
-            *df.index[[_b, 0, -1]]
+            _b, *df.index[[0, -1]]
         )
     )
     plt.xlabel('Period')
-    plt.ylabel(f'$\\alpha(t)$, {_df.index[_b]}=100')
+    plt.ylabel(f'$\\alpha(t)$, {_b}=100')
     plt.plot(_df.iloc[:, 9])
     plt.grid()
     plt.figure(6)
     plt.title(
         'Fixed Assets Retirement Ratio to Fixed Assets Retirement Value, {}=100, {}$-${}'.format(
-            *df.index[[_b, 0, -1]]
+            _b, *df.index[[0, -1]]
         )
     )
-    plt.xlabel(f'$\\alpha(t)$, {_df.index[_b]}=100')
-    plt.ylabel(f'Fixed Assets Retirement Value, {_df.index[_b]}=100')
+    plt.xlabel(f'$\\alpha(t)$, {_b}=100')
+    plt.ylabel(f'Fixed Assets Retirement Value, {_b}=100')
     plt.plot(_df.iloc[:, 9], _df.iloc[:, 8])
     plt.grid()
     plt.figure(7)
     plt.title(
-        'Labor Capital Intensity, {}=100, {}$-${}'.format(*df.index[[_b, 0, -1]]))
-    plt.xlabel(f'Labor Capital Intensity, {_df.index[_b]}=100')
-    plt.ylabel(f'Labor Productivity, {_df.index[_b]}=100')
+        'Labor Capital Intensity, {}=100, {}$-${}'.format(_b, *df.index[[0, -1]]))
+    plt.xlabel(f'Labor Capital Intensity, {_b}=100')
+    plt.ylabel(f'Labor Productivity, {_b}=100')
     plt.plot(np.exp(_df.iloc[:, 5]), np.exp(_df.iloc[:, 6]))
     plt.grid()
     plt.show()

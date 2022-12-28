@@ -87,9 +87,9 @@ def main():
     # 'calculate_power_function_fit_params_c': Power Function Approximation
     # =========================================================================
     _df = collect_usa_general()
-    plot_approx_linear(_df.iloc[:, (7, 6, 0, 6)].dropna(axis=0))
-    plot_approx_linear_log(_df.iloc[:, (7, 6, 20, 4)].dropna(axis=0))
-    plot_approx_linear_log(_df.iloc[:, (7, 6, 20, 6)].dropna(axis=0))
+    plot_approx_linear(_df.iloc[:, [7, 6, 0, 6]].dropna(axis=0))
+    plot_approx_linear_log(_df.iloc[:, [7, 6, 20, 4]].dropna(axis=0))
+    plot_approx_linear_log(_df.iloc[:, [7, 6, 20, 6]].dropna(axis=0))
 
     SERIES_IDS = ('Валовой внутренний продукт, млрд долл. США',)
     calculate_power_function_fit_params_a(
