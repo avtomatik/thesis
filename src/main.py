@@ -29,7 +29,7 @@ from lib.tools import (calculate_power_function_fit_params_a,
                        calculate_power_function_fit_params_b,
                        calculate_power_function_fit_params_c, m_spline_ea,
                        m_spline_eb, m_spline_la, m_spline_lb, m_spline_lls,
-                       m_spline_manager)
+                       run_m_spline)
 from lib.transform import (transform_b, transform_cobb_douglas, transform_d,
                            transform_e, transform_investment_manufacturing,
                            transform_manufacturing_money)
@@ -184,7 +184,7 @@ def main():
     # Subproject V. Cobb--Douglas CAN
     # =========================================================================
     # =========================================================================
-    # First Figure: Exact Correspondence with 'Note INTH05 2014-07-10.docx'
+    # First Figure: Exact Correspondence with 'note_incomplete_th05_2014_07_10.docx'
     # =========================================================================
     MAP_FIG = {
         'fg_a': 'Chart I Progress in Manufacturing {}$-${} ({}=100)',
@@ -261,23 +261,23 @@ def main():
     # =========================================================================
     # Option 1
     # =========================================================================
-    m_spline_manager(df, m_spline_lls)
+    run_m_spline(df, m_spline_lls)
     # =========================================================================
     # Option 2.1.1
     # =========================================================================
-    m_spline_manager(df, m_spline_ea)
+    run_m_spline(df, m_spline_ea)
     # =========================================================================
     # Option 2.1.2
     # =========================================================================
-    m_spline_manager(df, m_spline_eb)
+    run_m_spline(df, m_spline_eb)
     # =========================================================================
     # Option 2.2.1
     # =========================================================================
-    m_spline_manager(df, m_spline_la)
+    run_m_spline(df, m_spline_la)
     # =========================================================================
     # Option 2.2.2
     # =========================================================================
-    m_spline_manager(df, m_spline_lb)
+    run_m_spline(df, m_spline_lb)
 
     # =========================================================================
     # Subproject VIII. Multiple

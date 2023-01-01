@@ -46,7 +46,7 @@ def main():
     df_i = collect_usa_manufacturing_latest()
 
     # =========================================================================
-    # df = collect_cobb_douglas().pipe(transform_cobb_douglas, year_base=1899)[0].iloc[:, (3, 4)]
+    # df = collect_cobb_douglas().pipe(transform_cobb_douglas, year_base=1899)[0].iloc[:, [3, 4]]
     # calculate_curve_fit_params(df)
     # =========================================================================
 

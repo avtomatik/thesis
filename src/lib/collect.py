@@ -340,7 +340,7 @@ def collect_usa_brown() -> DataFrame:
     df = df.assign(
         series_0x0=df.iloc[:, 0].sub(df.iloc[:, 1]),
         series_0x1=df.iloc[:, 3].add(df.iloc[:, 4]),
-        series_0x2=df.iloc[:, (3, 4)].sum(axis=1).rolling(
+        series_0x2=df.iloc[:, [3, 4]].sum(axis=1).rolling(
             2).mean().mul(df.iloc[:, 5]).div(100),
         series_0x3=df.iloc[:, 2],
     )

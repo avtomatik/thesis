@@ -661,7 +661,7 @@ def _m_spline_print_params(n_spans: int, params: tuple[float]) -> None:
             print(f'Model Parameter: A{_:02n} = {_param:.6f}')
 
 
-def m_spline_manager(df: DataFrame, kernel: callable) -> None:
+def run_m_spline(df: DataFrame, kernel: callable) -> None:
     """
     Interactive Shell for Processing Make Shift Spline Functions
 

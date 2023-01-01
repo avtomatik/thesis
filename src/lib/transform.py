@@ -9,7 +9,7 @@ Created on Sun Nov 20 17:42:38 2022
 import numpy as np
 import pandas as pd
 from pandas import DataFrame
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import Lasso, LinearRegression
 
 from .collect import stockpile_usa_hist
 from .pull import pull_by_series_id
@@ -304,7 +304,8 @@ def transform_cobb_douglas_sklearn(df: DataFrame) -> DataFrame:
 #     # print('LassoCV: k = {:.12f}, b = {:.12f}'.format(k, b))
 #     # =========================================================================
 #     #     print(reg.score(X, y))
-#     #     print(reg)
+#     #     
+
 #     #     print(reg.predict(X[:1, ]))
 #     # =========================================================================
 # =============================================================================
@@ -317,13 +318,11 @@ def transform_cobb_douglas_sklearn(df: DataFrame) -> DataFrame:
     #     reg.coef_
     #     reg.intercept_
     # =========================================================================
-
     # =========================================================================
     # tik = Ridge(alpha=.01).fit(X, y)
     # k, b = tik.coef_[1], tik.intercept_
     # print('Ridge Regression: k = {:.12f}, b = {:.12f}'.format(k, b))
     # =========================================================================
-
     # =========================================================================
     # Description
     # =========================================================================

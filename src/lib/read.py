@@ -192,7 +192,7 @@ def read_unstats(url: str = 'https://unstats.un.org/unsd/amaapi/api/file/2') -> 
     """
     kwargs = {
         'io': io.BytesIO(requests.get(url).content),
-        'index_col': 0,
+        'index_col': 1,
         'skiprows': 2,
     }
     return pd.read_excel(**kwargs)

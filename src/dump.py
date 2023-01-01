@@ -18,7 +18,7 @@ import pandas as pd
 from pandas import DataFrame
 
 from lib.collect import stockpile_usa_bea
-from lib.pull import pull_can_aggregate
+from lib.pull import pull_by_series_id, pull_can_aggregate
 from lib.read import (read_can, read_temporary, read_usa_bea_excel,
                       read_usa_frb_g17)
 from lib.transform import transform_mean
@@ -51,7 +51,7 @@ SERIES_IDS_LAB = {
 
 def append_series_ids_sum(df: DataFrame, chunk: DataFrame, series_ids: tuple[str]) -> None:
     """
-    
+
 
     Parameters
     ----------
@@ -462,6 +462,27 @@ def read_usa_bea_pull_by_series_id(series_id: str) -> DataFrame:
     return df
 
 
+def read_usa_bea_pull_by_series_id(df: DataFrame, series_id: str) -> DataFrame:
+    """
+    Retrieve Yearly Data for BEA Series ID
+    """
+    df = df[df.loc[:, "series_id"] == series_id]
+    source_ids = sorted(set(df.loc[:, "source_id"]))
+    chunk = pd.concat(
+        [
+            df[df.loc[:, "source_id"] == source_id].iloc[:, [-1]].drop_duplicates()
+            for source_id in source_ids
+        ],
+        axis=1,
+        sort=True
+    )
+    chunk.columns = [
+        ''.join((source_id.split()[1].replace('.', '_'), series_id))
+        for source_id in source_ids
+    ]
+    return chunk
+
+
 def collect_usa_xlsm() -> DataFrame:
     FILE_NAME = 'dataset_usa_0025_p_r.txt'
     SERIES_IDS = {
@@ -564,7 +585,8 @@ def collect_capital_combined_archived() -> DataFrame:
             # =================================================================
             # Manufacturing Labor Series: _4313C0, 1929--2020
             # =================================================================
-            stockpile_usa_bea(SERIES_IDS_LAB).pipe(transform_mean, name="bea_labor_mfg"),
+            stockpile_usa_bea(SERIES_IDS_LAB).pipe(
+                transform_mean, name="bea_labor_mfg"),
             # =================================================================
             # For Overall Labor Series, See: A4601C0, 1929--2020
             # =================================================================
@@ -671,3 +693,140 @@ read_can_group_a(8448814858763853126, skiprows=81)
 read_can_group_b(5245628780870031920, skiprows=3)
 read_can(3800068).pipe(pull_can_aggregate, 'v62143969')
 read_can(3800068).pipe(pull_can_aggregate, 'v62143990')
+
+
+def test_usa_bea_sfat_series_ids(
+    directory: str = '/media/green-machine/KINGSTON',
+    file_name: str = 'dataset_usa_bea-nipa-selected.zip',
+    source_id: str = 'Table 4.3. Historical-Cost Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization',
+    series_id: str = 'k3n31gd1es000',
+) -> DataFrame:
+    """
+    Earlier Version of 'k3n31gd1es000'
+    """
+    # =========================================================================
+    # Test if Ratio of Manufacturing Fixed Assets to Overall Fixed Assets
+    # =========================================================================
+    SERIES_IDS = (
+        'k3n31gd1es000',
+        'k3n31gd1eq000',
+        'k3n31gd1ip000',
+        'k3n31gd1st000',
+    )
+
+    kwargs = {
+        'filepath_or_buffer': Path(directory).joinpath(file_name),
+        'header': 0,
+        'names': ('source_id', 'series_id', 'period', 'value'),
+        'index_col': 2,
+        'usecols': (0, 8, 9, 10),
+    }
+    df = pd.read_csv(**kwargs)
+
+    df_control = df[
+        (df.loc[:, 'source_id'] == source_id) &
+        (df.loc[:, 'series_id'] == series_id)
+    ].iloc[:, [-1]].rename(columns={"value": series_id})
+
+    return pd.concat(
+        [
+            pd.concat(
+                [
+                    read_usa_bea_sfat_pull_by_series_id(series_id)
+                    for series_id in SERIES_IDS
+                ],
+                axis=1,
+                sort=True
+            ),
+            df_control
+        ],
+        axis=1,
+        sort=True
+    )
+
+
+def read_usa_bea_sfat_pull_by_series_id(series_id: str) -> DataFrame:
+    """
+    Retrieve Historical Manufacturing Series from BEA SFAT CSV File
+    """
+    MAP = {
+        'source_id': 0, 'group1': 6, 'series_id': 8, 'period': 9, 'value': 10
+    }
+    kwargs = {
+        'filepath_or_buffer': 'dataset_usa_bea-nipa-2017-08-23-sfat.zip',
+        'header': 0,
+        'names': tuple(MAP.keys()),
+        'index_col': 3,
+        'usecols': tuple(MAP.values()),
+    }
+    df = pd.read_csv(**kwargs)
+
+    df = df[df.loc[:, "source_id"].str.contains('Historical')]
+    df = df[df.loc[:, "group1"].str.contains('Manufacturing')]
+    df = df[df.loc[:, "series_id"] == series_id]
+    df.drop(["group1", "series_id"], axis=1, inplace=True)
+
+    source_ids = sorted(set(df.loc[:, "source_id"]))
+
+    chunk = pd.concat(
+        [
+            df[df.loc[:, "source_id"] == source_id].iloc[:, [-1]].drop_duplicates()
+            for source_id in source_ids
+        ],
+        axis=1,
+        sort=True
+    )
+    chunk.columns = [
+        ''.join((source_id.split()[1].replace('.', '_'), series_id))
+        for source_id in source_ids
+    ]
+    return chunk
+
+
+def read_pull_for_autocorrelation(filepath_or_buffer: str, series_id: str) -> DataFrame:
+    """
+
+
+    Parameters
+    ----------
+    filepath_or_buffer : str
+        'datasetAutocorrelation.txt' | 'CHN_TUR_GDP.zip'.
+    series_id : str
+        DESCRIPTION.
+
+    Returns
+    -------
+    DataFrame
+        DESCRIPTION.
+
+    """
+    kwargs = {
+        'filepath_or_buffer': filepath_or_buffer,
+        'names': ('period', 'series_id', 'value'),
+        'index_col': 0,
+        'skiprows': 1
+    }
+    return pd.read_csv(**kwargs).pipe(pull_by_series_id, series_id)
+
+
+def plot_usa_un_former() -> None:
+    """
+    https://unstats.un.org/unsd/snaama/Index
+
+    Returns
+    -------
+    None
+        DESCRIPTION.
+
+    """
+    kwargs = {
+        "io": "dataset_world_united-nations-Download-GDPcurrent-USD-countries.xls",
+        "index_col": 0,
+        "skiprows": 2,
+    }
+    _df = pd.read_excel(**kwargs)
+    _df = _df[_df.iloc[:, 0] == 'Gross Domestic Product (GDP)']
+    _df = _df.select_dtypes(exclude=['object']).transpose()
+    df = pd.DataFrame()
+    df['us_to_world'] = _df.loc[:, 'United States'].div(_df.sum(axis=1))
+    df.plot(grid=True)

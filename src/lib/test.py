@@ -161,7 +161,8 @@ def test_data_consistency_b():
         axis=1,
         sort=True
     )
-    print(df)
+    
+
 
 
 def test_data_consistency_c():

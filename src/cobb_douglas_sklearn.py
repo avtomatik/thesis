@@ -11,9 +11,19 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy.fft import rfft
-from sklearn import svm  # Support Vector Machine
-from sklearn import datasets
-from sklearn.model_selection import cross_val_score, train_test_split
+from sklearn.datasets import load_iris
+from sklearn.linear_model import Lasso, LinearRegression
+from sklearn.metrics import r2_score
+from sklearn.model_selection import (KFold, LeaveOneOut, LeavePOut,
+                                     RepeatedKFold, ShuffleSplit,
+                                     TimeSeriesSplit, cross_val_score,
+                                     train_test_split)
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+# =============================================================================
+# Support Vector Machine
+# =============================================================================
+from sklearn.svm import SVC
 
 from lib.collect import stockpile_cobb_douglas
 from lib.transform import transform_cobb_douglas_sklearn
@@ -73,7 +83,8 @@ print(*stockpile_cobb_douglas().pipe(transform_cobb_douglas_sklearn))
 # _df = stockpile_cobb_douglas()
 # print(_df)
 # X, y = _df.pipe(transform_cobb_douglas_sklearn)
-# print(X)
+#
+
 
 # =============================================================================
 # TODO: Discrete Laplace Transform
@@ -99,14 +110,14 @@ print(*stockpile_cobb_douglas().pipe(transform_cobb_douglas_sklearn))
 # # K-Fold
 # # =============================================================================
 
-# # from sklearn.model_selection import KFold
+
 # # kf = KFold(n_splits=4)
 
 # # =============================================================================
 # # Repeated K-Fold
 # # =============================================================================
 
-# # from sklearn.model_selection import RepeatedKFold
+
 # # random_state = 12883823
 # # rkf = RepeatedKFold(n_splits=2, n_repeats=2, random_state=random_state)
 
@@ -114,21 +125,20 @@ print(*stockpile_cobb_douglas().pipe(transform_cobb_douglas_sklearn))
 # # Leave One Out (LOO)
 # # =============================================================================
 
-# # from sklearn.model_selection import LeaveOneOut
 # # loo = LeaveOneOut()
 
 # # =============================================================================
 # # Leave P Out (LPO)
 # # =============================================================================
 
-# # from sklearn.model_selection import LeavePOut
+
 # # lpo = LeavePOut(p=2)
 
 # # =============================================================================
 # # Random Permutations Cross-Validation a.k.a. Shuffle & Split
 # # =============================================================================
 
-# # from sklearn.model_selection import ShuffleSplit
+
 # # ss = ShuffleSplit(n_splits=2, test_size=.25, random_state=0)
 
 
@@ -195,22 +205,23 @@ print(*stockpile_cobb_douglas().pipe(transform_cobb_douglas_sklearn))
 # # X = np.log(X)
 # # =============================================================================
 # y = np.log(y)
-# loo = cross_validation.LeaveOneOut(y.shape[0])
-# regr = linear_model.LinearRegression()
-# scores = cross_validation.cross_val_score(
+# loo = LeaveOneOut(y.shape[0])
+# regr = LinearRegression()
+# scores = cross_val_score(
 #     regr, X, y, scoring='mean_squared_error', cv=loo,)
 # print(scores.mean())
-# from sklearn.linear_model import LinearRegression
+
+
 # lr = LinearRegression()
 # lr.fit(X, y)
-# from sklearn.metrics import r2_score
+
 # r2 = r2_score(y, lr.predict(X))
 # # =============================================================================
 # # r2 = lr.score(X, y)
 # # =============================================================================
 # print('R2 (test data): {:.2}'.format(r2))
-# from sklearn.cross_validation import Kfold
-# kf = Kfold(len(X), n_folds=4)
+
+# kf = KFold(len(X), n_folds=4)
 # # =============================================================================
 # # p = np.zeros_like(y)
 # # =============================================================================
@@ -231,83 +242,76 @@ print(*stockpile_cobb_douglas().pipe(transform_cobb_douglas_sklearn))
 # =============================================================================
 
 # =============================================================================
-# Cross Validation
+# Cross Validation: Here
 # =============================================================================
 # =============================================================================
 # http://scikit-learn.org/stable/modules/cross_validation.html
 # =============================================================================
 
-iris = datasets.load_iris()
+iris = load_iris()
 X_train, X_test, y_train, y_test = train_test_split(
     iris.data, iris.target, test_size=.4, random_state=0
 )
-clf = svm.SVC(kernel='linear', C=1).fit(X_train, y_train)
 # =============================================================================
 # SVC: Support Vector Classification
 # =============================================================================
-clf = svm.SVC(kernel='linear', C=1)
+clf = SVC(kernel='linear', C=1).fit(X_train, y_train)
+
 # =============================================================================
 # Option 1
 # =============================================================================
-
 scores = cross_val_score(clf, iris.data, iris.target, cv=5)
-print(scores)
-# # =============================================================================
-# # Option 2
-# # =============================================================================
-# from sklearn import metrics
-# scores = cross_val_score(clf, iris.data, iris.target, cv=5, scoring='f1_macro')
-# print(scores)
-# print('Accuracy: %0.2f (+/- %0.2f)' %(scores.mean(), 2*scores.std()))
-# # =============================================================================
-# # Option 3
-# # =============================================================================
-# from sklearn.model_selection import ShuffleSplit
-# print(iris.data.shape[0])
-# cv = ShuffleSplit(n_splits=5, test_size=.3, random_state=0)
-# result = cross_val_score(clf, iris.data, iris.target, cv=cv)
-# print(result)
-# # =============================================================================
-# # Option 4
-# # =============================================================================
+
+# =============================================================================
+# Option 2
+# =============================================================================
+scores = cross_val_score(clf, iris.data, iris.target, cv=5, scoring='f1_macro')
+print('Accuracy: %0.2f (+/- %0.2f)' % (scores.mean(), 2 * scores.std()))
+
+# =============================================================================
+# Option 3
+# =============================================================================
+print(iris.data.shape[0])
+cv = ShuffleSplit(n_splits=5, test_size=.3, random_state=0)
+result = cross_val_score(clf, iris.data, iris.target, cv=cv)
+
+# =============================================================================
+# Option 4
+# =============================================================================
 
 
-# def custom_cv_2folds(X):
-#     n = X.shape[0]
-#     i = 1
-#     while i <= 2:
-#         idx = np.range(n*(i-1)/2, n*i/s, dtype=int)
-#         yield idx, idx
-#         i += 1
+def custom_cv_2folds(X):
+    n = X.shape[0]
+    _ = 1
+    while _ <= 2:
+        idx = np.range(n * (_ - 1) / 2, n * _ / s, dtype=int)
+        yield idx, idx
+        _ += 1
 
-# custom_cv = custom_cv_2folds(iris.data)
-# cross_val_score(clf, iris.data, iris.target, cv=custom_cv)
-# # =============================================================================
-# # Option 5
-# # =============================================================================
-# from sklearn import preprocessing
-# X_train, X_test, y_train, y_test = train_test_split(
-#     iris.data, iris.target, test_size=.4, random_state=0
-# )
-# scaler = preprocessing.StandardScaler().fit(X_train)
-# X_train_transformed = scaler.transform(X_train)
-# clf = svm.SVC(C=1).fit(X_train_transformed, y_train)
-# X_test_transformed = scaler.transform(X_test)
-# result = clf.score(X_test_transformed, y_test)
-# print(result)
-# # =============================================================================
-# # Option 6
-# # =============================================================================
-# from sklearn.model_selection import ShuffleSplit
-# from sklearn.pipeline import make_pipeline
-# from sklearn import preprocessing
-# cv = ShuffleSplit(n_splits=5, test_size=.3, random_state=0)
-# clf = make_pipeline(preprocessing.StandardScaler(), svm.SVC(C=1))
-# result = cross_val_score(clf, iris.data, iris.target, cv=cv)
-# print(result)
+
+custom_cv = custom_cv_2folds(iris.data)
+cross_val_score(clf, iris.data, iris.target, cv=custom_cv)
+
+# =============================================================================
+# Option 5
+# =============================================================================
+X_train, X_test, y_train, y_test = train_test_split(
+    iris.data, iris.target, test_size=.4, random_state=0
+)
+scaler = StandardScaler().fit(X_train)
+X_train_transformed = scaler.transform(X_train)
+clf = SVC(C=1).fit(X_train_transformed, y_train)
+X_test_transformed = scaler.transform(X_test)
+result = clf.score(X_test_transformed, y_test)
+
+# =============================================================================
+# Option 6
+# =============================================================================
+cv = ShuffleSplit(n_splits=5, test_size=.3, random_state=0)
+clf = make_pipeline(StandardScaler(), SVC(C=1))
+result = cross_val_score(clf, iris.data, iris.target, cv=cv)
 
 # =============================================================================
 # Kolmogorov-Smirnov Test for Goodness of Fit
-# =============================================================================
 # =============================================================================
 # scipy.stats.kstest

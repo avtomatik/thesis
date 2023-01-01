@@ -16,7 +16,7 @@ def main():
     os.chdir(DIR)
     stockpile_cobb_douglas().pipe(
         transform_cobb_douglas, year_base=1899
-    )[0].iloc[:, (3, 4)].pipe(calculate_plot_uspline)
+    )[0].iloc[:, [3, 4]].pipe(calculate_plot_uspline)
 
 
 if __name__ == '__main__':
