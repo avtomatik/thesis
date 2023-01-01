@@ -275,86 +275,6 @@ def collect_cobb_douglas_extension_manufacturing() -> DataFrame:
     return df.iloc[:, [-1]]
 
 
-def collect_usa_brown() -> DataFrame:
-    # =========================================================================
-    # Fetch Data from <reference_ru_brown_m_0597_088.pdf>, Page 193
-    # Out of Kendrick J.W. Data & Table 2. of <reference_ru_brown_m_0597_088.pdf>
-    # =========================================================================
-    # =========================================================================
-    # FN:Murray Brown
-    # ORG:University at Buffalo;Economics
-    # TITLE:Professor Emeritus, Retired
-    # EMAIL;PREF;INTERNET:mbrown@buffalo.edu
-    # =========================================================================
-    SERIES_IDS = {
-        # =====================================================================
-        # Gross Domestic Product, USD 1,000,000, 1929=100
-        # =====================================================================
-        'Валовой продукт (в млн. долл., 1929 г.)': 'dataset_usa_brown.zip',
-        # =====================================================================
-        # No Translation
-        # =====================================================================
-        'Вторая аппроксимация рядов загрузки мощностей, полученная с помощью итеративного процесса': 'dataset_usa_brown.zip',
-        # =====================================================================
-        # Utilized Fixed Assets, USD 1,000,000, 1929=100
-        # =====================================================================
-        'Используемый основной капитал (в млн. долл., 1929 г.)': 'dataset_usa_brown.zip',
-        # =====================================================================
-        # Actual Man-Hours Worked
-        # =====================================================================
-        'Отработанные человеко-часы': 'dataset_usa_brown.zip',
-        # =====================================================================
-        # No Translation
-        # =====================================================================
-        'Первая аппроксимация рядов загрузки мощностей, полученная с помощью метода Уортонской школы': 'dataset_usa_brown.zip',
-        # =====================================================================
-        # Net Fixed Assets, USD 1,000,000, 1929=100
-        # =====================================================================
-        'Чистый основной капитал (в млн. долл., 1929 г.)': 'dataset_usa_brown.zip',
-    }
-    df_b = stockpile_usa_hist(SERIES_IDS)
-    df_b.columns = (f'series_{hex(_)}' for _,
-                    series_id in enumerate(SERIES_IDS))
-    SERIES_IDS = {
-        'KTA03S07': 'dataset_usa_kendrick.zip',
-        'KTA03S08': 'dataset_usa_kendrick.zip',
-        'KTA10S08': 'dataset_usa_kendrick.zip',
-        'KTA15S07': 'dataset_usa_kendrick.zip',
-        'KTA15S08': 'dataset_usa_kendrick.zip'
-    }
-    df_k = stockpile_usa_hist(SERIES_IDS)
-    df = pd.concat(
-        [
-            # =================================================================
-            # Omit Two Last Rows
-            # =================================================================
-            df_k[:-2].truncate(before=1889),
-            # =================================================================
-            # Первая аппроксимация рядов загрузки мощностей, полученная с помощью метода Уортонской школы
-            # =================================================================
-            df_b.iloc[:, [-2]].truncate(after=1953)
-        ],
-        axis=1,
-        sort=True
-    )
-    df = df.assign(
-        series_0x0=df.iloc[:, 0].sub(df.iloc[:, 1]),
-        series_0x1=df.iloc[:, 3].add(df.iloc[:, 4]),
-        series_0x2=df.iloc[:, [3, 4]].sum(axis=1).rolling(
-            2).mean().mul(df.iloc[:, 5]).div(100),
-        series_0x3=df.iloc[:, 2],
-    )
-    return pd.concat(
-        [
-            df.iloc[:, -4:].dropna(axis=0),
-            # =================================================================
-            # Brown M. Numbers Not Found in Kendrick J.W. For Years Starting From 1954 Inclusive
-            # =================================================================
-            df_b.iloc[:, range(4)].truncate(before=1954)
-        ]
-    ).round()
-
-
 def collect_usa_capital() -> DataFrame:
     SERIES_IDS = {
         # =====================================================================
@@ -651,9 +571,9 @@ def collect_usa_macroeconomics() -> DataFrame:
         # =====================================================================
         'A032RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
         # =====================================================================
-        # Fixed Assets Series: K10002, 1951--2021
+        # Fixed Assets Series: K10070, 1951--2021
         # =====================================================================
-        'K10002': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        'K10070': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
         # =====================================================================
         # Fixed Assets Series: k1ntotl1si00, 1925--2020
         # =====================================================================

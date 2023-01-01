@@ -533,7 +533,7 @@ def read_usa_hist(filepath_or_buffer: str) -> DataFrame:
     """
     MAP = {
         'dataset_douglas.zip': {'series_id': 4, 'period': 5, 'value': 6},
-        'dataset_usa_brown.zip': {'series_id': 3, 'period': 4, 'value': 5},
+        'dataset_usa_brown.zip': {'series_id': 5, 'period': 6, 'value': 7},
         'dataset_usa_cobb-douglas.zip': {'series_id': 5, 'period': 6, 'value': 7},
         'dataset_usa_kendrick.zip': {'series_id': 4, 'period': 5, 'value': 6},
         'dataset_usa_mc_connell_brue.zip': {'series_id': 1, 'period': 2, 'value': 3},

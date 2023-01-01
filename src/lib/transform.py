@@ -414,7 +414,7 @@ def combine_kurenkov(df: DataFrame) -> tuple[DataFrame]:
     df_c = pd.concat(
         [
             df_control.iloc[:, [2]],
-            df.loc[:, ('K10002',)],
+            df.loc[:, ('K10070',)],
         ],
         axis=1,
         sort=True
