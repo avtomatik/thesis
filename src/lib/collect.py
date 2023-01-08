@@ -72,10 +72,10 @@ def collect_cobb_douglas_deflator() -> DataFrame:
     # =========================================================================
     # =========================================================================
     # Results:
-    # HSUS 1949 - 'L0036' Offset with HSUS 1975 - 'E0183'
-    # HSUS 1949 - 'L0038' Offset with HSUS 1975 - 'E0184'
-    # HSUS 1949 - 'L0039' Offset with HSUS 1975 - 'E0185'
-    # HSUS 1975 - 'E0052' Offset With HSUS 1949 - 'L0002
+    # {'L0036', 'dataset_uscb.zip'} Offset with {'E0183', 'dataset_uscb.zip'}
+    # {'L0038', 'dataset_uscb.zip'} Offset with {'E0184', 'dataset_uscb.zip'}
+    # {'L0039', 'dataset_uscb.zip'} Offset with {'E0185', 'dataset_uscb.zip'}
+    # {'E0052', 'dataset_uscb.zip'} Offset With {'L0002', 'dataset_uscb.zip'}
     # =========================================================================
     # =========================================================================
     # Cost-Of-Living Indexes
@@ -414,7 +414,7 @@ def collect_usa_general() -> DataFrame:
         # =====================================================================
         'k1n31gd1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
         # =====================================================================
-        # Investment in Fixed Assets, Private, i3ptotl1es00
+        # Investment in Fixed Assets and Consumer Durable Goods, Private
         # =====================================================================
         'i3ptotl1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
         # =====================================================================

@@ -2569,7 +2569,7 @@ def plot_capital_acquisition(df: DataFrame) -> None:
     plt.plot(_df.iloc[:, 7])
     plt.plot(_df.iloc[:, 13])
     plt.title(
-        'Investment to Gross Domestic Product Ratio, \nObserved & Max, {}=100, {}$-${}'.format(
+        'Investment to Gross Domestic Product Ratio,\nObserved & Max, {}=100, {}$-${}'.format(
             _b, *df.index[[0, -1]]
         )
     )

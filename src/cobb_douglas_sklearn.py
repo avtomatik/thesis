@@ -314,4 +314,4 @@ result = cross_val_score(clf, iris.data, iris.target, cv=cv)
 # =============================================================================
 # Kolmogorov-Smirnov Test for Goodness of Fit
 # =============================================================================
-# scipy.stats.kstest
+# from scipy.stats import kstest

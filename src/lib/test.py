@@ -133,35 +133,21 @@ def test_data_consistency_a():
 
 def test_data_consistency_b():
     """Project II: USA Fixed Assets Data Comparison"""
-    # =========================================================================
-    # Fixed Assets Series: k1ntotl1si000, 1925--2016
-    # Fixed Assets Series: kcntotl1si000, 1925--2016
-    # Not Used: Fixed Assets: k3ntotl1si000, 1925--2016, Table 2.3. Historical-Cost Net Stock of Private Fixed Assets, Equipment, Structures, and Intellectual Property Products by Type
-    # =========================================================================
-    ARCHIVE_NAME = 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip'
-    WB_NAME = 'Section2ALL_xls.xls'
-    SH_NAMES = (
-        '201 Ann',
-        '202 Ann',
-        '203 Ann',
-    )
-    SERIES_IDS = (
-        'k1ntotl1si000',
-        'kcntotl1si000',
-        'k3ntotl1si000',
-    )
-    df = pd.concat(
-        [
-            # =================================================================
-            # TODO: UPDATE ACCORDING TO NEW SIGNATURE
-            # =================================================================
-            read_usa_bea_excel(ARCHIVE_NAME, WB_NAME,
-                               sh_name).loc[:, series_id]
-            for sh_name, series_id in zip(SH_NAMES, SERIES_IDS)
-        ],
-        axis=1,
-        sort=True
-    )
+    SERIES_IDS = {
+        # =====================================================================
+        # Fixed Assets Series: k1ntotl1si00, 1925--2016
+        # =====================================================================
+        'k1ntotl1si00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
+        # =====================================================================
+        # Fixed Assets Series: kcntotl1si00, 1925--2016
+        # =====================================================================
+        'kcntotl1si00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
+        # =====================================================================
+        # Not Used: Fixed Assets: k3ntotl1si00, 1925--2016, Table 2.3. Historical-Cost Net Stock of Private Fixed Assets, Equipment, Structures, and Intellectual Property Products by Type
+        # =====================================================================
+        'k3ntotl1si00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
+    }
+    return stockpile_usa_bea(SERIES_IDS)
 
 
 def test_data_consistency_c():
@@ -254,13 +240,11 @@ def test_data_consistency_d():
     # =========================================================================
     # Fixed Assets Data Tests
     # =========================================================================
-    df = test_read_usa_bea_sfat_series()
+    df = test_usa_bea_sfat_series_ids()
+
+    test_subtract_a()
     # =========================================================================
-    # Tested: "k3n31gd1es000" = "k3n31gd1eq000" + "k3n31gd1ip000" + "k3n31gd1st000"
-    # =========================================================================
-    test_subtract_a(df)
-    # =========================================================================
-    # Comparison of "k3n31gd1es000" out of control_frame with "k3n31gd1es000" out of test_frame
+    # Comparison of "k3n31gd1es00" out of df_control with "k3n31gd1es00" out of df_test
     # =========================================================================
     test_subtract_b(df)
     # =========================================================================
@@ -317,9 +301,22 @@ def test_usa_bea_subtract(kwargs_list: list[dict]) -> None:
     df.iloc[:, [-1]].dropna(axis=0).plot(grid=True)
 
 
-def test_subtract_a(df: DataFrame):
-    df['delta_sm'] = df.iloc[:, 0].sub(df.iloc[:, (3, 4, 5)].sum(axis=1))
-    df.iloc[:, [-1]].dropna(axis=0).pipe(autocorrelation_plot)
+def test_subtract_a():
+    """
+    Tested: "k3n31gd1es00" = "k3n31gd1eq00" + "k3n31gd1ip00" + "k3n31gd1st00"
+    """
+    SERIES_ID = {
+        'k3n31gd1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt'
+    }
+    SERIES_IDS = {
+        'k3n31gd1eq00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
+        'k3n31gd1ip00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
+        'k3n31gd1st00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt'
+    }
+    df = stockpile_usa_bea(SERIES_ID | SERIES_IDS)
+    df["sum"] = df.loc[:, list(SERIES_IDS)].sum(axis=1)
+    df["delta"] = df.iloc[:, 0].sub(df.iloc[:, -1])
+    df.iloc[:, [-1]].pipe(autocorrelation_plot)
 
 
 def test_subtract_b(df: DataFrame):
@@ -331,45 +328,59 @@ def test_subtract_b(df: DataFrame):
     df.iloc[:, [-1]].dropna(axis=0).plot(grid=True)
 
 
-def test_read_usa_bea_sfat_series() -> DataFrame:
-    SERIES_ID = 'k3n31gd1es000'
+def test_usa_bea_sfat_series_ids(
+    directory: str = '/media/green-machine/KINGSTON',
+    file_name: str = 'dataset_usa_bea-nipa-selected.zip',
+    source_id: str = 'Table 4.3. Historical-Cost Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization',
+    series_id: str = 'k3n31gd1es000'
+) -> DataFrame:
+    """
+    Earlier Version of 'k3n31gd1es000'
+    """
+    # =========================================================================
+    # Fixed Assets Series, 1925--2016
+    # Test if Ratio of Manufacturing Fixed Assets to Overall Fixed Assets
+    # =========================================================================
+    SERIES_IDS = {
+        'k3n31gd1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
+        'k3n31gd1eq00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
+        'k3n31gd1ip00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
+        'k3n31gd1st00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt'
+    }
+    df_test = stockpile_usa_bea(SERIES_IDS)
+
     kwargs = {
-        'filepath_or_buffer': 'dataset_usa_bea-nipa-selected.zip',
+        'filepath_or_buffer': Path(directory).joinpath(file_name),
+        'header': 0,
+        'names': ('source_id', 'series_id', 'period', 'value'),
         'index_col': 2,
-        'usecols': [0, *range(8, 11)],
+        'usecols': (0, 8, 9, 10),
     }
     df = pd.read_csv(**kwargs)
-    df = df[df.iloc[:, 1] == SERIES_ID]
-    control_frame = DataFrame()
+    # =========================================================================
+    # Option I
+    # =========================================================================
+    df = df[df.iloc[:, 1] == series_id]
+
+    df_control = DataFrame()
     for source_id in sorted(set(df.iloc[:, 0])):
         chunk = df[df.iloc[:, 0] == source_id].iloc[:, [2]]
         chunk.columns = [
-            ''.join((source_id.split()[1].replace('.', '_'), SERIES_ID))
+            ''.join((source_id.split()[1].replace('.', '_'), series_id))
         ]
-        control_frame = pd.concat([control_frame, chunk], axis=1, sort=True)
+        df_control = pd.concat([df_control, chunk], axis=1, sort=True)
 
-    ARCHIVE_NAME = 'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip'
-    WB_NAME = 'Section4ALL_xls.xls'
-    SH_NAME = '403 Ann'
     # =========================================================================
-    # Fixed Assets Series, 1925--2016
+    # # =========================================================================
+    # # Option II
+    # # =========================================================================
+    # df_control = df[
+    #     (df.loc[:, 'source_id'] == source_id) &
+    #     (df.loc[:, 'series_id'] == series_id)
+    # ].iloc[:, [-1]].rename(columns={"value": series_id})
     # =========================================================================
-    SERIES_IDS = (
-        'k3n31gd1es000', 'k3n31gd1eq000', 'k3n31gd1ip000', 'k3n31gd1st000',
-    )
-    test_frame = pd.concat(
-        [
-            # =================================================================
-            # TODO: UPDATE ACCORDING TO NEW SIGNATURE
-            # =================================================================
-            read_usa_bea_excel(ARCHIVE_NAME, WB_NAME,
-                               SH_NAME).loc[:, series_id]
-            for series_id in SERIES_IDS
-        ],
-        axis=1,
-        sort=True
-    )
-    return pd.concat([test_frame, control_frame], axis=1, sort=True)
+
+    return pd.concat([df_test, df_control], axis=1, sort=True)
 
 
 def test_usa_brown_kendrick() -> DataFrame:

@@ -358,13 +358,24 @@ def filter_kol_zur(df: DataFrame, k: int = None) -> tuple[DataFrame]:
 def m_spline_ea(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFrame, tuple[float]]:
     """
     Exponential Spline, Type A
+
+    Parameters
+    ----------
+    df : DataFrame
         ================== =================================
         df.iloc[:, 0]      Period
         df.iloc[:, 1]      Target Series
         ================== =================================
-        n_spans            Number of Spans
-        knots              Interpolation Knots
-        ================== =================================
+    n_spans : int
+        Number of Spans.
+    knots : tuple[int]
+        Interpolation Knots.
+
+    Returns
+    -------
+    tuple[DataFrame, tuple[float]]
+        DESCRIPTION.
+
     """
     _params_a, _params_k, _splined = [], [], []
     # =========================================================================
@@ -421,13 +432,24 @@ def m_spline_ea(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFra
 def m_spline_eb(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFrame, tuple[float]]:
     """
     Exponential Spline, Type B
+
+    Parameters
+    ----------
+    df : DataFrame
         ================== =================================
         df.iloc[:, 0]      Period
         df.iloc[:, 1]      Target Series
         ================== =================================
-        n_spans            Number of Spans
-        knots              Interpolation Knots
-        ================== =================================
+    n_spans : int
+        Number of Spans.
+    knots : tuple[int]
+        Interpolation Knots.
+
+    Returns
+    -------
+    tuple[DataFrame, tuple[float]]
+        DESCRIPTION.
+
     """
     # =========================================================================
     # TODO: Rework Algorithm To Make It More Clear Possibly Using "continue" Statement
@@ -716,14 +738,14 @@ def run_m_spline(df: DataFrame, kernel: callable) -> None:
         # =====================================================================
         print("Error")
     _knots = tuple(_knots)
-    splined_frame, _params = kernel(df, N, _knots)
+    df_splined, _params = kernel(df, N, _knots)
     _m_spline_print_params(N, _params)
-    _m_spline_error_metrics(splined_frame)
+    _m_spline_error_metrics(df_splined)
     plt.figure()
-    plt.scatter(splined_frame.iloc[:, 0], splined_frame.iloc[:, 1])
+    plt.scatter(df_splined.iloc[:, 0], df_splined.iloc[:, 1])
     plt.plot(
-        splined_frame.iloc[:, 0],
-        splined_frame.iloc[:, 2],
+        df_splined.iloc[:, 0],
+        df_splined.iloc[:, 2],
         color='red',
         label='$s_{}(\\tau)$'.format(0,)
     )
@@ -743,12 +765,12 @@ def run_m_spline(df: DataFrame, kernel: callable) -> None:
             modified.iloc[_knot, 1] = modified.iloc[_knot, 1]*_factor
 
         modified.columns = ('Period', 'Corrected')
-        splined_frame, _params = kernel(modified, N, _knots)
+        df_splined, _params = kernel(modified, N, _knots)
         _m_spline_print_params(N, _params)
-        _m_spline_error_metrics(splined_frame)
+        _m_spline_error_metrics(df_splined)
         plt.plot(
-            splined_frame.iloc[:, 0],
-            splined_frame.iloc[:, 2],
+            df_splined.iloc[:, 0],
+            df_splined.iloc[:, 2],
             color='g',
             label='$s_{}(\\tau)$'.format(1,)
         )
@@ -849,13 +871,13 @@ def price_inverse_single(df: DataFrame) -> DataFrame:
     return df.pct_change()
 
 
-def string_to_url(string: str) -> str:
+def archive_name_to_url(archive_name: str) -> str:
     """
 
 
     Parameters
     ----------
-    string : str
+    archive_name : str
         DESCRIPTION.
 
     Returns
@@ -864,7 +886,7 @@ def string_to_url(string: str) -> str:
         DESCRIPTION.
 
     """
-    return f'https://www150.statcan.gc.ca/n1/tbl/csv/{string}'
+    return f'https://www150.statcan.gc.ca/n1/tbl/csv/{archive_name}'
 
 
 def build_push_data_frame(path_or_buf: str, blueprint: dict) -> None:
@@ -884,7 +906,7 @@ def build_push_data_frame(path_or_buf: str, blueprint: dict) -> None:
     """
     df = DataFrame()
     for item in blueprint:
-        _df = read_can(string_to_url(item['archive_name']))
+        _df = read_can(archive_name_to_url(item['archive_name']))
         _df = _df[_df['VECTOR'].isin(item['series_ids'])]
         for series_id in item['series_ids']:
             chunk = _df[_df['VECTOR'] == series_id][['VALUE']]

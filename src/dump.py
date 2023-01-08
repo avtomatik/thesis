@@ -82,10 +82,6 @@ def append_series_ids_sum(df: DataFrame, chunk: DataFrame, series_ids: tuple[str
     )
 
 
-def string_to_url(string):
-    return f'https://www150.statcan.gc.ca/n1/tbl/csv/{string}'
-
-
 # =============================================================================
 # Separate Block
 # =============================================================================
@@ -643,15 +639,11 @@ df = pd.read_csv(**kwargs)
 # Unallocated
 # =============================================================================
 # =============================================================================
-# Fixed Assets Series: k3n31gd1es000, 1947--2011
+# Fixed Assets Series
 # =============================================================================
-kwargs = {
-    'archive_name': 'dataset_usa_bea-sfat-release-2012-08-15-SectionAll_xls.zip',
-    'wb_name': 'Section3ALL_xls.xls',
-    'sh_name': '303ES Ann',
-}
-SERIES_ID = 'k3n31gd1es000'
-df = read_usa_bea_excel(**kwargs).loc[:, (SERIES_ID,)]
+SERIES_ID = {'k3n31gd1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt'}
+df = stockpile_usa_bea(SERIES_ID)
+
 KWARGS = (
     # =========================================================================
     # Nominal Gross Domestic Product Series: A191RC1, 1929--1969
@@ -679,70 +671,37 @@ df_semi_d = pd.concat(
 # Gross fixed capital formation Data Block
 # =============================================================================
 # =============================================================================
-# Not Clear: v62143969 - 380-0068 Gross fixed capital formation; Canada;
-# Chained (2007) dollars; Seasonally adjusted at annual rates; Industrial
-# machinery and equipment (x 1,000,000) (quarterly, 1961-03-01 to 2017-09-01)
+# Not Clear:
+{
+    "table": 3800068,
+    "title": "Gross fixed capital formation",
+    "geo": "Canada",
+    "prices": "Chained (2007) dollars",
+    "seas": "Seasonally adjusted at annual rates",
+    "estimates": "Industrial machinery and equipment (x 1,000,000)",
+    "frequency_start_end": "(quarterly, 1961-03-01 to 2017-09-01)",
+    "series_id": "v62143969"
+}
 # =============================================================================
 # =============================================================================
-# Not Clear: v62143990 - 380-0068 Gross fixed capital formation; Canada;
-# Chained (2007) dollars; Seasonally adjusted at annual rates; Industrial\
-# machinery and equipment (x 1,000,000) (quarterly, 1961-03-01 to 2017-09-01)
+# Not Clear:
+{
+    "table": 3800068,
+    "title": "Gross fixed capital formation",
+    "geo": "Canada",
+    "prices": "Chained (2007) dollars",
+    "seas": "Seasonally adjusted at annual rates",
+    "estimates": "Industrial machinery and equipment (x 1,000,000)",
+    "frequency_start_end": "(quarterly, 1961-03-01 to 2017-09-01)",
+    "series_id": "v62143990"
+}
 # =============================================================================
+
 read_can_group_a(7931814471809016759, skiprows=241)
 read_can_group_a(8448814858763853126, skiprows=81)
 read_can_group_b(5245628780870031920, skiprows=3)
 read_can(3800068).pipe(pull_can_aggregate, 'v62143969')
 read_can(3800068).pipe(pull_can_aggregate, 'v62143990')
-
-
-def test_usa_bea_sfat_series_ids(
-    directory: str = '/media/green-machine/KINGSTON',
-    file_name: str = 'dataset_usa_bea-nipa-selected.zip',
-    source_id: str = 'Table 4.3. Historical-Cost Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization',
-    series_id: str = 'k3n31gd1es000',
-) -> DataFrame:
-    """
-    Earlier Version of 'k3n31gd1es000'
-    """
-    # =========================================================================
-    # Test if Ratio of Manufacturing Fixed Assets to Overall Fixed Assets
-    # =========================================================================
-    SERIES_IDS = (
-        'k3n31gd1es000',
-        'k3n31gd1eq000',
-        'k3n31gd1ip000',
-        'k3n31gd1st000',
-    )
-
-    kwargs = {
-        'filepath_or_buffer': Path(directory).joinpath(file_name),
-        'header': 0,
-        'names': ('source_id', 'series_id', 'period', 'value'),
-        'index_col': 2,
-        'usecols': (0, 8, 9, 10),
-    }
-    df = pd.read_csv(**kwargs)
-
-    df_control = df[
-        (df.loc[:, 'source_id'] == source_id) &
-        (df.loc[:, 'series_id'] == series_id)
-    ].iloc[:, [-1]].rename(columns={"value": series_id})
-
-    return pd.concat(
-        [
-            pd.concat(
-                [
-                    read_usa_bea_sfat_pull_by_series_id(series_id)
-                    for series_id in SERIES_IDS
-                ],
-                axis=1,
-                sort=True
-            ),
-            df_control
-        ],
-        axis=1,
-        sort=True
-    )
 
 
 def read_usa_bea_sfat_pull_by_series_id(series_id: str) -> DataFrame:
@@ -761,9 +720,11 @@ def read_usa_bea_sfat_pull_by_series_id(series_id: str) -> DataFrame:
     }
     df = pd.read_csv(**kwargs)
 
-    df = df[df.loc[:, "source_id"].str.contains('Historical')]
-    df = df[df.loc[:, "group1"].str.contains('Manufacturing')]
-    df = df[df.loc[:, "series_id"] == series_id]
+    _filter = (
+        (df.loc[:, "source_id"].str.contains('Historical')) &
+        (df.loc[:, "group1"].str.contains('Manufacturing')) &
+        (df.loc[:, "series_id"] == series_id)
+    )
     df.drop(["group1", "series_id"], axis=1, inplace=True)
 
     source_ids = sorted(set(df.loc[:, "source_id"]))
