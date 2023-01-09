@@ -79,11 +79,7 @@ os.chdir(DIR)
 # )
 print(*stockpile_cobb_douglas().pipe(transform_cobb_douglas_sklearn))
 
-
-# _df = stockpile_cobb_douglas()
-# print(_df)
-# X, y = _df.pipe(transform_cobb_douglas_sklearn)
-#
+X, y = stockpile_cobb_douglas().pipe(transform_cobb_douglas_sklearn)
 
 
 # =============================================================================
@@ -91,17 +87,7 @@ print(*stockpile_cobb_douglas().pipe(transform_cobb_douglas_sklearn))
 # =============================================================================
 
 
-# # =============================================================================
-# # Elastic Net
-# # =============================================================================
-# las = Lasso(normalize=1)
-# alphas = np.logspace(-5, 2, 1000)
-# alphas, coefs, _ = las.path(X, y, alphas=alphas)
-# fig, ax = plt.subplots()
-# ax.plot(alphas, coefs.T)
-# ax.set_yscale('log')
-# ax.set_xlim(alphas.max(), alphas.min())
-# plt.show()
+
 
 # # =============================================================================
 # # Cross Validation

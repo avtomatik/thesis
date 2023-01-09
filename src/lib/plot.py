@@ -575,8 +575,8 @@ def plot_uscb_money_stock(df: DataFrame) -> None:
 def plot_uscb_finance() -> None:
     """Census Financial Markets & Institutions Series"""
     ARCHIVE_NAME = 'dataset_uscb.zip'
-    SERIES_IDS = {
-        f'X{_:04n}': ARCHIVE_NAME
+    SERIES_IDS = (
+        {f'X{_:04n}': ARCHIVE_NAME}
         for _ in itertools.chain(
             range(410, 424),
             range(580, 588),
@@ -585,9 +585,10 @@ def plot_uscb_finance() -> None:
             range(879, 933),
             range(947, 957),
         )
-    }
+    )
+
     for _, series_id in enumerate(SERIES_IDS, start=1):
-        df = read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
+        df = stockpile_usa_hist(series_id)
         df = df.div(df.iloc[0, :]).mul(100)
         descr = pull_uscb_description(series_id)
         plt.figure(_)

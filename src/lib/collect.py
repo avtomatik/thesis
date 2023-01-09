@@ -418,7 +418,7 @@ def collect_usa_general() -> DataFrame:
         # =====================================================================
         'i3ptotl1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
         # =====================================================================
-        # Chain-Type Quantity Index for Investment in Fixed Assets, Private, icptotl1es00
+        # Chain-Type Quantity Indexes for Investment in Fixed Assets and Consumer Durable Goods, Private
         # =====================================================================
         'icptotl1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
         # =====================================================================
@@ -1135,7 +1135,9 @@ def stockpile_usa_hist(series_ids: dict[str, str]) -> DataFrame:
     """
     return pd.concat(
         [
-            read_usa_hist(archive_name).pipe(pull_by_series_id, series_id)
+            read_usa_hist(archive_name).sort_index().pipe(
+                pull_by_series_id, series_id
+            )
             for series_id, archive_name in series_ids.items()
         ],
         axis=1,

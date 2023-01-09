@@ -14,7 +14,7 @@ from pandas.plotting import autocorrelation_plot
 from .collect import stockpile_usa_hist
 from .plot import plot_can_test
 from .pull import pull_by_series_id, pull_can_aggregate
-from .read import read_can, read_usa_bea_excel, read_usa_bls, read_usa_hist
+from .read import read_can, read_usa_bea_excel, read_usa_bls
 
 ARCHIVE_NAMES_UTILISED = (
     'dataset_douglas.zip',
@@ -29,27 +29,27 @@ FILE_NAMES_UTILISED = (
 
 
 def options_reviewed():
-    SERIES_IDS = {
+    SERIES_IDS = (
         # =====================================================================
         # The Revised Index of Physical Production for All Manufacturing In the United States, 1899--1926
         # =====================================================================
-        'DT24AS01': 'dataset_douglas.zip',
+        {'DT24AS01': 'dataset_douglas.zip'},
         # =====================================================================
         # Not Suitable: Total Capital (in millions of 1880 dollars)
         # =====================================================================
-        'DT63AS01': 'dataset_douglas.zip',
+        {'DT63AS01': 'dataset_douglas.zip'},
         # =====================================================================
         # Not Suitable: Annual Increase (in millions of 1880 dollars)
         # =====================================================================
-        'DT63AS02': 'dataset_douglas.zip',
+        {'DT63AS02': 'dataset_douglas.zip'},
         # =====================================================================
         # Not Suitable: Percentage Rate of Growth
         # =====================================================================
-        'DT63AS03': 'dataset_douglas.zip'
-    }
+        {'DT63AS03': 'dataset_douglas.zip'}
+    )
 
-    for series_id, archive_name in SERIES_IDS.items():
-        print(read_usa_hist(archive_name).pipe(pull_by_series_id, series_id))
+    for series_id in SERIES_IDS:
+        print(stockpile_usa_hist(series_id))
 
 
 def test_data_consistency_a():

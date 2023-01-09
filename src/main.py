@@ -288,18 +288,17 @@ def main():
     for col in df.columns:
         plot_uscb_complex(df.loc[:, [col]])
 
-    SERIES_IDS = {
-        'D0004': 'dataset_uscb.zip', 'D0130': 'dataset_uscb.zip',
-        'F0003': 'dataset_uscb.zip', 'F0004': 'dataset_uscb.zip',
-        'P0110': 'dataset_uscb.zip', 'U0001': 'dataset_uscb.zip',
-        'U0008': 'dataset_uscb.zip', 'X0414': 'dataset_uscb.zip',
-        'X0415': 'dataset_uscb.zip'
-    }
+    SERIES_IDS = (
+        {'D0004': 'dataset_uscb.zip'}, {'D0130': 'dataset_uscb.zip'},
+        {'F0003': 'dataset_uscb.zip'}, {'F0004': 'dataset_uscb.zip'},
+        {'P0110': 'dataset_uscb.zip'}, {'U0001': 'dataset_uscb.zip'},
+        {'U0008': 'dataset_uscb.zip'}, {'X0414': 'dataset_uscb.zip'},
+        {'X0415': 'dataset_uscb.zip'}
+    )
 
-    for series_id, archive_name in SERIES_IDS.items():
+    for series_id in SERIES_IDS:
         print(f'Processing {series_id}')
-        df = read_usa_hist(archive_name).pipe(pull_by_series_id, series_id)
-        plot_uscb_complex(df)
+        stockpile_usa_hist(series_id).pipe(plot_uscb_complex)
 
     # =========================================================================
     # Subproject IX. USA BEA
