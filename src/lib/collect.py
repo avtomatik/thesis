@@ -72,10 +72,10 @@ def collect_cobb_douglas_deflator() -> DataFrame:
     # =========================================================================
     # =========================================================================
     # Results:
-    # {'L0036', 'dataset_uscb.zip'} Offset with {'E0183', 'dataset_uscb.zip'}
-    # {'L0038', 'dataset_uscb.zip'} Offset with {'E0184', 'dataset_uscb.zip'}
-    # {'L0039', 'dataset_uscb.zip'} Offset with {'E0185', 'dataset_uscb.zip'}
-    # {'E0052', 'dataset_uscb.zip'} Offset With {'L0002', 'dataset_uscb.zip'}
+    # {'L0036': 'dataset_uscb.zip'} Offset With {'E0183': 'dataset_uscb.zip'}
+    # {'L0038': 'dataset_uscb.zip'} Offset With {'E0184': 'dataset_uscb.zip'}
+    # {'L0039': 'dataset_uscb.zip'} Offset With {'E0185': 'dataset_uscb.zip'}
+    # {'E0052': 'dataset_uscb.zip'} Offset With {'L0002': 'dataset_uscb.zip'}
     # =========================================================================
     # =========================================================================
     # Cost-Of-Living Indexes
@@ -895,32 +895,6 @@ def collect_uscb_employment_conflicts() -> DataFrame:
         index=df.index,
         columns=df.columns
     )
-
-
-def collect_uscb_manufacturing() -> tuple[DataFrame, int]:
-    """
-    Census Manufacturing Indexes, 1899=100
-    Returns
-    -------
-    tuple[DataFrame, int]
-        DESCRIPTION.
-    """
-    SERIES_IDS = {
-        # =====================================================================
-        # Bureau of the Census, 1949, Page 179, J13: National Bureau of Economic Research Index of Physical Output, All Manufacturing Industries.
-        # =====================================================================
-        'J0013': 'dataset_uscb.zip',
-        # =====================================================================
-        # Bureau of the Census, 1949, Page 179, J14: Warren M. Persons, Index of Physical Production of Manufacturing
-        # =====================================================================
-        'J0014': 'dataset_uscb.zip',
-        # =====================================================================
-        # HSUS 1975 Page 667, P17: Edwin Frickey Series, Indexes of Manufacturing Production
-        # =====================================================================
-        'P0017': 'dataset_uscb.zip',
-    }
-    df = stockpile_usa_hist(SERIES_IDS)
-    return df.div(df.loc[1899, :]).mul(100), df.index.get_loc(1899)
 
 
 def collect_uscb_metals() -> tuple[DataFrame, tuple[int]]:

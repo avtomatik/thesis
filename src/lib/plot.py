@@ -268,16 +268,17 @@ def plot_e(df: DataFrame) -> None:
 
 def plot_uscb_manufacturing(df: DataFrame, year_base: int) -> None:
     plt.figure()
-    plt.plot(df.iloc[:, (0, 2)], label=[
-        'Fabricant S., Shiskin J., NBER',
-        'E. Frickey',
-    ]
+    plt.plot(
+        df.iloc[:, [0, 2]], label=[
+            'Fabricant S., Shiskin J., NBER',
+            'E. Frickey',
+        ]
     )
     plt.plot(df.iloc[:, 1], color='red', linewidth=4, label='W.M. Persons')
-    plt.axvline(x=df.index[year_base], linestyle=':')
+    plt.axvline(x=year_base, linestyle=':')
     plt.title(
         'US Manufacturing Indexes Of Physical Production Of Manufacturing, {}=100, {}$-${}'.format(
-            df.index[year_base], *df.index[[0, -1]]
+            year_base, *df.index[[0, -1]]
         )
     )
     plt.xlabel('Period')
