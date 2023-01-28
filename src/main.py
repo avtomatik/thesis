@@ -8,13 +8,14 @@ Thesis Project
 """
 
 
+import pandas as pd
 
 from lib.collect import (collect_usa_general, collect_usa_investment_turnover,
                          collect_usa_investment_turnover_bls,
                          collect_usa_manufacturing_three_fold,
                          collect_usa_manufacturing_two_fold, construct_can,
-                         stockpile_cobb_douglas, stockpile_usa_hist,
-                         stockpile_usa_mcconnel)
+                         stockpile_cobb_douglas, stockpile_usa_bea,
+                         stockpile_usa_hist, stockpile_usa_mcconnel)
 from lib.plot import (plot_approx_linear, plot_approx_linear_log, plot_c,
                       plot_capital_modelling, plot_cobb_douglas,
                       plot_cobb_douglas_3d, plot_cobb_douglas_complex, plot_d,
@@ -68,11 +69,7 @@ FILE_NAMES_UTILISED = (
 )
 
 
-
-
-
 def main():
-
     # =========================================================================
     # Subproject I. Approximation
     # =========================================================================
@@ -83,29 +80,81 @@ def main():
     # 'calculate_power_function_fit_params_b': Power Function Approximation,
     # 'calculate_power_function_fit_params_c': Power Function Approximation
     # =========================================================================
-    _df = collect_usa_general()
-    plot_approx_linear(_df.iloc[:, [7, 6, 0, 6]].dropna(axis=0))
-    plot_approx_linear_log(_df.iloc[:, [7, 6, 20, 4]].dropna(axis=0))
-    plot_approx_linear_log(_df.iloc[:, [7, 6, 20, 6]].dropna(axis=0))
+    pd.concat(
+        [
+            stockpile_usa_bea(
+                {'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'}
+            ),
+            stockpile_usa_bea(
+                {'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'}
+            ),
+            stockpile_usa_bea(
+                {'A006RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'}
+            ),
+            stockpile_usa_bea(
+                {'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'}
+            )
+        ],
+        axis=1
+    ).dropna(axis=0).pipe(plot_approx_linear)
+
+    pd.concat(
+        [
+            stockpile_usa_bea(
+                {'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'}
+            ),
+            stockpile_usa_bea(
+                {'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'}
+            ),
+            stockpile_usa_bea(
+                {'kcptotl1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt'}
+            ),
+            stockpile_usa_bea(
+                {'A032RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'}
+            )
+        ],
+        axis=1
+    ).dropna(axis=0).pipe(plot_approx_linear_log)
+
+    pd.concat(
+        [
+            stockpile_usa_bea(
+                {'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'}
+            ),
+            stockpile_usa_bea(
+                {'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'}
+            ),
+            stockpile_usa_bea(
+                {'kcptotl1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt'}
+            ),
+            stockpile_usa_bea(
+                {'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'}
+            )
+        ],
+        axis=1
+    ).dropna(axis=0).pipe(plot_approx_linear_log)
 
     SERIES_IDS = ('Валовой внутренний продукт, млрд долл. США',)
-    calculate_power_function_fit_params_a(
-        stockpile_usa_mcconnel(SERIES_IDS), (2800, 0.01, 0.5)
+    stockpile_usa_mcconnel(SERIES_IDS).pipe(
+        calculate_power_function_fit_params_a, (2800, 0.01, 0.5)
     )
+
     SERIES_IDS = (
         'Ставка прайм-рейт, %',
         'Национальный доход, млрд долл. США',
     )
-    calculate_power_function_fit_params_b(
-        stockpile_usa_mcconnel(SERIES_IDS), (4, 12, 9000, 3000, 0.87)
+    stockpile_usa_mcconnel(SERIES_IDS).pipe(
+        calculate_power_function_fit_params_b, (4, 12, 9000, 3000, 0.87)
     )
+
     SERIES_IDS = (
         'Ставка прайм-рейт, %',
         'Валовой объем внутренних частных инвестиций, млрд долл. США',
     )
-    calculate_power_function_fit_params_c(
-        stockpile_usa_mcconnel(SERIES_IDS), (1.5, 19, 1.7, 1760)
+    stockpile_usa_mcconnel(SERIES_IDS).pipe(
+        calculate_power_function_fit_params_c, (1.5, 19, 1.7, 1760)
     )
+
 
     # =========================================================================
     # Subproject II. Capital
@@ -115,18 +164,21 @@ def main():
     # Fixed Assets Turnover Linear Approximation
     # Gross Fixed Investment to Gross Domestic Product Ratio Linear Approximation
     # Alpha: Investment to Capital Conversion Ratio Dynamics
-    # Original Result on Archived Data:
-    # {
-    #     's_1': -7.28110931679034e-05,
-    #     's_2': 0.302917968959722,
-    # }
-    # Original Result on Archived Data:
-    # {
-    #     'λ1': -0.000413347827690062,
-    #     'λ2': 1.18883834418742,
-    #
-    # }
     # =========================================================================
+    # =========================================================================
+    # Original Result on Archived Data:
+    # =========================================================================
+    {
+        's_1': -7.28110931679034e-05,
+        's_2': 0.302917968959722,
+    }
+    # =========================================================================
+    # Original Result on Archived Data:
+    # =========================================================================
+    {
+        'λ1': -0.000413347827690062,
+        'λ2': 1.18883834418742,
+    }
     df_a, df_b = collect_usa_investment_turnover_bls()
     df_c, df_d = collect_usa_investment_turnover()
     plot_capital_modelling(df_a, 2005)
@@ -238,11 +290,17 @@ def main():
     # =========================================================================
     # Subproject VI. Elasticity
     # =========================================================================
-    _df = collect_usa_general()
-    df_a = _df.iloc[:, (7, 6, 4)].dropna(axis=0)
-    df_b = _df.iloc[:, [4]].dropna(axis=0)
-    plot_elasticity(df_a)
-    # plot_growth_elasticity(df_b)
+    SERIES_IDS = {
+        'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        'A032RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
+    }
+    stockpile_usa_bea(SERIES_IDS).dropna(axis=0).pipe(plot_elasticity)
+
+    SERIES_IDS = {
+        'A032RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
+    }
+    stockpile_usa_bea(SERIES_IDS).dropna(axis=0).pipe(plot_growth_elasticity)
 
     # =========================================================================
     # Subproject VII. MSpline
@@ -326,7 +384,6 @@ def main():
     df_e_a, df_e_b = df_a.pipe(transform_e)
     plot_e(df_e_a)
     plot_e(df_e_b)
-
 
     # =========================================================================
     # Subproject X. USA Census

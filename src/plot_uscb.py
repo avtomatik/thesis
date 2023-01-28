@@ -10,8 +10,8 @@ import itertools
 import os
 
 from lib.collect import (collect_uscb_cap, collect_uscb_cap_deflator,
-                         collect_uscb_employment_conflicts, collect_uscb_metals,
-                         collect_uscb_trade_by_countries,
+                         collect_uscb_employment_conflicts,
+                         collect_uscb_metals, collect_uscb_trade_by_countries,
                          collect_uscb_unemployment_hours_worked,
                          stockpile_usa_hist)
 from lib.plot import (plot_uscb_cap, plot_uscb_cap_deflator,

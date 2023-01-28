@@ -791,3 +791,24 @@ def plot_usa_un_former() -> None:
     df = pd.DataFrame()
     df['us_to_world'] = _df.loc[:, 'United States'].div(_df.sum(axis=1))
     df.plot(grid=True)
+
+
+def collect_bea_def() -> DataFrame:
+    """
+
+
+    Returns Cumulative Price Index for Some Base Year from Certain Type BEA Deflator File
+    -------
+    DataFrame
+        DESCRIPTION.
+
+    """
+    kwargs = {
+        "io": "dataset_usa_bea-GDPDEF.xls",
+        "names": ('period', 'deflator_gdp'),
+        "index_col": 0,
+        "skiprows": 15,
+        "parse_dates": True
+    }
+    df = pd.read_excel(**kwargs)
+    return df.groupby(df.index.year).prod().pow(1/4)

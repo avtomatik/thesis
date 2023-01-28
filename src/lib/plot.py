@@ -1505,7 +1505,7 @@ def plot_elasticity(df: DataFrame) -> None:
     _title = (
         'National Income' if df.columns[2] == 'A032RC1' else 'Series',
         df.columns[2],
-        df.index[_b],
+        _b,
     )
     df[f'{df.columns[2]}_real'] = df.iloc[:, 0].mul(
         df.iloc[:, 2]).div(df.iloc[:, 1])

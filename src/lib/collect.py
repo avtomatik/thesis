@@ -300,6 +300,9 @@ def collect_usa_capital() -> DataFrame:
         # Douglas P.H., Theory of Wages, Page 332
         # =====================================================================
         'DT63AS01': 'dataset_douglas.zip',
+        # =====================================================================
+        # 'brown_0x1': 'dataset_usa_brown.zip'
+        # =====================================================================
     }
     return pd.concat(
         [
@@ -1120,7 +1123,9 @@ def stockpile_usa_hist(series_ids: dict[str, str]) -> DataFrame:
     )
 
 
-def stockpile_usa_mcconnel(series_ids: tuple[str]) -> DataFrame:
+def stockpile_usa_mcconnel(
+    series_ids: tuple[str], archive_name: str = 'dataset_usa_mc_connell_brue.zip'
+) -> DataFrame:
     SERIES_IDS = {
         'Ставка прайм-рейт, %': 'prime_rate',
         'Валовой объем внутренних частных инвестиций, млрд долл. США': 'A006RC1',
@@ -1129,7 +1134,7 @@ def stockpile_usa_mcconnel(series_ids: tuple[str]) -> DataFrame:
     }
     return pd.concat(
         [
-            read_usa_hist().sort_index().pipe(pull_by_series_id, series_id).rename(
+            read_usa_hist(archive_name).sort_index().pipe(pull_by_series_id, series_id).rename(
                 columns={series_id: SERIES_IDS[series_id]})
             for series_id in series_ids
         ],
