@@ -11,26 +11,25 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import pandas as pd
-from pandas.plotting import autocorrelation_plot
-
 from lib.collect import stockpile_usa_hist
 from lib.pull import pull_by_series_id
 from lib.read import read_usa_bls
 from lib.transform import transform_mean
+from pandas.plotting import autocorrelation_plot
 
 
 def main(
     savefig: bool = False,
-    directory: str = '/media/green-machine/KINGSTON'
+    path_src: str = '/media/green-machine/KINGSTON',
+    path_dsn: str = '/home/green-machine/Downloads',
+    file_name: str = 'plot_usa_unemployment_autocorrelation.pdf'
 ) -> None:
     SERIES_ID_CB = {'D0086': 'dataset_uscb.zip'}
     SERIES_ID_LS = {
         'LNU04000000': 'dataset_usa_bls-2017-07-06-ln.data.1.AllData'
     }
-    DIR = '/home/green-machine/Downloads'
-    FILE_NAME = 'plot_usa_unemployment_autocorrelation.pdf'
 
-    os.chdir(directory)
+    os.chdir(path_src)
 
     df = pd.concat(
         [
@@ -49,7 +48,7 @@ def main(
     df.pipe(transform_mean, name="fused").pipe(autocorrelation_plot)
 
     if savefig:
-        plt.savefig(Path(DIR).joinpath(FILE_NAME), format='pdf', dpi=900)
+        plt.savefig(Path(path_dsn).joinpath(file_name), format='pdf', dpi=900)
 
 
 if __name__ == '__main__':

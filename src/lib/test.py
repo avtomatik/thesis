@@ -52,7 +52,7 @@ def options_reviewed():
         print(stockpile_usa_hist(series_id))
 
 
-def test_data_consistency_a():
+def test_data_can():
     """Project I: Canada Gross Domestic Product Data Comparison"""
     # =========================================================================
     # Expenditure-Based Gross Domestic Product Series Used
@@ -131,7 +131,7 @@ def test_data_consistency_a():
     # plot_can_test(df.iloc[:, -1].div(df.iloc[:, -1]), df.iloc[:, -3])
 
 
-def test_data_consistency_b():
+def test_data_usa_bea():
     """Project II: USA Fixed Assets Data Comparison"""
     SERIES_IDS = {
         # =====================================================================
@@ -150,7 +150,7 @@ def test_data_consistency_b():
     return stockpile_usa_bea(SERIES_IDS)
 
 
-def test_data_consistency_c():
+def test_data_usa_bls():
     """Project III: USA BLS Unemployment Rate & Producer Price Index Manufacturing"""
     SERIES_IDS = {
         # =========================================================================

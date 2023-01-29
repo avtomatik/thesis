@@ -1307,7 +1307,7 @@ def plot_cobb_douglas_complex(df: DataFrame) -> None:
         _params,
         MAP_FIG
     )
-    plot_cobb_douglas_3d(df.iloc[:, range(3)])
+    df.iloc[:, range(3)].pipe(plot_cobb_douglas_3d)
     plot_lab_prod_polynomial(_df.iloc[:, [3, 4]])
     plot_lab_cap_inty_lab_prty_closure(_df.iloc[:, [3, 4]])
     plot_lab_cap_inty(_df.iloc[:, [3]])

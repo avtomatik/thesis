@@ -9,7 +9,6 @@ Thesis Project
 
 
 import pandas as pd
-
 from lib.collect import (collect_usa_general, collect_usa_investment_turnover,
                          collect_usa_investment_turnover_bls,
                          collect_usa_manufacturing_three_fold,
@@ -179,15 +178,15 @@ def main():
         'λ1': -0.000413347827690062,
         'λ2': 1.18883834418742,
     }
-    df_a, df_b = collect_usa_investment_turnover_bls()
+    df, df_b = collect_usa_investment_turnover_bls()
     df_c, df_d = collect_usa_investment_turnover()
-    plot_capital_modelling(df_a, 2005)
-    plot_capital_modelling(df_c, 2012)
+    df.pipe(plot_capital_modelling, year_base=2005)
+    df_c.pipe(plot_capital_modelling, year_base=2012)
     # =========================================================================
     # Project: Discrete Fourier Transform based on Simpson's Rule Applied to Fixed Assets of the US
     # =========================================================================
-    plot_fourier_discrete(df_b)
-    plot_fourier_discrete(df_d)
+    df_b.pipe(plot_fourier_discrete)
+    df_d.pipe(plot_fourier_discrete)
 
     # =========================================================================
     # Subproject IV. Cobb--Douglas
@@ -196,7 +195,7 @@ def main():
     # On Original Dataset
     # =========================================================================
     _df = stockpile_cobb_douglas(5)
-    df_a = _df.iloc[:, range(3)]
+    df = _df.iloc[:, range(3)]
     df_b = _df.iloc[:, (0, 1, 3)]
     df_c = _df.iloc[:, (0, 1, 4)]
     # =========================================================================
@@ -204,7 +203,7 @@ def main():
     # =========================================================================
     df_d, df_e = collect_usa_manufacturing_two_fold()
     df_f, df_g, df_h = collect_usa_manufacturing_three_fold()
-    plot_cobb_douglas_complex(df_a)
+    plot_cobb_douglas_complex(df)
     plot_cobb_douglas_complex(df_b)
     plot_cobb_douglas_complex(df_c)
     # =========================================================================
@@ -285,7 +284,7 @@ def main():
         *_df.pipe(transform_cobb_douglas, year_base=2007),
         MAP_FIG
     )
-    plot_cobb_douglas_3d(_df)
+    _df.pipe(plot_cobb_douglas_3d)
 
     # =========================================================================
     # Subproject VI. Elasticity
@@ -358,32 +357,29 @@ def main():
     # =========================================================================
     # Subproject IX. USA BEA
     # =========================================================================
-    df_a = collect_usa_general()
+    df = collect_usa_general()
     # =========================================================================
     # Project: Initial Version Dated: 05 October 2012
     # =========================================================================
-    df_a_a = df_a.pipe(transform_investment_manufacturing)
-    plot_investment_manufacturing(df_a_a)
+    df.pipe(transform_investment_manufacturing).pipe(plot_investment_manufacturing)
     # =========================================================================
     # Project: Initial Version Dated: 23 November 2012
     # =========================================================================
-    df_b_a = df_a.pipe(transform_b)
-    plot_investment(df_b_a)
+    df.pipe(transform_b).pipe(plot_investment)
     # =========================================================================
     # Project: Initial Version Dated: 16 June 2013
     # =========================================================================
-    df_c_a = df_a.pipe(transform_manufacturing_money)
-    plot_c(df_c_a)
+    df.pipe(transform_manufacturing_money).pipe(plot_c)
     # =========================================================================
     # Project: Initial Version Dated: 15 June 2015
     # =========================================================================
-    plot_d(df_a.pipe(transform_d))
+    df.pipe(transform_d).pipe(plot_d)
     # =========================================================================
     # Project: Initial Version Dated: 17 February 2013
     # =========================================================================
-    df_e_a, df_e_b = df_a.pipe(transform_e)
-    plot_e(df_e_a)
-    plot_e(df_e_b)
+    df_e_a, df_e_b = df.pipe(transform_e)
+    df_e_a.pipe(plot_e)
+    df_e_b.pipe(plot_e)
 
     # =========================================================================
     # Subproject X. USA Census

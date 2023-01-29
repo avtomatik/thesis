@@ -10,6 +10,8 @@ import os
 
 import matplotlib.pyplot as plt
 import numpy as np
+from lib.collect import stockpile_cobb_douglas
+from lib.transform import transform_cobb_douglas_sklearn
 from numpy.fft import rfft
 from sklearn.datasets import load_iris
 from sklearn.linear_model import Lasso, LinearRegression
@@ -24,9 +26,6 @@ from sklearn.preprocessing import StandardScaler
 # Support Vector Machine
 # =============================================================================
 from sklearn.svm import SVC
-
-from lib.collect import stockpile_cobb_douglas
-from lib.transform import transform_cobb_douglas_sklearn
 
 
 def plot_discrete_fourier_transform(array: np.ndarray) -> None:

@@ -15,13 +15,12 @@ import sqlite3
 from pathlib import Path
 
 import pandas as pd
-from pandas import DataFrame
-
 from lib.collect import stockpile_usa_bea
 from lib.pull import pull_by_series_id, pull_can_aggregate
 from lib.read import (read_can, read_temporary, read_usa_bea_excel,
                       read_usa_frb_g17)
 from lib.transform import transform_mean
+from pandas import DataFrame
 
 # =============================================================================
 # U.S. Bureau of Economic Analysis (BEA), Manufacturing Labor Series

@@ -64,7 +64,7 @@ def main():
     plot_cobb_douglas(
         *_df.pipe(transform_cobb_douglas, year_base=2007), MAP_FIG
     )
-    plot_cobb_douglas_3d(_df)
+    _df.pipe(plot_cobb_douglas_3d)
 
 
 if __name__ == '__main__':
