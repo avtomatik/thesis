@@ -9,10 +9,12 @@ Created on Thu Jan  9 21:17:48 2020
 import os
 
 from lib.collect import collect_usa_general
-from lib.plot import (plot_c, plot_d, plot_e, plot_investment,
-                      plot_investment_manufacturing, plot_kurenkov)
-from lib.transform import (combine_kurenkov, transform_b, transform_d,
-                           transform_e, transform_investment_manufacturing,
+from lib.plot import (plot_d, plot_e, plot_investment,
+                      plot_investment_manufacturing, plot_kurenkov,
+                      plot_manufacturing_money)
+from lib.transform import (combine_kurenkov, transform_d, transform_e,
+                           transform_investment,
+                           transform_investment_manufacturing,
                            transform_manufacturing_money)
 
 
@@ -28,11 +30,11 @@ def main():
     # =========================================================================
     # Project: Initial Version Dated: 23 November 2012
     # =========================================================================
-    df.pipe(transform_b).pipe(plot_investment)
+    df.pipe(transform_investment).pipe(plot_investment)
     # =========================================================================
     # Project: Initial Version Dated: 16 June 2013
     # =========================================================================
-    df.pipe(transform_manufacturing_money).pipe(plot_c)
+    df.pipe(transform_manufacturing_money).pipe(plot_manufacturing_money)
     # =========================================================================
     # Project: Initial Version Dated: 15 June 2015
     # =========================================================================
