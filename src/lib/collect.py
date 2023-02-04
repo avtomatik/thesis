@@ -12,6 +12,7 @@ from pathlib import Path
 import pandas as pd
 from pandas import DataFrame
 from scipy.signal import wiener
+
 from sklearn.impute import SimpleImputer
 
 from .pull import (pull_by_series_id, pull_can_aggregate, pull_can_capital,

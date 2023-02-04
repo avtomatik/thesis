@@ -13,6 +13,7 @@ import pandas as pd
 import scipy.optimize as optimization
 from pandas import DataFrame
 from scipy.interpolate import UnivariateSpline
+
 from sklearn.metrics import mean_squared_error, r2_score
 
 from .read import read_can
@@ -48,7 +49,7 @@ def calculate_curve_fit_params(df: DataFrame) -> None:
     def _curve(regressor: pd.Series, b: float, k: float) -> pd.Series:
         return regressor.pow(k).mul(b)
 
-    params, matrix = optimization.curve_fit(
+    params, _matrix = optimization.curve_fit(
         _curve,
         df.iloc[:, -2],
         df.iloc[:, -1],

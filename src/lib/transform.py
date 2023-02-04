@@ -9,6 +9,7 @@ Created on Sun Nov 20 17:42:38 2022
 import numpy as np
 import pandas as pd
 from pandas import DataFrame
+
 from sklearn.linear_model import Lasso, LinearRegression
 
 from .collect import stockpile_usa_hist
@@ -23,7 +24,7 @@ def transform_investment_manufacturing(df: DataFrame) -> DataFrame:
     return df.div(df.iloc[0, :]).dropna(axis=0)
 
 
-def transform_b(df: DataFrame) -> DataFrame:
+def transform_investment(df: DataFrame) -> DataFrame:
     return df.iloc[:, [0, 6, 7, 20]].dropna(axis=0)
 
 

@@ -17,6 +17,7 @@ import pandas as pd
 from pandas import DataFrame
 from pandas.plotting import autocorrelation_plot, lag_plot
 from scipy import stats
+
 from sklearn.metrics import r2_score
 
 from .pull import (pull_by_series_id, pull_series_ids_description,
@@ -116,7 +117,7 @@ def plot_investment(df: DataFrame) -> None:
     plt.show()
 
 
-def plot_c(df: DataFrame) -> None:
+def plot_manufacturing_money(df: DataFrame) -> None:
     """
         ================== =================================
         df.index           Period
@@ -1049,7 +1050,7 @@ def plot_capital_modelling(df: DataFrame, year_base: int) -> None:
 
 
 def plot_capital_purchases(df: DataFrame) -> None:
-    assert df.shape[1] == 27, "Works on DataFrame Produced with 'get_data_capital_purchases()"
+    assert df.shape[1] == 27, "Works on DataFrame Produced with 'collect_usa_capital_purchases()"
     plt.figure()
     plt.semilogy(
         df.loc[:, (df.columns[0], *df.columns[-3:])],

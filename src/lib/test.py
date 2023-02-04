@@ -329,7 +329,7 @@ def test_subtract_b(df: DataFrame):
 
 
 def test_usa_bea_sfat_series_ids(
-    directory: str = '/media/green-machine/KINGSTON',
+    path_src: str = '/media/green-machine/KINGSTON',
     file_name: str = 'dataset_usa_bea-nipa-selected.zip',
     source_id: str = 'Table 4.3. Historical-Cost Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization',
     series_id: str = 'k3n31gd1es000'
@@ -350,7 +350,7 @@ def test_usa_bea_sfat_series_ids(
     df_test = stockpile_usa_bea(SERIES_IDS)
 
     kwargs = {
-        'filepath_or_buffer': Path(directory).joinpath(file_name),
+        'filepath_or_buffer': Path(path_src).joinpath(file_name),
         'header': 0,
         'names': ('source_id', 'series_id', 'period', 'value'),
         'index_col': 2,

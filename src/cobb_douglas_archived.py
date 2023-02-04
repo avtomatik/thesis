@@ -43,44 +43,37 @@ def main():
     df_c = df.iloc[:, (0, 1, 4)]
     df_d, df_e = collect_usa_manufacturing_two_fold()
     df_f, df_g, df_h = collect_usa_manufacturing_three_fold()
-    df_i = collect_usa_manufacturing_latest()
 
     # =========================================================================
     # df = collect_cobb_douglas().pipe(transform_cobb_douglas, year_base=1899)[0].iloc[:, [3, 4]]
-    # calculate_curve_fit_params(df)
+    # df.pipe(calculate_curve_fit_params)
     # =========================================================================
 
-    calculate_curve_fit_params(df_a)
-    calculate_curve_fit_params(df_b)
-    calculate_curve_fit_params(df_c)
-    calculate_curve_fit_params(df_d)
-    calculate_curve_fit_params(df_e)
-    calculate_curve_fit_params(df_f)
-    calculate_curve_fit_params(df_g)
-    calculate_curve_fit_params(df_h)
-    calculate_curve_fit_params(df_i)
-
+    df_a.pipe(calculate_curve_fit_params)
+    df_b.pipe(calculate_curve_fit_params)
+    df_c.pipe(calculate_curve_fit_params)
     # =========================================================================
     # No Capacity Utilization Adjustment
     # =========================================================================
-    calculate_curve_fit_params(df_d)
+    df_d.pipe(calculate_curve_fit_params)
     # =========================================================================
     # Capacity Utilization Adjustment
     # =========================================================================
-    calculate_curve_fit_params(df_e)
+    df_e.pipe(calculate_curve_fit_params)
     # =========================================================================
     # Option: 1929--2013, No Capacity Utilization Adjustment
     # =========================================================================
-    calculate_curve_fit_params(df_f)
+    df_f.pipe(calculate_curve_fit_params)
     # =========================================================================
     # Option: 1967--2013, No Capacity Utilization Adjustment
     # =========================================================================
-    calculate_curve_fit_params(df_g)
+    df_g.pipe(calculate_curve_fit_params)
     # =========================================================================
     # Option: 1967--2012, Capacity Utilization Adjustment
     # =========================================================================
-    calculate_curve_fit_params(df_h)
-    calculate_curve_fit_params(df_i)
+    df_h.pipe(calculate_curve_fit_params)
+    collect_usa_manufacturing_latest().pipe(calculate_curve_fit_params)
+
     # =========================================================================
     # Project II. Scipy Signal Median Filter, Non-Linear Low-Pass Filter
     # =========================================================================
@@ -109,12 +102,12 @@ def main():
         *df_h.pipe(transform_cobb_douglas, year_base=1967), MAP_FIG
     )
     plot_cobb_douglas(
-        *df_i.pipe(transform_cobb_douglas, year_base=1967), MAP_FIG
+        *collect_usa_manufacturing_latest().pipe(transform_cobb_douglas, year_base=1967), MAP_FIG
     )
     # =========================================================================
     # Project III. Scipy Signal Wiener Filter
     # =========================================================================
-    plot_capital_purchases(collect_usa_capital_purchases())
+    collect_usa_capital_purchases().pipe(plot_capital_purchases)
 
 
 if __name__ == '__main__':

@@ -112,7 +112,7 @@ def read_can(archive_id: int) -> DataFrame:
 
 
 def read_temporary(
-    file_name: str, directory: str = '/home/green-machine/data_science/data/interim'
+    file_name: str, path_src: str = '/home/green-machine/data_science/data/interim'
 ) -> DataFrame:
     """
 
@@ -121,7 +121,7 @@ def read_temporary(
     ----------
     file_name : str
         DESCRIPTION.
-    directory : str, optional
+    path_src : str, optional
         DESCRIPTION. The default is '/home/green-machine/data_science/data/interim'.
 
     Returns
@@ -131,7 +131,7 @@ def read_temporary(
 
     """
     kwargs = {
-        'filepath_or_buffer': Path(directory).joinpath(file_name),
+        'filepath_or_buffer': Path(path_src).joinpath(file_name),
         'index_col': 0,
     }
     return pd.read_csv(**kwargs)

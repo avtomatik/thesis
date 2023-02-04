@@ -31,30 +31,30 @@ def main():
     # =========================================================================
     df_d, df_e = collect_usa_manufacturing_two_fold()
     df_f, df_g, df_h = collect_usa_manufacturing_three_fold()
-    plot_cobb_douglas_complex(df_a)
-    plot_cobb_douglas_complex(df_b)
-    plot_cobb_douglas_complex(df_c)
+    df_a.pipe(plot_cobb_douglas_complex)
+    df_b.pipe(plot_cobb_douglas_complex)
+    df_c.pipe(plot_cobb_douglas_complex)
     # =========================================================================
     # No Capacity Utilization Adjustment
     # =========================================================================
-    plot_cobb_douglas_complex(df_d)
+    df_d.pipe(plot_cobb_douglas_complex)
     # =========================================================================
     # Capacity Utilization Adjustment
     # =========================================================================
-    plot_cobb_douglas_complex(df_e)
+    df_e.pipe(plot_cobb_douglas_complex)
     # =========================================================================
     # Option: 1929--2013, No Capacity Utilization Adjustment
     # =========================================================================
-    plot_cobb_douglas_complex(df_f)
+    df_f.pipe(plot_cobb_douglas_complex)
     # =========================================================================
     # Option: 1967--2013, No Capacity Utilization Adjustment
     # =========================================================================
-    plot_cobb_douglas_complex(df_g)
+    df_g.pipe(plot_cobb_douglas_complex)
     # =========================================================================
     # Option: 1967--2012, Capacity Utilization Adjustment
     # =========================================================================
-    plot_cobb_douglas_complex(df_h)
-    plot_cobb_douglas_complex(collect_usa_manufacturing_latest())
+    df_h.pipe(plot_cobb_douglas_complex)
+    collect_usa_manufacturing_latest().pipe(plot_cobb_douglas_complex)
 
 
 if __name__ == '__main__':
