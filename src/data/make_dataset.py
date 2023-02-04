@@ -70,14 +70,14 @@ def page_0x8e_table_0x1() -> DataFrame:
     df = DataFrame.from_dict(
         {
             'period': period,
-            'bldg_per': bldg_per,
-            'mach_per': mach_per,
-            'bldg_val': bldg_val,
-            'mach_val': mach_val,
+            'CDT1S1': bldg_per,
+            'CDT1S2': mach_per,
+            'CDT1S3': bldg_val,
+            'CDT1S4': mach_val,
         }
     )
     df.set_index(df.columns[0], inplace=True, verify_integrity=True)
-    df['val'] = df.iloc[:, 2].add(df.iloc[:, 3])
+    df['CDT1S5'] = df.iloc[:, 2].add(df.iloc[:, 3])
     return df
 
 
@@ -208,9 +208,9 @@ def page_0x91_table_0x2() -> DataFrame:
     df = DataFrame.from_dict(
         {
             'period': range(1899, 1923),
-            'col_a': col_a,
-            'col_b': col_b,
-            'col_c': col_c,
+            'CDT2S1': col_a,
+            'CDT2S2': col_b,
+            'CDT2S3': col_c,
         }
     )
     df.set_index(df.columns[0], inplace=True, verify_integrity=True)
@@ -218,11 +218,11 @@ def page_0x91_table_0x2() -> DataFrame:
     #     # ===================================================================
     #     # Test
     #     # ===================================================================
-    #     df['col_c'] = df.iloc[:, 0].div(df.iloc[:, 1]).mul(100).round().astype(int)
+    #     df['CDT2S3'] = df.iloc[:, 0].div(df.iloc[:, 1]).mul(100).round().astype(int)
     # =========================================================================
-    df['col_d'] = df.iloc[:, -1].cumsum().add(4062)
-    df['col_e'] = df.iloc[:, -
-                          1].div(df.iloc[0, -1]).mul(100).round().astype(int)
+    df['CDT2S4'] = df.iloc[:, -1].cumsum().add(4062)
+    df['CDT2S5'] = df.iloc[:, -
+                           1].div(df.iloc[0, -1]).mul(100).round().astype(int)
     return df
 
 
@@ -258,8 +258,8 @@ def page_0x92() -> DataFrame:
     df = DataFrame.from_dict(
         {
             'period': range(1911, 1921),
-            'ma': ma,
-            'us': us,
+            'CDT0S7': ma,
+            'CDT0S8': us,
         }
     )
     return df.set_index(df.columns[0], verify_integrity=True)
@@ -299,7 +299,7 @@ def page_0x94_table_0x3() -> DataFrame:
     df = DataFrame.from_dict(
         {
             'period': range(1899, 1923),
-            'lab': lab,
+            'CDT3S1': lab,
         }
     )
     df.set_index(df.columns[0], inplace=True, verify_integrity=True)
@@ -341,7 +341,7 @@ def page_0x95_table_0x4() -> DataFrame:
     df = DataFrame.from_dict(
         {
             'period': range(1899, 1923),
-            'pro': pro,
+            'J0014': pro,
         }
     )
     return df.set_index(df.columns[0], verify_integrity=True)
@@ -867,7 +867,7 @@ def page_0xa4_table_0xb() -> DataFrame:
     return df.iloc[:, range(4)]
 
 
-def main():
+def dump_data():
     MAP = {
         page_0x8e_table_0x1: 'data_cobb_douglas_theory_of_production_page_0x8e_table_0x1.dat',
         page_0x90: 'data_cobb_douglas_theory_of_production_page_0x90.dat',
@@ -888,6 +888,31 @@ def main():
     for func, path_or_buf in MAP.items():
         if path_or_buf is not None:
             func().to_csv(path_or_buf, sep='\t')
+
+
+def main() -> DataFrame:
+    """
+    Returns Central Dataset
+
+    Returns
+    -------
+    DataFrame
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Capital
+        df.iloc[:, 1]      Labor
+        df.iloc[:, 2]      Product
+        ================== =================================
+    """
+    return pd.concat(
+        [
+            page_0x91_table_0x2().loc[:, 'CDT2S4'],
+            page_0x94_table_0x3().loc[:, 'CDT3S1'],
+            page_0x95_table_0x4().loc[:, 'J0014']
+        ],
+        axis=1,
+        sort=True
+    )
 
 
 if __name__ == '__main__':
