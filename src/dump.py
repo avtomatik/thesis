@@ -16,9 +16,8 @@ from pathlib import Path
 
 import pandas as pd
 from lib.collect import stockpile_usa_bea
-from lib.pull import pull_by_series_id, pull_can_aggregate
-from lib.read import (read_can, read_temporary, read_usa_bea_excel,
-                      read_usa_frb_g17)
+from lib.pull import pull_by_series_id
+from lib.read import read_temporary, read_usa_bea_excel, read_usa_frb_g17
 from lib.transform import transform_mean
 from pandas import DataFrame
 
@@ -48,37 +47,7 @@ SERIES_IDS_LAB = {
 # =============================================================================
 
 
-def append_series_ids_sum(df: DataFrame, chunk: DataFrame, series_ids: tuple[str]) -> None:
-    """
 
-
-    Parameters
-    ----------
-    df : DataFrame
-        DESCRIPTION.
-    chunk : DataFrame
-        DESCRIPTION.
-    series_ids : tuple[str]
-        DESCRIPTION.
-
-    Returns
-    -------
-    None
-        DESCRIPTION.
-
-    """
-    _chunk = pd.concat(
-        [df.loc[:, (series_id,)].dropna(axis=0) for series_id in series_ids],
-        axis=1
-    )
-    _chunk["_".join((*series_ids, "sum"))] = _chunk.sum(axis=1)
-    return pd.concat(
-        [
-            chunk,
-            _chunk.iloc[:, [-1]]
-        ],
-        axis=1
-    )
 
 
 # =============================================================================
@@ -699,8 +668,8 @@ df_semi_d = pd.concat(
 read_can_group_a(7931814471809016759, skiprows=241)
 read_can_group_a(8448814858763853126, skiprows=81)
 read_can_group_b(5245628780870031920, skiprows=3)
-read_can(3800068).pipe(pull_can_aggregate, 'v62143969')
-read_can(3800068).pipe(pull_can_aggregate, 'v62143990')
+stockpile_can({'v62143969': 36100108}).pipe(transform_agg_sum)
+stockpile_can({'v62143990': 36100108}).pipe(transform_agg_sum)
 
 
 def read_usa_bea_sfat_pull_by_series_id(series_id: str) -> DataFrame:

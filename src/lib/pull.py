@@ -42,29 +42,6 @@ def pull_by_series_id(df: DataFrame, series_id: str) -> DataFrame:
     )
 
 
-def pull_can_aggregate(df: DataFrame, series_id: str) -> DataFrame:
-    """
-    Retrieves DataFrame from Quarterly Data within CANSIM Zip Archives
-    Parameters
-    ----------
-    df : DataFrame
-    series_id : str
-
-    Returns
-    -------
-    DataFrame
-        ================== =================================
-        df.index           Period
-        df.iloc[:, 0]      Series
-        ================== =================================
-    """
-    _df = df.loc[:, ('series_id', 'value')].pipe(
-        pull_by_series_id, series_id).apply(pd.to_numeric, errors='coerce')
-    if 'seas' in df.columns:
-        return _df.groupby(_df.index.year).sum()
-    return _df.groupby(_df.index.year).mean()
-
-
 def pull_can_capital(df: DataFrame, params: tuple[int, str]) -> DataFrame:
     """
     WARNING: VERY EXPENSIVE OPERATION !
