@@ -109,7 +109,7 @@ def main():
         collect_uscb_unemployment_hours_worked()
     )
 
-    plot_uscb_employment_conflicts(collect_uscb_employment_conflicts())
+    collect_uscb_employment_conflicts().pipe(plot_uscb_employment_conflicts)
 
     SERIES_IDS = {
         # =========================================================================
@@ -144,7 +144,7 @@ def main():
     }
     stockpile_usa_hist(SERIES_IDS).pipe(plot_uscb_trade_gold_silver)
 
-    plot_uscb_trade_by_countries(collect_uscb_trade_by_countries())
+    collect_uscb_trade_by_countries().pipe(plot_uscb_trade_by_countries)
 
     SERIES_IDS = {
         # =========================================================================

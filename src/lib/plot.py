@@ -20,11 +20,12 @@ from scipy import stats
 
 from sklearn.metrics import r2_score
 
+from .collect import stockpile_usa_hist
 from .pull import (pull_by_series_id, pull_series_ids_description,
                    pull_uscb_description)
 from .read import read_usa_hist, read_usa_nber, read_worldbank
 from .tools import (calculate_capital, filter_kol_zur, filter_rolling_mean,
-                    simple_linear_regression)
+                    get_price_base_nr, simple_linear_regression)
 from .transform import transform_agg, transform_cobb_douglas
 
 ARCHIVE_NAMES_UTILISED = (
@@ -72,10 +73,11 @@ def plot_investment_manufacturing(df: DataFrame) -> None:
             *_df.index[[0, -1]]
         )
     )
-    plt.plot(_df.iloc[:, -4:-2], label=[
-        'Gross Private Domestic Investment',
-        'National Income',
-    ]
+    plt.plot(
+        _df.iloc[:, -4:-2], label=[
+            'Gross Private Domestic Investment',
+            'National Income',
+        ]
     )
     plt.xlabel('Period')
     plt.ylabel('Index')
@@ -132,11 +134,12 @@ def plot_manufacturing_money(df: DataFrame) -> None:
     # =========================================================================
     df['investment'] = df.iloc[:, 0].mul(df.iloc[:, 2]).div(df.iloc[:, 1])
     plt.figure()
-    plt.plot(df.iloc[:, range(2, 5)], label=[
-        'Real Gross Domestic Product',
-        'Money Supply',
-        'Real Gross Domestic Investment',
-    ]
+    plt.plot(
+        df.iloc[:, range(2, 5)], label=[
+            'Real Gross Domestic Product',
+            'Money Supply',
+            'Real Gross Domestic Investment',
+        ]
     )
     plt.title('Indexes, {}$-${}'.format(*df.index[[0, -1]]))
     plt.xlabel('Period')
@@ -1736,10 +1739,12 @@ def plot_growth_elasticity(df: DataFrame) -> None:
     plt.show()
 
 
-def plot_increment(df: DataFrame) -> None:
-    savefig = False
-    DIR = '/media/green-machine/KINGSTON'
-    FILE_NAME = 'fig_file_name.pdf'
+def plot_increment(
+    df: DataFrame,
+    savefig: bool = False,
+    path_export: str = '/media/green-machine/KINGSTON',
+    file_name: str = 'fig_file_name.pdf'
+) -> None:
     fig, axes = plt.subplots(2, 1, figsize=(10, 20))
     axes[0].plot(df.iloc[:, 0], df.iloc[:, 1], label='Curve')
     axes[0].set_xlabel('Labor Capital Intensity')
@@ -1760,7 +1765,7 @@ def plot_increment(df: DataFrame) -> None:
 
     fig.tight_layout()
     if savefig:
-        fig.savefig(Path(DIR).joinpath(FILE_NAME), format='pdf', dpi=900)
+        fig.savefig(Path(path_export).joinpath(file_name), format='pdf', dpi=900)
     else:
         plt.show()
 

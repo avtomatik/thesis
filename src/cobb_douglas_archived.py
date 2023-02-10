@@ -45,8 +45,7 @@ def main():
     df_f, df_g, df_h = collect_usa_manufacturing_three_fold()
 
     # =========================================================================
-    # df = collect_cobb_douglas().pipe(transform_cobb_douglas, year_base=1899)[0].iloc[:, [3, 4]]
-    # df.pipe(calculate_curve_fit_params)
+    # collect_cobb_douglas().pipe(transform_cobb_douglas, year_base=1899)[0].iloc[:, [3, 4]].pipe(calculate_curve_fit_params)
     # =========================================================================
 
     df_a.pipe(calculate_curve_fit_params)

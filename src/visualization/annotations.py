@@ -3,6 +3,7 @@
 # =============================================================================
 
 
+from pandas import DataFrame
 import os
 
 import matplotlib.pyplot as plt
@@ -139,12 +140,12 @@ def main():
     # Option 1: 1967--2012
     # =========================================================================
     df = pd.concat([_df.loc[:, ('K100701',)].mul(_defl), L, prd_a_a], axis=1
-    ).pipe(transform_add_dx_dy)
+                   ).pipe(transform_add_dx_dy)
     # =========================================================================
     # Option 2: 1967--2012
     # =========================================================================
     df = pd.concat([_df.loc[:, ('K100701',)].mul(_defl), L, prd_a_b], axis=1
-    ).pipe(transform_add_dx_dy)
+                   ).pipe(transform_add_dx_dy)
     # =========================================================================
     # Option 3: 1967--2012
     # =========================================================================
@@ -168,20 +169,19 @@ def main():
     # Option 5: 1929--2013
     # =========================================================================
     df = pd.concat([cap_b_c, L, prd_b_a], axis=1).pipe(transform_add_dx_dy)
+
     # =========================================================================
     # Option 6: 1929--2013
     # =========================================================================
-    df = pd.concat([cap_b_d, L, prd_b_b], axis=1).pipe(transform_add_dx_dy)
-    plot_increment(df)
-    plot_increment(df)
+    pd.concat([cap_b_d, L, prd_b_b], axis=1).pipe(
+        transform_add_dx_dy).pipe(plot_increment)
 
     # =========================================================================
     # Update from 'project.py'
     # =========================================================================
 
-    _df = collect_usa_manufacturing_latest().pipe(transform_add_dx_dy)
-    plot_increment(_df)
-    plot_increment(_df)
+    collect_usa_manufacturing_latest().pipe(
+        transform_add_dx_dy).pipe(plot_increment)
 
 
 if __name__ == '__main__':

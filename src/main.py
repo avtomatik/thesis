@@ -9,27 +9,23 @@ Thesis Project
 
 
 import pandas as pd
-from lib.collect import (collect_usa_general, collect_usa_investment_turnover,
+from lib.collect import (collect_usa_investment_turnover,
                          collect_usa_investment_turnover_bls,
                          collect_usa_manufacturing_three_fold,
                          collect_usa_manufacturing_two_fold, construct_can,
                          stockpile_cobb_douglas, stockpile_usa_bea,
                          stockpile_usa_hist, stockpile_usa_mcconnel)
-from lib.plot import (plot_approx_linear, plot_approx_linear_log, plot_c,
+from lib.plot import (plot_approx_linear, plot_approx_linear_log,
                       plot_capital_modelling, plot_cobb_douglas,
-                      plot_cobb_douglas_3d, plot_cobb_douglas_complex, plot_d,
-                      plot_douglas, plot_e, plot_elasticity,
-                      plot_filter_rolling_mean, plot_fourier_discrete,
-                      plot_growth_elasticity, plot_investment,
-                      plot_investment_manufacturing, plot_uscb_complex)
+                      plot_cobb_douglas_3d, plot_cobb_douglas_complex,
+                      plot_douglas, plot_elasticity, plot_fourier_discrete,
+                      plot_growth_elasticity, plot_uscb_complex)
 from lib.tools import (calculate_power_function_fit_params_a,
                        calculate_power_function_fit_params_b,
                        calculate_power_function_fit_params_c, m_spline_ea,
                        m_spline_eb, m_spline_la, m_spline_lb, m_spline_lls,
                        run_m_spline)
-from lib.transform import (transform_b, transform_cobb_douglas, transform_d,
-                           transform_e, transform_investment_manufacturing,
-                           transform_manufacturing_money)
+from lib.transform import transform_cobb_douglas
 
 ARCHIVE_NAMES_UTILISED = (
     'dataset_can_00310004-eng.zip',
@@ -194,39 +190,37 @@ def main():
     # =========================================================================
     # On Original Dataset
     # =========================================================================
-    _df = stockpile_cobb_douglas(5)
-    df = _df.iloc[:, range(3)]
-    df_b = _df.iloc[:, (0, 1, 3)]
-    df_c = _df.iloc[:, (0, 1, 4)]
+    df = stockpile_cobb_douglas(5)
+
     # =========================================================================
     # On Expanded Dataset
     # =========================================================================
     df_d, df_e = collect_usa_manufacturing_two_fold()
     df_f, df_g, df_h = collect_usa_manufacturing_three_fold()
-    plot_cobb_douglas_complex(df)
-    plot_cobb_douglas_complex(df_b)
-    plot_cobb_douglas_complex(df_c)
+    df.iloc[:, range(3)].pipe(plot_cobb_douglas_complex)
+    df.iloc[:, (0, 1, 3)].pipe(plot_cobb_douglas_complex)
+    df.iloc[:, (0, 1, 4)].pipe(plot_cobb_douglas_complex)
     # =========================================================================
     # No Capacity Utilization Adjustment
     # =========================================================================
-    plot_cobb_douglas_complex(df_d)
+    df_d.pipe(plot_cobb_douglas_complex)
     # =========================================================================
     # Capacity Utilization Adjustment
     # =========================================================================
-    plot_cobb_douglas_complex(df_e)
+    df_e.pipe(plot_cobb_douglas_complex)
     # =========================================================================
     # Option: 1929--2013, No Capacity Utilization Adjustment
     # =========================================================================
-    plot_cobb_douglas_complex(df_f)
+    df_f.pipe(plot_cobb_douglas_complex)
     # =========================================================================
     # Option: 1967--2013, No Capacity Utilization Adjustment
     # =========================================================================
-    plot_cobb_douglas_complex(df_g)
+    df_g.pipe(plot_cobb_douglas_complex)
     # =========================================================================
     # Option: 1967--2012, Capacity Utilization Adjustment
     # =========================================================================
-    plot_cobb_douglas_complex(df_h)
-    # plot_cobb_douglas_complex(collect_usa_manufacturing_latest())
+    df_h.pipe(plot_cobb_douglas_complex)
+    # collect_usa_manufacturing_latest().pipe(plot_cobb_douglas_complex)
 
     # =========================================================================
     # Subproject V. Cobb--Douglas CAN
@@ -250,11 +244,11 @@ def main():
         # =====================================================================
         # Labor : "v2523012", Preferred Over "v3437501" Which Is Quarterly
         # =====================================================================
-        2820012: 'v2523012',
+        'v2523012': 2820012,
         # =====================================================================
         # Manufacturing
         # =====================================================================
-        3790031: 'v65201809',
+        'v65201809': 3790031,
     }
     ARCHIVE_IDS = {
         # =====================================================================
@@ -273,11 +267,11 @@ def main():
         # =====================================================================
         # Labor : "v2523012", Preferred Over "v3437501" Which Is Quarterly
         # =====================================================================
-        14100027: 'v2523012',
+        'v2523012': 14100027,
         # =====================================================================
         # Manufacturing
         # =====================================================================
-        36100434: 'v65201809',
+        'v65201809': 36100434,
     }
     _df = construct_can(ARCHIVE_IDS)
     plot_cobb_douglas(
@@ -357,43 +351,15 @@ def main():
     # =========================================================================
     # Subproject IX. USA BEA
     # =========================================================================
-    df = collect_usa_general()
-    # =========================================================================
-    # Project: Initial Version Dated: 05 October 2012
-    # =========================================================================
-    df.pipe(transform_investment_manufacturing).pipe(plot_investment_manufacturing)
-    # =========================================================================
-    # Project: Initial Version Dated: 23 November 2012
-    # =========================================================================
-    df.pipe(transform_b).pipe(plot_investment)
-    # =========================================================================
-    # Project: Initial Version Dated: 16 June 2013
-    # =========================================================================
-    df.pipe(transform_manufacturing_money).pipe(plot_c)
-    # =========================================================================
-    # Project: Initial Version Dated: 15 June 2015
-    # =========================================================================
-    df.pipe(transform_d).pipe(plot_d)
-    # =========================================================================
-    # Project: Initial Version Dated: 17 February 2013
-    # =========================================================================
-    df_e_a, df_e_b = df.pipe(transform_e)
-    df_e_a.pipe(plot_e)
-    df_e_b.pipe(plot_e)
-
+    import plot_usa_bea
     # =========================================================================
     # Subproject X. USA Census
     # =========================================================================
     # =========================================================================
     # Subproject XI. USA Census J14
     # =========================================================================
-    SERIES_ID = {'J0014': 'dataset_uscb.zip'}
+    import plot_usa_manufacturing
 
-    df = stockpile_usa_hist(SERIES_ID)
-    _df = df.copy()
-    plot_growth_elasticity(_df)
-    _df = df.copy()
-    plot_filter_rolling_mean(_df)
     # =========================================================================
     # Subproject XII. USA Douglas & Kendrick
     # =========================================================================
