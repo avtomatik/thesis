@@ -15,8 +15,7 @@ from scipy.signal import wiener
 
 from sklearn.impute import SimpleImputer
 
-from .pull import (pull_by_series_id, pull_can_aggregate, pull_can_capital,
-                   pull_can_capital_former)
+from .pull import pull_by_series_id, pull_can_capital, pull_can_capital_former
 from .read import (read_can, read_temporary, read_usa_bea, read_usa_davis_ip,
                    read_usa_frb, read_usa_frb_g17, read_usa_frb_h6,
                    read_usa_frb_us3, read_usa_fred, read_usa_hist)
@@ -1209,7 +1208,7 @@ def construct_can(archive_ids: dict) -> DataFrame:
             read_can(tuple(archive_ids)[1]).pipe(
                 pull_by_series_id, archive_ids.get(tuple(archive_ids)[1])).apply(pd.to_numeric, errors='coerce'),
             read_can(tuple(archive_ids)[-1]).pipe(
-                pull_can_aggregate,
+                transform_agg_sum,
                 archive_ids.get(tuple(archive_ids)[-1])),
         ],
         axis=1
@@ -1259,72 +1258,17 @@ def get_mean_for_min_std():
     # =========================================================================
     # Base Vectors
     # =========================================================================
-    SERIES_IDS = (
-        'v123355112',
-        'v1235071986',
-        'v2057609',
-        'v2057818',
-        'v2523013',
-    )
+    SERIES_IDS = {
+        'v123355112': 14100355,
+        'v1235071986': 14100392,
+        'v2057609': 14100355,
+        'v2057818': 14100355,
+        'v2523013': 14100027,
+    }
     _df = read_temporary(FILE_NAME)
-    df = pd.concat(
-        [
-            _df.loc[:, (series_id,)].dropna(axis=0) for series_id in SERIES_IDS
-        ],
-        axis=1
-    ).dropna(axis=0)
+    df = stockpile_can(SERIES_IDS).dropna(axis=0)
     df['std'] = df.std(axis=1)
     return (
         df.iloc[:, [-1]].idxmin()[0],
         df.loc[df.iloc[:, [-1]].idxmin()[0], :][:-1].mean()
     )
-
-
-def get_price_base(df: DataFrame) -> int:
-    """
-    Determine Base Year
-    Parameters
-    ----------
-    df : DataFrame
-        ================== =================================
-        df.index           Period
-        df.iloc[:, 0]      Deflator
-        ================== =================================
-    Returns
-    -------
-    int
-        Base Year.
-    """
-    df['__deflator'] = df.iloc[:, 0].sub(100).abs()
-    return int(df.index[df.iloc[:, -1].astype(float).argmin()])
-
-
-def get_price_base_nr(df: DataFrame, columns: tuple[int] = (0, 1)) -> int:
-    """
-    Determine Base Year
-
-    Parameters
-    ----------
-    df : DataFrame
-        ======================== ===========================
-        df.index                 Period
-        ...                      ...
-        df.iloc[:, columns[0]]   Nominal
-        df.iloc[:, columns[-1]]  Real
-        ======================== ===========================
-    columns : tuple[int], optional
-        Column Nominal, Column Real. The default is (0, 1).
-
-    Returns
-    -------
-    int
-        Base Year.
-
-    """
-    df['__deflator'] = df.iloc[:, columns[0]].div(
-        df.iloc[:, columns[-1]]
-    ).sub(1).abs()
-    # =========================================================================
-    # Basic Year
-    # =========================================================================
-    return int(df.index[df.iloc[:, -1].astype(float).argmin()])
