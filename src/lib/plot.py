@@ -964,7 +964,7 @@ def plot_can_test(df: DataFrame) -> None:
     plt.show()
 
 
-def plot_capital_modelling(df: DataFrame, year_base: int) -> None:
+def plot_model_capital(df: DataFrame, year_base: int) -> None:
     """
         ================== =================================
         df.index           Period

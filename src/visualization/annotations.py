@@ -3,7 +3,6 @@
 # =============================================================================
 
 
-from pandas import DataFrame
 import os
 
 import matplotlib.pyplot as plt
@@ -11,6 +10,7 @@ import pandas as pd
 from lib.collect import (collect_usa_macroeconomics,
                          collect_usa_manufacturing_latest)
 from lib.plot import plot_increment
+from pandas import DataFrame
 
 
 def transform_add_dx_dy(df: DataFrame) -> DataFrame:

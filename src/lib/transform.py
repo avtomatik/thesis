@@ -305,7 +305,7 @@ def transform_cobb_douglas_sklearn(df: DataFrame) -> DataFrame:
 #     # print('LassoCV: k = {:.12f}, b = {:.12f}'.format(k, b))
 #     # =========================================================================
 #     #     print(reg.score(X, y))
-#     #     
+#     #
 
 #     #     print(reg.predict(X[:1, ]))
 #     # =========================================================================
@@ -599,3 +599,7 @@ def transform_agg(df: DataFrame, agg: str) -> DataFrame:
     if agg == 'mean':
         return df.groupby(df.columns[0]).mean()
     return df.groupby(df.columns[0]).sum()
+
+
+def transform_agg_sum(df: DataFrame) -> DataFrame:
+    return df.groupby(df.index.year).sum()

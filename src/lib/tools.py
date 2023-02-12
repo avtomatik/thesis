@@ -16,7 +16,9 @@ from scipy.interpolate import UnivariateSpline
 
 from sklearn.metrics import mean_squared_error, r2_score
 
+from .collect import stockpile_usa_hist
 from .read import read_can
+from .transform import transform_deflator
 
 
 def calculate_capital(df: DataFrame, p_i: tuple[float], p_t: tuple[float], ratio: float):
@@ -906,14 +908,14 @@ def build_push_data_frame(path_or_buf: str, blueprint: dict) -> None:
     None
     """
     df = DataFrame()
-    for item in blueprint:
-        _df = read_can(archive_name_to_url(item['archive_name']))
-        _df = _df[_df['VECTOR'].isin(item['series_ids'])]
-        for series_id in item['series_ids']:
+    for entry in blueprint:
+        _df = read_can(archive_name_to_url(entry['archive_name']))
+        _df = _df[_df['VECTOR'].isin(entry['series_ids'])]
+        for series_id in entry['series_ids']:
             chunk = _df[_df['VECTOR'] == series_id][['VALUE']]
             chunk = chunk.groupby(chunk.index.year).mean()
             df = pd.concat([df, chunk], axis=1, sort=True)
-        df.columns = item['series_ids']
+        df.columns = entry['series_ids']
     df.to_csv(path_or_buf)
 
 
@@ -1145,3 +1147,23 @@ def get_price_base_nr(df: DataFrame, columns: tuple[int] = (0, 1)) -> int:
     # Basic Year
     # =========================================================================
     return int(df.index[df.iloc[:, -1].astype(float).argmin()])
+
+
+def construct_usa_hist_deflator(series_ids: dict[str, str]) -> DataFrame:
+    """
+
+
+    Parameters
+    ----------
+    series_ids : dict[str, str]
+        DESCRIPTION.
+
+    Returns
+    -------
+    DataFrame
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Deflator PRC
+        ================== =================================
+    """
+    return stockpile_usa_hist(series_ids).pipe(transform_deflator)

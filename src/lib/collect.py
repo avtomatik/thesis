@@ -980,7 +980,7 @@ def collect_uscb_unemployment_hours_worked() -> DataFrame:
 
 def collect_can_price_a():
     FILE_NAME = 'stat_can_cap.csv'
-    _df = read_temporary(FILE_NAME)
+    df = read_temporary(FILE_NAME)
     groups = [
         # =====================================================================
         # Nominal
@@ -997,7 +997,7 @@ def collect_can_price_a():
     # ]
     return pd.concat(
         [
-            construct_deflator(_df.iloc[:, pair]) for pairs in groups for pair in pairs
+            df.iloc[:, pair].pipe(transform_deflator) for pairs in groups for pair in pairs
         ],
         axis=1
     )
@@ -1217,7 +1217,7 @@ def construct_can(archive_ids: dict) -> DataFrame:
     return df.div(df.iloc[0, :])
 
 
-def construct_deflator(df: DataFrame) -> DataFrame:
+def transform_deflator(df: DataFrame) -> DataFrame:
     """
 
 
@@ -1265,7 +1265,7 @@ def get_mean_for_min_std():
         'v2057818': 14100355,
         'v2523013': 14100027,
     }
-    _df = read_temporary(FILE_NAME)
+
     df = stockpile_can(SERIES_IDS).dropna(axis=0)
     df['std'] = df.std(axis=1)
     return (

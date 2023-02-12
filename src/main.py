@@ -16,10 +16,10 @@ from lib.collect import (collect_usa_investment_turnover,
                          stockpile_cobb_douglas, stockpile_usa_bea,
                          stockpile_usa_hist, stockpile_usa_mcconnel)
 from lib.plot import (plot_approx_linear, plot_approx_linear_log,
-                      plot_capital_modelling, plot_cobb_douglas,
-                      plot_cobb_douglas_3d, plot_cobb_douglas_complex,
-                      plot_douglas, plot_elasticity, plot_fourier_discrete,
-                      plot_growth_elasticity, plot_uscb_complex)
+                      plot_cobb_douglas, plot_cobb_douglas_3d,
+                      plot_cobb_douglas_complex, plot_douglas, plot_elasticity,
+                      plot_fourier_discrete, plot_growth_elasticity,
+                      plot_model_capital, plot_uscb_complex)
 from lib.tools import (calculate_power_function_fit_params_a,
                        calculate_power_function_fit_params_b,
                        calculate_power_function_fit_params_c, m_spline_ea,
@@ -75,59 +75,29 @@ def main():
     # 'calculate_power_function_fit_params_b': Power Function Approximation,
     # 'calculate_power_function_fit_params_c': Power Function Approximation
     # =========================================================================
-    pd.concat(
-        [
-            stockpile_usa_bea(
-                {'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'}
-            ),
-            stockpile_usa_bea(
-                {'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'}
-            ),
-            stockpile_usa_bea(
-                {'A006RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'}
-            ),
-            stockpile_usa_bea(
-                {'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'}
-            )
-        ],
-        axis=1
-    ).dropna(axis=0).pipe(plot_approx_linear)
+    SERIES_IDS = {
+        'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        'A006RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
+    }
+    stockpile_usa_bea(SERIES_IDS).dropna(axis=0).pipe(plot_approx_linear)
 
-    pd.concat(
-        [
-            stockpile_usa_bea(
-                {'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'}
-            ),
-            stockpile_usa_bea(
-                {'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'}
-            ),
-            stockpile_usa_bea(
-                {'kcptotl1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt'}
-            ),
-            stockpile_usa_bea(
-                {'A032RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'}
-            )
-        ],
-        axis=1
-    ).dropna(axis=0).pipe(plot_approx_linear_log)
+    SERIES_IDS = {
+        'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        'kcptotl1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
+        'A032RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
+    }
+    stockpile_usa_bea(SERIES_IDS).dropna(axis=0).pipe(plot_approx_linear_log)
 
-    pd.concat(
-        [
-            stockpile_usa_bea(
-                {'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'}
-            ),
-            stockpile_usa_bea(
-                {'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'}
-            ),
-            stockpile_usa_bea(
-                {'kcptotl1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt'}
-            ),
-            stockpile_usa_bea(
-                {'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'}
-            )
-        ],
-        axis=1
-    ).dropna(axis=0).pipe(plot_approx_linear_log)
+    SERIES_IDS = {
+        'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        'kcptotl1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
+        'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
+    }
+    stockpile_usa_bea(SERIES_IDS).dropna(axis=0).pipe(plot_approx_linear_log)
 
     SERIES_IDS = ('Валовой внутренний продукт, млрд долл. США',)
     stockpile_usa_mcconnel(SERIES_IDS).pipe(
@@ -176,8 +146,8 @@ def main():
     }
     df, df_b = collect_usa_investment_turnover_bls()
     df_c, df_d = collect_usa_investment_turnover()
-    df.pipe(plot_capital_modelling, year_base=2005)
-    df_c.pipe(plot_capital_modelling, year_base=2012)
+    df.pipe(plot_model_capital, year_base=2005)
+    df_c.pipe(plot_model_capital, year_base=2012)
     # =========================================================================
     # Project: Discrete Fourier Transform based on Simpson's Rule Applied to Fixed Assets of the US
     # =========================================================================
