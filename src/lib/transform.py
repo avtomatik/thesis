@@ -603,3 +603,22 @@ def transform_agg(df: DataFrame, agg: str) -> DataFrame:
 
 def transform_agg_sum(df: DataFrame) -> DataFrame:
     return df.groupby(df.index.year).sum()
+
+
+def transform_pct_change(df: DataFrame) -> DataFrame:
+    """
+
+
+    Parameters
+    ----------
+    df : DataFrame
+        DESCRIPTION.
+
+    Returns
+    -------
+    DataFrame
+        DESCRIPTION.
+
+    """
+    df[f'{df.columns[0]}_prc'] = df.iloc[:, 0].pct_change()
+    return df.iloc[:, [-1]].dropna(axis=0)
