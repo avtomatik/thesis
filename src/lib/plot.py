@@ -2455,7 +2455,7 @@ def plot_capital_acquisition(df: DataFrame) -> None:
     # Calculate Dynamic Values
     # =========================================================================
     # =========================================================================
-    # Number of Periods
+    # Number of Spans
     # =========================================================================
     N = int(input('Define Number of Line Spans for Pi (N, N >= 1): '))
     print(f'Number of Spans Provided: {N}')
@@ -2663,10 +2663,10 @@ def plot_capital_retirement(df: DataFrame) -> None:
     # =========================================================================
     _df['c_turnover'] = _df.iloc[:, 3].div(_df.iloc[:, 4])
     # =========================================================================
-    # Number of Periods
+    # Number of Spans
     # =========================================================================
     N = int(input('Define Number of Line Segments for Pi: '))
-    print(f'Number of Periods Provided: {N}')
+    print(f'Number of Spans Provided: {N}')
     assert N >= 1, f'N >= 1 is Required, N = {N} Was Provided'
     # =========================================================================
     # Pi & Pi Switch Points

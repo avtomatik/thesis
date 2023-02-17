@@ -21,7 +21,7 @@ from pandas.plotting import autocorrelation_plot
 def main(
     savefig: bool = False,
     path_src: str = '/media/green-machine/KINGSTON',
-    path_dsn: str = '/home/green-machine/Downloads',
+    path_export: str = '/home/green-machine/Downloads',
     file_name: str = 'plot_usa_unemployment_autocorrelation.pdf'
 ) -> None:
     SERIES_ID_CB = {'D0086': 'dataset_uscb.zip'}
@@ -48,7 +48,7 @@ def main(
     df.pipe(transform_mean, name="fused").pipe(autocorrelation_plot)
 
     if savefig:
-        plt.savefig(Path(path_dsn).joinpath(file_name), format='pdf', dpi=900)
+        plt.savefig(Path(path_export).joinpath(file_name), format='pdf', dpi=900)
 
 
 if __name__ == '__main__':

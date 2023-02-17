@@ -708,7 +708,7 @@ def run_m_spline(df: DataFrame, kernel: callable) -> None:
     df.reset_index(level=0, inplace=True)
     df.columns = ('Period', 'Original')
     # =========================================================================
-    # Number of Periods
+    # Number of Spans
     # =========================================================================
     N = int(input('Define Number of Interpolation Spans (N, N >= 2): '))
     print(f'Number of Spans Provided: {N}')

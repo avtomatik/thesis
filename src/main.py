@@ -243,12 +243,12 @@ def main():
         # =====================================================================
         'v65201809': 36100434,
     }
-    _df = construct_can(ARCHIVE_IDS)
+    df = construct_can(ARCHIVE_IDS)
     plot_cobb_douglas(
-        *_df.pipe(transform_cobb_douglas, year_base=2007),
+        *df.pipe(transform_cobb_douglas, year_base=2007),
         MAP_FIG
     )
-    _df.pipe(plot_cobb_douglas_3d)
+    df.pipe(plot_cobb_douglas_3d)
 
     # =========================================================================
     # Subproject VI. Elasticity
