@@ -35,6 +35,7 @@ def read_can(archive_id: int) -> DataFrame:
         df.iloc[:, -1]     Values
         ================== =================================
     """
+    MAP_DEFAULT = {'period': 0, 'series_id': 10, 'value': 12}
     MAP = {
         310004: {
             'period': 0,
@@ -92,10 +93,10 @@ def read_can(archive_id: int) -> DataFrame:
     url = f'https://www150.statcan.gc.ca/n1/tbl/csv/{archive_id:08n}-eng.zip'
     kwargs = {
         'header': 0,
-        'names': tuple(MAP.get(archive_id).keys()),
+        'names': list(MAP.get(archive_id, MAP_DEFAULT).keys()),
         'index_col': 0,
-        'usecols': tuple(MAP.get(archive_id).values()),
-        'parse_dates': archive_id in (2820011, 3790031, 3800084, 36100434)
+        'usecols': list(MAP.get(archive_id, MAP_DEFAULT).values()),
+        'parse_dates': archive_id in (2820011, 3790031, 3800084, 36100108, 36100434)
     }
     if archive_id < 10 ** 7:
         kwargs['filepath_or_buffer'] = f'dataset_can_{archive_id:08n}-eng.zip'

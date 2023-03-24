@@ -194,7 +194,7 @@ def test_data_consistency_d():
         ]
 
     # =========================================================================
-    # Tested: "A051RC1" != "A052RC1" + "A262RC1"
+    # Tested: "A051RC" != "A052RC" + "A262RC"
     # =========================================================================
     ARCHIVE_NAME = 'dataset_usa_bea-release-2019-12-19-Survey.zip'
     WB_NAME = 'Section1all_xls.xlsx'

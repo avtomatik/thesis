@@ -101,12 +101,12 @@ def main():
             range(117, 120),
         )
     }
-    plot_uscb_immigration(
-        stockpile_usa_hist(SERIES_IDS).pipe(transform_sum, name="C0089")
-    )
+    stockpile_usa_hist(SERIES_IDS).pipe(
+        transform_sum, name="C0089"
+    ).pipe(plot_uscb_immigration)
 
-    plot_uscb_unemployment_hours_worked(
-        collect_uscb_unemployment_hours_worked()
+    collect_uscb_unemployment_hours_worked().pipe(
+        plot_uscb_unemployment_hours_worked
     )
 
     collect_uscb_employment_conflicts().pipe(plot_uscb_employment_conflicts)

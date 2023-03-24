@@ -674,8 +674,8 @@ def plot_approx_linear_log(df: DataFrame) -> None:
         ================== =================================
     """
     MAP_DESC = {
-        'A032RC1': 'National Income',
-        'A191RC1': 'Gross Domestic Product',
+        'A032RC': 'National Income',
+        'A191RC': 'Gross Domestic Product',
     }
     df.iloc[:, -1] = df.iloc[:, -1].apply(pd.to_numeric, errors='coerce')
     df.dropna(inplace=True)
@@ -1507,7 +1507,7 @@ def plot_elasticity(df: DataFrame) -> None:
     _b = df.pipe(get_price_base_nr)
     df.drop(df.columns[-1], axis=1, inplace=True)
     _title = (
-        'National Income' if df.columns[2] == 'A032RC1' else 'Series',
+        'National Income' if df.columns[2] == 'A032RC' else 'Series',
         df.columns[2],
         _b,
     )

@@ -509,11 +509,11 @@ def collect_usa_bea_gdp() -> DataFrame:
     """
     SERIES_IDS = {
         # =====================================================================
-        # Nominal Gross Domestic Product Series: A191RC1
+        # Nominal Gross Domestic Product Series: A191RC
         # =====================================================================
         'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
         # =====================================================================
-        # Real Gross Domestic Product Series, 2012=100: A191RX1
+        # Real Gross Domestic Product Series, 2012=100: A191RX
         # =====================================================================
         'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
     }
