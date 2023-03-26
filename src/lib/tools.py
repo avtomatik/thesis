@@ -854,26 +854,6 @@ def price_inverse_double(df: DataFrame) -> DataFrame:
     return df.iloc[:, [-1]].dropna(axis=0)
 
 
-def price_inverse_single(df: DataFrame) -> DataFrame:
-    """
-    Returns Prices Icrement Series from Cumulative Deflator Series
-
-    Parameters
-    ----------
-    df : DataFrame
-        ================== =================================
-        df.index           Period
-        df.iloc[:, 0]      TODO: Prices
-        ================== =================================
-    Returns
-    -------
-    DataFrame
-        TODO: DESCRIPTION.
-
-    """
-    return df.pct_change()
-
-
 def archive_name_to_url(archive_name: str) -> str:
     """
 

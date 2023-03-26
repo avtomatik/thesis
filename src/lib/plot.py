@@ -1312,11 +1312,11 @@ def plot_cobb_douglas_complex(df: DataFrame) -> None:
         MAP_FIG
     )
     df.iloc[:, range(3)].pipe(plot_cobb_douglas_3d)
-    plot_lab_prod_polynomial(_df.iloc[:, [3, 4]])
-    plot_lab_cap_inty_lab_prty_closure(_df.iloc[:, [3, 4]])
-    plot_lab_cap_inty(_df.iloc[:, [3]])
-    plot_lab_prty(_df.iloc[:, [4]])
-    plot_turnover(_df.iloc[:, [6]])
+    _df.iloc[:, [3, 4]].pipe(plot_lab_prod_polynomial)
+    _df.iloc[:, [3, 4]].pipe(plot_lab_cap_inty_lab_prty_closure)
+    _df.iloc[:, [3]].pipe(plot_lab_cap_inty)
+    _df.iloc[:, [4]].pipe(plot_lab_prty)
+    _df.iloc[:, [6]].pipe(plot_turnover)
 
 
 def plot_cobb_douglas_tight_layout(df: DataFrame, params: tuple[float], mapping: dict) -> None:
@@ -2362,7 +2362,7 @@ def plot_usa_nber(df_sic: DataFrame, df_naics: DataFrame, agg: str) -> None:
         plt.show()
 
 
-def plot_usa_nber_manager() -> None:
+def plot_usa_nber_showcase() -> None:
     FILEPATH_OR_BUFFER = (
         'dataset_usa_nber_ces_mid_sic5811.csv',
         'dataset_usa_nber_ces_mid_naics5811.csv',

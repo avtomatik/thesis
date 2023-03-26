@@ -19,7 +19,6 @@ from .pull import pull_by_series_id, pull_can_capital, pull_can_capital_former
 from .read import (read_can, read_temporary, read_usa_bea, read_usa_davis_ip,
                    read_usa_frb, read_usa_frb_g17, read_usa_frb_h6,
                    read_usa_frb_us3, read_usa_fred, read_usa_hist)
-from .tools import price_inverse_single
 from .transform import (stockpile_by_series_ids,
                         transform_cobb_douglas_extension_capital,
                         transform_mean, transform_sum, transform_usa_frb_fa,
@@ -161,7 +160,7 @@ def collect_cobb_douglas_deflator() -> DataFrame:
     # =========================================================================
     return pd.concat(
         [
-            df.loc[:, (column,)].pipe(price_inverse_single)
+            df.loc[:, (column,)].pct_change()
             for column in df.columns
         ],
         axis=1
@@ -822,7 +821,7 @@ def collect_uscb_cap_deflator() -> DataFrame:
     # =========================================================================
     return pd.concat(
         [
-            df.iloc[:, [-(1+_)]].pipe(price_inverse_single).dropna(axis=0) for _ in range(6)
+            df.iloc[:, [-(1+_)]].pct_change().dropna(axis=0) for _ in range(6)
         ],
         axis=1
     )
@@ -1220,8 +1219,7 @@ def stockpile_usa_sahr_infcf(df: DataFrame) -> DataFrame:
     # =========================================================================
     return pd.concat(
         [
-            df.pipe(pull_by_series_id, series_id).rdiv(
-                1).pipe(price_inverse_single).mul(-1)
+            df.pipe(pull_by_series_id, series_id).rdiv(1).pct_change().mul(-1)
             for series_id in df.iloc[:, 0].unique()[:14]
         ],
         axis=1,
