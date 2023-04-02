@@ -52,7 +52,7 @@ def pull_can_capital(df: DataFrame, params: tuple[int, str]) -> DataFrame:
     df : DataFrame
 
     params : tuple[int, str]
-        param : BASE_YEAR : Basic Price Year.
+        param : YEAR_BASE : Basic Price Year.
         param : CATEGORY : Estimate Basis.
         param : COMPONENT : Search Key Word
 
@@ -93,7 +93,7 @@ def pull_can_capital_former(df: DataFrame, params: tuple[int, str]) -> DataFrame
     df : DataFrame
 
     params : tuple[int, str]
-        param : BASE_YEAR : Basic Price Year.
+        param : YEAR_BASE : Basic Price Year.
         param : CATEGORY : Estimate Basis.
         param : COMPONENT : Search Key Word
 

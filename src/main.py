@@ -22,46 +22,11 @@ from lib.plot import (plot_approx_linear, plot_approx_linear_log,
                       plot_model_capital, plot_uscb_complex)
 from lib.tools import (calculate_power_function_fit_params_a,
                        calculate_power_function_fit_params_b,
-                       calculate_power_function_fit_params_c, m_spline_ea,
-                       m_spline_eb, m_spline_la, m_spline_lb, m_spline_lls,
-                       run_m_spline)
+                       calculate_power_function_fit_params_c,
+                       lash_up_spline_ea, lash_up_spline_eb, lash_up_spline_la,
+                       lash_up_spline_lb, lash_up_spline_lls,
+                       run_lash_up_spline)
 from lib.transform import transform_cobb_douglas
-
-ARCHIVE_NAMES_UTILISED = (
-    'dataset_can_00310004-eng.zip',
-    'dataset_douglas.zip',
-    'dataset_rus_m1.zip',
-    'dataset_usa_bea-nipa-2015-05-01.zip',
-    'dataset_usa_bea-nipa-selected.zip',
-    'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1929_1969.zip',
-    'dataset_usa_bea-release-2013-01-31-SectionAll_xls_1969_2012.zip',
-    'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1929_1969.zip',
-    'dataset_usa_bea-release-2015-02-27-SectionAll_xls_1969_2015.zip',
-    'dataset_usa_bea-release-2019-12-19-Survey.zip',
-    'dataset_usa_bea-sfat-release-2012-08-15-SectionAll_xls.zip',
-    'dataset_usa_bea-sfat-release-2017-08-23-SectionAll_xls.zip',
-    'dataset_usa_brown.zip',
-    'dataset_uscb.zip',
-    'dataset_usa_cobb-douglas.zip',
-    'dataset_usa_infcf16652007.zip',
-    'dataset_usa_kendrick.zip',
-    'dataset_usa_mc_connell_brue.zip',
-)
-FILE_NAMES_UTILISED = (
-    'dataset_rus_grigoriev_v.csv',
-    'dataset_usa_0025_p_r.txt',
-    'dataset_usa_bea-GDPDEF.xls',
-    'dataset_usa_bls-2015-02-23-ln.data.1.AllData',
-    'dataset_usa_bls-2017-07-06-ln.data.1.AllData',
-    'dataset_usa_bls-pc.data.0.Current',
-    'dataset_usa_davis-j-h-ip-total.xls',
-    'dataset_usa_frb_g17_all_annual_2013_06_23.csv',
-    'dataset_usa_frb_invest_capital.csv',
-    'dataset_usa_frb_us3_ip_2018_09_02.csv',
-    'dataset_usa_nber_ces_mid_naics5811.csv',
-    'dataset_usa_nber_ces_mid_sic5811.csv',
-    'dataset_usa_reference_ru_kurenkov_yu_v.csv',
-)
 
 
 def main():
@@ -100,24 +65,27 @@ def main():
     stockpile_usa_bea(SERIES_IDS).dropna(axis=0).pipe(plot_approx_linear_log)
 
     SERIES_IDS = ('Валовой внутренний продукт, млрд долл. США',)
+    PARAMS = (2800, 0.01, 0.5)
     stockpile_usa_mcconnel(SERIES_IDS).pipe(
-        calculate_power_function_fit_params_a, (2800, 0.01, 0.5)
+        calculate_power_function_fit_params_a, PARAMS
     )
 
     SERIES_IDS = (
         'Ставка прайм-рейт, %',
         'Национальный доход, млрд долл. США',
     )
+    PARAMS = (4, 12, 9000, 3000, 0.87)
     stockpile_usa_mcconnel(SERIES_IDS).pipe(
-        calculate_power_function_fit_params_b, (4, 12, 9000, 3000, 0.87)
+        calculate_power_function_fit_params_b, PARAMS
     )
 
     SERIES_IDS = (
         'Ставка прайм-рейт, %',
         'Валовой объем внутренних частных инвестиций, млрд долл. США',
     )
+    PARAMS = (1.5, 19, 1.7, 1760)
     stockpile_usa_mcconnel(SERIES_IDS).pipe(
-        calculate_power_function_fit_params_c, (1.5, 19, 1.7, 1760)
+        calculate_power_function_fit_params_c, PARAMS
     )
 
 
@@ -158,39 +126,8 @@ def main():
     # Subproject IV. Cobb--Douglas
     # =========================================================================
     # =========================================================================
-    # On Original Dataset
+    # cobb_douglas_complex.py
     # =========================================================================
-    df = stockpile_cobb_douglas(5)
-
-    # =========================================================================
-    # On Expanded Dataset
-    # =========================================================================
-    df_d, df_e = collect_usa_manufacturing_two_fold()
-    df_f, df_g, df_h = collect_usa_manufacturing_three_fold()
-    df.iloc[:, range(3)].pipe(plot_cobb_douglas_complex)
-    df.iloc[:, (0, 1, 3)].pipe(plot_cobb_douglas_complex)
-    df.iloc[:, (0, 1, 4)].pipe(plot_cobb_douglas_complex)
-    # =========================================================================
-    # No Capacity Utilization Adjustment
-    # =========================================================================
-    df_d.pipe(plot_cobb_douglas_complex)
-    # =========================================================================
-    # Capacity Utilization Adjustment
-    # =========================================================================
-    df_e.pipe(plot_cobb_douglas_complex)
-    # =========================================================================
-    # Option: 1929--2013, No Capacity Utilization Adjustment
-    # =========================================================================
-    df_f.pipe(plot_cobb_douglas_complex)
-    # =========================================================================
-    # Option: 1967--2013, No Capacity Utilization Adjustment
-    # =========================================================================
-    df_g.pipe(plot_cobb_douglas_complex)
-    # =========================================================================
-    # Option: 1967--2012, Capacity Utilization Adjustment
-    # =========================================================================
-    df_h.pipe(plot_cobb_douglas_complex)
-    # collect_usa_manufacturing_latest().pipe(plot_cobb_douglas_complex)
 
     # =========================================================================
     # Subproject V. Cobb--Douglas CAN
@@ -266,10 +203,10 @@ def main():
     stockpile_usa_bea(SERIES_IDS).dropna(axis=0).pipe(plot_growth_elasticity)
 
     # =========================================================================
-    # Subproject VII. MSpline
+    # Subproject VII. Lash-Up Spline
     # =========================================================================
     # =========================================================================
-    # Makeshift Splines
+    # Lash-Up Splines
     # =========================================================================
     # =========================================================================
     # Fixed Assets Turnover
@@ -279,32 +216,32 @@ def main():
     # =========================================================================
     # Option 1
     # =========================================================================
-    run_m_spline(df, m_spline_lls)
+    df.pipe(run_lash_up_spline, kernel=lash_up_spline_lls)
     # =========================================================================
     # Option 2.1.1
     # =========================================================================
-    run_m_spline(df, m_spline_ea)
+    df.pipe(run_lash_up_spline, kernel=lash_up_spline_ea)
     # =========================================================================
     # Option 2.1.2
     # =========================================================================
-    run_m_spline(df, m_spline_eb)
+    df.pipe(run_lash_up_spline, kernel=lash_up_spline_eb)
     # =========================================================================
     # Option 2.2.1
     # =========================================================================
-    run_m_spline(df, m_spline_la)
+    df.pipe(run_lash_up_spline, kernel=lash_up_spline_la)
     # =========================================================================
     # Option 2.2.2
     # =========================================================================
-    run_m_spline(df, m_spline_lb)
+    df.pipe(run_lash_up_spline, kernel=lash_up_spline_lb)
 
     # =========================================================================
-    # Subproject VIII. Multiple
+    # Subproject VIII. Complex
     # =========================================================================
     df = stockpile_cobb_douglas().pipe(
         transform_cobb_douglas, year_base=1899).iloc[:, range(5)]
 
     for col in df.columns:
-        plot_uscb_complex(df.loc[:, [col]])
+        df.loc[:, [col]].pipe(plot_uscb_complex)
 
     SERIES_IDS = (
         {'D0004': 'dataset_uscb.zip'}, {'D0130': 'dataset_uscb.zip'},

@@ -10,6 +10,7 @@ from operator import itemgetter
 from pathlib import Path
 
 import pandas as pd
+from constants import SERIES_IDS_LAB
 from pandas import DataFrame
 from scipy.signal import wiener
 
@@ -23,39 +24,6 @@ from .transform import (stockpile_by_series_ids,
                         transform_cobb_douglas_extension_capital,
                         transform_mean, transform_sum, transform_usa_frb_fa,
                         transform_usa_frb_fa_def)
-
-ARCHIVE_NAMES_UTILISED = (
-    'dataset_douglas.zip',
-    'dataset_usa_brown.zip',
-    'dataset_uscb.zip',
-    'dataset_usa_cobb-douglas.zip',
-    'dataset_usa_kendrick.zip',
-)
-FILE_NAMES_UTILISED = (
-    'dataset_usa_0025_p_r.txt',
-    'dataset_usa_reference_ru_kurenkov_yu_v.csv',
-)
-# =============================================================================
-# U.S. Bureau of Economic Analysis (BEA), Manufacturing Labor Series
-# =============================================================================
-SERIES_IDS_LAB = {
-    # =========================================================================
-    # 1929--1948
-    # =========================================================================
-    'H4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-    # =========================================================================
-    # 1948--1987
-    # =========================================================================
-    'J4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-    # =========================================================================
-    # 1987--2000
-    # =========================================================================
-    'A4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-    # =========================================================================
-    # 1998--2020
-    # =========================================================================
-    'N4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-}
 
 
 def collect_cobb_douglas_deflator() -> DataFrame:

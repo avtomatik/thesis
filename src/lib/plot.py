@@ -28,14 +28,6 @@ from .tools import (calculate_capital, filter_kol_zur, filter_rolling_mean,
                     get_price_base_nr, simple_linear_regression)
 from .transform import transform_agg, transform_cobb_douglas
 
-ARCHIVE_NAMES_UTILISED = (
-    'dataset_uscb.zip',
-)
-FILE_NAMES_UTILISED = (
-    'dataset_usa_nber_ces_mid_naics5811.csv',
-    'dataset_usa_nber_ces_mid_sic5811.csv',
-)
-
 
 def _lab_productivity(array: np.array, k: float = 0.25, b: float = 1.01) -> np.array:
     return np.multiply(np.power(array, -k), b)
@@ -144,8 +136,8 @@ def plot_manufacturing_money(df: DataFrame) -> None:
     plt.title('Indexes, {}$-${}'.format(*df.index[[0, -1]]))
     plt.xlabel('Period')
     plt.ylabel('Index')
-    plt.legend()
     plt.grid()
+    plt.legend()
     plt.show()
 
 
@@ -191,8 +183,8 @@ def plot_d(df: DataFrame) -> None:
     plt.title('Real Indexes, {}=100, {}$-${}'.format(_b, *df.index[[0, -1]]))
     plt.xlabel('Period')
     plt.ylabel('Billions of Dollars')
-    plt.legend()
     plt.grid()
+    plt.legend()
     plt.figure(2)
     plt.plot(df.iloc[:, 4])
     plt.title(
@@ -256,7 +248,6 @@ def plot_e(df: DataFrame) -> None:
     )
     plt.xlabel('Investment, Billions of Dollars')
     plt.ylabel('Gross Domestic Product, Billions of Dollars')
-    plt.grid()
     plt.legend(
         [
             '$P(I)$',
@@ -267,6 +258,7 @@ def plot_e(df: DataFrame) -> None:
     print(_params_i)
     print(df.iloc[:, 4].describe())
     print(_params_t)
+    plt.grid()
     plt.show()
 
 
@@ -389,8 +381,8 @@ def plot_uscb_commodities(series_ids: tuple[str]) -> None:
     plt.title(_title)
     plt.xlabel('Period')
     plt.ylabel('Percentage')
-    plt.grid()
     plt.legend(series_ids)
+    plt.grid()
     plt.show()
 
 
@@ -828,8 +820,8 @@ def plot_lab_cap_inty(df: DataFrame) -> None:
     )
     plt.xlabel('Period')
     plt.ylabel('Index')
-    plt.legend()
     plt.grid()
+    plt.legend()
     plt.show()
 
 
@@ -914,8 +906,8 @@ def plot_lab_prty(df: DataFrame) -> None:
     )
     plt.xlabel('Period')
     plt.ylabel('Index')
-    plt.legend()
     plt.grid()
+    plt.legend()
     plt.show()
 
 
@@ -1067,8 +1059,8 @@ def plot_capital_purchases(df: DataFrame) -> None:
     plt.title('Fixed Assets Purchases, {}$-${}'.format(*df.index[[0, -1]]))
     plt.xlabel('Period')
     plt.ylabel('Millions of Dollars')
-    plt.legend()
     plt.grid()
+    plt.legend()
     plt.show()
 
 
@@ -1076,12 +1068,9 @@ def plot_uscb_complex(df: DataFrame) -> None:
     # =========================================================================
     # TODO: Eliminate This Function
     # =========================================================================
-    _df = df.copy()
-    plot_pearson_r_test(_df)
-    _df = df.copy()
-    plot_filter_kol_zur(_df)
-    _df = df.copy()
-    plot_ewm(_df)
+    df.copy().pipe(plot_pearson_r_test)
+    df.copy().pipe(plot_filter_kol_zur)
+    df.copy().pipe(plot_ewm)
 
 
 def plot_cobb_douglas(df: DataFrame, params: tuple[float], mapping: dict) -> None:
@@ -1103,8 +1092,8 @@ def plot_cobb_douglas(df: DataFrame, params: tuple[float], mapping: dict) -> Non
     plt.ylabel('Indexes')
     plt.title(mapping['fg_a'].format(*df.index[[0, -1]],
                                      mapping['year_base']))
-    plt.legend()
     plt.grid()
+    plt.legend()
     plt.figure(2)
     plt.semilogy(
         df.iloc[:, (2, 9)],
@@ -1121,8 +1110,8 @@ def plot_cobb_douglas(df: DataFrame, params: tuple[float], mapping: dict) -> Non
     plt.ylabel('Production')
     plt.title(mapping['fg_b'].format(*df.index[[0, -1]],
                                      mapping['year_base']))
-    plt.legend()
     plt.grid()
+    plt.legend()
     plt.figure(3)
     plt.plot(
         df.iloc[:, (8, 11)],
@@ -1137,8 +1126,8 @@ def plot_cobb_douglas(df: DataFrame, params: tuple[float], mapping: dict) -> Non
     plt.xlabel('Period')
     plt.ylabel('Percentage Deviation')
     plt.title(mapping['fg_c'])
-    plt.legend()
     plt.grid()
+    plt.legend()
     plt.figure(4)
     plt.plot(df.iloc[:, 9].div(df.iloc[:, 2]).sub(1))
     plt.xlabel('Period')
@@ -1162,8 +1151,8 @@ def plot_cobb_douglas(df: DataFrame, params: tuple[float], mapping: dict) -> Non
     plt.xlabel('$\\frac{L}{C}$')
     plt.ylabel('Indexes')
     plt.title(mapping['fg_e'])
-    plt.legend()
     plt.grid()
+    plt.legend()
     plt.show()
 
 
@@ -1216,8 +1205,8 @@ def plot_cobb_douglas_alt(df: DataFrame, params: tuple[float], mapping: dict) ->
     plt.ylabel('Indexes')
     plt.title(mapping['fg_a'].format(*df.index[[0, -1]],
                                      mapping['year_base']))
-    plt.legend()
     plt.grid()
+    plt.legend()
     plt.figure(2)
     plt.plot(
         df.iloc[:, (3, 17)],
@@ -1234,8 +1223,8 @@ def plot_cobb_douglas_alt(df: DataFrame, params: tuple[float], mapping: dict) ->
     plt.ylabel('Production')
     plt.title(mapping['fg_b'].format(*df.index[[0, -1]],
                                      mapping['year_base']))
-    plt.legend()
     plt.grid()
+    plt.legend()
     plt.figure(3)
     plt.plot(
         df.iloc[:, (15, 18)],
@@ -1250,8 +1239,8 @@ def plot_cobb_douglas_alt(df: DataFrame, params: tuple[float], mapping: dict) ->
     plt.xlabel('Period')
     plt.ylabel('Percentage Deviation')
     plt.title(mapping['fg_c'])
-    plt.legend()
     plt.grid()
+    plt.legend()
     plt.figure(4)
     plt.plot(df.iloc[:, 17].div(df.iloc[:, 3]).sub(1))
     plt.xlabel('Period')
@@ -1275,8 +1264,8 @@ def plot_cobb_douglas_alt(df: DataFrame, params: tuple[float], mapping: dict) ->
     plt.xlabel('$\\frac{L}{C}$')
     plt.ylabel('Indexes')
     plt.title(mapping['fg_e'])
-    plt.legend()
     plt.grid()
+    plt.legend()
     plt.show()
 
 
@@ -1765,7 +1754,8 @@ def plot_increment(
 
     fig.tight_layout()
     if savefig:
-        fig.savefig(Path(path_export).joinpath(file_name), format='pdf', dpi=900)
+        fig.savefig(Path(path_export).joinpath(
+            file_name), format='pdf', dpi=900)
     else:
         plt.show()
 
