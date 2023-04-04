@@ -8,7 +8,7 @@ Created on Mon Apr 12 22:46:08 2021
 
 import os
 
-from lib.collect import collect_usa_manufacturing_latest
+from lib.collect import combine_usa_manufacturing_latest
 from lib.plot import plot_cobb_douglas
 from lib.transform import transform_cobb_douglas
 
@@ -29,7 +29,7 @@ def main():
 
     os.chdir(DIR)
     plot_cobb_douglas(
-        *collect_usa_manufacturing_latest().pipe(transform_cobb_douglas, year_base=2012),
+        *combine_usa_manufacturing_latest().pipe(transform_cobb_douglas, year_base=2012),
         MAP_FIG
     )
 

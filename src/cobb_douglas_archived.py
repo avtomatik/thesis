@@ -7,11 +7,10 @@ Created on Wed Feb  5 22:19:02 2020
 
 import os
 
-from lib.collect import (collect_usa_capital_purchases,
-                         collect_usa_manufacturing_latest,
-                         collect_usa_manufacturing_three_fold,
-                         collect_usa_manufacturing_two_fold,
-                         stockpile_cobb_douglas)
+from lib.collect import (combine_cobb_douglas, combine_usa_capital_purchases,
+                         combine_usa_manufacturing_latest,
+                         combine_usa_manufacturing_three_fold,
+                         combine_usa_manufacturing_two_fold)
 from lib.plot import (plot_capital_purchases, plot_cobb_douglas,
                       plot_cobb_douglas_alt)
 from lib.tools import calculate_curve_fit_params
@@ -33,15 +32,15 @@ def main():
     # =========================================================================
     # Project I. Classified
     # =========================================================================
-    df = stockpile_cobb_douglas(5)
+    df = combine_cobb_douglas(5)
     df_b = df.iloc[:, (0, 1, 3)]
     plot_cobb_douglas_alt(*df.pipe(transform_cobb_douglas_alt), MAP_FIG)
     plot_cobb_douglas_alt(*df_b.pipe(transform_cobb_douglas_alt), MAP_FIG)
 
     df_a = df.iloc[:, range(3)]
     df_c = df.iloc[:, (0, 1, 4)]
-    df_d, df_e = collect_usa_manufacturing_two_fold()
-    df_f, df_g, df_h = collect_usa_manufacturing_three_fold()
+    df_d, df_e = combine_usa_manufacturing_two_fold()
+    df_f, df_g, df_h = combine_usa_manufacturing_three_fold()
 
     # =========================================================================
     # collect_cobb_douglas().pipe(transform_cobb_douglas, year_base=1899)[0].iloc[:, [3, 4]].pipe(calculate_curve_fit_params)
@@ -70,7 +69,7 @@ def main():
     # Option: 1967--2012, Capacity Utilization Adjustment
     # =========================================================================
     df_h.pipe(calculate_curve_fit_params)
-    collect_usa_manufacturing_latest().pipe(calculate_curve_fit_params)
+    combine_usa_manufacturing_latest().pipe(calculate_curve_fit_params)
 
     # =========================================================================
     # Project II. Scipy Signal Median Filter, Non-Linear Low-Pass Filter
@@ -100,12 +99,12 @@ def main():
         *df_h.pipe(transform_cobb_douglas, year_base=1967), MAP_FIG
     )
     plot_cobb_douglas(
-        *collect_usa_manufacturing_latest().pipe(transform_cobb_douglas, year_base=1967), MAP_FIG
+        *combine_usa_manufacturing_latest().pipe(transform_cobb_douglas, year_base=1967), MAP_FIG
     )
     # =========================================================================
     # Project III. Scipy Signal Wiener Filter
     # =========================================================================
-    collect_usa_capital_purchases().pipe(plot_capital_purchases)
+    combine_usa_capital_purchases().pipe(plot_capital_purchases)
 
 
 if __name__ == '__main__':

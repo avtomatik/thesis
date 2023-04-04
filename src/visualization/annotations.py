@@ -7,8 +7,8 @@ import os
 
 import matplotlib.pyplot as plt
 import pandas as pd
-from lib.collect import (collect_usa_macroeconomics,
-                         collect_usa_manufacturing_latest)
+from lib.collect import (combine_usa_macroeconomics,
+                         combine_usa_manufacturing_latest)
 from lib.plot import plot_increment
 from pandas import DataFrame
 
@@ -107,7 +107,7 @@ def main():
     DIR = '/media/green-machine/KINGSTON'
 
     os.chdir(DIR)
-    df = collect_usa_macroeconomics().pipe(transform_macroeconomics)
+    df = combine_usa_macroeconomics().pipe(transform_macroeconomics)
 
     # =========================================================================
     # Option 1: 1967--2012
@@ -149,7 +149,7 @@ def main():
     pd.concat([df['cap_0x3'], L, df['prd_0x4']], axis=1).pipe(
         transform_add_dx_dy).pipe(plot_increment)
 
-    collect_usa_manufacturing_latest().pipe(
+    combine_usa_manufacturing_latest().pipe(
         transform_add_dx_dy).pipe(plot_increment)
 
 

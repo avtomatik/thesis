@@ -514,7 +514,7 @@ def plot_uscb_trade_gold_silver(df: DataFrame) -> None:
 
 
 def plot_uscb_trade_by_countries(df: DataFrame) -> None:
-    assert df.shape[1] == 58, "Works on DataFrame Produced with collect_uscb_trade_by_countries()"
+    assert df.shape[1] == 58, "Works on DataFrame Produced with combine_uscb_trade_by_countries()"
     _LABELS = (
         'America-Canada',
         'America-Cuba',
@@ -1044,7 +1044,7 @@ def plot_model_capital(df: DataFrame, year_base: int) -> None:
 
 
 def plot_capital_purchases(df: DataFrame) -> None:
-    assert df.shape[1] == 27, "Works on DataFrame Produced with 'collect_usa_capital_purchases()"
+    assert df.shape[1] == 27, "Works on DataFrame Produced with 'combine_usa_capital_purchases()"
     plt.figure()
     plt.semilogy(
         df.loc[:, (df.columns[0], *df.columns[-3:])],

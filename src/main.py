@@ -9,11 +9,11 @@ Thesis Project
 
 
 import pandas as pd
-from lib.collect import (collect_usa_investment_turnover,
-                         collect_usa_investment_turnover_bls,
-                         collect_usa_manufacturing_three_fold,
-                         collect_usa_manufacturing_two_fold, construct_can,
-                         stockpile_cobb_douglas, stockpile_usa_bea,
+from lib.collect import (combine_can, combine_cobb_douglas,
+                         combine_usa_investment_turnover,
+                         combine_usa_investment_turnover_bls,
+                         combine_usa_manufacturing_three_fold,
+                         combine_usa_manufacturing_two_fold, stockpile_usa_bea,
                          stockpile_usa_hist, stockpile_usa_mcconnel)
 from lib.plot import (plot_approx_linear, plot_approx_linear_log,
                       plot_cobb_douglas, plot_cobb_douglas_3d,
@@ -112,8 +112,8 @@ def main():
         'λ1': -0.000413347827690062,
         'λ2': 1.18883834418742,
     }
-    df, df_b = collect_usa_investment_turnover_bls()
-    df_c, df_d = collect_usa_investment_turnover()
+    df, df_b = combine_usa_investment_turnover_bls()
+    df_c, df_d = combine_usa_investment_turnover()
     df.pipe(plot_model_capital, year_base=2005)
     df_c.pipe(plot_model_capital, year_base=2012)
     # =========================================================================
@@ -180,7 +180,7 @@ def main():
         # =====================================================================
         'v65201809': 36100434,
     }
-    df = construct_can(ARCHIVE_IDS)
+    df = combine_can(ARCHIVE_IDS)
     plot_cobb_douglas(
         *df.pipe(transform_cobb_douglas, year_base=2007),
         MAP_FIG
@@ -211,7 +211,7 @@ def main():
     # =========================================================================
     # Fixed Assets Turnover
     # =========================================================================
-    df = stockpile_cobb_douglas().pipe(transform_cobb_douglas,
+    df = combine_cobb_douglas().pipe(transform_cobb_douglas,
                                        year_base=1899)[0].iloc[:, [6]]
     # =========================================================================
     # Option 1
@@ -237,7 +237,7 @@ def main():
     # =========================================================================
     # Subproject VIII. Complex
     # =========================================================================
-    df = stockpile_cobb_douglas().pipe(
+    df = combine_cobb_douglas().pipe(
         transform_cobb_douglas, year_base=1899).iloc[:, range(5)]
 
     for col in df.columns:

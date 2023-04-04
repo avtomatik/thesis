@@ -6,7 +6,7 @@ Created on Sat Jun 18 11:29:40 2022
 @author: Alexander Mikhailov
 """
 
-from lib.collect import construct_can
+from lib.collect import combine_can
 from lib.plot import plot_cobb_douglas, plot_cobb_douglas_3d
 from lib.transform import transform_cobb_douglas
 
@@ -60,7 +60,7 @@ def main():
         # =====================================================================
         'v65201809': 36100434,
     }
-    df = construct_can(ARCHIVE_IDS)
+    df = combine_can(ARCHIVE_IDS)
     plot_cobb_douglas(
         *df.pipe(transform_cobb_douglas, year_base=2007), MAP_FIG
     )

@@ -416,7 +416,7 @@ def transform_d(df: DataFrame) -> DataFrame:
 
 
 def transform_e(df: DataFrame) -> tuple[DataFrame]:
-    assert df.shape[1] == 21, "Works on DataFrame Produced with collect_usa_general()"
+    assert df.shape[1] == 21, "Works on DataFrame Produced with combine_usa_general()"
     # =========================================================================
     # "Real" Investment
     # =========================================================================
@@ -697,4 +697,31 @@ def transform_pct_change(df: DataFrame) -> DataFrame:
 
     """
     df[f'{df.columns[0]}_prc'] = df.iloc[:, 0].pct_change()
+    return df.iloc[:, [-1]].dropna(axis=0)
+
+
+def transform_deflator(df: DataFrame) -> DataFrame:
+    """
+
+
+    Parameters
+    ----------
+    df : DataFrame
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Nominal
+        df.iloc[:, 1]      Real
+        ================== =================================
+
+    Returns
+    -------
+    DataFrame
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Deflator PRC
+        ================== =================================
+    """
+    assert df.shape[1] == 2
+    df['deflator'] = df.iloc[:, 0].div(df.iloc[:, 1])
+    df['prc'] = df.iloc[:, -1].pct_change()
     return df.iloc[:, [-1]].dropna(axis=0)
