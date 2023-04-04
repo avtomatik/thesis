@@ -440,7 +440,7 @@ def read_usa_frb_h6() -> DataFrame:
     # =========================================================================
     # hex(3**3 * 23 * 197 * 2039 * 445466883143470280668577791313)
     # =========================================================================
-    url = 'https://www.federalreserve.gov/datadownload/Output.aspx?rel=H6&series=5398d8d1734b19f731aba3105eb36d47&lastobs=&from=01/01/1959&to=12/31/2018&filetype=csv&label=include&layout=seriescolumn'
+    url = 'https://www.federalreserve.gov/datadownload/Output.aspx?rel=H6&series=798e2796917702a5f8423426ba7e6b42&lastobs=&from=&to=&filetype=csv&label=include&layout=seriescolumn&type=package'
     kwargs = {
         'filepath_or_buffer': io.BytesIO(requests.get(url).content),
         'header': 0,
