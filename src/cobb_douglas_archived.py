@@ -39,7 +39,6 @@ def main():
     plot_cobb_douglas_alt(*df_b.pipe(transform_cobb_douglas_alt), MAP_FIG)
 
     df_a = df.iloc[:, range(3)]
-    df_b = df.iloc[:, (0, 1, 3)]
     df_c = df.iloc[:, (0, 1, 4)]
     df_d, df_e = collect_usa_manufacturing_two_fold()
     df_f, df_g, df_h = collect_usa_manufacturing_three_fold()

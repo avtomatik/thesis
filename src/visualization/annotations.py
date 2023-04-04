@@ -1,5 +1,5 @@
 # =============================================================================
-# D:\archiveProjectUSACobbDouglasOptions.py
+# annotations.py
 # =============================================================================
 
 
@@ -148,10 +148,6 @@ def main():
     # =========================================================================
     pd.concat([df['cap_0x3'], L, df['prd_0x4']], axis=1).pipe(
         transform_add_dx_dy).pipe(plot_increment)
-
-    # =========================================================================
-    # Update from 'project.py'
-    # =========================================================================
 
     collect_usa_manufacturing_latest().pipe(
         transform_add_dx_dy).pipe(plot_increment)

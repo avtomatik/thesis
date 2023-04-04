@@ -13,7 +13,6 @@ import pandas as pd
 import scipy.optimize as optimization
 from pandas import DataFrame
 from scipy.interpolate import UnivariateSpline
-
 from sklearn.metrics import mean_squared_error, r2_score
 
 from .collect import stockpile_usa_hist
@@ -358,7 +357,7 @@ def filter_kol_zur(df: DataFrame, k: int = None) -> tuple[DataFrame]:
     return df_o, df_e, residuals_o, residuals_e
 
 
-def m_spline_ea(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFrame, tuple[float]]:
+def lash_up_spline_ea(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFrame, tuple[float]]:
     """
     Exponential Spline, Type A
 
@@ -432,7 +431,7 @@ def m_spline_ea(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFra
     )
 
 
-def m_spline_eb(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFrame, tuple[float]]:
+def lash_up_spline_eb(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFrame, tuple[float]]:
     """
     Exponential Spline, Type B
 
@@ -494,13 +493,13 @@ def m_spline_eb(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFra
     )
 
 
-def _m_spline_error_metrics(df: DataFrame) -> None:
+def _lash_up_spline_error_metrics(df: DataFrame) -> None:
     """Error Metrics Function"""
     print('Criterion, C: {:.6f}'.format(
         df.iloc[:, 2].div(df.iloc[:, 1]).sub(1).abs().mean()))
 
 
-def m_spline_la(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFrame, tuple[float]]:
+def lash_up_spline_la(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFrame, tuple[float]]:
     """
     Linear Spline, Type A
         ================== =================================
@@ -555,7 +554,7 @@ def m_spline_la(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFra
     )
 
 
-def m_spline_lb(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFrame, tuple[float]]:
+def lash_up_spline_lb(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFrame, tuple[float]]:
     """
     Linear Spline, Type B
         ================== =================================
@@ -600,7 +599,7 @@ def m_spline_lb(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFra
     )
 
 
-def m_spline_lls(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFrame, tuple[float]]:
+def lash_up_spline_lls(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFrame, tuple[float]]:
     """
     Linear Spline, Linear Regression Kernel
         ================== =================================
@@ -667,7 +666,7 @@ def m_spline_lls(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFr
     )
 
 
-def _m_spline_print_params(n_spans: int, params: tuple[float]) -> None:
+def _lash_up_spline_print_params(n_spans: int, params: tuple[float]) -> None:
     """
     Results Delivery Function
     ================== =================================
@@ -686,7 +685,7 @@ def _m_spline_print_params(n_spans: int, params: tuple[float]) -> None:
             print(f'Model Parameter: A{_:02n} = {_param:.6f}')
 
 
-def run_m_spline(df: DataFrame, kernel: callable) -> None:
+def run_lash_up_spline(df: DataFrame, kernel: callable) -> None:
     """
     Interactive Shell for Processing Make Shift Spline Functions
 
@@ -698,7 +697,7 @@ def run_m_spline(df: DataFrame, kernel: callable) -> None:
         df.iloc[:, 0]      Target Series
         ================== =================================
     kernel : callable
-        One Out of m_spline_ea(), m_spline_eb(), m_spline_la(), m_spline_lb(), m_spline_lls().
+        One Out of lash_up_spline_ea(), lash_up_spline_eb(), lash_up_spline_la(), lash_up_spline_lb(), lash_up_spline_lls().
 
     Returns
     -------
@@ -742,8 +741,8 @@ def run_m_spline(df: DataFrame, kernel: callable) -> None:
         print("Error")
     _knots = tuple(_knots)
     df_splined, _params = kernel(df, N, _knots)
-    _m_spline_print_params(N, _params)
-    _m_spline_error_metrics(df_splined)
+    _lash_up_spline_print_params(N, _params)
+    _lash_up_spline_error_metrics(df_splined)
     plt.figure()
     plt.scatter(df_splined.iloc[:, 0], df_splined.iloc[:, 1])
     plt.plot(
@@ -769,8 +768,8 @@ def run_m_spline(df: DataFrame, kernel: callable) -> None:
 
         modified.columns = ('Period', 'Corrected')
         df_splined, _params = kernel(modified, N, _knots)
-        _m_spline_print_params(N, _params)
-        _m_spline_error_metrics(df_splined)
+        _lash_up_spline_print_params(N, _params)
+        _lash_up_spline_error_metrics(df_splined)
         plt.plot(
             df_splined.iloc[:, 0],
             df_splined.iloc[:, 2],

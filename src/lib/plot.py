@@ -17,7 +17,6 @@ import pandas as pd
 from pandas import DataFrame
 from pandas.plotting import autocorrelation_plot, lag_plot
 from scipy import stats
-
 from sklearn.metrics import r2_score
 
 from .collect import stockpile_usa_hist

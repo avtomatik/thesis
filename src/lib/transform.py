@@ -9,7 +9,6 @@ Created on Sun Nov 20 17:42:38 2022
 import numpy as np
 import pandas as pd
 from pandas import DataFrame
-
 from sklearn.linear_model import Lasso, LinearRegression
 
 from .collect import stockpile_usa_hist
@@ -19,12 +18,50 @@ from .read import (read_temporary, read_usa_frb_g17, read_usa_frb_h6,
 
 
 def transform_investment_manufacturing(df: DataFrame) -> DataFrame:
+    """
+
+
+    Parameters
+    ----------
+    df : DataFrame
+        DESCRIPTION.
+
+    Returns
+    -------
+    DataFrame
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Gross Domestic Investment
+        df.iloc[:, 1]      National Income
+        df.iloc[:, 2]      Nominal Gross Domestic Product
+        df.iloc[:, 3]      Real Gross Domestic Product
+        ================== =================================
+    """
     df = df.iloc[:, [0, 4, 6, 7]].dropna(axis=0)
     df.iloc[:, 1] = df.iloc[:, 1].apply(pd.to_numeric, errors='coerce')
     return df.div(df.iloc[0, :]).dropna(axis=0)
 
 
 def transform_investment(df: DataFrame) -> DataFrame:
+    """
+
+
+    Parameters
+    ----------
+    df : DataFrame
+        DESCRIPTION.
+
+    Returns
+    -------
+    DataFrame
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Gross Domestic Investment
+        df.iloc[:, 1]      Nominal Gross Domestic Product
+        df.iloc[:, 2]      Real Gross Domestic Product
+        df.iloc[:, 3]      Prime Rate
+        ================== =================================
+    """
     return df.iloc[:, [0, 6, 7, 20]].dropna(axis=0)
 
 
@@ -180,7 +217,7 @@ def transform_cobb_douglas_alt(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
 
 def transform_cobb_douglas_extension_capital(df: DataFrame) -> DataFrame:
     """
-
+    Manufacturing Fixed Assets Series Comparison
 
     Parameters
     ----------
@@ -352,6 +389,26 @@ def transform_cobb_douglas_sklearn(df: DataFrame) -> DataFrame:
 
 
 def transform_d(df: DataFrame) -> DataFrame:
+    """
+
+
+    Parameters
+    ----------
+    df : DataFrame
+        DESCRIPTION.
+
+    Returns
+    -------
+    DataFrame
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Gross Domestic Investment
+        df.iloc[:, 1]      Gross Domestic Investment Price Index
+        df.iloc[:, 2]      Fixed Investment
+        df.iloc[:, 3]      Fixed Investment Price Index
+        df.iloc[:, 4]      Real Gross Domestic Product
+        ================== =================================
+    """
     # =========================================================================
     # TODO: Eliminate This Function
     # =========================================================================
@@ -391,7 +448,7 @@ def combine_kurenkov(df: DataFrame) -> tuple[DataFrame]:
     df_a = pd.concat(
         [
             df_control.iloc[:, [0]],
-            df_testing.loc[:, ('A191RX',)],
+            df.loc[:, ('A191RX',)],
             read_usa_frb_us3().loc[:, ('AIPMA_SA_IX',)],
         ],
         axis=1,
@@ -436,6 +493,25 @@ def combine_kurenkov(df: DataFrame) -> tuple[DataFrame]:
 
 
 def transform_manufacturing_money(df: DataFrame) -> DataFrame:
+    """
+
+
+    Parameters
+    ----------
+    df : DataFrame
+        DESCRIPTION.
+
+    Returns
+    -------
+    DataFrame
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Gross Domestic Investment
+        df.iloc[:, 1]      Nominal Gross Domestic Product
+        df.iloc[:, 2]      Real Gross Domestic Product
+        df.iloc[:, 3]      M1
+        ================== =================================
+    """
     SERIES_ID = {'X0414': 'dataset_uscb.zip'}
     df_manufacturing = df.iloc[:, (0, 6, 7)].dropna(axis=0)
     df_manufacturing = df_manufacturing.div(df_manufacturing.iloc[0, :])

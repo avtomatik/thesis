@@ -13,7 +13,6 @@ import pandas as pd
 from constants import SERIES_IDS_LAB
 from pandas import DataFrame
 from scipy.signal import wiener
-
 from sklearn.impute import SimpleImputer
 
 from .pull import pull_by_series_id, pull_can_capital, pull_can_capital_former
