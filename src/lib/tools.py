@@ -20,8 +20,13 @@ from .read import read_can
 from .transform import transform_deflator
 
 
-def calculate_capital(df: DataFrame, p_i: tuple[float], p_t: tuple[float], ratio: float):
+def calculate_capital(df: DataFrame, p_i: tuple[float], p_t: tuple[float], ratio: float) -> pd.Series:
     """
+    
+
+    Parameters
+    ----------
+    df : DataFrame
         ================== =================================
         df.index           Period
         df.iloc[:, 0]      Investment
@@ -29,13 +34,37 @@ def calculate_capital(df: DataFrame, p_i: tuple[float], p_t: tuple[float], ratio
         df.iloc[:, 2]      Capital
         df.iloc[:, 3]      Capital Retirement
         ================== =================================
+    p_i : tuple[float]
         p_i[0]: S - Gross Fixed Investment to Gross Domestic Product Ratio - Slope over Period,
-        p_i[1]: S - Gross Fixed Investment to Gross Domestic Product Ratio - Absolute Term over Period,
+        p_i[1]: S - Gross Fixed Investment to Gross Domestic Product Ratio - Absolute Term over Period.
+    p_t : tuple[float]
         p_t[0]: Λ - Fixed Assets Turnover Ratio - Slope over Period,
-        p_t[1]: Λ - Fixed Assets Turnover Ratio - Absolute Term over Period,
-        ratio: Investment to Capital Conversion Ratio
+        p_t[1]: Λ - Fixed Assets Turnover Ratio - Absolute Term over Period.
+    ratio : float
+        ratio: Investment to Capital Conversion Ratio.
+
+    Returns
+    -------
+    TYPE
+        DESCRIPTION.
+
     """
-    return df.index.to_series().shift(1).mul(p_i[0]).add(p_i[1]).mul(df.index.to_series().shift(1).mul(p_t[0]).add(p_t[1])).mul(ratio).add(1).sub(df.iloc[:, 3].shift(1)).mul(df.iloc[:, 2].shift(1))
+    return np.multiply(
+        np.subtract(
+            np.add(
+                np.multiply(
+                    np.multiply(
+                        np.poly1d(p_i)(df.index.to_series().shift(1)),
+                        np.poly1d(p_t)(df.index.to_series().shift(1)),
+                    ),
+                    ratio
+                ),
+                1
+            ),
+            df.iloc[:, 3].shift(1)
+        ),
+        df.iloc[:, 2].shift(1)
+    )
 
 
 def calculate_curve_fit_params(df: DataFrame) -> None:
@@ -1057,8 +1086,7 @@ def simple_linear_regression(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
     # =========================================================================
     # Approximation
     # =========================================================================
-    df[f'{df.columns[1]}_estimate'] = df.iloc[:, 0].mul(
-        params[0]).add(params[1])
+    df[f'{df.columns[1]}_estimate'] = np.poly1d(params)(df.iloc[:, 0])
     _r = r2_score(df.iloc[:, 1], df.iloc[:, -1])
     _tss = _ess[0] / (1 - _r)
     # =========================================================================
@@ -1066,8 +1094,9 @@ def simple_linear_regression(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
     # =========================================================================
     print('Period From {} Through {}'.format(*df.index[[0, -1]]))
     print('Model: Yhat = {:,.4f} + {:,.4f}*X'.format(*params[::-1]))
-    print('Model Parameter: A_0 = {:,.4f}'.format(params[1]))
-    print('Model Parameter: A_1 = {:,.4f}'.format(params[0]))
+    for _, param in enumerate(params[::-1]):
+        print(f'Model Parameter: A_{_} = {param:,.4f}')
+    
     print(
         'Model Result: ESS = {:,.4f}; TSS = {:,.4f}; R^2 = {:,.4f}'.format(
             _ess[0],
