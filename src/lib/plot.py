@@ -235,8 +235,8 @@ def plot_e(df: DataFrame) -> None:
         df.iloc[:, 2].astype(float),
         deg=1
     )
-    df['inv_to_pro_lin'] = df.iloc[:, 0].mul(_params_i[0]).add(_params_i[1])
-    df['c_turnover_lin'] = df.iloc[:, 2].mul(_params_t[0]).add(_params_t[1])
+    df['inv_to_pro_lin'] = np.poly1d(_params_i)(df.iloc[:, 0])
+    df['c_turnover_lin'] = np.poly1d(_params_t)(df.iloc[:, 2])
     plt.figure()
     plt.semilogy(df.iloc[:, 0], df.iloc[:, 1])
     plt.semilogy(df.iloc[:, 0], df.iloc[:, 5])
@@ -622,7 +622,7 @@ def plot_approx_linear(df: DataFrame) -> None:
         df.iloc[0, 2]).div(df.iloc[0, 4]).astype(float)
     df[f'{df.columns[3]}_bas'] = df.iloc[:, 3].mul(df.iloc[:, 4]).div(
         df.iloc[0, 3]).div(df.iloc[0, 4]).astype(float)
-    _p1 = np.polyfit(
+    polyfit_linear = np.polyfit(
         df.iloc[:, -2],
         df.iloc[:, -1],
         deg=1
@@ -630,12 +630,13 @@ def plot_approx_linear(df: DataFrame) -> None:
     # =========================================================================
     # Yhat
     # =========================================================================
-    df[f'{df.columns[3]}_estimate'] = df.iloc[:, -2].mul(_p1[0]).add(_p1[1])
+    df[f'{df.columns[3]}_estimate'] = np.poly1d(polyfit_linear)(df.iloc[:, -2])
     print('Period From: {} Through: {}'.format(*df.index[[0, -1]]))
     print(f'Prices: {_b}=100')
-    print('Model: Yhat = {:.4f} + {:.4f}*X'.format(*_p1[::-1]))
-    print(f'Model Parameter: A_0 = {_p1[1]:.4f}')
-    print(f'Model Parameter: A_1 = {_p1[0]:.4f}')
+    print('Model: Yhat = {:.4f} + {:.4f}*X'.format(*polyfit_linear[::-1]))
+    for _, param in enumerate(polyfit_linear[::-1]):
+        print(f'Model Parameter: A_{_} = {param:,.4f}')
+
     plt.figure()
     plt.title('$Y(X)$, {}=100, {}$-${}'.format(_b, *df.index[[0, -1]]))
     plt.xlabel(
@@ -647,7 +648,7 @@ def plot_approx_linear(df: DataFrame) -> None:
     plt.plot(df.iloc[:, -3], df.iloc[:, -2])
     plt.plot(
         df.iloc[:, -3], df.iloc[:, -1],
-        label='$\\hat Y = {:.4f}+{:.4f}X$'.format(*_p1[::-1])
+        label='$\\hat Y = {:.4f}+{:.4f}X$'.format(*polyfit_linear[::-1])
     )
     plt.grid()
     plt.legend()
@@ -682,7 +683,7 @@ def plot_approx_linear_log(df: DataFrame) -> None:
     df[f'{df.columns[2]}_log_bas'] = np.log(df.iloc[:, 2].div(df.iloc[0, 2]))
     df[f'{df.columns[3]}_log_bas'] = np.log(df.iloc[:, 3].mul(df.iloc[:, 4]).div(
         df.iloc[0, 3]).div(df.iloc[0, 4]).astype(float))
-    _p1 = np.polyfit(
+    polyfit_linear = np.polyfit(
         df.iloc[:, -2],
         df.iloc[:, -1],
         deg=1
@@ -690,15 +691,16 @@ def plot_approx_linear_log(df: DataFrame) -> None:
     # =========================================================================
     # Yhat
     # =========================================================================
-    df[f'{df.columns[3]}_estimate'] = df.iloc[:, -2].mul(_p1[0]).add(_p1[1])
+    df[f'{df.columns[3]}_estimate'] = np.poly1d(polyfit_linear)(df.iloc[:, -2])
     # =========================================================================
     # Delivery Block
     # =========================================================================
     print('Period From: {} Through: {}'.format(*df.index[[0, -1]]))
     print(f'Prices: {_b}=100')
-    print('Model: Yhat = {:.4f} + {:.4f}*Ln(X)'.format(*_p1[::-1]))
-    print(f'Model Parameter: A_0 = {_p1[1]:.4f}')
-    print(f'Model Parameter: A_1 = {_p1[0]:.4f}')
+    print('Model: Yhat = {:.4f} + {:.4f}*Ln(X)'.format(*polyfit_linear[::-1]))
+    for _, param in enumerate(polyfit_linear[::-1]):
+        print(f'Model Parameter: A_{_} = {param:,.4f}')
+    
     plt.figure()
     plt.title(
         '$Y(X)$, {}=100, {}$-${}'.format(
@@ -714,7 +716,7 @@ def plot_approx_linear_log(df: DataFrame) -> None:
     plt.plot(df.iloc[:, -3], df.iloc[:, -2])
     plt.plot(
         df.iloc[:, -3], df.iloc[:, -1],
-        label='$\\hat Y = {:.4f}+{:.4f}X$'.format(*_p1[::-1])
+        label='$\\hat Y = {:.4f}+{:.4f}X$'.format(*polyfit_linear[::-1])
     )
     plt.grid()
     plt.legend()
@@ -979,16 +981,14 @@ def plot_model_capital(df: DataFrame, year_base: int) -> None:
     # =========================================================================
     # Gross Fixed Investment to Gross Domestic Product Ratio
     # =========================================================================
-    _df['inv_to_pro'] = _df.index.to_series().mul(
-        _params_i[0]).add(_params_i[1])
+    _df['inv_to_pro'] = np.poly1d(_params_i)(_df.index.to_series())
     # =========================================================================
     # Fixed Assets Turnover
     # =========================================================================
-    _df['c_turnover'] = _df.index.to_series().mul(
-        _params_t[0]).add(_params_t[1])
-    _df['cap_a'] = calculate_capital(df, _params_i, _params_t, 0.875)
-    _df['cap_b'] = calculate_capital(df, _params_i, _params_t, 1)
-    _df['cap_c'] = calculate_capital(df, _params_i, _params_t, 1.125)
+    _df['c_turnover'] = np.poly1d(_params_t)(_df.index.to_series())
+    _df['cap_a'] = df.pipe(calculate_capital, _params_i, _params_t, 0.875)
+    _df['cap_b'] = df.pipe(calculate_capital, _params_i, _params_t, 1)
+    _df['cap_c'] = df.pipe(calculate_capital, _params_i, _params_t, 1.125)
     plt.figure(1)
     plt.title(
         'Fixed Assets Turnover ($\\lambda$) for the US, {}$-${}'.format(
@@ -1646,7 +1646,7 @@ def plot_fourier_discrete(df: DataFrame, precision: int = 10) -> None:
     )
     _df['period_calibrated'] = _df.index.to_series().sub(
         _df.index[0]).div(_df.shape[0]).mul(2).mul(np.pi).astype(float)
-    _df[f'{_df.columns[0]}_line'] = _df.index.to_series().mul(_p[0]).add(_p[1])
+    _df[f'{_df.columns[0]}_line'] = np.poly1d(_p)(_df.index.to_series())
     _df[f'{_df.columns[0]}_wave'] = _df.iloc[:, 0].sub(_df.iloc[:, 2])
     # =========================================================================
     # DataFrame for Fourier Coefficients
@@ -1699,7 +1699,9 @@ def plot_growth_elasticity(df: DataFrame) -> None:
     # Period, Centered
     # =========================================================================
     _df[f'{df.columns[0]}'] = df.iloc[:, [0]].rolling(2).mean()
-    df.index.to_series().rolling(2).mean()
+    # =========================================================================
+    # df.index.to_series().rolling(2).mean()
+    # =========================================================================
     # =========================================================================
     # Series, Centered
     # =========================================================================
@@ -1926,22 +1928,22 @@ def plot_lab_prod_polynomial(df: DataFrame) -> None:
     # =========================================================================
     # Polynomials 1, 2, 3 & 4: Labor Productivity
     # =========================================================================
-    _p1 = np.polyfit(
+    polyfit_linear = np.polyfit(
         df.iloc[:, -2].astype(float),
         df.iloc[:, -1].astype(float),
         deg=1
     )
-    _p2 = np.polyfit(
+    polyfit_quadratic = np.polyfit(
         df.iloc[:, -2].astype(float),
         df.iloc[:, -1].astype(float),
         deg=2
     )
-    _p3 = np.polyfit(
+    polyfit_cubic = np.polyfit(
         df.iloc[:, -2].astype(float),
         df.iloc[:, -1].astype(float),
         deg=3
     )
-    _p4 = np.polyfit(
+    polyfit_quartic = np.polyfit(
         df.iloc[:, -2].astype(float),
         df.iloc[:, -1].astype(float),
         deg=4
@@ -1951,13 +1953,10 @@ def plot_lab_prod_polynomial(df: DataFrame) -> None:
     # =========================================================================
     _df = DataFrame()
     _df['pow'] = df.iloc[:, -2].pow(k).mul(np.exp(b))
-    _df['p_1'] = df.iloc[:, -2].mul(_p1[0]).add(_p1[1])
-    _df['p_2'] = _p2[2] + df.iloc[:, -
-                                  2].mul(_p2[1]) + df.iloc[:, -2].pow(2).mul(_p2[0])
-    _df['p_3'] = _p3[3] + df.iloc[:, -2].mul(_p3[2]) + df.iloc[:, -2].pow(
-        2).mul(_p3[1]) + df.iloc[:, -2].pow(3).mul(_p3[0])
-    _df['p_4'] = _p4[4] + df.iloc[:, -2].mul(_p4[3]) + df.iloc[:, -2].pow(2).mul(
-        _p4[2]) + df.iloc[:, -2].pow(3).mul(_p4[1]) + df.iloc[:, -2].pow(4).mul(_p4[0])
+    _df['p_1'] = np.poly1d(polyfit_linear)(df.iloc[:, -2])
+    _df['p_2'] = np.poly1d(polyfit_quadratic)(df.iloc[:, -2])
+    _df['p_3'] = np.poly1d(polyfit_cubic)(df.iloc[:, -2])
+    _df['p_4'] = np.poly1d(polyfit_quartic)(df.iloc[:, -2])
     # =========================================================================
     # Deltas
     # =========================================================================
@@ -1985,7 +1984,7 @@ def plot_lab_prod_polynomial(df: DataFrame) -> None:
         _df.iloc[:, 1],
         label='$\\hat P_{{{}}}(X) = {:.2f}+{:.2f}X, R^2 = {:.4f}$'.format(
             1,
-            *_p1[::-1],
+            *polyfit_linear[::-1],
             next(r),
         )
     )
@@ -1993,7 +1992,7 @@ def plot_lab_prod_polynomial(df: DataFrame) -> None:
         _df.iloc[:, 2],
         label='$\\hat P_{{{}}}(X) = {:.2f}+{:.2f}X {:.2f}X^2, R^2 = {:.4f}$'.format(
             2,
-            *_p2[::-1],
+            *polyfit_quadratic[::-1],
             next(r),
         )
     )
@@ -2001,7 +2000,7 @@ def plot_lab_prod_polynomial(df: DataFrame) -> None:
         _df.iloc[:, 3],
         label='$\\hat P_{{{}}}(X) = {:.2f}+{:.2f}X {:.2f}X^2+{:.2f}X^3, R^2 = {:.4f}$'.format(
             3,
-            *_p3[::-1],
+            *polyfit_cubic[::-1],
             next(r),
         )
     )
@@ -2009,7 +2008,7 @@ def plot_lab_prod_polynomial(df: DataFrame) -> None:
         _df.iloc[:, 4],
         label='$\\hat P_{{{}}}(X) = {:.2f}+{:.2f}X {:.2f}X^2+{:.2f}X^3 {:.2f}X^4, R^2 = {:.4f}$'.format(
             4,
-            *_p4[::-1],
+            *polyfit_quartic[::-1],
             next(r),
         )
     )
@@ -2247,7 +2246,7 @@ def plot_turnover(df: DataFrame) -> None:
     # =========================================================================
     # Linear: Fixed Assets Turnover
     # =========================================================================
-    _lin = np.polyfit(
+    polyfit_linear = np.polyfit(
         df.index.to_series().astype(float),
         df.iloc[:, -1].astype(float),
         deg=1
@@ -2260,9 +2259,8 @@ def plot_turnover(df: DataFrame) -> None:
         np.log(df.iloc[:, -1].astype(float)),
         deg=1
     )
-    df['c_turnover_lin'] = df.index.to_series().mul(_lin[0]).add(_lin[1])
-    df['c_turnover_exp'] = np.exp(
-        df.index.to_series().astype(float).mul(_exp[0]).add(_exp[1]))
+    df['c_turnover_lin'] = np.poly1d(polyfit_linear)(df.index.to_series())
+    df['c_turnover_exp'] = np.exp(np.poly1d(_exp)(df.index.to_series().astype(float)))
     # =========================================================================
     # Deltas
     # =========================================================================
@@ -2287,7 +2285,7 @@ def plot_turnover(df: DataFrame) -> None:
     plt.plot(
         df.iloc[:, [-4]],
         label='$\\hat K_{{l}} = {:.2f} {:.2f} t, R^2 = {:.4f}$'.format(
-            *_lin[::-1],
+            *polyfit_linear[::-1],
             r2_score(df.iloc[:, -5], df.iloc[:, -4])
         )
     )
