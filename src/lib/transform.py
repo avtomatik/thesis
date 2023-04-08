@@ -9,7 +9,6 @@ Created on Sun Nov 20 17:42:38 2022
 import numpy as np
 import pandas as pd
 from pandas import DataFrame
-from sklearn.linear_model import Lasso, LinearRegression
 
 from .collect import stockpile_usa_hist
 from .pull import pull_by_series_id
@@ -294,98 +293,6 @@ def transform_cobb_douglas_extension_capital(df: DataFrame) -> DataFrame:
     df.iloc[:, -1] = df.iloc[:, (-8, -1)].mean(axis=1)
     return df.iloc[:, [-1]].dropna(axis=0)
 
-
-def transform_cobb_douglas_sklearn(df: DataFrame) -> DataFrame:
-    """
-
-
-    Parameters
-    ----------
-    df : DataFrame
-        ================== =================================
-        df.index           Period
-        df.iloc[:, 0]      Capital
-        df.iloc[:, 1]      Labor
-        df.iloc[:, 2]      Product
-        ================== =================================
-
-    Returns
-    -------
-    None.
-
-    """
-    # =========================================================================
-    # Labor Capital Intensity
-    # =========================================================================
-    df['lab_cap_int'] = df.iloc[:, 0].div(df.iloc[:, 1])
-    # =========================================================================
-    # Labor Productivity
-    # =========================================================================
-    df['lab_product'] = df.iloc[:, 2].div(df.iloc[:, 1])
-
-    # =========================================================================
-    # Original: k=.25, b=1.01
-    # =========================================================================
-    X = np.column_stack((np.zeros(df.shape[0]), np.log(df.iloc[:, -2])))
-    y = np.log(df.iloc[:, -1].to_numpy())
-    return X, y
-# =============================================================================
-#     # =========================================================================
-#     # Lasso
-#     # =========================================================================
-#     las = Lasso(alpha=.01).fit(X, y)
-#     k, b = las.coef_[1], las.intercept_
-#     # print('Lasso: k = {:.12f}, b = {:.12f}'.format(k, b))
-#
-#     las = LassoCV(cv=4, random_state=0).fit(X, y)
-#     k, b = las.coef_[1], las.intercept_
-#     # print('LassoCV: k = {:.12f}, b = {:.12f}'.format(k, b))
-#     # =========================================================================
-#     #     print(reg.score(X, y))
-#     #
-
-#     #     print(reg.predict(X[:1, ]))
-#     # =========================================================================
-# =============================================================================
-
-    reg = LinearRegression().fit(X, y)
-    k, b = reg.coef_[1], reg.intercept_
-    # print('Linear Regression: k = {:.12f}, b = {:.12f}'.format(k, b))
-    # =========================================================================
-    #     reg.score(X, y)
-    #     reg.coef_
-    #     reg.intercept_
-    # =========================================================================
-    # =========================================================================
-    # tik = Ridge(alpha=.01).fit(X, y)
-    # k, b = tik.coef_[1], tik.intercept_
-    # print('Ridge Regression: k = {:.12f}, b = {:.12f}'.format(k, b))
-    # =========================================================================
-    # =========================================================================
-    # Description
-    # =========================================================================
-    df['cap_to_lab'] = df.iloc[:, 1].div(df.iloc[:, 0])
-    # =========================================================================
-    # Fixed Assets Turnover
-    # =========================================================================
-    df['c_turnover'] = df.iloc[:, 2].div(df.iloc[:, 0])
-    # =========================================================================
-    # Product Trend Line=3 Year Moving Average
-    # =========================================================================
-    df['prod_roll'] = df.iloc[:, 2].rolling(window=3, center=True).mean()
-    df['prod_roll_sub'] = df.iloc[:, 2].sub(df.iloc[:, -1])
-    # =========================================================================
-    # Computed Product
-    # =========================================================================
-    df['prod_comp'] = df.iloc[:, 0].pow(k).mul(
-        df.iloc[:, 1].pow(1-k)).mul(np.exp(b))
-    # =========================================================================
-    # Computed Product Trend Line=3 Year Moving Average
-    # =========================================================================
-    df['prod_comp_roll'] = df.iloc[:, -1].rolling(window=3, center=True).mean()
-    df['prod_comp_roll_sub'] = df.iloc[:, -2].sub(df.iloc[:, -1])
-    # =========================================================================
-    return df, (k, np.exp(b))
 
 
 def transform_d(df: DataFrame) -> DataFrame:
