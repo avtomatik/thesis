@@ -19,13 +19,16 @@ from pandas.plotting import autocorrelation_plot, lag_plot
 from scipy import stats
 from sklearn.metrics import r2_score
 
-from .collect import stockpile_usa_hist
-from .pull import (pull_by_series_id, pull_series_ids_description,
-                   pull_uscb_description)
-from .read import read_usa_hist, read_usa_nber, read_worldbank
-from .tools import (calculate_capital, filter_kol_zur, filter_rolling_mean,
-                    get_price_base_nr, simple_linear_regression)
-from .transform import transform_agg, transform_cobb_douglas
+from thesis.src.lib.collect import stockpile_usa_hist
+from thesis.src.lib.pull import (pull_by_series_id,
+                                 pull_series_ids_description,
+                                 pull_uscb_description)
+from thesis.src.lib.read import read_usa_hist, read_usa_nber, read_worldbank
+from thesis.src.lib.tools import (calculate_capital, filter_kol_zur,
+                                  filter_rolling_mean, get_price_base_nr,
+                                  simple_linear_regression)
+from thesis.src.lib.transform import (transform_agg, transform_cobb_douglas,
+                                      transform_rebase)
 
 
 def _lab_productivity(array: np.array, k: float = 0.25, b: float = 1.01) -> np.array:
@@ -356,20 +359,18 @@ def plot_uscb_metals(df: DataFrame, years_base: tuple[int]) -> None:
     plt.show()
 
 
-def plot_uscb_commodities(series_ids: tuple[str]) -> None:
-    ARCHIVE_NAME = 'dataset_uscb.zip'
-    df = DataFrame()
-    for series_id in series_ids:
-        chunk = read_usa_hist(ARCHIVE_NAME).pipe(
-            pull_by_series_id, series_id).sort_index()
-        df = pd.concat(
-            [
-                df,
-                chunk.div(chunk.iloc[0, :]).mul(100)
-            ],
-            axis=1,
-            sort=True
-        )
+def plot_uscb_commodities(series_ids: dict[str, str]) -> None:
+    df = pd.concat(
+        [
+            read_usa_hist(archive_name).pipe(
+                pull_by_series_id,
+                series_id
+            ).sort_index().pipe(transform_rebase)
+            for series_id, archive_name in series_ids.items()
+        ],
+        axis=1,
+        sort=True
+    )
     for series_id in series_ids:
         print(f'<{series_id}> {pull_uscb_description(series_id)}')
     _title = 'Series P 231$-$300. Physical Output of Selected Manufactured Commodities: {}$-${}'.format(
@@ -619,12 +620,12 @@ def plot_approx_linear(df: DataFrame) -> None:
     # =========================================================================
     df['deflator'] = df.iloc[:, 0].div(df.iloc[:, 1])
     df[f'{df.columns[2]}_bas'] = df.iloc[:, 2].mul(df.iloc[:, 4]).div(
-        df.iloc[0, 2]).div(df.iloc[0, 4]).astype(float)
+        df.iloc[0, 2]).div(df.iloc[0, 4])
     df[f'{df.columns[3]}_bas'] = df.iloc[:, 3].mul(df.iloc[:, 4]).div(
-        df.iloc[0, 3]).div(df.iloc[0, 4]).astype(float)
+        df.iloc[0, 3]).div(df.iloc[0, 4])
     polyfit_linear = np.polyfit(
-        df.iloc[:, -2],
-        df.iloc[:, -1],
+        df.iloc[:, -2].astype(float),
+        df.iloc[:, -1].astype(float),
         deg=1
     )
     # =========================================================================
@@ -682,10 +683,10 @@ def plot_approx_linear_log(df: DataFrame) -> None:
     df['deflator'] = df.iloc[:, 0].div(df.iloc[:, 1])
     df[f'{df.columns[2]}_log_bas'] = np.log(df.iloc[:, 2].div(df.iloc[0, 2]))
     df[f'{df.columns[3]}_log_bas'] = np.log(df.iloc[:, 3].mul(df.iloc[:, 4]).div(
-        df.iloc[0, 3]).div(df.iloc[0, 4]).astype(float))
+        df.iloc[0, 3]).div(df.iloc[0, 4]))
     polyfit_linear = np.polyfit(
-        df.iloc[:, -2],
-        df.iloc[:, -1],
+        df.iloc[:, -2].astype(float),
+        df.iloc[:, -1].astype(float),
         deg=1
     )
     # =========================================================================

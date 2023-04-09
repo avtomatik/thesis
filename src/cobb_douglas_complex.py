@@ -8,11 +8,11 @@ Created on Sun Mar 15 16:17:13 2020
 
 import os
 
-from lib.collect import (combine_cobb_douglas,
-                         combine_usa_manufacturing_latest,
-                         combine_usa_manufacturing_three_fold,
-                         combine_usa_manufacturing_two_fold)
-from lib.plot import plot_cobb_douglas_complex
+from thesis.src.lib.collect import (combine_cobb_douglas,
+                                    combine_usa_manufacturing_latest,
+                                    combine_usa_manufacturing_three_fold,
+                                    combine_usa_manufacturing_two_fold)
+from thesis.src.lib.plot import plot_cobb_douglas_complex
 
 
 def main():

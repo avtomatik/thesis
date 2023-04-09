@@ -5,9 +5,9 @@
 
 import os
 
-from lib.collect import combine_cobb_douglas
-from lib.tools import calculate_plot_uspline
-from lib.transform import transform_cobb_douglas
+from thesis.src.lib.collect import combine_cobb_douglas
+from thesis.src.lib.tools import calculate_plot_uspline
+from thesis.src.lib.transform import transform_cobb_douglas
 
 
 def main():

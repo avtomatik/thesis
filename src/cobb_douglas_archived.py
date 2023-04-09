@@ -7,14 +7,16 @@ Created on Wed Feb  5 22:19:02 2020
 
 import os
 
-from lib.collect import (combine_cobb_douglas, combine_usa_capital_purchases,
-                         combine_usa_manufacturing_latest,
-                         combine_usa_manufacturing_three_fold,
-                         combine_usa_manufacturing_two_fold)
-from lib.plot import (plot_capital_purchases, plot_cobb_douglas,
-                      plot_cobb_douglas_alt)
-from lib.tools import calculate_curve_fit_params
-from lib.transform import transform_cobb_douglas, transform_cobb_douglas_alt
+from thesis.src.lib.collect import (combine_cobb_douglas,
+                                    combine_usa_capital_purchases,
+                                    combine_usa_manufacturing_latest,
+                                    combine_usa_manufacturing_three_fold,
+                                    combine_usa_manufacturing_two_fold)
+from thesis.src.lib.plot import (plot_capital_purchases, plot_cobb_douglas,
+                                 plot_cobb_douglas_alt)
+from thesis.src.lib.tools import calculate_curve_fit_params
+from thesis.src.lib.transform import (transform_cobb_douglas,
+                                      transform_cobb_douglas_alt)
 
 
 def main():

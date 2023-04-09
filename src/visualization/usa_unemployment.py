@@ -11,11 +11,12 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import pandas as pd
-from lib.collect import stockpile_usa_hist
-from lib.pull import pull_by_series_id
-from lib.read import read_usa_bls
-from lib.transform import transform_mean
 from pandas.plotting import autocorrelation_plot
+
+from thesis.src.lib.collect import stockpile_usa_hist
+from thesis.src.lib.pull import pull_by_series_id
+from thesis.src.lib.read import read_usa_bls
+from thesis.src.lib.transform import transform_mean
 
 
 def main(

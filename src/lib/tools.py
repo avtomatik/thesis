@@ -15,9 +15,9 @@ from pandas import DataFrame
 from scipy.interpolate import UnivariateSpline
 from sklearn.metrics import mean_squared_error, r2_score
 
-from .collect import stockpile_usa_hist
-from .read import read_can
-from .transform import transform_deflator
+from thesis.src.lib.collect import stockpile_usa_hist
+from thesis.src.lib.read import read_can
+from thesis.src.lib.transform import transform_deflator
 
 
 def calculate_capital(df: DataFrame, p_i: tuple[float], p_t: tuple[float], ratio: float) -> pd.Series:

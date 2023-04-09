@@ -115,7 +115,7 @@ def stockpile_usa_sahr_infcf(df: DataFrame) -> DataFrame:
     )
 
 
-def filter_datdf_a(df: DataFrame, query: dict[str]) -> DataFrame:
+def filter_data_frame(df: DataFrame, query: dict[str]) -> DataFrame:
     for column, criterion in query['filter'].items():
         df = df[df.iloc[:, column] == criterion]
     return df

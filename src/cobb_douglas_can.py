@@ -6,9 +6,9 @@ Created on Sat Jun 18 11:29:40 2022
 @author: Alexander Mikhailov
 """
 
-from lib.collect import combine_can
-from lib.plot import plot_cobb_douglas, plot_cobb_douglas_3d
-from lib.transform import transform_cobb_douglas
+from thesis.src.lib.collect import combine_can
+from thesis.src.lib.plot import plot_cobb_douglas, plot_cobb_douglas_3d
+from thesis.src.lib.transform import transform_cobb_douglas
 
 
 def main():

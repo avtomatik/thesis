@@ -10,10 +10,10 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame
 
-from .collect import stockpile_usa_hist
-from .pull import pull_by_series_id
-from .read import (read_temporary, read_usa_frb_g17, read_usa_frb_h6,
-                   read_usa_frb_us3)
+from thesis.src.lib.collect import stockpile_usa_hist
+from thesis.src.lib.pull import pull_by_series_id
+from thesis.src.lib.read import (read_temporary, read_usa_frb_g17,
+                                 read_usa_frb_h6, read_usa_frb_us3)
 
 
 def transform_investment_manufacturing(df: DataFrame) -> DataFrame:
@@ -292,7 +292,6 @@ def transform_cobb_douglas_extension_capital(df: DataFrame) -> DataFrame:
     # =========================================================================
     df.iloc[:, -1] = df.iloc[:, (-8, -1)].mean(axis=1)
     return df.iloc[:, [-1]].dropna(axis=0)
-
 
 
 def transform_d(df: DataFrame) -> DataFrame:
@@ -632,3 +631,22 @@ def transform_deflator(df: DataFrame) -> DataFrame:
     df['deflator'] = df.iloc[:, 0].div(df.iloc[:, 1])
     df['prc'] = df.iloc[:, -1].pct_change()
     return df.iloc[:, [-1]].dropna(axis=0)
+
+
+def transform_rebase(df: DataFrame) -> DataFrame:
+    """
+
+
+    Parameters
+    ----------
+    df : DataFrame
+        DESCRIPTION.
+
+    Returns
+    -------
+    DataFrame
+        DESCRIPTION.
+
+    """
+    assert df.shape[1] == 1
+    return df.div(df.iloc[0, :]).mul(100)

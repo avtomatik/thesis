@@ -7,7 +7,8 @@ Created on Sat May  2 22:26:24 2020
 
 
 import pandas as pd
-from lib.read import read_unstats
+
+from thesis.src.lib.read import read_unstats
 
 
 def main() -> None:
