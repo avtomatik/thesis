@@ -49,36 +49,26 @@ def plot_investment_manufacturing(df: DataFrame) -> None:
         df.iloc[:, 3]      Real Gross Domestic Product
         ================== =================================
     """
-    _df = df.copy()
-    # =========================================================================
-    # "Real" Investment
-    # =========================================================================
-    _df['investment'] = _df.iloc[:, 0].mul(_df.iloc[:, 3]).div(_df.iloc[:, 2])
-    # =========================================================================
-    # "Real" Manufacturing
-    # =========================================================================
-    _df['manufacturing'] = _df.iloc[:, 1].mul(
-        _df.iloc[:, 3]).div(_df.iloc[:, 2])
-    _df['inv_roll_mean'] = _df.iloc[:, -2].rolling(2).mean()
-    _df['prd_roll_mean'] = _df.iloc[:, -2].rolling(2).mean()
     plt.figure()
     plt.title(
         'Gross Private Domestic Investment & National Income, {}$-${}'.format(
-            *_df.index[[0, -1]]
+            *df.index[[0, -1]]
         )
     )
-    plt.plot(
-        _df.iloc[:, -4:-2], label=[
+    new_var = [
             'Gross Private Domestic Investment',
             'National Income',
         ]
+
+    plt.plot(
+        df.iloc[:, -4:-2], label=new_var
     )
     plt.xlabel('Period')
     plt.ylabel('Index')
-    _df.index = _df.index.to_series().rolling(2).mean()
+    df.index = df.index.to_series().rolling(2).mean()
     plt.plot(
-        _df.iloc[:, -2], '--',
-        _df.iloc[:, -1], '--'
+        df.iloc[:, -2], '--',
+        df.iloc[:, -1], '--'
     )
     plt.grid()
     plt.legend()
@@ -128,12 +118,14 @@ def plot_manufacturing_money(df: DataFrame) -> None:
     # =========================================================================
     df['investment'] = df.iloc[:, 0].mul(df.iloc[:, 2]).div(df.iloc[:, 1])
     plt.figure()
-    plt.plot(
-        df.iloc[:, range(2, 5)], label=[
+    new_var = [
             'Real Gross Domestic Product',
             'Money Supply',
             'Real Gross Domestic Investment',
         ]
+
+    plt.plot(
+        df.iloc[:, range(2, 5)], label=new_var
     )
     plt.title('Indexes, {}$-${}'.format(*df.index[[0, -1]]))
     plt.xlabel('Period')
@@ -250,11 +242,13 @@ def plot_e(df: DataFrame) -> None:
     )
     plt.xlabel('Investment, Billions of Dollars')
     plt.ylabel('Gross Domestic Product, Billions of Dollars')
-    plt.legend(
-        [
+    new_var = [
             '$P(I)$',
             '$\\hat{{P(I)}} = {:.4f}+{:.4f} I$'.format(*_params_i[::-1])
         ]
+    
+    plt.legend(
+        new_var
     )
     print(df.iloc[:, 3].describe())
     print(_params_i)
@@ -266,11 +260,13 @@ def plot_e(df: DataFrame) -> None:
 
 def plot_uscb_manufacturing(df: DataFrame, year_base: int) -> None:
     plt.figure()
-    plt.plot(
-        df.iloc[:, [0, 2]], label=[
+    new_var = [
             'Fabricant S., Shiskin J., NBER',
             'E. Frickey',
         ]
+
+    plt.plot(
+        df.iloc[:, [0, 2]], label=new_var
     )
     plt.plot(df.iloc[:, 1], color='red', linewidth=4, label='W.M. Persons')
     plt.axvline(x=year_base, linestyle=':')
@@ -289,7 +285,8 @@ def plot_uscb_manufacturing(df: DataFrame, year_base: int) -> None:
 def plot_uscb_cap(df: DataFrame) -> None:
     """Census Manufacturing Fixed Assets Series"""
     plt.figure()
-    plt.semilogy(df, label=['Total', 'Structures', 'Equipment'])
+    new_var = ['Total', 'Structures', 'Equipment']
+    plt.semilogy(df, label=new_var)
     plt.title(
         'Census Manufacturing Fixed Assets, {}$-${}'.format(
             *df.index[[0, -1]]
@@ -441,12 +438,14 @@ def plot_uscb_employment_conflicts(df: DataFrame) -> None:
 
 def plot_uscb_gnp(df: DataFrame) -> None:
     plt.figure()
-    plt.plot(
-        df,
-        label=[
+    new_var = [
             'Gross National Product',
             'Gross National Product Per Capita',
         ]
+
+    plt.plot(
+        df,
+        label=new_var
     )
     plt.title(
         'Gross National Product, Prices {}=100, {}=100'.format(
@@ -472,13 +471,15 @@ def plot_uscb_farm_lands(df: DataFrame) -> None:
 
 def plot_uscb_trade(df: DataFrame) -> None:
     plt.figure()
-    plt.plot(
-        df,
-        label=[
+    new_var = [
             'Exports, U1',
             'Imports, U8',
             'Net Exports, U15',
         ]
+
+    plt.plot(
+        df,
+        label=new_var
     )
     plt.title(
         'Exports & Imports of Goods and Services, {}$-${}'.format(
@@ -552,13 +553,15 @@ def plot_uscb_trade_by_countries(df: DataFrame) -> None:
 def plot_uscb_money_stock(df: DataFrame) -> None:
     YEAR_BASE = 1915
     plt.figure()
-    plt.semilogy(
-        df,
-        label=[
+    new_var = [
             'Currency Held by the Public',
             'M1 Money Supply (Currency Plus Demand Deposits)',
             'M2 Money Supply (M1 Plus Time Deposits)',
         ]
+
+    plt.semilogy(
+        df,
+        label=new_var
     )
     plt.axvline(x=YEAR_BASE, linestyle=':')
     plt.title('Currency Dynamics, {}=100'.format(YEAR_BASE))
@@ -1047,14 +1050,16 @@ def plot_model_capital(df: DataFrame, year_base: int) -> None:
 def plot_capital_purchases(df: DataFrame) -> None:
     assert df.shape[1] == 27, "Works on DataFrame Produced with 'combine_usa_capital_purchases()"
     plt.figure()
-    plt.semilogy(
-        df.loc[:, (df.columns[0], *df.columns[-3:])],
-        label=[
+    new_var = [
             '$s^{2;1}_{Cobb-Douglas}$',
             'Total',
             'Structures',
             'Equipment',
         ]
+
+    plt.semilogy(
+        df.loc[:, (df.columns[0], *df.columns[-3:])],
+        label=new_var
     )
     plt.title('Fixed Assets Purchases, {}$-${}'.format(*df.index[[0, -1]]))
     plt.xlabel('Period')

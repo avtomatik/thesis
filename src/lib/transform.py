@@ -23,22 +23,33 @@ def transform_investment_manufacturing(df: DataFrame) -> DataFrame:
     Parameters
     ----------
     df : DataFrame
-        DESCRIPTION.
-
-    Returns
-    -------
-    DataFrame
         ================== =================================
         df.index           Period
         df.iloc[:, 0]      Gross Domestic Investment
         df.iloc[:, 1]      National Income
         df.iloc[:, 2]      Nominal Gross Domestic Product
         df.iloc[:, 3]      Real Gross Domestic Product
-        ================== =================================
+        ================== =================================.
+
+    Returns
+    -------
+    DataFrame
+        DESCRIPTION.
+
     """
-    df = df.iloc[:, [0, 4, 6, 7]].dropna(axis=0)
-    df.iloc[:, 1] = df.iloc[:, 1].apply(pd.to_numeric, errors='coerce')
-    return df.div(df.iloc[0, :]).dropna(axis=0)
+    df = df.div(df.iloc[0, :]).dropna(axis=0)
+    # =========================================================================
+    # "Real" Investment
+    # =========================================================================
+    df['investment'] = df.iloc[:, 0].mul(df.iloc[:, 3]).div(df.iloc[:, 2])
+    # =========================================================================
+    # "Real" Manufacturing
+    # =========================================================================
+    df['manufacturing'] = df.iloc[:, 1].mul(
+        df.iloc[:, 3]).div(df.iloc[:, 2])
+    df['inv_roll_mean'] = df.iloc[:, -2].rolling(2).mean()
+    df['prd_roll_mean'] = df.iloc[:, -2].rolling(2).mean()
+    return df
 
 
 def transform_investment(df: DataFrame) -> DataFrame:

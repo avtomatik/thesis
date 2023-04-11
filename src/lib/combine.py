@@ -1177,3 +1177,25 @@ def get_mean_for_min_std():
         df.iloc[:, [-1]].idxmin()[0],
         df.loc[df.iloc[:, [-1]].idxmin()[0], :][:-1].mean()
     )
+
+
+def combine_usa_investment_manufacturing() -> DataFrame:
+    SERIES_IDS = {
+        # =====================================================================
+        # Nominal Investment Series: A006RC
+        # =====================================================================
+        'A006RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        # =====================================================================
+        # Nominal National income Series: A032RC
+        # =====================================================================
+        'A032RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        # =====================================================================
+        # Nominal Nominal Gross Domestic Product Series: A191RC
+        # =====================================================================
+        'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        # =====================================================================
+        # Real Gross Domestic Product Series, 2012=100: A191RX
+        # =====================================================================
+        'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+    }
+    return stockpile_usa_bea(SERIES_IDS)
