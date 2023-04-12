@@ -32,7 +32,8 @@ from thesis.src.lib.transform import (stockpile_by_series_ids,
                                       transform_deflator, transform_mean,
                                       transform_pct_change, transform_sum,
                                       transform_usa_frb_fa,
-                                      transform_usa_frb_fa_def)
+                                      transform_usa_frb_fa_def,
+                                      transform_usa_manufacturing)
 
 
 def combine_cobb_douglas(series_number: int = 3) -> DataFrame:
@@ -1199,3 +1200,130 @@ def combine_usa_investment_manufacturing() -> DataFrame:
         'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
     }
     return stockpile_usa_bea(SERIES_IDS)
+
+
+def combine_usa_investment() -> DataFrame:
+    """
+
+
+    Returns
+    -------
+    DataFrame
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Gross Domestic Investment
+        df.iloc[:, 1]      Nominal Gross Domestic Product
+        df.iloc[:, 2]      Real Gross Domestic Product
+        df.iloc[:, 3]      Prime Rate
+        ================== =================================.
+
+    """
+    FILE_NAME = "dataset_usa_0025_p_r.txt"
+    SERIES_IDS = {
+        # =====================================================================
+        # Nominal Investment Series: A006RC
+        # =====================================================================
+        'A006RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        # =====================================================================
+        # Nominal Nominal Gross Domestic Product Series: A191RC
+        # =====================================================================
+        'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        # =====================================================================
+        # Real Gross Domestic Product Series, 2012=100: A191RX
+        # =====================================================================
+        'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+    }
+    return pd.concat(
+        [
+            stockpile_usa_bea(SERIES_IDS),
+            read_temporary(FILE_NAME)
+        ],
+        axis=1,
+        sort=True
+    ).dropna(axis=0)
+
+
+def combine_usa_manufacturing() -> DataFrame:
+    """
+
+
+    Returns
+    -------
+    DataFrame
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Gross Domestic Investment
+        df.iloc[:, 1]      Nominal Gross Domestic Product
+        df.iloc[:, 2]      Real Gross Domestic Product
+        ================== =================================.
+
+    """
+    SERIES_IDS = {
+        # =====================================================================
+        # Nominal Investment Series: A006RC
+        # =====================================================================
+        'A006RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        # =====================================================================
+        # Nominal Nominal Gross Domestic Product Series: A191RC
+        # =====================================================================
+        'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        # =====================================================================
+        # Real Gross Domestic Product Series, 2012=100: A191RX
+        # =====================================================================
+        'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+    }
+    return stockpile_usa_bea(SERIES_IDS).dropna(axis=0)
+
+
+def combine_usa_money() -> DataFrame:
+    """
+
+
+    Returns
+    -------
+    DataFrame
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      M1
+        ================== =================================.
+
+    """
+    SERIES_ID = {'X0414': 'dataset_uscb.zip'}
+    df = pd.concat(
+        [
+            read_usa_frb_h6(),
+            stockpile_usa_hist(SERIES_ID)
+        ],
+        axis=1
+    ).pipe(transform_mean, name="m1_fused").sort_index()
+    return df.div(df.iloc[0, :])
+
+
+def combine_usa_manufacturing_money() -> DataFrame:
+    """
+
+
+    Parameters
+    ----------
+    df : DataFrame
+        DESCRIPTION.
+
+    Returns
+    -------
+    DataFrame
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Gross Domestic Investment
+        df.iloc[:, 1]      Nominal Gross Domestic Product
+        df.iloc[:, 2]      Real Gross Domestic Product
+        df.iloc[:, 3]      M1
+        ================== =================================
+    """
+    df = pd.concat(
+        [
+            combine_usa_manufacturing().pipe(transform_usa_manufacturing),
+            combine_usa_money()
+        ],
+        axis=1
+    ).dropna(axis=0)
+    return df.div(df.iloc[0, :])

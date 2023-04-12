@@ -72,7 +72,11 @@ def transform_investment(df: DataFrame) -> DataFrame:
         df.iloc[:, 3]      Prime Rate
         ================== =================================
     """
-    return df.iloc[:, [0, 6, 7, 20]].dropna(axis=0)
+    # =========================================================================
+    # "Real" Investment
+    # =========================================================================
+    df['investment'] = df.iloc[:, 0].mul(df.iloc[:, 2]).div(df.iloc[:, 1])
+    return df
 
 
 def transform_cobb_douglas(df: DataFrame, year_base: int) -> tuple[DataFrame, tuple[float]]:
@@ -409,46 +413,6 @@ def combine_kurenkov(df: DataFrame) -> tuple[DataFrame]:
     return df_a, df_b, df_c, df_d
 
 
-def transform_manufacturing_money(df: DataFrame) -> DataFrame:
-    """
-
-
-    Parameters
-    ----------
-    df : DataFrame
-        DESCRIPTION.
-
-    Returns
-    -------
-    DataFrame
-        ================== =================================
-        df.index           Period
-        df.iloc[:, 0]      Gross Domestic Investment
-        df.iloc[:, 1]      Nominal Gross Domestic Product
-        df.iloc[:, 2]      Real Gross Domestic Product
-        df.iloc[:, 3]      M1
-        ================== =================================
-    """
-    SERIES_ID = {'X0414': 'dataset_uscb.zip'}
-    df_manufacturing = df.iloc[:, (0, 6, 7)].dropna(axis=0)
-    df_manufacturing = df_manufacturing.div(df_manufacturing.iloc[0, :])
-    df_money = pd.concat(
-        [
-            read_usa_frb_h6(),
-            stockpile_usa_hist(SERIES_ID)
-        ],
-        axis=1
-    ).pipe(transform_mean, name="m1_fused").sort_index()
-    df = pd.concat(
-        [
-            df_manufacturing,
-            df_money.div(df_money.iloc[0, :])
-        ],
-        axis=1
-    ).dropna(axis=0)
-    return df.div(df.iloc[0, :])
-
-
 def transform_mean(df: DataFrame, name: str) -> DataFrame:
     """
 
@@ -661,3 +625,32 @@ def transform_rebase(df: DataFrame) -> DataFrame:
     """
     assert df.shape[1] == 1
     return df.div(df.iloc[0, :]).mul(100)
+
+
+def transform_usa_manufacturing_money(df: DataFrame) -> DataFrame:
+    """
+
+
+    Parameters
+    ----------
+    df : DataFrame
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Gross Domestic Investment
+        df.iloc[:, 1]      Nominal Gross Domestic Product
+        df.iloc[:, 2]      Real Gross Domestic Product
+        df.iloc[:, 3]      M1
+        ================== =================================.
+
+    Returns
+    -------
+    DataFrame
+        DESCRIPTION.
+
+    """
+    df['investment'] = df.iloc[:, 0].mul(df.iloc[:, 2]).div(df.iloc[:, 1])
+    return df
+
+
+def transform_usa_manufacturing(df: DataFrame) -> DataFrame:
+    return df.div(df.iloc[0, :])

@@ -77,24 +77,31 @@ def plot_investment_manufacturing(df: DataFrame) -> None:
 
 def plot_investment(df: DataFrame) -> None:
     """
+    
+
+    Parameters
+    ----------
+    df : DataFrame
         ================== =================================
         df.index           Period
         df.iloc[:, 0]      Gross Domestic Investment
         df.iloc[:, 1]      Nominal Gross Domestic Product
         df.iloc[:, 2]      Real Gross Domestic Product
         df.iloc[:, 3]      Prime Rate
-        ================== =================================
+        df.iloc[:, 4]      Investment
+        ================== =================================.
+
+    Returns
+    -------
+    None
+        DESCRIPTION.
+
     """
-    _df = df.copy()
-    # =========================================================================
-    # "Real" Investment
-    # =========================================================================
-    _df['investment'] = _df.iloc[:, 0].mul(_df.iloc[:, 2]).div(_df.iloc[:, 1])
     plt.figure()
-    plt.plot(_df.iloc[:, 3], _df.iloc[:, -1])
+    plt.plot(df.iloc[:, 3], df.iloc[:, -1])
     plt.title(
         'Gross Private Domestic Investment, A006RC, {}$-${}'.format(
-            *_df.index[[0, -1]]
+            *df.index[[0, -1]]
         )
     )
     plt.xlabel('Percentage')
@@ -105,24 +112,32 @@ def plot_investment(df: DataFrame) -> None:
 
 def plot_manufacturing_money(df: DataFrame) -> None:
     """
+    
+
+    Parameters
+    ----------
+    df : DataFrame
         ================== =================================
         df.index           Period
         df.iloc[:, 0]      Gross Domestic Investment
         df.iloc[:, 1]      Nominal Gross Domestic Product
         df.iloc[:, 2]      Real Gross Domestic Product
         df.iloc[:, 3]      M1
-        ================== =================================
+        df.iloc[:, 4]      Investment
+        ================== =================================.
+
+    Returns
+    -------
+    None
+        DESCRIPTION.
+
     """
-    # =========================================================================
-    # "Real" Investment
-    # =========================================================================
-    df['investment'] = df.iloc[:, 0].mul(df.iloc[:, 2]).div(df.iloc[:, 1])
     plt.figure()
     new_var = [
-            'Real Gross Domestic Product',
-            'Money Supply',
-            'Real Gross Domestic Investment',
-        ]
+        'Real Gross Domestic Product',
+        'Money Supply',
+        'Real Gross Domestic Investment',
+    ]
 
     plt.plot(
         df.iloc[:, range(2, 5)], label=new_var
