@@ -309,18 +309,13 @@ def transform_cobb_douglas_extension_capital(df: DataFrame) -> DataFrame:
     return df.iloc[:, [-1]].dropna(axis=0)
 
 
-def transform_d(df: DataFrame) -> DataFrame:
+def transform_d(df: DataFrame) -> tuple[DataFrame, np.int64]:
     """
-
+    
 
     Parameters
     ----------
     df : DataFrame
-        DESCRIPTION.
-
-    Returns
-    -------
-    DataFrame
         ================== =================================
         df.index           Period
         df.iloc[:, 0]      Gross Domestic Investment
@@ -328,34 +323,135 @@ def transform_d(df: DataFrame) -> DataFrame:
         df.iloc[:, 2]      Fixed Investment
         df.iloc[:, 3]      Fixed Investment Price Index
         df.iloc[:, 4]      Real Gross Domestic Product
+        ================== =================================.
+
+    Returns
+    -------
+    df : TYPE
         ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Gross Domestic Investment
+        df.iloc[:, 1]      Gross Domestic Investment Price Index
+        df.iloc[:, 2]      Fixed Investment
+        df.iloc[:, 3]      Fixed Investment Price Index
+        df.iloc[:, 4]      Real Gross Domestic Product
+        df.iloc[:, 5]      Real Investment
+        df.iloc[:, 6]      Real Fixed Investment
+        ================== =================================.
+    year_base : TYPE
+        DESCRIPTION.
+
     """
     # =========================================================================
-    # TODO: Eliminate This Function
+    # Basic Year
     # =========================================================================
-    return df.iloc[:, (0, 1, 2, 3, 7)].dropna(axis=0)
+    df['__deflator'] = df.iloc[:, 1].sub(100).abs()
+    year_base = df.iloc[:, -1].astype(float).argmin()
+    df.drop(df.columns[-1], axis=1, inplace=True)
+    # =========================================================================
+    # Convert to Billions
+    # =========================================================================
+    df.iloc[:, -1] = df.iloc[:, -1].div(1000)
+    # =========================================================================
+    # Real Investment, Billions
+    # =========================================================================
+    df['investment'] = df.iloc[:, 1].mul(df.iloc[year_base, 0]).div(1000).div(100)
+    # =========================================================================
+    # Real Fixed Investment, Billions
+    # =========================================================================
+    df['investment_f'] = df.iloc[:, 3].mul(df.iloc[year_base, 2]).div(1000).div(100)
+    return df, year_base
 
 
 def transform_e(df: DataFrame) -> tuple[DataFrame]:
-    assert df.shape[1] == 21, "Works on DataFrame Produced with combine_usa_general()"
+    """
+
+
+    Parameters
+    ----------
+    df : DataFrame
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Investment
+        df.iloc[:, 1]      Nominal Gross Domestic Product
+        df.iloc[:, 2]      Real Gross Domestic Product
+        df.iloc[:, 3]      Capital
+        ================== =================================.
+
+    Returns
+    -------
+    tuple[DataFrame]
+        DESCRIPTION.
+
+    """
     # =========================================================================
     # "Real" Investment
     # =========================================================================
-    df['investment'] = df.iloc[:, 0].mul(df.iloc[:, 7]).div(df.iloc[:, 6])
+    df['investment'] = df.iloc[:, 0].mul(df.iloc[:, 2]).div(df.iloc[:, 1])
     # =========================================================================
     # "Real" Capital
     # =========================================================================
-    df['capital'] = df.iloc[:, 11].mul(df.iloc[:, 7]).div(df.iloc[:, 6])
+    df['capital'] = df.iloc[:, 3].mul(df.iloc[:, 2]).div(df.iloc[:, 1])
     return (
         # =====================================================================
         # DataFrame Nominal
         # =====================================================================
-        df.iloc[:, (0, 6, 11)].dropna(axis=0),
+        df.copy().iloc[:, [0, 1, 3]].pipe(transform_e_post),
         # =====================================================================
         # DataFrame "Real"
         # =====================================================================
-        df.iloc[:, (-2, 7, -1)].dropna(axis=0),
+        df.copy().iloc[:, [-2, 2, -1]].pipe(transform_e_post),
     )
+
+
+def transform_e_post(df: DataFrame) -> DataFrame:
+    """
+
+
+    Parameters
+    ----------
+    df : DataFrame
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Investment
+        df.iloc[:, 1]      Production
+        df.iloc[:, 2]      Capital
+        ================== =================================.
+
+    Returns
+    -------
+    DataFrame
+        DESCRIPTION.
+
+    """
+    # =========================================================================
+    # Investment to Production Ratio
+    # =========================================================================
+    df['inv_to_pro'] = df.iloc[:, 0].div(df.iloc[:, 1])
+    # =========================================================================
+    # Fixed Assets Turnover Ratio
+    # =========================================================================
+    df['c_turnover'] = df.iloc[:, 1].div(df.iloc[:, 2])
+    _params_i = np.polyfit(
+        df.iloc[:, 0].astype(float),
+        df.iloc[:, 1].astype(float),
+        deg=1
+    )
+    _params_t = np.polyfit(
+        df.iloc[:, 1].astype(float),
+        df.iloc[:, 2].astype(float),
+        deg=1
+    )
+    df['inv_to_pro_lin'] = np.poly1d(_params_i)(df.iloc[:, 0])
+    df['c_turnover_lin'] = np.poly1d(_params_t)(df.iloc[:, 2])
+    print('Investment to Production: Linear Approximation')
+    print(df.iloc[:, 3].describe())
+    print('{:,.6f}+{:,.6f} X'.format(*_params_i[::-1]))
+    print('Fixed Assets Turnover: Linear Approximation')
+    print(df.iloc[:, 4].describe())
+    print('{:,.6f}+{:,.6f} X'.format(*_params_t[::-1]))
+    print(df.info())
+    return df
 
 
 def combine_kurenkov(df: DataFrame) -> tuple[DataFrame]:

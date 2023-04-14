@@ -421,7 +421,7 @@ def combine_usa_general() -> DataFrame:
         # =====================================================================
         'A191RA': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
         # =====================================================================
-        # Nominal Nominal Gross Domestic Product Series: A191RC
+        # Nominal Gross Domestic Product Series: A191RC
         # =====================================================================
         'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
         # =====================================================================
@@ -1181,6 +1181,21 @@ def get_mean_for_min_std():
 
 
 def combine_usa_investment_manufacturing() -> DataFrame:
+    """
+    
+
+    Returns
+    -------
+    DataFrame
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Gross Domestic Investment
+        df.iloc[:, 1]      Nominal National Income
+        df.iloc[:, 2]      Nominal Gross Domestic Product
+        df.iloc[:, 3]      Real Gross Domestic Product
+        ================== =================================.
+
+    """
     SERIES_IDS = {
         # =====================================================================
         # Nominal Investment Series: A006RC
@@ -1191,7 +1206,7 @@ def combine_usa_investment_manufacturing() -> DataFrame:
         # =====================================================================
         'A032RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
         # =====================================================================
-        # Nominal Nominal Gross Domestic Product Series: A191RC
+        # Nominal Gross Domestic Product Series: A191RC
         # =====================================================================
         'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
         # =====================================================================
@@ -1225,7 +1240,7 @@ def combine_usa_investment() -> DataFrame:
         # =====================================================================
         'A006RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
         # =====================================================================
-        # Nominal Nominal Gross Domestic Product Series: A191RC
+        # Nominal Gross Domestic Product Series: A191RC
         # =====================================================================
         'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
         # =====================================================================
@@ -1264,7 +1279,7 @@ def combine_usa_manufacturing() -> DataFrame:
         # =====================================================================
         'A006RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
         # =====================================================================
-        # Nominal Nominal Gross Domestic Product Series: A191RC
+        # Nominal Gross Domestic Product Series: A191RC
         # =====================================================================
         'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
         # =====================================================================
@@ -1327,3 +1342,81 @@ def combine_usa_manufacturing_money() -> DataFrame:
         axis=1
     ).dropna(axis=0)
     return df.div(df.iloc[0, :])
+
+
+def combine_usa_d() -> DataFrame:
+    """
+
+
+    Returns
+    -------
+    DataFrame
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Gross Domestic Investment
+        df.iloc[:, 1]      Gross Domestic Investment Price Index
+        df.iloc[:, 2]      Fixed Investment
+        df.iloc[:, 3]      Fixed Investment Price Index
+        df.iloc[:, 4]      Real Gross Domestic Product
+        ================== =================================.
+
+    """
+    SERIES_IDS = {
+        # =====================================================================
+        # Nominal Investment Series: A006RC
+        # =====================================================================
+        'A006RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        # =====================================================================
+        # Implicit Price Deflator Series: A006RD
+        # =====================================================================
+        'A006RD': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        # =====================================================================
+        # Gross private domestic investment -- Nonresidential: A008RC
+        # =====================================================================
+        'A008RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        # =====================================================================
+        # Implicit Price Deflator -- Gross private domestic investment -- Nonresidential: A008RD
+        # =====================================================================
+        'A008RD': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        # =====================================================================
+        # Real Gross Domestic Product Series, 2012=100: A191RX
+        # =====================================================================
+        'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+    }
+    return stockpile_usa_bea(SERIES_IDS)
+
+
+def combine_usa_e() -> DataFrame:
+    """
+    
+
+    Returns
+    -------
+    DataFrame
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Investment
+        df.iloc[:, 1]      Production
+        df.iloc[:, 2]      Capital
+        ================== =================================.
+
+    """
+    SERIES_IDS = {
+        # =====================================================================
+        # Nominal Investment Series: A006RC
+        # =====================================================================
+        'A006RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        # =====================================================================
+        # Nominal Gross Domestic Product Series: A191RC
+        # =====================================================================
+        'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        # =====================================================================
+        # Real Gross Domestic Product Series, 2012=100: A191RX
+        # =====================================================================
+        'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        # =====================================================================
+        # Fixed Assets Series: k1n31gd1es00
+        # =====================================================================
+        'k1n31gd1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
+    }
+    return stockpile_usa_bea(SERIES_IDS).dropna(axis=0)

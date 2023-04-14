@@ -150,8 +150,13 @@ def plot_manufacturing_money(df: DataFrame) -> None:
     plt.show()
 
 
-def plot_d(df: DataFrame) -> None:
+def plot_d(df: DataFrame, year_base: np.int64) -> None:
     """
+    
+
+    Parameters
+    ----------
+    df : DataFrame
         ================== =================================
         df.index           Period
         df.iloc[:, 0]      Gross Domestic Investment
@@ -159,26 +164,18 @@ def plot_d(df: DataFrame) -> None:
         df.iloc[:, 2]      Fixed Investment
         df.iloc[:, 3]      Fixed Investment Price Index
         df.iloc[:, 4]      Real Gross Domestic Product
-        ================== =================================
+        df.iloc[:, 5]      Real Investment
+        df.iloc[:, 6]      Real Fixed Investment
+        ================== =================================.
+    year_base : np.int64
+        DESCRIPTION.
+
+    Returns
+    -------
+    None
+        DESCRIPTION.
+
     """
-    # =========================================================================
-    # Basic Year
-    # =========================================================================
-    df['__deflator'] = df.iloc[:, 1].sub(100).abs()
-    _b = df.iloc[:, -1].astype(float).argmin()
-    df.drop(df.columns[-1], axis=1, inplace=True)
-    # =========================================================================
-    # Convert to Billions
-    # =========================================================================
-    df.iloc[:, -1] = df.iloc[:, -1].div(1000)
-    # =========================================================================
-    # Real Investment, Billions
-    # =========================================================================
-    df['investment'] = df.iloc[:, 1].mul(df.iloc[_b, 0]).div(100).div(1000)
-    # =========================================================================
-    # Real Fixed Investment, Billions
-    # =========================================================================
-    df['investment_f'] = df.iloc[:, 3].mul(df.iloc[_b, 2]).div(100).div(1000)
     plt.figure(1)
     plt.semilogy(
         df.iloc[:, -2],
@@ -189,29 +186,32 @@ def plot_d(df: DataFrame) -> None:
         color='red',
         label='Real Gross Private Fixed Investment, Nonresidential $GPFI(n)$'
     )
-    plt.title('Real Indexes, {}=100, {}$-${}'.format(_b, *df.index[[0, -1]]))
+    plt.title('Real Indexes, {}=100, {}$-${}'.format(*df.index[[year_base, 0, -1]]))
     plt.xlabel('Period')
     plt.ylabel('Billions of Dollars')
     plt.grid()
     plt.legend()
+
     plt.figure(2)
     plt.plot(df.iloc[:, 4])
     plt.title(
-        'Real Gross Domestic Product $GDP$, {}=100, {}$-${}'.format(_b, *df.index[[0, -1]]))
+        'Real Gross Domestic Product $GDP$, {}=100, {}$-${}'.format(*df.index[[year_base, 0, -1]]))
     plt.xlabel('Period')
     plt.ylabel('Billions of Dollars')
     plt.grid()
+
     plt.figure(3)
     plt.plot(df.iloc[:, -2], df.iloc[:, 4])
     plt.title(
-        '$GPDI$ & $GPFI(n)$, {}=100, {}$-${}'.format(_b, *df.index[[0, -1]]))
+        '$GPDI$ & $GPFI(n)$, {}=100, {}$-${}'.format(*df.index[[year_base, 0, -1]]))
     plt.xlabel('Billions of Dollars')
     plt.ylabel('Billions of Dollars')
     plt.grid()
+
     plt.figure(4)
     plt.plot(df.iloc[:, -1], df.iloc[:, 4])
     plt.title(
-        '$GPFI(n)$ & $GDP$, {}=100, {}$-${}'.format(_b, *df.index[[0, -1]]))
+        '$GPFI(n)$ & $GDP$, {}=100, {}$-${}'.format(*df.index[[year_base, 0, -1]]))
     plt.xlabel('Billions of Dollars')
     plt.ylabel('Billions of Dollars')
     plt.grid()
@@ -220,33 +220,28 @@ def plot_d(df: DataFrame) -> None:
 
 def plot_e(df: DataFrame) -> None:
     """
+
+
+    Parameters
+    ----------
+    df : DataFrame
         ================== =================================
         df.index           Period
         df.iloc[:, 0]      Investment
         df.iloc[:, 1]      Production
         df.iloc[:, 2]      Capital
-        ================== =================================
+        df.iloc[:, 3]      Investment to Production
+        df.iloc[:, 4]      Fixed Assets Turnoover
+        df.iloc[:, 5]      Investment to Production: Linear Approximation
+        df.iloc[:, 6]      Fixed Assets Turnoover: Linear Approximation
+        ================== =================================.
+
+    Returns
+    -------
+    None
+        DESCRIPTION.
+
     """
-    # =========================================================================
-    # Investment to Production Ratio
-    # =========================================================================
-    df['inv_to_pro'] = df.iloc[:, 0].div(df.iloc[:, 1])
-    # =========================================================================
-    # Fixed Assets Turnover Ratio
-    # =========================================================================
-    df['c_turnover'] = df.iloc[:, 1].div(df.iloc[:, 2])
-    _params_i = np.polyfit(
-        df.iloc[:, 0].astype(float),
-        df.iloc[:, 1].astype(float),
-        deg=1
-    )
-    _params_t = np.polyfit(
-        df.iloc[:, 1].astype(float),
-        df.iloc[:, 2].astype(float),
-        deg=1
-    )
-    df['inv_to_pro_lin'] = np.poly1d(_params_i)(df.iloc[:, 0])
-    df['c_turnover_lin'] = np.poly1d(_params_t)(df.iloc[:, 2])
     plt.figure()
     plt.semilogy(df.iloc[:, 0], df.iloc[:, 1])
     plt.semilogy(df.iloc[:, 0], df.iloc[:, 5])
@@ -258,17 +253,11 @@ def plot_e(df: DataFrame) -> None:
     plt.xlabel('Investment, Billions of Dollars')
     plt.ylabel('Gross Domestic Product, Billions of Dollars')
     new_var = [
-            '$P(I)$',
-            '$\\hat{{P(I)}} = {:.4f}+{:.4f} I$'.format(*_params_i[::-1])
-        ]
-    
-    plt.legend(
-        new_var
-    )
-    print(df.iloc[:, 3].describe())
-    print(_params_i)
-    print(df.iloc[:, 4].describe())
-    print(_params_t)
+        '$P(I)$',
+        'Investment to Production'
+    ]
+
+    plt.legend(new_var)
     plt.grid()
     plt.show()
 
