@@ -386,107 +386,6 @@ def combine_usa_capital_purchases() -> DataFrame:
     return df
 
 
-def combine_usa_general() -> DataFrame:
-    """
-    Returns
-    -------
-    DataFrame
-        DESCRIPTION.
-    """
-    FILE_NAME = "dataset_usa_0025_p_r.txt"
-    SERIES_ID = {'X0414': 'dataset_uscb.zip'}
-    SERIES_IDS = {
-        # =====================================================================
-        # Nominal Investment Series: A006RC
-        # =====================================================================
-        'A006RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        # =====================================================================
-        # Implicit Price Deflator Series: A006RD
-        # =====================================================================
-        'A006RD': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        # =====================================================================
-        # Gross private domestic investment -- Nonresidential: A008RC
-        # =====================================================================
-        'A008RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        # =====================================================================
-        # Implicit Price Deflator -- Gross private domestic investment -- Nonresidential: A008RD
-        # =====================================================================
-        'A008RD': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        # =====================================================================
-        # Nominal National income Series: A032RC
-        # =====================================================================
-        'A032RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        # =====================================================================
-        # Gross Domestic Product, 2012=100: A191RA
-        # =====================================================================
-        'A191RA': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        # =====================================================================
-        # Nominal Gross Domestic Product Series: A191RC
-        # =====================================================================
-        'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        # =====================================================================
-        # Real Gross Domestic Product Series, 2012=100: A191RX
-        # =====================================================================
-        'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        # =====================================================================
-        # Gross Domestic Investment, W170RC
-        # =====================================================================
-        'W170RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        # =====================================================================
-        # Gross Domestic Investment, W170RX
-        # =====================================================================
-        'W170RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        # =====================================================================
-        # Fixed Assets Series: k1n31gd1es00
-        # =====================================================================
-        'k1n31gd1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
-        # =====================================================================
-        # Investment in Fixed Assets and Consumer Durable Goods, Private
-        # =====================================================================
-        'i3ptotl1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
-        # =====================================================================
-        # Chain-Type Quantity Indexes for Investment in Fixed Assets and Consumer Durable Goods, Private
-        # =====================================================================
-        'icptotl1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
-        # =====================================================================
-        # Historical-Cost Net Stock of Private Fixed Assets, Private Fixed Assets, k3ptotl1es00
-        # =====================================================================
-        'k3ptotl1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
-    }
-    return pd.concat(
-        [
-            pd.concat(
-                [
-                    pd.concat(
-                        [
-                            read_usa_bea(SERIES_IDS[series_id]).pipe(
-                                pull_by_series_id, series_id)
-                            for series_id in tuple(SERIES_IDS)[:8]
-                        ],
-                        axis=1
-                    ),
-                    stockpile_usa_bea(SERIES_IDS_LAB).pipe(
-                        transform_mean, name="bea_labor_mfg"),
-                    pd.concat(
-                        [
-                            read_usa_bea(SERIES_IDS[series_id]).pipe(
-                                pull_by_series_id, series_id)
-                            for series_id in tuple(SERIES_IDS)[8:]
-                        ],
-                        axis=1
-                    ),
-                ],
-                axis=1,
-                sort=True
-            ),
-            read_usa_frb_h6(),
-            stockpile_usa_hist(SERIES_ID),
-            read_temporary(FILE_NAME),
-        ],
-        axis=1
-    )
-
-
 def combine_usa_investment_turnover_bls() -> DataFrame:
     SERIES_ID = 'PPIACO'
     SERIES_IDS = {
@@ -1182,7 +1081,7 @@ def get_mean_for_min_std():
 
 def combine_usa_investment_manufacturing() -> DataFrame:
     """
-    
+
 
     Returns
     -------
@@ -1388,7 +1287,7 @@ def combine_usa_d() -> DataFrame:
 
 def combine_usa_e() -> DataFrame:
     """
-    
+
 
     Returns
     -------
@@ -1420,3 +1319,48 @@ def combine_usa_e() -> DataFrame:
         'k1n31gd1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
     }
     return stockpile_usa_bea(SERIES_IDS).dropna(axis=0)
+
+
+def combine_data_frames_by_columns(
+    df_c: DataFrame,
+    df_t: DataFrame,
+    columns_to_test: list[str],
+    columns_to_base: set[str] = {'Y', 'K'},
+    year_base: int = 1950,
+) -> DataFrame:
+    """
+
+
+    Parameters
+    ----------
+    df_c : DataFrame
+        DESCRIPTION.
+    df_t : DataFrame
+        DESCRIPTION.
+    columns_to_test : list[str]
+        DESCRIPTION.
+    columns_to_base : set[str], optional
+        DESCRIPTION. The default is {'Y', 'K'}.
+    year_base : int, optional
+        DESCRIPTION. The default is 1950.
+
+    Yields
+    ------
+    DataFrame
+        DESCRIPTION.
+
+    """
+    for col_control, cols_test in zip(df_c.columns, columns_to_test):
+        df = pd.concat(
+            [
+                df_c.loc[:, [col_control]],
+                df_t.loc[:, cols_test],
+
+            ],
+            axis=1,
+            sort=True
+        ).dropna(axis=0, how='all')
+        if col_control in columns_to_base:
+            yield df.div(df.loc[year_base, :]).mul(100)
+        else:
+            yield df

@@ -20,6 +20,7 @@ from scipy import stats
 from sklearn.metrics import r2_score
 
 from thesis.src.lib.collect import stockpile_usa_hist
+from thesis.src.lib.combine import combine_data_frames_by_columns
 from thesis.src.lib.pull import (pull_by_series_id,
                                  pull_series_ids_description,
                                  pull_uscb_description)
@@ -1857,28 +1858,38 @@ def plot_filter_kol_zur(df: DataFrame) -> None:
     plt.show()
 
 
-def plot_kurenkov(data_frames: tuple[DataFrame]) -> None:
+def plot_usa_kurenkov(*args) -> None:
     """
-    data_frames[0]: Production DataFrame,
-    data_frames[1]: Labor DataFrame,
-    data_frames[2]: Capital DataFrame,
-    data_frames[3]: Capacity Utilization DataFrame
+    Plots Augmented Data for Kurenkov Yu.V. Dataset
+
+    Parameters
+    ----------
+    *args : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None
+        DESCRIPTION.
+
     """
     # =========================================================================
-    # Plotting
+    # TODO: Make Use of `year_base` Parameter
     # =========================================================================
+    data_frame_gen = combine_data_frames_by_columns(*args)
+
     fig, axes = plt.subplots(4, 1, figsize=(10, 20))
     axes[0].plot(
-        data_frames[0],
+        next(data_frame_gen),
         label=['Kurenkov Data', 'BEA Data', 'FRB Data']
     )
-    axes[0].set_title('Production, 1950=100')
+    axes[0].set_title(f'Production, {1950}=100')
     axes[0].set_xlabel('Period')
     axes[0].set_ylabel('Percentage')
     axes[0].legend()
     axes[0].grid()
     axes[1].plot(
-        data_frames[1],
+        next(data_frame_gen),
         label=['Kurenkov Data', 'BEA Data']
     )
     axes[1].set_title('Labor')
@@ -1890,16 +1901,16 @@ def plot_kurenkov(data_frames: tuple[DataFrame]) -> None:
     # Revised Capital
     # =========================================================================
     axes[2].plot(
-        data_frames[2],
+        next(data_frame_gen),
         label=['Kurenkov Data', 'BEA Data']
     )
-    axes[2].set_title('Capital, 1951=100')
+    axes[2].set_title(f'Capital, {1950}=100')
     axes[2].set_xlabel('Period')
     axes[2].set_ylabel('Percentage')
     axes[2].legend()
     axes[2].grid()
     axes[3].plot(
-        data_frames[3],
+        next(data_frame_gen),
         label=['Kurenkov Data', 'FRB Data']
     )
     axes[3].set_title('Capacity Utilization')

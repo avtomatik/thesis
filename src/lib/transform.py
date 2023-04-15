@@ -10,10 +10,10 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame
 
-from thesis.src.lib.collect import stockpile_usa_hist
+from thesis.src.lib.collect import stockpile_usa_bea
+from thesis.src.lib.constants import SERIES_IDS_LAB
 from thesis.src.lib.pull import pull_by_series_id
-from thesis.src.lib.read import (read_temporary, read_usa_frb_g17,
-                                 read_usa_frb_h6, read_usa_frb_us3)
+from thesis.src.lib.read import read_usa_frb_g17, read_usa_frb_us3
 
 
 def transform_investment_manufacturing(df: DataFrame) -> DataFrame:
@@ -454,59 +454,29 @@ def transform_e_post(df: DataFrame) -> DataFrame:
     return df
 
 
-def combine_kurenkov(df: DataFrame) -> tuple[DataFrame]:
-    """Returns Four DataFrames with Comparison of df: DataFrame and Kurenkov Yu.V. Data"""
-    SERIES_ID = 'CAPUTL.B50001.A'
-    FILE_NAME = 'dataset_usa_reference_ru_kurenkov_yu_v.csv'
-    df_control = read_temporary(FILE_NAME)
-    # =========================================================================
-    # Manufacturing
-    # =========================================================================
-    df_a = pd.concat(
+def combine_usa_kurenkov() -> DataFrame:
+    SERIES_IDS = {
+        # =====================================================================
+        # Real Gross Domestic Product Series, 2012=100: A191RX
+        # =====================================================================
+        'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        # =====================================================================
+        # Fixed Assets Series: k1n31gd1es00
+        # =====================================================================
+        'k1n31gd1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
+    }
+    return pd.concat(
         [
-            df_control.iloc[:, [0]],
-            df.loc[:, ('A191RX',)],
-            read_usa_frb_us3().loc[:, ('AIPMA_SA_IX',)],
-        ],
-        axis=1,
-        sort=True
-    ).dropna(how='all')
-    df_a = df_a.div(df_a.loc[1950, :]).mul(100)
-    # =========================================================================
-    # Labor
-    # =========================================================================
-    df_b = pd.concat(
-        [
-            df_control.iloc[:, [1]],
-            df.loc[:, ('bea_labor_mfg',)],
-        ],
-        axis=1,
-        sort=True
-    ).dropna(how='all')
-    # =========================================================================
-    # Capital
-    # =========================================================================
-    df_c = pd.concat(
-        [
-            df_control.iloc[:, [2]],
-            df.loc[:, ('K10070',)],
-        ],
-        axis=1,
-        sort=True
-    ).dropna(how='all')
-    df_c = df_c.div(df_c.loc[1951, :]).mul(100)
-    # =========================================================================
-    # Capacity Utilization
-    # =========================================================================
-    df_d = pd.concat(
-        [
-            df_control.iloc[:, [3]],
-            read_usa_frb_g17().loc[:, (SERIES_ID,)].dropna(axis=0),
+            stockpile_usa_bea(SERIES_IDS),
+            stockpile_usa_bea(SERIES_IDS_LAB).pipe(
+                transform_mean, name="bea_labor_mfg"
+            ),
+            read_usa_frb_us3().loc[:, ['AIPMA_SA_IX']],
+            read_usa_frb_g17().loc[:, ['CAPUTL.B50001.A']],
         ],
         axis=1,
         sort=True
     )
-    return df_a, df_b, df_c, df_d
 
 
 def transform_mean(df: DataFrame, name: str) -> DataFrame:

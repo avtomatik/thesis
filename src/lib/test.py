@@ -7,11 +7,13 @@ Created on Sun Jun 12 12:19:54 2022
 """
 
 
+from pathlib import Path
+
 import pandas as pd
 from pandas import DataFrame
 from pandas.plotting import autocorrelation_plot
 
-from thesis.src.lib.collect import stockpile_usa_hist
+from thesis.src.lib.collect import stockpile_usa_bea, stockpile_usa_hist
 from thesis.src.lib.plot import plot_can_test
 from thesis.src.lib.pull import pull_by_series_id, transform_agg_sum
 from thesis.src.lib.read import read_can, read_usa_bea_excel, read_usa_bls
