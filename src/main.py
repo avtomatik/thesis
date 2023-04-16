@@ -49,7 +49,7 @@ def main():
         'A006RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
         'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
     }
-    stockpile_usa_bea(SERIES_IDS).dropna(axis=0).pipe(plot_approx_linear)
+    plot_approx_linear(*stockpile_usa_bea(SERIES_IDS).dropna(axis=0).pipe(transform_approx_linear))
 
     SERIES_IDS = {
         'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
@@ -57,7 +57,7 @@ def main():
         'kcptotl1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
         'A032RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
     }
-    stockpile_usa_bea(SERIES_IDS).dropna(axis=0).pipe(plot_approx_linear_log)
+    plot_approx_linear_log(*stockpile_usa_bea(SERIES_IDS).dropna(axis=0).pipe(transform_approx_linear_log))
 
     SERIES_IDS = {
         'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
@@ -65,7 +65,7 @@ def main():
         'kcptotl1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
         'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
     }
-    stockpile_usa_bea(SERIES_IDS).dropna(axis=0).pipe(plot_approx_linear_log)
+    plot_approx_linear_log(*stockpile_usa_bea(SERIES_IDS).dropna(axis=0).pipe(transform_approx_linear_log))
 
     SERIES_IDS = ('Валовой внутренний продукт, млрд долл. США',)
     PARAMS = (2800, 0.01, 0.5)
@@ -198,7 +198,7 @@ def main():
         'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
         'A032RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
     }
-    stockpile_usa_bea(SERIES_IDS).dropna(axis=0).pipe(plot_elasticity)
+    plot_elasticity(*stockpile_usa_bea(SERIES_IDS).dropna(axis=0).pipe(transform_elasticity))
 
     SERIES_IDS = {
         'A032RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'

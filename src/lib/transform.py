@@ -14,6 +14,7 @@ from thesis.src.lib.collect import stockpile_usa_bea
 from thesis.src.lib.constants import SERIES_IDS_LAB
 from thesis.src.lib.pull import pull_by_series_id
 from thesis.src.lib.read import read_usa_frb_g17, read_usa_frb_us3
+from thesis.src.lib.tools import get_price_base_nr
 
 
 def transform_investment_manufacturing(df: DataFrame) -> DataFrame:
@@ -311,7 +312,7 @@ def transform_cobb_douglas_extension_capital(df: DataFrame) -> DataFrame:
 
 def transform_d(df: DataFrame) -> tuple[DataFrame, np.int64]:
     """
-    
+
 
     Parameters
     ----------
@@ -355,11 +356,13 @@ def transform_d(df: DataFrame) -> tuple[DataFrame, np.int64]:
     # =========================================================================
     # Real Investment, Billions
     # =========================================================================
-    df['investment'] = df.iloc[:, 1].mul(df.iloc[year_base, 0]).div(1000).div(100)
+    df['investment'] = df.iloc[:, 1].mul(
+        df.iloc[year_base, 0]).div(1000).div(100)
     # =========================================================================
     # Real Fixed Investment, Billions
     # =========================================================================
-    df['investment_f'] = df.iloc[:, 3].mul(df.iloc[year_base, 2]).div(1000).div(100)
+    df['investment_f'] = df.iloc[:, 3].mul(
+        df.iloc[year_base, 2]).div(1000).div(100)
     return df, year_base
 
 
@@ -720,3 +723,166 @@ def transform_usa_manufacturing_money(df: DataFrame) -> DataFrame:
 
 def transform_usa_manufacturing(df: DataFrame) -> DataFrame:
     return df.div(df.iloc[0, :])
+
+
+def transform_approx_linear(df: DataFrame) -> tuple[DataFrame, int, np.ndarray]:
+    """
+
+
+    Parameters
+    ----------
+    df : DataFrame
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Real Values for Price Deflator
+        df.iloc[:, 1]      Nominal Values for Price Deflator
+        df.iloc[:, 2]      Regressor
+        df.iloc[:, 3]      Regressand
+        ================== =================================.
+
+    Returns
+    -------
+    df : TYPE
+        DESCRIPTION.
+    year_base : TYPE
+        DESCRIPTION.
+    polyfit_linear : TYPE
+        DESCRIPTION.
+
+    """
+    # =========================================================================
+    # Basic Year
+    # =========================================================================
+    year_base = df.pipe(get_price_base_nr)
+    df.drop(df.columns[-1], axis=1, inplace=True)
+    # =========================================================================
+    # Deflator
+    # =========================================================================
+    df['deflator'] = df.iloc[:, 0].div(df.iloc[:, 1])
+    df[f'{df.columns[2]}_bas'] = df.iloc[:, 2].mul(df.iloc[:, 4]).div(
+        df.iloc[0, 2]).div(df.iloc[0, 4])
+    df[f'{df.columns[3]}_bas'] = df.iloc[:, 3].mul(df.iloc[:, 4]).div(
+        df.iloc[0, 3]).div(df.iloc[0, 4])
+    polyfit_linear = np.polyfit(
+        df.iloc[:, -2].astype(float),
+        df.iloc[:, -1].astype(float),
+        deg=1
+    )
+    # =========================================================================
+    # Yhat
+    # =========================================================================
+    df[f'{df.columns[3]}_estimate'] = np.poly1d(polyfit_linear)(df.iloc[:, -2])
+    print('Period From: {} Through: {}'.format(*df.index[[0, -1]]))
+    print(f'Prices: {year_base}=100')
+    print('Model: Yhat = {:.4f} + {:.4f}*X'.format(*polyfit_linear[::-1]))
+    for _, param in enumerate(polyfit_linear[::-1]):
+        print(f'Model Parameter: A_{_} = {param:,.4f}')
+    return df, year_base, polyfit_linear
+
+
+def transform_approx_linear_log(df: DataFrame) -> tuple[DataFrame, int, np.ndarray]:
+    """
+
+
+    Parameters
+    ----------
+    df : DataFrame
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Real Values for Price Deflator
+        df.iloc[:, 1]      Nominal Values for Price Deflator
+        df.iloc[:, 2]      Regressor
+        df.iloc[:, 3]      Regressand
+        ================== =================================.
+
+    Returns
+    -------
+    df : TYPE
+        DESCRIPTION.
+    year_base : TYPE
+        DESCRIPTION.
+    polyfit_linear : TYPE
+        DESCRIPTION.
+
+    """
+    # =========================================================================
+    # Basic Year
+    # =========================================================================
+    year_base = df.pipe(get_price_base_nr)
+    df.drop(df.columns[-1], axis=1, inplace=True)
+    # =========================================================================
+    # Deflator
+    # =========================================================================
+    df['deflator'] = df.iloc[:, 0].div(df.iloc[:, 1])
+    df[f'{df.columns[2]}_log_bas'] = np.log(df.iloc[:, 2].div(df.iloc[0, 2]))
+    df[f'{df.columns[3]}_log_bas'] = np.log(df.iloc[:, 3].mul(df.iloc[:, 4]).div(
+        df.iloc[0, 3]).div(df.iloc[0, 4]))
+    polyfit_linear = np.polyfit(
+        df.iloc[:, -2].astype(float),
+        df.iloc[:, -1].astype(float),
+        deg=1
+    )
+    # =========================================================================
+    # Yhat
+    # =========================================================================
+    df[f'{df.columns[3]}_estimate'] = np.poly1d(polyfit_linear)(df.iloc[:, -2])
+    # =========================================================================
+    # Delivery Block
+    # =========================================================================
+    print('Period From: {} Through: {}'.format(*df.index[[0, -1]]))
+    print(f'Prices: {year_base}=100')
+    print('Model: Yhat = {:.4f} + {:.4f}*Ln(X)'.format(*polyfit_linear[::-1]))
+    for _, param in enumerate(polyfit_linear[::-1]):
+        print(f'Model Parameter: A_{_} = {param:,.4f}')
+    return df, year_base, polyfit_linear
+
+
+def transform_elasticity(df: DataFrame) -> tuple[DataFrame, tuple[str]]:
+    """
+
+
+    Parameters
+    ----------
+    df : DataFrame
+        DESCRIPTION.
+
+    Returns
+    -------
+    tuple[DataFrame, tuple[str]]
+        DESCRIPTION.
+
+    """
+    # =========================================================================
+    # Basic Year
+    # =========================================================================
+    year_base = df.pipe(get_price_base_nr)
+    df.drop(df.columns[-1], axis=1, inplace=True)
+    plot_title = (
+        'National Income' if df.columns[2] == 'A032RC' else 'Series',
+        df.columns[2],
+        year_base,
+    )
+    df[f'{df.columns[2]}_real'] = df.iloc[:, 0].mul(
+        df.iloc[:, 2]).div(df.iloc[:, 1])
+    df[f'{df.columns[2]}_centered'] = df.iloc[:, 3].rolling(2).mean()
+    # =========================================================================
+    # \dfrac{x_{k} - x_{k-1}}{\dfrac{x_{k} + x_{k-1}}{2}}
+    # =========================================================================
+    df[f'{df.columns[2]}_elasticity_a'] = df.iloc[:,
+                                                  3].diff().div(df.iloc[:, -1])
+    # =========================================================================
+    # \frac{x_{k+1} - x_{k-1}}{2 x_{k}}
+    # =========================================================================
+    df[f'{df.columns[2]}_elasticity_b'] = df.iloc[:, 3].diff(
+        2).shift(-1).div(df.iloc[:, 3]).div(2)
+    # =========================================================================
+    # 2 \times \frac{x_{k+1} - x_{k-1}}{x_{k-1} + 2 x_{k} + x_{k+1}}
+    # =========================================================================
+    df[f'{df.columns[2]}_elasticity_c'] = df.iloc[:, 3].diff(2).shift(-1).div(
+        df.iloc[:, 3].mul(2).add(df.iloc[:, 3].shift(-1)).add(df.iloc[:, 3].shift(1))).mul(2)
+    # =========================================================================
+    # \frac{-x_{k-1} - x_{k} + x_{k+1} + x_{k+2}}{2 \times (x_{k} + x_{k+1})}
+    # =========================================================================
+    df[f'{df.columns[2]}_elasticity_d'] = df.iloc[:, 3].shift(-1).add(df.iloc[:, 3].shift(-2)).sub(
+        df.iloc[:, 3].shift(1)).sub(df.iloc[:, 3]).div(df.iloc[:, 3].add(df.iloc[:, 3].shift(-1)).mul(2))
+    return df, plot_title

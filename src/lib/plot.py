@@ -500,13 +500,15 @@ def plot_uscb_trade(df: DataFrame) -> None:
 
 def plot_uscb_trade_gold_silver(df: DataFrame) -> None:
     plt.figure()
-    plt.plot(
-        df,
-        label=[
+    new_var = [
             'Exports, U187',
             'Imports, U188',
             'Net Exports, U189',
         ]
+
+    plt.plot(
+        df,
+        label=new_var
     )
     plt.title(
         'Total Merchandise, Gold and Silver, {}$-${}'.format(
@@ -593,8 +595,7 @@ def plot_uscb_finance() -> None:
     )
 
     for _, series_id in enumerate(SERIES_IDS, start=1):
-        df = stockpile_usa_hist(series_id)
-        df = df.div(df.iloc[0, :]).mul(100)
+        df = stockpile_usa_hist(series_id).pipe(transform_rebase)
         descr = pull_uscb_description(series_id)
         plt.figure(_)
         plt.plot(df, label=series_id)
@@ -606,126 +607,102 @@ def plot_uscb_finance() -> None:
         plt.show()
 
 
-def plot_approx_linear(df: DataFrame) -> None:
+def plot_approx_linear(df: DataFrame, year_base, params) -> None:
     """
+
+
+    Parameters
+    ----------
+    df : DataFrame
         ================== =================================
         df.index           Period
         df.iloc[:, 0]      Real Values for Price Deflator
         df.iloc[:, 1]      Nominal Values for Price Deflator
         df.iloc[:, 2]      Regressor
         df.iloc[:, 3]      Regressand
-        ================== =================================
-    """
-    df.iloc[:, -1] = df.iloc[:, -1].apply(pd.to_numeric, errors='coerce')
-    df.dropna(inplace=True)
-    # =========================================================================
-    # Basic Year
-    # =========================================================================
-    _b = df.pipe(get_price_base_nr)
-    df.drop(df.columns[-1], axis=1, inplace=True)
-    # =========================================================================
-    # Deflator
-    # =========================================================================
-    df['deflator'] = df.iloc[:, 0].div(df.iloc[:, 1])
-    df[f'{df.columns[2]}_bas'] = df.iloc[:, 2].mul(df.iloc[:, 4]).div(
-        df.iloc[0, 2]).div(df.iloc[0, 4])
-    df[f'{df.columns[3]}_bas'] = df.iloc[:, 3].mul(df.iloc[:, 4]).div(
-        df.iloc[0, 3]).div(df.iloc[0, 4])
-    polyfit_linear = np.polyfit(
-        df.iloc[:, -2].astype(float),
-        df.iloc[:, -1].astype(float),
-        deg=1
-    )
-    # =========================================================================
-    # Yhat
-    # =========================================================================
-    df[f'{df.columns[3]}_estimate'] = np.poly1d(polyfit_linear)(df.iloc[:, -2])
-    print('Period From: {} Through: {}'.format(*df.index[[0, -1]]))
-    print(f'Prices: {_b}=100')
-    print('Model: Yhat = {:.4f} + {:.4f}*X'.format(*polyfit_linear[::-1]))
-    for _, param in enumerate(polyfit_linear[::-1]):
-        print(f'Model Parameter: A_{_} = {param:,.4f}')
+        df.iloc[:, 4]      Deflator
+        df.iloc[:, 5]      Regressor Based
+        df.iloc[:, 6]      Regressand Based
+        df.iloc[:, 7]      Regressand Estimate
+        ================== =================================.
+    year_base : TYPE
+        DESCRIPTION.
+    params : TYPE
+        DESCRIPTION.
 
+    Returns
+    -------
+    None
+        DESCRIPTION.
+
+    """
     plt.figure()
-    plt.title('$Y(X)$, {}=100, {}$-${}'.format(_b, *df.index[[0, -1]]))
+    plt.title('$Y(X)$, {}=100, {}$-${}'.format(year_base, *df.index[[0, -1]]))
     plt.xlabel(
-        f'Gross Private Domestic Investment, $X(\\tau)$, {_b}=100, {df.index[0]}=100'
+        f'Gross Private Domestic Investment, $X(\\tau)$, {year_base}=100, {df.index[0]}=100'
     )
     plt.ylabel(
-        f'Gross Domestic Product, $Y(\\tau)$, {_b}=100, {df.index[0]}=100'
+        f'Gross Domestic Product, $Y(\\tau)$, {year_base}=100, {df.index[0]}=100'
     )
     plt.plot(df.iloc[:, -3], df.iloc[:, -2])
     plt.plot(
         df.iloc[:, -3], df.iloc[:, -1],
-        label='$\\hat Y = {:.4f}+{:.4f}X$'.format(*polyfit_linear[::-1])
+        label='$\\hat Y = {:.4f}+{:.4f}X$'.format(*params[::-1])
     )
     plt.grid()
     plt.legend()
     plt.show()
 
 
-def plot_approx_linear_log(df: DataFrame) -> None:
+def plot_approx_linear_log(df: DataFrame, year_base: int, params: np.ndarray) -> None:
     """
+    
+
+    Parameters
+    ----------
+    df : DataFrame
         ================== =================================
         df.index           Period
         df.iloc[:, 0]      Real Values for Price Deflator
         df.iloc[:, 1]      Nominal Values for Price Deflator
         df.iloc[:, 2]      Regressor
         df.iloc[:, 3]      Regressand
-        ================== =================================
+        df.iloc[:, 4]      Deflator
+        df.iloc[:, 5]      Regressor Log Based
+        df.iloc[:, 6]      Regressand Log Based
+        df.iloc[:, 7]      Regressand Estimate
+        ================== =================================.
+    year_base : int
+        DESCRIPTION.
+    params : np.ndarray
+        DESCRIPTION.
+
+    Returns
+    -------
+    None
+        DESCRIPTION.
+
     """
     MAP_DESC = {
         'A032RC': 'National Income',
         'A191RC': 'Gross Domestic Product',
     }
-    df.iloc[:, -1] = df.iloc[:, -1].apply(pd.to_numeric, errors='coerce')
-    df.dropna(inplace=True)
-    # =========================================================================
-    # Basic Year
-    # =========================================================================
-    _b = df.pipe(get_price_base_nr)
-    df.drop(df.columns[-1], axis=1, inplace=True)
-    # =========================================================================
-    # Deflator
-    # =========================================================================
-    df['deflator'] = df.iloc[:, 0].div(df.iloc[:, 1])
-    df[f'{df.columns[2]}_log_bas'] = np.log(df.iloc[:, 2].div(df.iloc[0, 2]))
-    df[f'{df.columns[3]}_log_bas'] = np.log(df.iloc[:, 3].mul(df.iloc[:, 4]).div(
-        df.iloc[0, 3]).div(df.iloc[0, 4]))
-    polyfit_linear = np.polyfit(
-        df.iloc[:, -2].astype(float),
-        df.iloc[:, -1].astype(float),
-        deg=1
-    )
-    # =========================================================================
-    # Yhat
-    # =========================================================================
-    df[f'{df.columns[3]}_estimate'] = np.poly1d(polyfit_linear)(df.iloc[:, -2])
-    # =========================================================================
-    # Delivery Block
-    # =========================================================================
-    print('Period From: {} Through: {}'.format(*df.index[[0, -1]]))
-    print(f'Prices: {_b}=100')
-    print('Model: Yhat = {:.4f} + {:.4f}*Ln(X)'.format(*polyfit_linear[::-1]))
-    for _, param in enumerate(polyfit_linear[::-1]):
-        print(f'Model Parameter: A_{_} = {param:,.4f}')
-    
     plt.figure()
     plt.title(
         '$Y(X)$, {}=100, {}$-${}'.format(
-            _b, *df.index[[0, -1]]
+            year_base, *df.index[[0, -1]]
         )
     )
     plt.xlabel('Logarithm Prime Rate, $X(\\tau)$, {}=100'.format(df.index[0]))
     plt.ylabel(
         'Logarithm {}, $Y(\\tau)$, {}=100, {}=100'.format(
-            MAP_DESC[df.columns[3]], _b, df.index[0]
+            MAP_DESC[df.columns[3]], year_base, df.index[0]
         )
     )
     plt.plot(df.iloc[:, -3], df.iloc[:, -2])
     plt.plot(
         df.iloc[:, -3], df.iloc[:, -1],
-        label='$\\hat Y = {:.4f}+{:.4f}X$'.format(*polyfit_linear[::-1])
+        label='$\\hat Y = {:.4f}+{:.4f}X$'.format(*params[::-1])
     )
     plt.grid()
     plt.legend()
@@ -1483,8 +1460,10 @@ def plot_douglas(
             plt.show()
 
 
-def plot_elasticity(df: DataFrame) -> None:
+def plot_elasticity(df: DataFrame, plot_title: tuple[str]) -> None:
     """
+
+
     Parameters
     ----------
     df : DataFrame
@@ -1493,60 +1472,31 @@ def plot_elasticity(df: DataFrame) -> None:
         df.iloc[:, 0]      Real Values for Price Deflator
         df.iloc[:, 1]      Nominal Values for Price Deflator
         df.iloc[:, 2]      Target Series
-        ================== =================================
+        df.iloc[:, :]      Etc.
+        ================== =================================.
+    plot_title : tuple[str]
+        DESCRIPTION.
+
     Returns
     -------
     None
+        DESCRIPTION.
+
     """
-    df.iloc[:, -1] = df.iloc[:, -1].apply(pd.to_numeric, errors='coerce')
-    df.dropna(inplace=True)
-    # =========================================================================
-    # Basic Year
-    # =========================================================================
-    _b = df.pipe(get_price_base_nr)
-    df.drop(df.columns[-1], axis=1, inplace=True)
-    _title = (
-        'National Income' if df.columns[2] == 'A032RC' else 'Series',
-        df.columns[2],
-        _b,
-    )
-    df[f'{df.columns[2]}_real'] = df.iloc[:, 0].mul(
-        df.iloc[:, 2]).div(df.iloc[:, 1])
-    df[f'{df.columns[2]}_centered'] = df.iloc[:, 3].rolling(2).mean()
-    # =========================================================================
-    # \dfrac{x_{k} - x_{k-1}}{\dfrac{x_{k} + x_{k-1}}{2}}
-    # =========================================================================
-    df[f'{df.columns[2]}_elasticity_a'] = df.iloc[:,
-                                                  3].diff().div(df.iloc[:, -1])
-    # =========================================================================
-    # \frac{x_{k+1} - x_{k-1}}{2 x_{k}}
-    # =========================================================================
-    df[f'{df.columns[2]}_elasticity_b'] = df.iloc[:, 3].diff(
-        2).shift(-1).div(df.iloc[:, 3]).div(2)
-    # =========================================================================
-    # 2 \times \frac{x_{k+1} - x_{k-1}}{x_{k-1} + 2 x_{k} + x_{k+1}}
-    # =========================================================================
-    df[f'{df.columns[2]}_elasticity_c'] = df.iloc[:, 3].diff(2).shift(-1).div(
-        df.iloc[:, 3].mul(2).add(df.iloc[:, 3].shift(-1)).add(df.iloc[:, 3].shift(1))).mul(2)
-    # =========================================================================
-    # \frac{-x_{k-1} - x_{k} + x_{k+1} + x_{k+2}}{2 \times (x_{k} + x_{k+1})}
-    # =========================================================================
-    df[f'{df.columns[2]}_elasticity_d'] = df.iloc[:, 3].shift(-1).add(df.iloc[:, 3].shift(-2)).sub(
-        df.iloc[:, 3].shift(1)).sub(df.iloc[:, 3]).div(df.iloc[:, 3].add(df.iloc[:, 3].shift(-1)).mul(2))
     plt.figure(1)
-    plt.title('{}, {}, {}=100'.format(*_title))
+    plt.title('{}, {}, {}=100'.format(*plot_title))
     plt.xlabel('Period')
-    plt.ylabel(f'Billions of Dollars, {_title[2]}=100')
-    plt.plot(df.iloc[:, [3]], label=f'{_title[1]}')
+    plt.ylabel(f'Billions of Dollars, {plot_title[2]}=100')
+    plt.plot(df.iloc[:, [3]], label=f'{plot_title[1]}')
     plt.plot(
         df.index.to_series().rolling(2).mean(),
         df.iloc[:, 4],
-        label=f'{_title[1]}, Rolling Mean, Window = 2'
+        label=f'{plot_title[1]}, Rolling Mean, Window = 2'
     )
     plt.grid()
     plt.legend()
     plt.figure(2)
-    plt.title('Elasticity: {}, {}, {}=100'.format(*_title))
+    plt.title('Elasticity: {}, {}, {}=100'.format(*plot_title))
     plt.xlabel('Period')
     plt.ylabel('Index')
     plt.plot(
@@ -1564,9 +1514,9 @@ def plot_elasticity(df: DataFrame) -> None:
     plt.grid()
     plt.legend()
     plt.figure(3)
-    plt.title('Elasticity: {}, {}, {}=100'.format(*_title))
-    plt.xlabel('{}, {}, {}=100'.format(*_title))
-    plt.ylabel('Elasticity: {}, {}, {}=100'.format(*_title))
+    plt.title('Elasticity: {}, {}, {}=100'.format(*plot_title))
+    plt.xlabel('{}, {}, {}=100'.format(*plot_title))
+    plt.ylabel('Elasticity: {}, {}, {}=100'.format(*plot_title))
     plt.plot(df.iloc[:, 3], df.iloc[:, 8], label='$\\frac{\\epsilon(X)}{X}$')
     plt.grid()
     plt.legend()
