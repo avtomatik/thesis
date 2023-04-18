@@ -886,3 +886,23 @@ def transform_elasticity(df: DataFrame) -> tuple[DataFrame, tuple[str]]:
     df[f'{df.columns[2]}_elasticity_d'] = df.iloc[:, 3].shift(-1).add(df.iloc[:, 3].shift(-2)).sub(
         df.iloc[:, 3].shift(1)).sub(df.iloc[:, 3]).div(df.iloc[:, 3].add(df.iloc[:, 3].shift(-1)).mul(2))
     return df, plot_title
+
+
+def transform_usa_sahr_infcf(df: DataFrame) -> DataFrame:
+    """
+    Retrieves Yearly Price Rates from 'dataset_usa_infcf16652007.zip'
+    Returns
+    -------
+    DataFrame
+    """
+    # =========================================================================
+    # Retrieve First 14 Series
+    # =========================================================================
+    return pd.concat(
+        map(
+            lambda _: df.pipe(pull_by_series_id, _).rdiv(1).pct_change().mul(-1),
+            df.iloc[:, 0].unique()[:14]
+        ),
+        axis=1,
+        sort=True
+    )

@@ -16,7 +16,6 @@ from scipy.interpolate import UnivariateSpline
 from sklearn.metrics import mean_squared_error, r2_score
 
 from thesis.src.lib.collect import stockpile_usa_hist
-from thesis.src.lib.read import read_can
 from thesis.src.lib.transform import transform_deflator
 
 
@@ -900,33 +899,6 @@ def archive_name_to_url(archive_name: str) -> str:
     return f'https://www150.statcan.gc.ca/n1/tbl/csv/{archive_name}'
 
 
-def build_push_data_frame(path_or_buf: str, blueprint: dict) -> None:
-    """
-    Builds DataFrame & Loads It To CSV
-
-    Parameters
-    ----------
-    path_or_buf : str
-        Excel File Name.
-    blueprint : dict
-        DESCRIPTION.
-
-    Returns
-    -------
-    None
-    """
-    df = DataFrame()
-    for entry in blueprint:
-        _df = read_can(archive_name_to_url(entry['archive_name']))
-        _df = _df[_df['VECTOR'].isin(entry['series_ids'])]
-        for series_id in entry['series_ids']:
-            chunk = _df[_df['VECTOR'] == series_id][['VALUE']]
-            chunk = chunk.groupby(chunk.index.year).mean()
-            df = pd.concat([df, chunk], axis=1, sort=True)
-        df.columns = entry['series_ids']
-    df.to_csv(path_or_buf)
-
-
 def filter_rolling_mean(df: DataFrame, k: int = None) -> tuple[DataFrame]:
     """
     Rolling Mean Filter
@@ -1175,3 +1147,4 @@ def construct_usa_hist_deflator(series_ids: dict[str, str]) -> DataFrame:
         ================== =================================
     """
     return stockpile_usa_hist(series_ids).pipe(transform_deflator)
+

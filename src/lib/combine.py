@@ -17,8 +17,7 @@ from pandas import DataFrame
 from scipy.signal import wiener
 from sklearn.impute import SimpleImputer
 
-from thesis.src.lib.collect import (stockpile_can, stockpile_usa_bea,
-                                    stockpile_usa_hist)
+from thesis.src.lib.collect import stockpile_usa_bea, stockpile_usa_hist
 from thesis.src.lib.pull import (pull_by_series_id, pull_can_capital,
                                  pull_can_capital_former)
 from thesis.src.lib.read import (read_can, read_temporary, read_usa_bea,
@@ -29,8 +28,7 @@ from thesis.src.lib.read import (read_can, read_temporary, read_usa_bea,
 from thesis.src.lib.transform import (stockpile_by_series_ids,
                                       transform_agg_sum,
                                       transform_cobb_douglas_extension_capital,
-                                      transform_deflator, transform_mean,
-                                      transform_pct_change, transform_sum,
+                                      transform_mean, transform_sum,
                                       transform_usa_frb_fa,
                                       transform_usa_frb_fa_def,
                                       transform_usa_manufacturing)
@@ -901,107 +899,6 @@ def combine_uscb_unemployment_hours_worked() -> DataFrame:
     return df
 
 
-def combine_can_price_a() -> DataFrame:
-    SERIES_IDS = (
-        {
-            'v90968617': 36100096,
-            'v90971177': 36100096
-        },
-        {
-            'v90968618': 36100096,
-            'v90971178': 36100096
-        },
-        {
-            'v90968619': 36100096,
-            'v90971179': 36100096
-        },
-        {
-            'v90968620': 36100096,
-            'v90971180': 36100096
-        },
-        {
-            'v90968621': 36100096,
-            'v90971181': 36100096
-        },
-        {
-            'v1071434': 36100236,
-            'v1119722': 36100236
-        },
-        {
-            'v1071435': 36100236,
-            'v1119723': 36100236
-        },
-        {
-            'v1071436': 36100236,
-            'v1119724': 36100236
-        },
-        {
-            'v1071437': 36100236,
-            'v1119725': 36100236
-        }
-    )
-    # =============================================================================
-    #     SERIES_IDS = (
-    #         {
-    #             'v90968617': 36100096,
-    #             'v90973737': 36100096
-    #         },
-    #         {
-    #             'v90968618': 36100096,
-    #             'v90973738': 36100096
-    #         },
-    #         {
-    #             'v90968619': 36100096,
-    #             'v90973739': 36100096
-    #         },
-    #         {
-    #             'v90968620': 36100096,
-    #             'v90973740': 36100096
-    #         },
-    #         {
-    #             'v90968621': 36100096,
-    #             'v90973741': 36100096
-    #         },
-    #         {
-    #             'v1071434': 36100236,
-    #             'v4421025': 36100236
-    #         },
-    #         {
-    #             'v1071435': 36100236,
-    #             'v4421026': 36100236
-    #         },
-    #         {
-    #             'v1071436': 36100236,
-    #             'v4421027': 36100236
-    #         },
-    #         {
-    #             'v1071437': 36100236,
-    #             'v4421028': 36100236
-    #         },
-    #         {
-    #             'v64498363': 36100236,
-    #             'v64498379': 36100236
-    #         }
-    #     )
-    # =============================================================================
-    return pd.concat(
-        map(lambda _: stockpile_can(_).pipe(transform_deflator), SERIES_IDS),
-        axis=1,
-        sort=True
-    )
-
-
-def combine_can_price_b():
-    SERIES_IDS = (
-        {'v46444990': 36100210},
-        {'v46445051': 36100210},
-        {'v46445112': 36100210}
-    )
-    return pd.concat(
-        map(lambda _: stockpile_can(_).pipe(transform_pct_change), SERIES_IDS), axis=1
-    )
-
-
 def combine_can(archive_ids: dict) -> DataFrame:
     """
     Parameters
@@ -1053,30 +950,6 @@ def combine_can(archive_ids: dict) -> DataFrame:
     ).dropna(axis=0)
     df.columns = ('capital', 'labor', 'product')
     return df.div(df.iloc[0, :])
-
-
-def get_mean_for_min_std():
-    """
-    Determine Year & Mean Value for Base Vectors for Year with Minimum StandardError
-    """
-    FILE_NAME = 'stat_can_lab.csv'
-    # =========================================================================
-    # Base Vectors
-    # =========================================================================
-    SERIES_IDS = {
-        'v123355112': 14100355,
-        'v1235071986': 14100392,
-        'v2057609': 14100355,
-        'v2057818': 14100355,
-        'v2523013': 14100027,
-    }
-
-    df = stockpile_can(SERIES_IDS).dropna(axis=0)
-    df['std'] = df.std(axis=1)
-    return (
-        df.iloc[:, [-1]].idxmin()[0],
-        df.loc[df.iloc[:, [-1]].idxmin()[0], :][:-1].mean()
-    )
 
 
 def combine_usa_investment_manufacturing() -> DataFrame:

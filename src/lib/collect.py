@@ -92,30 +92,3 @@ def stockpile_usa_mcconnel(
         ],
         axis=1
     ).truncate(before=1980)
-
-
-def stockpile_usa_sahr_infcf(df: DataFrame) -> DataFrame:
-    """
-    Retrieves Yearly Price Rates from 'dataset_usa_infcf16652007.zip'
-
-    Returns
-    -------
-    DataFrame
-    """
-    # =========================================================================
-    # Retrieve First 14 Series
-    # =========================================================================
-    return pd.concat(
-        [
-            df.pipe(pull_by_series_id, series_id).rdiv(1).pct_change().mul(-1)
-            for series_id in df.iloc[:, 0].unique()[:14]
-        ],
-        axis=1,
-        sort=True
-    )
-
-
-def filter_data_frame(df: DataFrame, query: dict[str]) -> DataFrame:
-    for column, criterion in query['filter'].items():
-        df = df[df.iloc[:, column] == criterion]
-    return df
