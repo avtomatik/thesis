@@ -103,7 +103,7 @@ def read_can(archive_id: int) -> DataFrame:
     else:
         if Path(f'{archive_id:08n}-eng.zip').is_file():
             kwargs['filepath_or_buffer'] = ZipFile(
-                f'{archive_id:08n}-eng.zip', 'r'
+                f'{archive_id:08n}-eng.zip'
             ).open(f'{archive_id:08n}.csv')
         else:
             kwargs['filepath_or_buffer'] = ZipFile(io.BytesIO(

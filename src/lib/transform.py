@@ -616,8 +616,8 @@ def transform_usa_frb_fa_def(df: DataFrame) -> DataFrame:
         ================== =================================
 
     """
-    df['fa_def_frb'] = (df.iloc[:, (1, 4)].sum(axis=1)).div(
-        df.iloc[:, (0, 3)].sum(axis=1))
+    df['fa_def_frb'] = (df.iloc[:, [1, 4]].sum(axis=1)).div(
+        df.iloc[:, [0, 3]].sum(axis=1))
     return df.iloc[:, [-1]]
 
 

@@ -12,11 +12,11 @@ from operator import itemgetter
 from pathlib import Path
 
 import pandas as pd
-from constants import SERIES_IDS_LAB
 from pandas import DataFrame
 from scipy.signal import wiener
 from sklearn.impute import SimpleImputer
 
+from constants import SERIES_IDS_LAB
 from thesis.src.lib.collect import stockpile_usa_bea, stockpile_usa_hist
 from thesis.src.lib.pull import (pull_by_series_id, pull_can_capital,
                                  pull_can_capital_former)
@@ -182,10 +182,7 @@ def combine_cobb_douglas_deflator() -> DataFrame:
     # Strip Deflators
     # =========================================================================
     return pd.concat(
-        [
-            df.loc[:, (column,)].pct_change()
-            for column in df.columns
-        ],
+        map(lambda _: df.loc[:, [_]].pct_change(), df.columns),
         axis=1
     )
 
@@ -742,9 +739,10 @@ def combine_uscb_cap_deflator() -> DataFrame:
     # Strip Deflators
     # =========================================================================
     return pd.concat(
-        [
-            df.iloc[:, [-(1+_)]].pct_change().dropna(axis=0) for _ in range(6)
-        ],
+        map(
+            lambda _: df.iloc[:, [-(1+_)]].pct_change().dropna(axis=0),
+            range(6)
+        ),
         axis=1
     )
 
@@ -1228,7 +1226,6 @@ def combine_data_frames_by_columns(
             [
                 df_c.loc[:, [col_control]],
                 df_t.loc[:, cols_test],
-
             ],
             axis=1,
             sort=True
