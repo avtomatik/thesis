@@ -167,4 +167,4 @@ def pull_uscb_description(series_id: str) -> str:
     lookup_columns = ('group1', 'group2', 'group3', 'note')
     df = df[df.loc[:, 'series_id'] == series_id].loc[:, lookup_columns]
     df.drop_duplicates(inplace=True)
-    return '\n'.join(_ for _ in dict(df.iloc[0, :]).values() if isinstance(_, str))
+    return '\n'.join(filter(lambda _: isinstance(_, str), df.iloc[0, :].values))
