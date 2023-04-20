@@ -8,12 +8,16 @@ Created on Sun Jun 12 12:40:09 2022
 
 import os
 import zipfile
+from pathlib import Path
 from zipfile import ZipFile
 
 from pandas import DataFrame
 
 
-def push_data_frame_listing(df: DataFrame, file_name: str = 'data_frame_listing.txt') -> None:
+def push_data_frame_listing(
+    df: DataFrame,
+    file_name: str = 'data_frame_listing.txt'
+) -> None:
     """
     Dumps Data Headers & Unique Data Samples
 
@@ -33,11 +37,23 @@ def push_data_frame_listing(df: DataFrame, file_name: str = 'data_frame_listing.
             print(sorted(set(df.iloc[:, _])), file=f)
 
 
-def push_data_frame_to_csv_zip(df: DataFrame, file_name: str) -> None:
-    df.to_csv(f'{file_name}.csv', index=True, encoding='utf-8-sig')
-    with ZipFile(f'{file_name}.zip', 'w') as archive:
-        archive.write(f'{file_name}.csv', compress_type=zipfile.ZIP_DEFLATED)
-        os.unlink(f'{file_name}.csv')
+def push_data_frame_to_csv_zip(
+    df: DataFrame,
+    file_name: str,
+    path_exp: str = '/media/green-machine/KINGSTON'
+) -> None:
+    kwargs = {
+        'path_or_buf': Path(path_exp).joinpath(f'{file_name}.csv'),
+        'index': True,
+        'encoding': 'utf-8-sig'
+    }
+    df.to_csv(**kwargs)
+    with ZipFile(Path(path_exp).joinpath(f'{file_name}.csv'), 'w') as archive:
+        archive.write(
+            Path(path_exp).joinpath(f'{file_name}.csv'),
+            compress_type=zipfile.ZIP_DEFLATED
+        )
+        os.unlink(Path(path_exp).joinpath(f'{file_name}.csv'))
 
 
 def push_files_to_zip(archive_name: str, file_names: tuple[str]) -> None:
