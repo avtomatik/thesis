@@ -7,7 +7,7 @@ Created on Wed Feb  5 22:19:02 2020
 
 import os
 
-from thesis.src.lib.collect import (combine_cobb_douglas,
+from thesis.src.lib.combine import (combine_cobb_douglas,
                                     combine_usa_capital_purchases,
                                     combine_usa_manufacturing_latest,
                                     combine_usa_manufacturing_three_fold,
@@ -45,7 +45,7 @@ def main():
     df_f, df_g, df_h = combine_usa_manufacturing_three_fold()
 
     # =========================================================================
-    # collect_cobb_douglas().pipe(transform_cobb_douglas, year_base=1899)[0].iloc[:, [3, 4]].pipe(calculate_curve_fit_params)
+    # combine_cobb_douglas().pipe(transform_cobb_douglas, year_base=1899)[0].iloc[:, [3, 4]].pipe(calculate_curve_fit_params)
     # =========================================================================
 
     df_a.pipe(calculate_curve_fit_params)

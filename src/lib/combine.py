@@ -17,7 +17,7 @@ from scipy.signal import wiener
 from sklearn.impute import SimpleImputer
 
 from constants import SERIES_IDS_LAB
-from thesis.src.lib.collect import stockpile_usa_bea, stockpile_usa_hist
+from thesis.src.lib.constants import SERIES_IDS_LAB
 from thesis.src.lib.pull import (pull_by_series_id, pull_can_capital,
                                  pull_can_capital_former)
 from thesis.src.lib.read import (read_can, read_temporary, read_usa_bea,
@@ -25,11 +25,11 @@ from thesis.src.lib.read import (read_can, read_temporary, read_usa_bea,
                                  read_usa_frb_g17, read_usa_frb_h6,
                                  read_usa_frb_us3, read_usa_fred,
                                  read_usa_hist)
-from thesis.src.lib.transform import (stockpile_by_series_ids,
-                                      transform_agg_sum,
+from thesis.src.lib.stockpile import stockpile_usa_bea, stockpile_usa_hist
+from thesis.src.lib.transform import (transform_agg_sum,
                                       transform_cobb_douglas_extension_capital,
-                                      transform_mean, transform_sum,
-                                      transform_usa_frb_fa,
+                                      transform_mean, transform_stockpile,
+                                      transform_sum, transform_usa_frb_fa,
                                       transform_usa_frb_fa_def,
                                       transform_usa_manufacturing)
 
@@ -937,7 +937,7 @@ def combine_can(archive_ids: dict) -> DataFrame:
     df = pd.concat(
         [
             _df.loc[:, ('series_id', 'value')].pipe(
-                stockpile_by_series_ids).pipe(transform_sum, name="capital"),
+                transform_stockpile).pipe(transform_sum, name="capital"),
             read_can(tuple(archive_ids)[1]).pipe(
                 pull_by_series_id, archive_ids.get(tuple(archive_ids)[1])).apply(pd.to_numeric, errors='coerce'),
             read_can(tuple(archive_ids)[-1]).pipe(
@@ -1234,3 +1234,28 @@ def combine_data_frames_by_columns(
             yield df.div(df.loc[year_base, :]).mul(100)
         else:
             yield df
+
+
+def combine_usa_kurenkov() -> DataFrame:
+    SERIES_IDS = {
+        # =====================================================================
+        # Real Gross Domestic Product Series, 2012=100: A191RX
+        # =====================================================================
+        'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        # =====================================================================
+        # Fixed Assets Series: k1n31gd1es00
+        # =====================================================================
+        'k1n31gd1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
+    }
+    return pd.concat(
+        [
+            stockpile_usa_bea(SERIES_IDS),
+            stockpile_usa_bea(SERIES_IDS_LAB).pipe(
+                transform_mean, name="bea_labor_mfg"
+            ),
+            read_usa_frb_us3().loc[:, ['AIPMA_SA_IX']],
+            read_usa_frb_g17().loc[:, ['CAPUTL.B50001.A']],
+        ],
+        axis=1,
+        sort=True
+    )

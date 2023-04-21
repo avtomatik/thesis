@@ -8,7 +8,7 @@ Created on Sun Jul 12 18:28:15 2020
 
 import os
 
-from thesis.src.lib.collect import combine_cobb_douglas
+from thesis.src.lib.combine import combine_cobb_douglas
 from thesis.src.lib.plot import plot_cobb_douglas
 from thesis.src.lib.transform import transform_cobb_douglas
 

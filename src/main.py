@@ -8,21 +8,19 @@ Thesis Project
 """
 
 
-import pandas as pd
-
-from thesis.src.lib.collect import (combine_can, combine_cobb_douglas,
+from thesis.src.lib.combine import (combine_can, combine_cobb_douglas,
                                     combine_usa_investment_turnover,
                                     combine_usa_investment_turnover_bls,
                                     combine_usa_manufacturing_three_fold,
-                                    combine_usa_manufacturing_two_fold,
-                                    stockpile_usa_bea, stockpile_usa_hist,
-                                    stockpile_usa_mcconnel)
+                                    combine_usa_manufacturing_two_fold)
 from thesis.src.lib.plot import (plot_approx_linear, plot_approx_linear_log,
                                  plot_cobb_douglas, plot_cobb_douglas_3d,
                                  plot_cobb_douglas_complex, plot_douglas,
                                  plot_elasticity, plot_fourier_discrete,
                                  plot_growth_elasticity, plot_model_capital,
                                  plot_uscb_complex)
+from thesis.src.lib.stockpile import (stockpile_usa_bea, stockpile_usa_hist,
+                                      stockpile_usa_mcconnel)
 from thesis.src.lib.tools import (calculate_power_function_fit_params_a,
                                   calculate_power_function_fit_params_b,
                                   calculate_power_function_fit_params_c,

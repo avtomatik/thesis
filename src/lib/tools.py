@@ -15,7 +15,7 @@ from pandas import DataFrame
 from scipy.interpolate import UnivariateSpline
 from sklearn.metrics import mean_squared_error, r2_score
 
-from thesis.src.lib.collect import stockpile_usa_hist
+from thesis.src.lib.stockpile import stockpile_usa_hist
 from thesis.src.lib.transform import transform_deflator
 
 
@@ -1148,3 +1148,10 @@ def construct_usa_hist_deflator(series_ids: dict[str, str]) -> DataFrame:
     """
     return stockpile_usa_hist(series_ids).pipe(transform_deflator)
 
+
+def lab_productivity(array: np.array, k: float = 0.25, b: float = 1.01) -> np.array:
+    return np.multiply(np.power(array, -k), b)
+
+
+def cap_productivity(array: np.array, k: float = 0.25, b: float = 1.01) -> np.array:
+    return np.multiply(np.power(array, 1-k), b)

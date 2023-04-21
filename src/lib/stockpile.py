@@ -33,12 +33,13 @@ def stockpile_usa_bea(series_ids: dict[str, str]) -> DataFrame:
 
     """
     return pd.concat(
-        [
-            read_usa_bea(url).pipe(pull_by_series_id, series_id)
-            for series_id, url in series_ids.items()
-        ],
+        map(
+            lambda _: read_usa_bea(_[1]).pipe(
+                pull_by_series_id, _[0]
+            ),
+            series_ids.items()
+        ),
         axis=1,
-        verify_integrity=True,
         sort=True
     )
 
@@ -63,14 +64,13 @@ def stockpile_usa_hist(series_ids: dict[str, str]) -> DataFrame:
 
     """
     return pd.concat(
-        [
-            read_usa_hist(archive_name).sort_index().pipe(
-                pull_by_series_id, series_id
-            )
-            for series_id, archive_name in series_ids.items()
-        ],
+        map(
+            lambda _: read_usa_hist(_[1]).sort_index().pipe(
+                pull_by_series_id, _[0]
+            ),
+            series_ids.items()
+        ),
         axis=1,
-        verify_integrity=True,
         sort=True
     )
 

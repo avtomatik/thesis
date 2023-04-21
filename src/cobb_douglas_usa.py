@@ -8,7 +8,7 @@ Created on Mon Apr 12 22:46:08 2021
 
 import os
 
-from thesis.src.lib.collect import combine_usa_manufacturing_latest
+from thesis.src.lib.combine import combine_usa_manufacturing_latest
 from thesis.src.lib.plot import plot_cobb_douglas
 from thesis.src.lib.transform import transform_cobb_douglas
 

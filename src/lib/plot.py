@@ -19,25 +19,18 @@ from pandas.plotting import autocorrelation_plot, lag_plot
 from scipy import stats
 from sklearn.metrics import r2_score
 
-from thesis.src.lib.collect import stockpile_usa_hist
 from thesis.src.lib.combine import combine_data_frames_by_columns
 from thesis.src.lib.pull import (pull_by_series_id,
                                  pull_series_ids_description,
                                  pull_uscb_description)
 from thesis.src.lib.read import read_usa_hist, read_usa_nber, read_worldbank
-from thesis.src.lib.tools import (calculate_capital, filter_kol_zur,
-                                  filter_rolling_mean, get_price_base_nr,
+from thesis.src.lib.stockpile import stockpile_usa_hist
+from thesis.src.lib.tools import (calculate_capital, cap_productivity,
+                                  filter_kol_zur, filter_rolling_mean,
+                                  get_price_base_nr, lab_productivity,
                                   simple_linear_regression)
 from thesis.src.lib.transform import (transform_agg, transform_cobb_douglas,
                                       transform_rebase)
-
-
-def _lab_productivity(array: np.array, k: float = 0.25, b: float = 1.01) -> np.array:
-    return np.multiply(np.power(array, -k), b)
-
-
-def _cap_productivity(array: np.array, k: float = 0.25, b: float = 1.01) -> np.array:
-    return np.multiply(np.power(array, 1-k), b)
 
 
 def plot_investment_manufacturing(df: DataFrame) -> None:
@@ -57,9 +50,9 @@ def plot_investment_manufacturing(df: DataFrame) -> None:
         )
     )
     new_var = [
-            'Gross Private Domestic Investment',
-            'National Income',
-        ]
+        'Gross Private Domestic Investment',
+        'National Income',
+    ]
 
     plt.plot(
         df.iloc[:, -4:-2], label=new_var
@@ -78,7 +71,7 @@ def plot_investment_manufacturing(df: DataFrame) -> None:
 
 def plot_investment(df: DataFrame) -> None:
     """
-    
+
 
     Parameters
     ----------
@@ -113,7 +106,7 @@ def plot_investment(df: DataFrame) -> None:
 
 def plot_manufacturing_money(df: DataFrame) -> None:
     """
-    
+
 
     Parameters
     ----------
@@ -153,7 +146,7 @@ def plot_manufacturing_money(df: DataFrame) -> None:
 
 def plot_d(df: DataFrame, year_base: np.int64) -> None:
     """
-    
+
 
     Parameters
     ----------
@@ -187,7 +180,8 @@ def plot_d(df: DataFrame, year_base: np.int64) -> None:
         color='red',
         label='Real Gross Private Fixed Investment, Nonresidential $GPFI(n)$'
     )
-    plt.title('Real Indexes, {}=100, {}$-${}'.format(*df.index[[year_base, 0, -1]]))
+    plt.title('Real Indexes, {}=100, {}$-${}'.format(*
+              df.index[[year_base, 0, -1]]))
     plt.xlabel('Period')
     plt.ylabel('Billions of Dollars')
     plt.grid()
@@ -266,9 +260,9 @@ def plot_e(df: DataFrame) -> None:
 def plot_uscb_manufacturing(df: DataFrame, year_base: int) -> None:
     plt.figure()
     new_var = [
-            'Fabricant S., Shiskin J., NBER',
-            'E. Frickey',
-        ]
+        'Fabricant S., Shiskin J., NBER',
+        'E. Frickey',
+    ]
 
     plt.plot(
         df.iloc[:, [0, 2]], label=new_var
@@ -331,9 +325,9 @@ def plot_uscb_metals(df: DataFrame, years_base: tuple[int]) -> None:
         'P294 - Railroad Passenger Cars Produced, {}=100',
         'P295 - Railroad Freight Cars Produced, {}=100',
     )
-    _DESCS = [_desc.format(_b) for _desc, _b in zip(_DESCS_RAW, years_base)]
+    _DESCS = map(lambda _: _[0].format(_[1]), zip(_DESCS_RAW, years_base))
     _MAPPING = dict(zip(df.columns, _DESCS))
-    _COLUMN_LOCS = [_ for _ in range(df.shape[1]) if _ not in range(1, 6)]
+    _COLUMN_LOCS = filter(lambda _: _ not in range(1, 6), range(df.shape[1]))
     plt.figure(1)
     plt.semilogy(
         df.iloc[:, range(1, 6)],
@@ -363,13 +357,12 @@ def plot_uscb_metals(df: DataFrame, years_base: tuple[int]) -> None:
 
 def plot_uscb_commodities(series_ids: dict[str, str]) -> None:
     df = pd.concat(
-        [
-            read_usa_hist(archive_name).pipe(
-                pull_by_series_id,
-                series_id
-            ).sort_index().pipe(transform_rebase)
-            for series_id, archive_name in series_ids.items()
-        ],
+        map(
+            lambda _: read_usa_hist(_[1]).pipe(
+                pull_by_series_id, _[0]
+            ).sort_index().pipe(transform_rebase),
+            series_ids.items()
+        ),
         axis=1,
         sort=True
     )
@@ -444,14 +437,11 @@ def plot_uscb_employment_conflicts(df: DataFrame) -> None:
 def plot_uscb_gnp(df: DataFrame) -> None:
     plt.figure()
     new_var = [
-            'Gross National Product',
-            'Gross National Product Per Capita',
-        ]
+        'Gross National Product',
+        'Gross National Product Per Capita',
+    ]
 
-    plt.plot(
-        df,
-        label=new_var
-    )
+    plt.plot(df, label=new_var)
     plt.title(
         'Gross National Product, Prices {}=100, {}=100'.format(
             1958, df.index[0]
@@ -477,15 +467,12 @@ def plot_uscb_farm_lands(df: DataFrame) -> None:
 def plot_uscb_trade(df: DataFrame) -> None:
     plt.figure()
     new_var = [
-            'Exports, U1',
-            'Imports, U8',
-            'Net Exports, U15',
-        ]
+        'Exports, U1',
+        'Imports, U8',
+        'Net Exports, U15',
+    ]
 
-    plt.plot(
-        df,
-        label=new_var
-    )
+    plt.plot(df, label=new_var)
     plt.title(
         'Exports & Imports of Goods and Services, {}$-${}'.format(
             *df.index[[0, -1]]
@@ -501,15 +488,12 @@ def plot_uscb_trade(df: DataFrame) -> None:
 def plot_uscb_trade_gold_silver(df: DataFrame) -> None:
     plt.figure()
     new_var = [
-            'Exports, U187',
-            'Imports, U188',
-            'Net Exports, U189',
-        ]
+        'Exports, U187',
+        'Imports, U188',
+        'Net Exports, U189',
+    ]
 
-    plt.plot(
-        df,
-        label=new_var
-    )
+    plt.plot(df, label=new_var)
     plt.title(
         'Total Merchandise, Gold and Silver, {}$-${}'.format(
             *df.index[[0, -1]]
@@ -561,15 +545,12 @@ def plot_uscb_money_stock(df: DataFrame) -> None:
     YEAR_BASE = 1915
     plt.figure()
     new_var = [
-            'Currency Held by the Public',
-            'M1 Money Supply (Currency Plus Demand Deposits)',
-            'M2 Money Supply (M1 Plus Time Deposits)',
-        ]
+        'Currency Held by the Public',
+        'M1 Money Supply (Currency Plus Demand Deposits)',
+        'M2 Money Supply (M1 Plus Time Deposits)',
+    ]
 
-    plt.semilogy(
-        df,
-        label=new_var
-    )
+    plt.semilogy(df, label=new_var)
     plt.axvline(x=YEAR_BASE, linestyle=':')
     plt.title('Currency Dynamics, {}=100'.format(YEAR_BASE))
     plt.xlabel('Period')
@@ -656,7 +637,7 @@ def plot_approx_linear(df: DataFrame, year_base, params) -> None:
 
 def plot_approx_linear_log(df: DataFrame, year_base: int, params: np.ndarray) -> None:
     """
-    
+
 
     Parameters
     ----------
@@ -1033,11 +1014,11 @@ def plot_capital_purchases(df: DataFrame) -> None:
     assert df.shape[1] == 27, "Works on DataFrame Produced with 'combine_usa_capital_purchases()"
     plt.figure()
     new_var = [
-            '$s^{2;1}_{Cobb-Douglas}$',
-            'Total',
-            'Structures',
-            'Equipment',
-        ]
+        '$s^{2;1}_{Cobb-Douglas}$',
+        'Total',
+        'Structures',
+        'Equipment',
+    ]
 
     plt.semilogy(
         df.loc[:, (df.columns[0], *df.columns[-3:])],
@@ -1127,12 +1108,12 @@ def plot_cobb_douglas(df: DataFrame, params: tuple[float], mapping: dict) -> Non
     lc = np.arange(0.2, 1.0, 0.005)
     plt.plot(
         lc,
-        _lab_productivity(lc, *params),
+        lab_productivity(lc, *params),
         label='$\\frac{3}{4}\\frac{P}{L}$'
     )
     plt.plot(
         lc,
-        _cap_productivity(lc, *params),
+        cap_productivity(lc, *params),
         label='$\\frac{1}{4}\\frac{P}{C}$'
     )
     plt.xlabel('$\\frac{L}{C}$')
@@ -1240,12 +1221,12 @@ def plot_cobb_douglas_alt(df: DataFrame, params: tuple[float], mapping: dict) ->
     lc = np.arange(0.2, 1.0, 0.005)
     plt.plot(
         lc,
-        _lab_productivity(lc, *params),
+        lab_productivity(lc, *params),
         label='$\\frac{3}{4}\\frac{P}{L}$'
     )
     plt.plot(
         lc,
-        _cap_productivity(lc, *params),
+        cap_productivity(lc, *params),
         label='$\\frac{1}{4}\\frac{P}{C}$'
     )
     plt.xlabel('$\\frac{L}{C}$')
@@ -1355,12 +1336,12 @@ def plot_cobb_douglas_tight_layout(df: DataFrame, params: tuple[float], mapping:
     lc = np.arange(0.2, 1.0, 0.005)
     axes[4].plot(
         lc,
-        _lab_productivity(lc, *params),
+        lab_productivity(lc, *params),
         label='$\\frac{3}{4}\\frac{P}{L}$'
     )
     axes[4].plot(
         lc,
-        _cap_productivity(lc, *params),
+        cap_productivity(lc, *params),
         label='$\\frac{1}{4}\\frac{P}{C}$'
     )
     axes[4].set_xlabel('$\\frac{L}{C}$')

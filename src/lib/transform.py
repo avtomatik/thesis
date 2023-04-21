@@ -10,10 +10,7 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame
 
-from thesis.src.lib.collect import stockpile_usa_bea
-from thesis.src.lib.constants import SERIES_IDS_LAB
 from thesis.src.lib.pull import pull_by_series_id
-from thesis.src.lib.read import read_usa_frb_g17, read_usa_frb_us3
 from thesis.src.lib.tools import get_price_base_nr
 
 
@@ -457,31 +454,6 @@ def transform_e_post(df: DataFrame) -> DataFrame:
     return df
 
 
-def combine_usa_kurenkov() -> DataFrame:
-    SERIES_IDS = {
-        # =====================================================================
-        # Real Gross Domestic Product Series, 2012=100: A191RX
-        # =====================================================================
-        'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        # =====================================================================
-        # Fixed Assets Series: k1n31gd1es00
-        # =====================================================================
-        'k1n31gd1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
-    }
-    return pd.concat(
-        [
-            stockpile_usa_bea(SERIES_IDS),
-            stockpile_usa_bea(SERIES_IDS_LAB).pipe(
-                transform_mean, name="bea_labor_mfg"
-            ),
-            read_usa_frb_us3().loc[:, ['AIPMA_SA_IX']],
-            read_usa_frb_g17().loc[:, ['CAPUTL.B50001.A']],
-        ],
-        axis=1,
-        sort=True
-    )
-
-
 def transform_mean(df: DataFrame, name: str) -> DataFrame:
     """
 
@@ -508,7 +480,7 @@ def transform_mean(df: DataFrame, name: str) -> DataFrame:
     return df.iloc[:, [-1]]
 
 
-def stockpile_by_series_ids(df: DataFrame) -> DataFrame:
+def transform_stockpile(df: DataFrame) -> DataFrame:
     """
 
 
@@ -531,12 +503,11 @@ def stockpile_by_series_ids(df: DataFrame) -> DataFrame:
         df.iloc[:, 0]      Sum of <series_ids>
         ================== =================================
     """
-    series_ids = sorted(set(df.iloc[:, 0]))
     return pd.concat(
-        [
-            df.pipe(pull_by_series_id, series_id)
-            for series_id in series_ids
-        ],
+        map(
+            lambda _: df.pipe(pull_by_series_id, _),
+            sorted(set(df.iloc[:, 0]))
+        ),
         axis=1
     ).apply(pd.to_numeric, errors='coerce')
 
@@ -900,7 +871,8 @@ def transform_usa_sahr_infcf(df: DataFrame) -> DataFrame:
     # =========================================================================
     return pd.concat(
         map(
-            lambda _: df.pipe(pull_by_series_id, _).rdiv(1).pct_change().mul(-1),
+            lambda _: df.pipe(pull_by_series_id, _).rdiv(
+                1).pct_change().mul(-1),
             df.iloc[:, 0].unique()[:14]
         ),
         axis=1,

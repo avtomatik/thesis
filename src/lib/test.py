@@ -13,9 +13,9 @@ import pandas as pd
 from pandas import DataFrame
 from pandas.plotting import autocorrelation_plot
 
-from thesis.src.lib.collect import stockpile_usa_bea, stockpile_usa_hist
 from thesis.src.lib.pull import pull_by_series_id
 from thesis.src.lib.read import read_usa_bea_excel, read_usa_bls
+from thesis.src.lib.stockpile import stockpile_usa_bea, stockpile_usa_hist
 
 
 def options_reviewed():
