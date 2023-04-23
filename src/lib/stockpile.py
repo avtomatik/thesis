@@ -65,7 +65,7 @@ def stockpile_usa_hist(series_ids: dict[str, str]) -> DataFrame:
     """
     return pd.concat(
         map(
-            lambda _: read_usa_hist(_[1]).sort_index().pipe(
+            lambda _: read_usa_hist(_[1]).pipe(
                 pull_by_series_id, _[0]
             ),
             series_ids.items()
@@ -73,22 +73,3 @@ def stockpile_usa_hist(series_ids: dict[str, str]) -> DataFrame:
         axis=1,
         sort=True
     )
-
-
-def stockpile_usa_mcconnel(
-    series_ids: tuple[str], archive_name: str = 'dataset_usa_mc_connell_brue.zip'
-) -> DataFrame:
-    SERIES_IDS = {
-        'Ставка прайм-рейт, %': 'prime_rate',
-        'Валовой объем внутренних частных инвестиций, млрд долл. США': 'A006RC',
-        'Национальный доход, млрд долл. США': 'A032RC',
-        'Валовой внутренний продукт, млрд долл. США': 'A191RC',
-    }
-    return pd.concat(
-        [
-            read_usa_hist(archive_name).sort_index().pipe(pull_by_series_id, series_id).rename(
-                columns={series_id: SERIES_IDS[series_id]})
-            for series_id in series_ids
-        ],
-        axis=1
-    ).truncate(before=1980)

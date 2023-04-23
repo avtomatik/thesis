@@ -53,3 +53,11 @@ FILE_NAMES_UTILISED = (
     'dataset_usa_nber_ces_mid_sic5811.csv',
     'dataset_usa_reference_ru_kurenkov_yu_v.csv',
 )
+
+
+MAP_MC_CONNEL = {
+    'Ставка прайм-рейт, %': 'prime_rate',
+    'Валовой объем внутренних частных инвестиций, млрд долл. США': 'A006RC',
+    'Национальный доход, млрд долл. США': 'A032RC',
+    'Валовой внутренний продукт, млрд долл. США': 'A191RC',
+}

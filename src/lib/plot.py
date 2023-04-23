@@ -226,9 +226,9 @@ def plot_e(df: DataFrame) -> None:
         df.iloc[:, 1]      Production
         df.iloc[:, 2]      Capital
         df.iloc[:, 3]      Investment to Production
-        df.iloc[:, 4]      Fixed Assets Turnoover
+        df.iloc[:, 4]      Fixed Assets Turnover
         df.iloc[:, 5]      Investment to Production: Linear Approximation
-        df.iloc[:, 6]      Fixed Assets Turnoover: Linear Approximation
+        df.iloc[:, 6]      Fixed Assets Turnover: Linear Approximation
         ================== =================================.
 
     Returns

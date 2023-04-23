@@ -8,26 +8,27 @@ Thesis Project
 """
 
 
+import usa_mc_connell
+
 from thesis.src.lib.combine import (combine_can, combine_cobb_douglas,
                                     combine_usa_investment_turnover,
-                                    combine_usa_investment_turnover_bls,
-                                    combine_usa_manufacturing_three_fold,
-                                    combine_usa_manufacturing_two_fold)
+                                    combine_usa_investment_turnover_bls)
+from thesis.src.lib.constants import MAP_MC_CONNEL
 from thesis.src.lib.plot import (plot_approx_linear, plot_approx_linear_log,
                                  plot_cobb_douglas, plot_cobb_douglas_3d,
-                                 plot_cobb_douglas_complex, plot_douglas,
-                                 plot_elasticity, plot_fourier_discrete,
-                                 plot_growth_elasticity, plot_model_capital,
-                                 plot_uscb_complex)
-from thesis.src.lib.stockpile import (stockpile_usa_bea, stockpile_usa_hist,
-                                      stockpile_usa_mcconnel)
+                                 plot_douglas, plot_elasticity,
+                                 plot_fourier_discrete, plot_growth_elasticity,
+                                 plot_model_capital, plot_uscb_complex)
+from thesis.src.lib.stockpile import stockpile_usa_bea, stockpile_usa_hist
 from thesis.src.lib.tools import (calculate_power_function_fit_params_a,
                                   calculate_power_function_fit_params_b,
                                   calculate_power_function_fit_params_c,
                                   lash_up_spline_ea, lash_up_spline_eb,
                                   lash_up_spline_la, lash_up_spline_lb,
                                   lash_up_spline_lls, run_lash_up_spline)
-from thesis.src.lib.transform import transform_cobb_douglas
+from thesis.src.lib.transform import (transform_approx_linear,
+                                      transform_approx_linear_log,
+                                      transform_cobb_douglas)
 
 
 def main():
@@ -36,10 +37,7 @@ def main():
     # =========================================================================
     # =========================================================================
     # 'plot_approx_linear': Linear Approximation,
-    # 'plot_approx_linear_log': Log-Linear Approximation,
-    # 'calculate_power_function_fit_params_a': Power Function Approximation,
-    # 'calculate_power_function_fit_params_b': Power Function Approximation,
-    # 'calculate_power_function_fit_params_c': Power Function Approximation
+    # 'plot_approx_linear_log': Log-Linear Approximation
     # =========================================================================
     SERIES_IDS = {
         'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
@@ -65,29 +63,7 @@ def main():
     }
     plot_approx_linear_log(*stockpile_usa_bea(SERIES_IDS).dropna(axis=0).pipe(transform_approx_linear_log))
 
-    SERIES_IDS = ('Валовой внутренний продукт, млрд долл. США',)
-    PARAMS = (2800, 0.01, 0.5)
-    stockpile_usa_mcconnel(SERIES_IDS).pipe(
-        calculate_power_function_fit_params_a, PARAMS
-    )
-
-    SERIES_IDS = (
-        'Ставка прайм-рейт, %',
-        'Национальный доход, млрд долл. США',
-    )
-    PARAMS = (4, 12, 9000, 3000, 0.87)
-    stockpile_usa_mcconnel(SERIES_IDS).pipe(
-        calculate_power_function_fit_params_b, PARAMS
-    )
-
-    SERIES_IDS = (
-        'Ставка прайм-рейт, %',
-        'Валовой объем внутренних частных инвестиций, млрд долл. США',
-    )
-    PARAMS = (1.5, 19, 1.7, 1760)
-    stockpile_usa_mcconnel(SERIES_IDS).pipe(
-        calculate_power_function_fit_params_c, PARAMS
-    )
+    usa_mc_connell()
 
 
     # =========================================================================
