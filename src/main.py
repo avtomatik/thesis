@@ -8,96 +8,31 @@ Thesis Project
 """
 
 
+import plot_usa_bea
+import plot_usa_manufacturing
+import usa_bea_approximation
+import usa_capital
 import usa_mc_connell
 
-from thesis.src.lib.combine import (combine_can, combine_cobb_douglas,
-                                    combine_usa_investment_turnover,
-                                    combine_usa_investment_turnover_bls)
-from thesis.src.lib.constants import MAP_MC_CONNEL
-from thesis.src.lib.plot import (plot_approx_linear, plot_approx_linear_log,
-                                 plot_cobb_douglas, plot_cobb_douglas_3d,
+from thesis.src.lib.combine import combine_can, combine_cobb_douglas
+from thesis.src.lib.plot import (plot_cobb_douglas, plot_cobb_douglas_3d,
                                  plot_douglas, plot_elasticity,
-                                 plot_fourier_discrete, plot_growth_elasticity,
-                                 plot_model_capital, plot_uscb_complex)
+                                 plot_growth_elasticity, plot_uscb_complex)
 from thesis.src.lib.stockpile import stockpile_usa_bea, stockpile_usa_hist
-from thesis.src.lib.tools import (calculate_power_function_fit_params_a,
-                                  calculate_power_function_fit_params_b,
-                                  calculate_power_function_fit_params_c,
-                                  lash_up_spline_ea, lash_up_spline_eb,
+from thesis.src.lib.tools import (lash_up_spline_ea, lash_up_spline_eb,
                                   lash_up_spline_la, lash_up_spline_lb,
                                   lash_up_spline_lls, run_lash_up_spline)
-from thesis.src.lib.transform import (transform_approx_linear,
-                                      transform_approx_linear_log,
-                                      transform_cobb_douglas)
+from thesis.src.lib.transform import (transform_cobb_douglas,
+                                      transform_elasticity)
 
 
 def main():
-    # =========================================================================
-    # Subproject I. Approximation
-    # =========================================================================
-    # =========================================================================
-    # 'plot_approx_linear': Linear Approximation,
-    # 'plot_approx_linear_log': Log-Linear Approximation
-    # =========================================================================
-    SERIES_IDS = {
-        'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        'A006RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
-    }
-    plot_approx_linear(*stockpile_usa_bea(SERIES_IDS).dropna(axis=0).pipe(transform_approx_linear))
-
-    SERIES_IDS = {
-        'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        'kcptotl1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
-        'A032RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
-    }
-    plot_approx_linear_log(*stockpile_usa_bea(SERIES_IDS).dropna(axis=0).pipe(transform_approx_linear_log))
-
-    SERIES_IDS = {
-        'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        'kcptotl1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
-        'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
-    }
-    plot_approx_linear_log(*stockpile_usa_bea(SERIES_IDS).dropna(axis=0).pipe(transform_approx_linear_log))
+    
+    usa_bea_approximation()
 
     usa_mc_connell()
 
-
-    # =========================================================================
-    # Subproject II. Capital
-    # =========================================================================
-    # =========================================================================
-    # Project: Fixed Assets Dynamics Modelling:
-    # Fixed Assets Turnover Linear Approximation
-    # Gross Fixed Investment to Gross Domestic Product Ratio Linear Approximation
-    # Alpha: Investment to Capital Conversion Ratio Dynamics
-    # =========================================================================
-    # =========================================================================
-    # Original Result on Archived Data:
-    # =========================================================================
-    {
-        's_1': -7.28110931679034e-05,
-        's_2': 0.302917968959722,
-    }
-    # =========================================================================
-    # Original Result on Archived Data:
-    # =========================================================================
-    {
-        'λ1': -0.000413347827690062,
-        'λ2': 1.18883834418742,
-    }
-    df, df_b = combine_usa_investment_turnover_bls()
-    df_c, df_d = combine_usa_investment_turnover()
-    df.pipe(plot_model_capital, year_base=2005)
-    df_c.pipe(plot_model_capital, year_base=2012)
-    # =========================================================================
-    # Project: Discrete Fourier Transform based on Simpson's Rule Applied to Fixed Assets of the US
-    # =========================================================================
-    df_b.pipe(plot_fourier_discrete)
-    df_d.pipe(plot_fourier_discrete)
+    usa_capital()
 
     # =========================================================================
     # Subproject IV. Cobb--Douglas
@@ -235,15 +170,14 @@ def main():
     # =========================================================================
     # Subproject IX. USA BEA
     # =========================================================================
-    import plot_usa_bea
+    plot_usa_bea()
     # =========================================================================
     # Subproject X. USA Census
     # =========================================================================
     # =========================================================================
     # Subproject XI. USA Census J14
     # =========================================================================
-    import plot_usa_manufacturing
-
+    plot_usa_manufacturing()
     # =========================================================================
     # Subproject XII. USA Douglas & Kendrick
     # =========================================================================
