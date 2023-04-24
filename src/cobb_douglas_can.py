@@ -6,6 +6,7 @@ Created on Sat Jun 18 11:29:40 2022
 @author: Alexander Mikhailov
 """
 
+from thesis.src.common import get_fig_map
 from thesis.src.lib.combine import combine_can
 from thesis.src.lib.plot import plot_cobb_douglas, plot_cobb_douglas_3d
 from thesis.src.lib.transform import transform_cobb_douglas
@@ -13,21 +14,18 @@ from thesis.src.lib.transform import transform_cobb_douglas
 
 def main():
     # =========================================================================
-    # Canada
+    # Subproject V. Cobb--Douglas for Canada
     # =========================================================================
-    MAP_FIG = {
-        'fg_a': 'Chart I Progress in Manufacturing {}$-${} ({}=100)',
-        'fg_b': 'Chart II Theoretical and Actual Curves of Production {}$-${} ({}=100)',
-        'fg_c': 'Chart III Percentage Deviations of $P$ and $P\'$ from Their Trend Lines\nTrend Lines=3 Year Moving Average',
-        'fg_d': 'Chart IV Percentage Deviations of Computed from Actual Product {}$-${}',
-        'fg_e': 'Chart V Relative Final Productivities of Labor and Capital',
-        'year_base': 2007,
-    }
+    # =========================================================================
+    # First Figure: Exact Correspondence with 'note_incomplete_th05_2014_07_10.docx'
+    # =========================================================================
+    YEAR_BASE = 2007
+
     ARCHIVE_IDS = {
         # =====================================================================
         # Capital
         # =====================================================================
-        310004: (2007, "Geometric (infinite) end-year net stock", "industrial"),
+        310004: (YEAR_BASE, "Geometric (infinite) end-year net stock", "industrial"),
         # =====================================================================
         # Labor : "v2523012", Preferred Over "v3437501" Which Is Quarterly
         # =====================================================================
@@ -62,7 +60,7 @@ def main():
     }
     df = combine_can(ARCHIVE_IDS)
     plot_cobb_douglas(
-        *df.pipe(transform_cobb_douglas, year_base=2007), MAP_FIG
+        *df.pipe(transform_cobb_douglas, year_base=YEAR_BASE), get_fig_map(YEAR_BASE)
     )
     df.pipe(plot_cobb_douglas_3d)
 

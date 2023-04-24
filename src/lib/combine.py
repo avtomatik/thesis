@@ -244,9 +244,10 @@ def combine_cobb_douglas_extension_labor() -> DataFrame:
         ],
         axis=1
     ).truncate(before=1889)
+    YEAR_BASE = 1899
     df.iloc[:, 6] = df.iloc[:, 6].mul(
-        df.loc[1899, df.columns[0]]
-    ).div(df.loc[1899, df.columns[6]])
+        df.loc[YEAR_BASE, df.columns[0]]
+    ).div(df.loc[YEAR_BASE, df.columns[6]])
     df['labor'] = df.iloc[:, (0, 1, 3, 6, 7, 8)].mean(axis=1)
     return df.iloc[:, [-1]]
 

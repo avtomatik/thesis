@@ -8,22 +8,21 @@ Thesis Project
 """
 
 
+import cobb_douglas_can
+import cobb_douglas_complex
+import elasticity
 import plot_usa_bea
 import plot_usa_manufacturing
 import usa_bea_approximation
 import usa_capital
+import usa_complex
 import usa_mc_connell
 
-from thesis.src.lib.combine import combine_can, combine_cobb_douglas
-from thesis.src.lib.plot import (plot_cobb_douglas, plot_cobb_douglas_3d,
-                                 plot_douglas, plot_elasticity,
-                                 plot_growth_elasticity, plot_uscb_complex)
-from thesis.src.lib.stockpile import stockpile_usa_bea, stockpile_usa_hist
-from thesis.src.lib.tools import (lash_up_spline_ea, lash_up_spline_eb,
-                                  lash_up_spline_la, lash_up_spline_lb,
-                                  lash_up_spline_lls, run_lash_up_spline)
-from thesis.src.lib.transform import (transform_cobb_douglas,
-                                      transform_elasticity)
+import lash_up_spline
+from thesis.src.common import get_fig_map_us_ma
+from thesis.src.lib.plot import plot_cobb_douglas, plot_douglas
+from thesis.src.lib.stockpile import stockpile_usa_hist
+from thesis.src.lib.transform import transform_cobb_douglas
 
 
 def main():
@@ -34,138 +33,15 @@ def main():
 
     usa_capital()
 
-    # =========================================================================
-    # Subproject IV. Cobb--Douglas
-    # =========================================================================
-    # =========================================================================
-    # cobb_douglas_complex.py
-    # =========================================================================
+    cobb_douglas_complex()
 
-    # =========================================================================
-    # Subproject V. Cobb--Douglas CAN
-    # =========================================================================
-    # =========================================================================
-    # First Figure: Exact Correspondence with 'note_incomplete_th05_2014_07_10.docx'
-    # =========================================================================
-    MAP_FIG = {
-        'fg_a': 'Chart I Progress in Manufacturing {}$-${} ({}=100)',
-        'fg_b': 'Chart II Theoretical and Actual Curves of Production {}$-${} ({}=100)',
-        'fg_c': 'Chart III Percentage Deviations of $P$ and $P\'$ from Their Trend Lines\nTrend Lines=3 Year Moving Average',
-        'fg_d': 'Chart IV Percentage Deviations of Computed from Actual Product {}$-${}',
-        'fg_e': 'Chart V Relative Final Productivities of Labor and Capital',
-        'year_base': 2007,
-    }
-    ARCHIVE_IDS = {
-        # =====================================================================
-        # Capital
-        # =====================================================================
-        310004: (2007, "Geometric (infinite) end-year net stock", "industrial"),
-        # =====================================================================
-        # Labor : "v2523012", Preferred Over "v3437501" Which Is Quarterly
-        # =====================================================================
-        'v2523012': 2820012,
-        # =====================================================================
-        # Manufacturing
-        # =====================================================================
-        'v65201809': 3790031,
-    }
-    ARCHIVE_IDS = {
-        # =====================================================================
-        # Capital
-        # =====================================================================
-        36100096: (
-            2012,
-            "Manufacturing",
-            "Linear end-year net stock",
-            (
-                "Non-residential buildings",
-                "Engineering construction",
-                "Machinery and equipment"
-            )
-        ),
-        # =====================================================================
-        # Labor : "v2523012", Preferred Over "v3437501" Which Is Quarterly
-        # =====================================================================
-        'v2523012': 14100027,
-        # =====================================================================
-        # Manufacturing
-        # =====================================================================
-        'v65201809': 36100434,
-    }
-    df = combine_can(ARCHIVE_IDS)
-    plot_cobb_douglas(
-        *df.pipe(transform_cobb_douglas, year_base=2007),
-        MAP_FIG
-    )
-    df.pipe(plot_cobb_douglas_3d)
+    cobb_douglas_can()
 
-    # =========================================================================
-    # Subproject VI. Elasticity
-    # =========================================================================
-    SERIES_IDS = {
-        'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        'A032RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
-    }
-    plot_elasticity(*stockpile_usa_bea(SERIES_IDS).dropna(axis=0).pipe(transform_elasticity))
+    elasticity()
 
-    SERIES_IDS = {
-        'A032RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
-    }
-    stockpile_usa_bea(SERIES_IDS).dropna(axis=0).pipe(plot_growth_elasticity)
+    lash_up_spline()
 
-    # =========================================================================
-    # Subproject VII. Lash-Up Spline
-    # =========================================================================
-    # =========================================================================
-    # Lash-Up Splines
-    # =========================================================================
-    # =========================================================================
-    # Fixed Assets Turnover
-    # =========================================================================
-    df = combine_cobb_douglas().pipe(transform_cobb_douglas,
-                                       year_base=1899)[0].iloc[:, [6]]
-    # =========================================================================
-    # Option 1
-    # =========================================================================
-    df.pipe(run_lash_up_spline, kernel=lash_up_spline_lls)
-    # =========================================================================
-    # Option 2.1.1
-    # =========================================================================
-    df.pipe(run_lash_up_spline, kernel=lash_up_spline_ea)
-    # =========================================================================
-    # Option 2.1.2
-    # =========================================================================
-    df.pipe(run_lash_up_spline, kernel=lash_up_spline_eb)
-    # =========================================================================
-    # Option 2.2.1
-    # =========================================================================
-    df.pipe(run_lash_up_spline, kernel=lash_up_spline_la)
-    # =========================================================================
-    # Option 2.2.2
-    # =========================================================================
-    df.pipe(run_lash_up_spline, kernel=lash_up_spline_lb)
-
-    # =========================================================================
-    # Subproject VIII. Complex
-    # =========================================================================
-    df = combine_cobb_douglas().pipe(
-        transform_cobb_douglas, year_base=1899).iloc[:, range(5)]
-
-    for col in df.columns:
-        df.loc[:, [col]].pipe(plot_uscb_complex)
-
-    SERIES_IDS = (
-        {'D0004': 'dataset_uscb.zip'}, {'D0130': 'dataset_uscb.zip'},
-        {'F0003': 'dataset_uscb.zip'}, {'F0004': 'dataset_uscb.zip'},
-        {'P0110': 'dataset_uscb.zip'}, {'U0001': 'dataset_uscb.zip'},
-        {'U0008': 'dataset_uscb.zip'}, {'X0414': 'dataset_uscb.zip'},
-        {'X0415': 'dataset_uscb.zip'}
-    )
-
-    for series_id in SERIES_IDS:
-        print(f'Processing {series_id}')
-        stockpile_usa_hist(series_id).pipe(plot_uscb_complex)
+    usa_complex()
 
     # =========================================================================
     # Subproject IX. USA BEA
@@ -355,21 +231,15 @@ def main():
     # =========================================================================
     # Cobb--Douglas Algorithm as per C.W. Cobb, P.H. Douglas. A Theory of Production, 1928 & P.H. Douglas. The Theory of Wages, 1934;
     # =========================================================================
-    MAP_FIG = {
-        'fg_a': 'Chart 15 Relative Increase in Capital, Labor, and Physical Product in Manufacturing Industries of Massachussets, {}$-${} ({}=100)',
-        'fg_b': 'Chart 16 Theoretical and Actual Curves of Production, Massachusetts, {}$-${} ({}=100)',
-        'fg_c': 'Chart III Percentage Deviations of $P$ and $P\'$ from Their Trend Lines, Massachusetts\nTrend Lines = 3 Year Moving Average',
-        'fg_d': 'Chart 17 The Percentage Deviations of the Computed Product ($P\'$) from the Actual Product ($P$) in Massachusetts Manufacturing, {}$-${}',
-        'fg_e': 'Chart V Relative Final Productivities of Labor and Capital',
-        'year_base': 1899,
-    }
+    YEAR_BASE = 1899
+    MAP_FIG_US_MA = get_fig_map_us_ma(YEAR_BASE)
     SERIES_IDS = {
         'DT19AS03': 'dataset_douglas.zip',
         'DT19AS02': 'dataset_douglas.zip',
         'DT19AS01': 'dataset_douglas.zip'
     }
     plot_cobb_douglas(
-        *stockpile_usa_hist(SERIES_IDS).pipe(transform_cobb_douglas, year_base=1899), MAP_FIG)
+        *stockpile_usa_hist(SERIES_IDS).pipe(transform_cobb_douglas, year_base=YEAR_BASE), MAP_FIG_US_MA)
     # =========================================================================
     # Kendrick Macroeconomic Series
     # =========================================================================

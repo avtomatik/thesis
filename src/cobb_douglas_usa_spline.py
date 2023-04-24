@@ -14,8 +14,9 @@ def main():
     DIR = '/media/green-machine/KINGSTON'
 
     os.chdir(DIR)
+    YEAR_BASE = 1899
     combine_cobb_douglas().pipe(
-        transform_cobb_douglas, year_base=1899
+        transform_cobb_douglas, year_base=YEAR_BASE
     )[0].iloc[:, [3, 4]].pipe(calculate_plot_uspline)
 
 

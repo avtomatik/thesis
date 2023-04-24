@@ -703,14 +703,14 @@ def _lash_up_spline_print_params(n_spans: int, params: tuple[float]) -> None:
     ================== =================================
     """
     if n_spans == len(params):
-        for _, _param in enumerate(params, start=1):
-            print(f'Model Parameter: K{_:02d} = {_param:.6f}')
+        for _, param in enumerate(params, start=1):
+            print(f'Model Parameter: K{_:02d} = {param:.6f}')
     else:
         # =====================================================================
         # n_spans (1 + N): 1 + Number of Spans
         # =====================================================================
-        for _, _param in enumerate(params):
-            print(f'Model Parameter: A{_:02n} = {_param:.6f}')
+        for _, param in enumerate(params):
+            print(f'Model Parameter: A{_:02n} = {param:.6f}')
 
 
 def run_lash_up_spline(df: DataFrame, kernel: callable) -> None:

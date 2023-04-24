@@ -7,6 +7,7 @@ Created on Wed Feb  5 22:19:02 2020
 
 import os
 
+from thesis.src.common import get_fig_map
 from thesis.src.lib.combine import (combine_cobb_douglas,
                                     combine_usa_capital_purchases,
                                     combine_usa_manufacturing_latest,
@@ -21,14 +22,8 @@ from thesis.src.lib.transform import (transform_cobb_douglas,
 
 def main():
     DIR = '/media/green-machine/KINGSTON'
-    MAP_FIG = {
-        'fg_a': 'Chart I Progress in Manufacturing {}$-${} ({}=100)',
-        'fg_b': 'Chart II Theoretical and Actual Curves of Production {}$-${} ({}=100)',
-        'fg_c': 'Chart III Percentage Deviations of $P$ and $P\'$ from Their Trend Lines\nTrend Lines=3 Year Moving Average',
-        'fg_d': 'Chart IV Percentage Deviations of Computed from Actual Product {}$-${}',
-        'fg_e': 'Chart V Relative Final Productivities of Labor and Capital',
-        'year_base': 1899,
-    }
+    YEAR_BASE = 1899
+    MAP_FIG = get_fig_map(YEAR_BASE)
 
     os.chdir(DIR)
     # =========================================================================
@@ -45,7 +40,7 @@ def main():
     df_f, df_g, df_h = combine_usa_manufacturing_three_fold()
 
     # =========================================================================
-    # combine_cobb_douglas().pipe(transform_cobb_douglas, year_base=1899)[0].iloc[:, [3, 4]].pipe(calculate_curve_fit_params)
+    # combine_cobb_douglas().pipe(transform_cobb_douglas, year_base=YEAR_BASE)[0].iloc[:, [3, 4]].pipe(calculate_curve_fit_params)
     # =========================================================================
 
     df_a.pipe(calculate_curve_fit_params)
@@ -77,13 +72,13 @@ def main():
     # Project II. Scipy Signal Median Filter, Non-Linear Low-Pass Filter
     # =========================================================================
     plot_cobb_douglas(
-        *df_a.pipe(transform_cobb_douglas, year_base=1899), MAP_FIG
+        *df_a.pipe(transform_cobb_douglas, year_base=YEAR_BASE), MAP_FIG
     )
     plot_cobb_douglas(
-        *df_b.pipe(transform_cobb_douglas, year_base=1899), MAP_FIG
+        *df_b.pipe(transform_cobb_douglas, year_base=YEAR_BASE), MAP_FIG
     )
     plot_cobb_douglas(
-        *df_c.pipe(transform_cobb_douglas, year_base=1899), MAP_FIG
+        *df_c.pipe(transform_cobb_douglas, year_base=YEAR_BASE), MAP_FIG
     )
     plot_cobb_douglas(
         *df_d.pipe(transform_cobb_douglas, year_base=1929), MAP_FIG

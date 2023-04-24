@@ -15,16 +15,17 @@ from thesis.src.lib.transform import transform_cobb_douglas
 
 def main():
     DIR = '/media/green-machine/KINGSTON'
+    YEAR_BASE = 1899
     MAP_FIG = {
-        'fg_a': 'Chart I Progress in Manufacturing {}$-${} ({}=100)',
-        'fg_b': 'Chart II Theoretical and Actual Curves of Production {}$-${} ({}=100)',
+        'fg_a': f'Chart I Progress in Manufacturing {{}}$-${{}} ({YEAR_BASE}=100)',
+        'fg_b': f'Chart II Theoretical and Actual Curves of Production {{}}$-${{}} ({YEAR_BASE}=100)',
         'fg_c': 'Chart III Percentage Deviations of $P$ and $P\'$ from Their Trend Lines\nTrend Lines=3 Year Moving Average',
         'fg_d': 'Chart IV Percentage Deviations of Computed from Actual Product {}$-${}',
         'fg_e': 'Chart V Relative Final Productivities of Labor and Capital',
         # =========================================================================
         # TODO: Update
         # =========================================================================
-        'year_base': 1899,
+        'year_base': YEAR_BASE,
     }
 
     os.chdir(DIR)

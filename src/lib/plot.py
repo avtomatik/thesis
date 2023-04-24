@@ -19,6 +19,7 @@ from pandas.plotting import autocorrelation_plot, lag_plot
 from scipy import stats
 from sklearn.metrics import r2_score
 
+from thesis.src.common import get_fig_map
 from thesis.src.lib.combine import combine_data_frames_by_columns
 from thesis.src.lib.pull import (pull_by_series_id,
                                  pull_series_ids_description,
@@ -1254,19 +1255,13 @@ def plot_cobb_douglas_complex(df: DataFrame) -> None:
     -------
     None
     """
-    MAP_FIG = {
-        'fg_a': 'Chart I Progress in Manufacturing {}$-${} ({}=100)',
-        'fg_b': 'Chart II Theoretical and Actual Curves of Production {}$-${} ({}=100)',
-        'fg_c': 'Chart III Percentage Deviations of $P$ and $P\'$ from Their Trend Lines\nTrend Lines=3 Year Moving Average',
-        'fg_d': 'Chart IV Percentage Deviations of Computed from Actual Product {}$-${}',
-        'fg_e': 'Chart V Relative Final Productivities of Labor and Capital',
-        'year_base': 1899,
-    }
-    _df, _params = df.pipe(transform_cobb_douglas, year_base=1899)
+    YEAR_BASE = 1899
+
+    _df, _params = df.pipe(transform_cobb_douglas, year_base=YEAR_BASE)
     plot_cobb_douglas(
         _df,
         _params,
-        MAP_FIG
+        get_fig_map(YEAR_BASE)
     )
     df.iloc[:, range(3)].pipe(plot_cobb_douglas_3d)
     _df.iloc[:, [3, 4]].pipe(plot_lab_prod_polynomial)
