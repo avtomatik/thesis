@@ -20,12 +20,13 @@ from thesis.src.lib.transform import (transform_cobb_douglas,
                                       transform_cobb_douglas_alt)
 
 
-def main():
-    DIR = '/media/green-machine/KINGSTON'
-    YEAR_BASE = 1899
-    MAP_FIG = get_fig_map(YEAR_BASE)
+def main(
+    path_src: str = '/media/green-machine/KINGSTON',
+    year_base: int = 1899
+) -> None:
+    MAP_FIG = get_fig_map(year_base)
 
-    os.chdir(DIR)
+    os.chdir(path_src)
     # =========================================================================
     # Project I. Classified
     # =========================================================================
@@ -72,13 +73,13 @@ def main():
     # Project II. Scipy Signal Median Filter, Non-Linear Low-Pass Filter
     # =========================================================================
     plot_cobb_douglas(
-        *df_a.pipe(transform_cobb_douglas, year_base=YEAR_BASE), MAP_FIG
+        *df_a.pipe(transform_cobb_douglas, year_base=year_base), MAP_FIG
     )
     plot_cobb_douglas(
-        *df_b.pipe(transform_cobb_douglas, year_base=YEAR_BASE), MAP_FIG
+        *df_b.pipe(transform_cobb_douglas, year_base=year_base), MAP_FIG
     )
     plot_cobb_douglas(
-        *df_c.pipe(transform_cobb_douglas, year_base=YEAR_BASE), MAP_FIG
+        *df_c.pipe(transform_cobb_douglas, year_base=year_base), MAP_FIG
     )
     plot_cobb_douglas(
         *df_d.pipe(transform_cobb_douglas, year_base=1929), MAP_FIG
@@ -96,7 +97,8 @@ def main():
         *df_h.pipe(transform_cobb_douglas, year_base=1967), MAP_FIG
     )
     plot_cobb_douglas(
-        *combine_usa_manufacturing_latest().pipe(transform_cobb_douglas, year_base=1967), MAP_FIG
+        *combine_usa_manufacturing_latest().pipe(transform_cobb_douglas,
+                                                 year_base=1967), MAP_FIG
     )
     # =========================================================================
     # Project III. Scipy Signal Wiener Filter

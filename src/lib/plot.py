@@ -1692,8 +1692,9 @@ def plot_increment(
 
     fig.tight_layout()
     if savefig:
-        fig.savefig(Path(path_export).joinpath(
-            file_name), format='pdf', dpi=900)
+        fig.savefig(
+            Path(path_export).joinpath(file_name), format='pdf', dpi=900
+        )
     else:
         plt.show()
 
@@ -2207,7 +2208,8 @@ def plot_turnover(df: DataFrame) -> None:
         deg=1
     )
     df['c_turnover_lin'] = np.poly1d(polyfit_linear)(df.index.to_series())
-    df['c_turnover_exp'] = np.exp(np.poly1d(_exp)(df.index.to_series().astype(float)))
+    df['c_turnover_exp'] = np.exp(
+        np.poly1d(_exp)(df.index.to_series().astype(float)))
     # =========================================================================
     # Deltas
     # =========================================================================

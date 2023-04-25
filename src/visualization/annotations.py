@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from pandas import DataFrame
 
-from thesis.src.lib.collect import (combine_usa_macroeconomics,
+from thesis.src.lib.combine import (combine_usa_macroeconomics,
                                     combine_usa_manufacturing_latest)
 from thesis.src.lib.plot import plot_increment
 
@@ -101,48 +101,54 @@ def plot_increment(df: DataFrame) -> None:
     plt.show()
 
 
-def main():
+def main(
+    path_src: str = '/media/green-machine/KINGSTON'
+):
     # =========================================================================
     # TODO: Revise Dataset
     # =========================================================================
-    DIR = '/media/green-machine/KINGSTON'
 
-    os.chdir(DIR)
+    os.chdir(path_src)
     df = combine_usa_macroeconomics().pipe(transform_macroeconomics)
 
     # =========================================================================
     # Option 1: 1967--2012
     # =========================================================================
     pd.concat([df['cap_0x0'], L, df['prd_0x0']], axis=1
-                   ).pipe(transform_add_dx_dy)
+              ).pipe(transform_add_dx_dy)
     # =========================================================================
     # Option 2: 1967--2012
     # =========================================================================
     pd.concat([df['cap_0x0'], L, df['prd_0x1']], axis=1
-                   ).pipe(transform_add_dx_dy)
+              ).pipe(transform_add_dx_dy)
     # =========================================================================
     # Option 3: 1967--2012
     # =========================================================================
-    pd.concat([df['cap_0x3'], L, df['prd_0x0']], axis=1).pipe(transform_add_dx_dy)
+    pd.concat([df['cap_0x3'], L, df['prd_0x0']],
+              axis=1).pipe(transform_add_dx_dy)
     # =========================================================================
     # Option 4: 1967--2012
     # =========================================================================
-    pd.concat([df['cap_0x3'], L, df['prd_0x1']], axis=1).pipe(transform_add_dx_dy)
+    pd.concat([df['cap_0x3'], L, df['prd_0x1']],
+              axis=1).pipe(transform_add_dx_dy)
     # =========================================================================
     # TODO: test 'k1ntotl1si00'
     # =========================================================================
     # =========================================================================
     # Option 1: 1929--2013
     # =========================================================================
-    pd.concat([df['cap_0x2'], L, df['prd_0x3']], axis=1).pipe(transform_add_dx_dy)
+    pd.concat([df['cap_0x2'], L, df['prd_0x3']],
+              axis=1).pipe(transform_add_dx_dy)
     # =========================================================================
     # Option 2: 1929--2013
     # =========================================================================
-    pd.concat([df['cap_0x1'], L, df['prd_0x4']], axis=1).pipe(transform_add_dx_dy)
+    pd.concat([df['cap_0x1'], L, df['prd_0x4']],
+              axis=1).pipe(transform_add_dx_dy)
     # =========================================================================
     # Option 5: 1929--2013
     # =========================================================================
-    pd.concat([df['cap_0x4'], L, df['prd_0x3']], axis=1).pipe(transform_add_dx_dy)
+    pd.concat([df['cap_0x4'], L, df['prd_0x3']],
+              axis=1).pipe(transform_add_dx_dy)
 
     # =========================================================================
     # Option 6: 1929--2013

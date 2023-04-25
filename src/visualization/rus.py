@@ -12,10 +12,9 @@ from thesis.src.lib.plot import plot_rus_grigoriev, plot_rus_is_lm
 from thesis.src.lib.read import read_rus_grigoriev, read_rus_is_lm
 
 
-def main():
-    DIR = '/media/green-machine/KINGSTON'
+def main(path_src: str = '/media/green-machine/KINGSTON') -> None:
 
-    os.chdir(DIR)
+    os.chdir(path_src)
     read_rus_is_lm().pipe(plot_rus_is_lm)
     read_rus_grigoriev().pipe(plot_rus_grigoriev)
 

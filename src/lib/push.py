@@ -40,20 +40,23 @@ def push_data_frame_listing(
 def push_data_frame_to_csv_zip(
     df: DataFrame,
     file_name: str,
-    path_exp: str = '/media/green-machine/KINGSTON'
+    path_export: str = '/media/green-machine/KINGSTON'
 ) -> None:
     kwargs = {
-        'path_or_buf': Path(path_exp).joinpath(f'{file_name}.csv'),
+        'path_or_buf': Path(path_export).joinpath(file_name),
         'index': True,
         'encoding': 'utf-8-sig'
     }
     df.to_csv(**kwargs)
-    with ZipFile(Path(path_exp).joinpath(f'{file_name}.csv'), 'w') as archive:
+    # =========================================================================
+    # TODO: Rename .csv to .zip
+    # =========================================================================
+    with ZipFile(Path(path_export).joinpath(f'{file_name}.zip'), 'w') as archive:
         archive.write(
-            Path(path_exp).joinpath(f'{file_name}.csv'),
+            Path(path_export).joinpath(file_name),
             compress_type=zipfile.ZIP_DEFLATED
         )
-        os.unlink(Path(path_exp).joinpath(f'{file_name}.csv'))
+        os.unlink(Path(path_export).joinpath(file_name))
 
 
 def push_files_to_zip(archive_name: str, file_names: tuple[str]) -> None:

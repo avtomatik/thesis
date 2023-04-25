@@ -14,7 +14,10 @@ from thesis.src.lib.plot import plot_cobb_douglas
 from thesis.src.lib.transform import transform_cobb_douglas
 
 
-def main():
+def main(
+    path_src: str = '/media/green-machine/KINGSTON',
+    year_base: int = 1899
+) -> None:
     """
     Cobb--Douglas Algorithm as per
     C.W. Cobb, P.H. Douglas. A Theory of Production, 1928 &
@@ -25,13 +28,11 @@ def main():
     None.
 
     """
-    DIR = '/media/green-machine/KINGSTON'
-    YEAR_BASE = 1899
 
-    os.chdir(DIR)
+    os.chdir(path_src)
     plot_cobb_douglas(
-        *combine_cobb_douglas().pipe(transform_cobb_douglas, year_base=YEAR_BASE),
-        get_fig_map(YEAR_BASE)
+        *combine_cobb_douglas().pipe(transform_cobb_douglas, year_base=year_base),
+        get_fig_map(year_base)
     )
 
 

@@ -10,13 +10,14 @@ from thesis.src.lib.tools import calculate_plot_uspline
 from thesis.src.lib.transform import transform_cobb_douglas
 
 
-def main():
-    DIR = '/media/green-machine/KINGSTON'
+def main(
+    path_src: str = '/media/green-machine/KINGSTON',
+    year_base: int = 1899
+) -> None:
 
-    os.chdir(DIR)
-    YEAR_BASE = 1899
+    os.chdir(path_src)
     combine_cobb_douglas().pipe(
-        transform_cobb_douglas, year_base=YEAR_BASE
+        transform_cobb_douglas, year_base=year_base
     )[0].iloc[:, [3, 4]].pipe(calculate_plot_uspline)
 
 

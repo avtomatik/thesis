@@ -36,11 +36,14 @@ def main(
         [
             stockpile_usa_hist(SERIES_ID_CB),
             pd.concat(
-                [
-                    read_usa_bls(file_name).pipe(pull_by_series_id, series_id)
-                    for series_id, file_name in SERIES_ID_LS.items()
-                ],
-                axis=1
+                map(
+                    lambda _: read_usa_bls(_[1]).pipe(
+                        pull_by_series_id, _[0]
+                    ),
+                    SERIES_ID_LS.items()
+                ),
+                axis=1,
+                sort=True
             ).apply(pd.to_numeric, errors='coerce'),
         ],
         axis=1
@@ -49,7 +52,9 @@ def main(
     df.pipe(transform_mean, name="fused").pipe(autocorrelation_plot)
 
     if savefig:
-        plt.savefig(Path(path_export).joinpath(file_name), format='pdf', dpi=900)
+        plt.savefig(
+            Path(path_export).joinpath(file_name), format='pdf', dpi=900
+        )
 
 
 if __name__ == '__main__':

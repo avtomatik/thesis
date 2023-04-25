@@ -8,30 +8,21 @@ Created on Mon Apr 12 22:46:08 2021
 
 import os
 
+from thesis.src.common import get_fig_map
 from thesis.src.lib.combine import combine_usa_manufacturing_latest
 from thesis.src.lib.plot import plot_cobb_douglas
 from thesis.src.lib.transform import transform_cobb_douglas
 
 
-def main():
-    DIR = '/media/green-machine/KINGSTON'
-    YEAR_BASE = 1899
-    MAP_FIG = {
-        'fg_a': f'Chart I Progress in Manufacturing {{}}$-${{}} ({YEAR_BASE}=100)',
-        'fg_b': f'Chart II Theoretical and Actual Curves of Production {{}}$-${{}} ({YEAR_BASE}=100)',
-        'fg_c': 'Chart III Percentage Deviations of $P$ and $P\'$ from Their Trend Lines\nTrend Lines=3 Year Moving Average',
-        'fg_d': 'Chart IV Percentage Deviations of Computed from Actual Product {}$-${}',
-        'fg_e': 'Chart V Relative Final Productivities of Labor and Capital',
-        # =========================================================================
-        # TODO: Update
-        # =========================================================================
-        'year_base': YEAR_BASE,
-    }
+def main(
+    path_src: str = '/media/green-machine/KINGSTON',
+    year_base: int = 2012
+) -> None:
 
-    os.chdir(DIR)
+    os.chdir(path_src)
     plot_cobb_douglas(
-        *combine_usa_manufacturing_latest().pipe(transform_cobb_douglas, year_base=2012),
-        MAP_FIG
+        *combine_usa_manufacturing_latest().pipe(transform_cobb_douglas, year_base=year_base),
+        get_fig_map(year_base)
     )
 
 

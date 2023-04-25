@@ -913,11 +913,11 @@ def combine_can(archive_ids: dict) -> DataFrame:
         df.iloc[:, 2]      Product
         ================== =================================
     """
-    DIR = '/media/green-machine/KINGSTON'
+    PATH_SRC = '/media/green-machine/KINGSTON'
     kwargs = {
-        'filepath_or_buffer': Path(DIR).joinpath(f'{tuple(archive_ids)[0]}_preloaded.csv'),
+        'filepath_or_buffer': Path(PATH_SRC).joinpath(f'{tuple(archive_ids)[0]}_preloaded.csv'),
     }
-    if Path(DIR).joinpath(f'{tuple(archive_ids)[0]}_preloaded.csv').is_file():
+    if Path(PATH_SRC).joinpath(f'{tuple(archive_ids)[0]}_preloaded.csv').is_file():
         kwargs['index_col'] = 0
         _df = pd.read_csv(**kwargs)
     else:

@@ -15,10 +15,9 @@ from thesis.src.lib.combine import (combine_cobb_douglas,
 from thesis.src.lib.plot import plot_cobb_douglas_complex
 
 
-def main():
-    DIR = '/media/green-machine/KINGSTON'
+def main(path_src: str = '/media/green-machine/KINGSTON') -> None:
 
-    os.chdir(DIR)
+    os.chdir(path_src)
     # =========================================================================
     # On Original Dataset
     # =========================================================================
