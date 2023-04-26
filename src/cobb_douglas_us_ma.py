@@ -1,16 +1,8 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sun Jul 12 18:28:15 2020
-
-@author: Alexander Mikhailov
-"""
-
-
 import os
 
-from thesis.src.common import get_fig_map
-from thesis.src.lib.combine import combine_cobb_douglas
+from thesis.src.common import get_fig_map_us_ma
 from thesis.src.lib.plot import plot_cobb_douglas
+from thesis.src.lib.stockpile import stockpile_usa_hist
 from thesis.src.lib.transform import transform_cobb_douglas
 
 
@@ -35,11 +27,21 @@ def main(
     None.
 
     """
+    # =========================================================================
+    # Douglas Production Function
+    # =========================================================================
+    SERIES_IDS = {
+        'DT19AS03': 'dataset_douglas.zip',
+        'DT19AS02': 'dataset_douglas.zip',
+        'DT19AS01': 'dataset_douglas.zip'
+    }
 
     os.chdir(path_src)
     plot_cobb_douglas(
-        *combine_cobb_douglas().pipe(transform_cobb_douglas, year_base=year_base),
-        get_fig_map(year_base)
+        *stockpile_usa_hist(SERIES_IDS).pipe(
+            transform_cobb_douglas, year_base=year_base
+        ),
+        get_fig_map_us_ma(year_base)
     )
 
 

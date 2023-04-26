@@ -1381,8 +1381,8 @@ def plot_douglas(
     -------
     None
     """
-    _MAP_SERIES = pull_series_ids_description(archive_name)
-    _SERIES_IDS = tuple(_MAP_SERIES.keys())
+    MAP_SERIES_IDS = pull_series_ids_description(archive_name)
+    _SERIES_IDS = tuple(MAP_SERIES_IDS.keys())
     if not legends is None:
         for _n, (_lw, _up, _tt, _mr, _lb) in enumerate(
                 zip(
@@ -1397,11 +1397,11 @@ def plot_douglas(
             plt.figure(_n)
             for _ in range(_lw, _up, skip):
                 plt.plot(
-                    read_usa_hist(archive_name, _SERIES_IDS[_]),
+                    read_usa_hist(archive_name).pipe(pull_by_series_id, _SERIES_IDS[_]),
                     # =========================================================
                     # read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
                     # =========================================================
-                    label=_MAP_SERIES[_SERIES_IDS[_]]
+                    label=MAP_SERIES_IDS[_SERIES_IDS[_]]
                 )
             plt.title(_tt)
             plt.xlabel('Period')
@@ -1423,11 +1423,11 @@ def plot_douglas(
             plt.figure(_n)
             for _ in range(_lw, _up, skip):
                 plt.plot(
-                    read_usa_hist(archive_name, _SERIES_IDS[_]),
+                    read_usa_hist(archive_name).pipe(pull_by_series_id, _SERIES_IDS[_]),
                     # =========================================================
                     # read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
                     # =========================================================
-                    label=_MAP_SERIES[_SERIES_IDS[_]]
+                    label=MAP_SERIES_IDS[_SERIES_IDS[_]]
                 )
             plt.title(_tt)
             plt.xlabel('Period')
