@@ -1,8 +1,8 @@
-from thesis.src.lib.constants import TITLES_KENDRICK
+from thesis.src.lib.constants import MEASURES_KENDRICK, TITLES_KENDRICK
 from thesis.src.lib.plot import plot_douglas
 
 
-def usa_kendrick():
+def usa_kendrick() -> None:
     # =========================================================================
     # Kendrick Macroeconomic Series
     # =========================================================================
@@ -23,19 +23,5 @@ def usa_kendrick():
         111,
         118,
     )
-    MEASURES = (
-        'Millions Of 1929 Dollars',
-        'Millions Of 1929 Dollars',
-        'Millions Of Current Dollars',
-        'Millions Of 1929 Dollars',
-        'Thousands',
-        'Millions',
-        'Millions Of 1929 Dollars',
-        'Millions Of 1929 Dollars',
-        'Percentage',
-        'Percentage',
-        'Percentage',
-        'Percentage',
-        'Percentage',
-    )
-    plot_douglas(ARCHIVE_NAME, GROUP_ITERS, TITLES_KENDRICK, MEASURES)
+
+    plot_douglas(ARCHIVE_NAME, GROUP_ITERS, TITLES_KENDRICK, MEASURES_KENDRICK)

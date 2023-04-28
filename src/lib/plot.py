@@ -1398,9 +1398,6 @@ def plot_douglas(
             for _ in range(_lw, _up, skip):
                 plt.plot(
                     read_usa_hist(archive_name).pipe(pull_by_series_id, _SERIES_IDS[_]),
-                    # =========================================================
-                    # read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
-                    # =========================================================
                     label=MAP_SERIES_IDS[_SERIES_IDS[_]]
                 )
             plt.title(_tt)
@@ -1424,9 +1421,6 @@ def plot_douglas(
             for _ in range(_lw, _up, skip):
                 plt.plot(
                     read_usa_hist(archive_name).pipe(pull_by_series_id, _SERIES_IDS[_]),
-                    # =========================================================
-                    # read_usa_hist(ARCHIVE_NAME).pipe(pull_by_series_id, series_id)
-                    # =========================================================
                     label=MAP_SERIES_IDS[_SERIES_IDS[_]]
                 )
             plt.title(_tt)

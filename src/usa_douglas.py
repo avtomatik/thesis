@@ -1,38 +1,39 @@
-from thesis.src.lib.constants import TITLES_DEU, TITLES_DOUGLAS, TITLES_EUR
+from thesis.src.lib.constants import (MEASURES_DOUGLAS, TITLES_DEU,
+                                      TITLES_DOUGLAS, TITLES_EUR)
 from thesis.src.lib.plot import plot_douglas
 
 
-def usa_douglas():
+def usa_douglas() -> None:
     # =========================================================================
     # Douglas European Demographics & Growth of US Capital
     # =========================================================================
     ARCHIVE_NAME = 'dataset_douglas.zip'
 
-    # GROUP_ITERS = (
-    #     0,
-    #     12,
-    #     23,
-    #     34,
-    #     45,
-    #     55,
-    #     66,
-    #     76,
-    #     86,
-    #     89,
-    #     90,
-    #     93,
-    #     96,
-    #     99,
-    #     102,
-    #     105,
-    #     111,
-    #     114,
-    #     117,
-    #     121,
-    #     124,
-    #     90,
-    #     115,
-    # )
+    GROUP_ITERS_ARCHIVED = (
+        0,
+        12,
+        23,
+        34,
+        45,
+        55,
+        66,
+        76,
+        86,
+        89,
+        90,
+        93,
+        96,
+        99,
+        102,
+        105,
+        111,
+        114,
+        117,
+        121,
+        124,
+        90,
+        115,
+    )
 
     GROUP_ITERS = (
         # =====================================================================
@@ -78,30 +79,6 @@ def usa_douglas():
         124,
     )
 
-    MEASURES = (
-        'Percentage',
-        'Percentage',
-        'Percentage',
-        'Percentage',
-        'Percentage',
-        'Percentage',
-        'Percentage',
-        'Percentage',
-        'Percentage',
-        'Percentage',
-        'Rate Per 1000',
-        'Rate Per 1000',
-        'Rate Per 1000',
-        'Rate Per 1000',
-        'Rate Per 1000',
-        'Rate Per 1000',
-        'Rate Per 1000',
-        'Rate Per 1000',
-        'Mixed',
-        'Millions of Dollars',
-        'Births Rate Per 1000 People',
-    )
-
     LABELS = (
         None,
         None,
@@ -130,14 +107,14 @@ def usa_douglas():
         ARCHIVE_NAME,
         GROUP_ITERS[:-2],
         TITLES_DOUGLAS[:-1],
-        MEASURES[:-1],
+        MEASURES_DOUGLAS[:-1],
         LABELS
     )
     plot_douglas(
         ARCHIVE_NAME,
         GROUP_ITERS[-2:],
         (TITLES_DOUGLAS[-1],),
-        (MEASURES[-1],),
+        (MEASURES_DOUGLAS[-1],),
         (LABELS[-1],),
         len(TITLES_DOUGLAS),
         3

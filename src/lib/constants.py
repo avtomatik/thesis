@@ -124,3 +124,45 @@ TITLES_KENDRICK = (
     'Table A-XXIII Private Domestic Nonfarm Economy: Real Gross Product, Inputs, And Productivity Ratios, Commerce Concept, 1869$-$1957 (1929=100)',
     'Table D-II. Manufacturing: Output, Labor Inputs, and Labor Productivity Ratios, 1869-1957 (1929=100)',
 )
+
+
+MEASURES_DOUGLAS = (
+    'Percentage',
+    'Percentage',
+    'Percentage',
+    'Percentage',
+    'Percentage',
+    'Percentage',
+    'Percentage',
+    'Percentage',
+    'Percentage',
+    'Percentage',
+    'Rate Per 1000',
+    'Rate Per 1000',
+    'Rate Per 1000',
+    'Rate Per 1000',
+    'Rate Per 1000',
+    'Rate Per 1000',
+    'Rate Per 1000',
+    'Rate Per 1000',
+    'Mixed',
+    'Millions of Dollars',
+    'Births Rate Per 1000 People',
+)
+
+
+MEASURES_KENDRICK = (
+    'Millions Of 1929 Dollars',
+    'Millions Of 1929 Dollars',
+    'Millions Of Current Dollars',
+    'Millions Of 1929 Dollars',
+    'Thousands',
+    'Millions',
+    'Millions Of 1929 Dollars',
+    'Millions Of 1929 Dollars',
+    'Percentage',
+    'Percentage',
+    'Percentage',
+    'Percentage',
+    'Percentage',
+)
