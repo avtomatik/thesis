@@ -16,6 +16,8 @@ import pandas as pd
 import requests
 from pandas import DataFrame
 
+from .constants import MAP_READ_CAN, MAP_READ_USA_HIST
+
 
 @cache
 def read_can(archive_id: int) -> DataFrame:
@@ -36,67 +38,14 @@ def read_can(archive_id: int) -> DataFrame:
         ================== =================================
     """
     MAP_DEFAULT = {'period': 0, 'series_id': 10, 'value': 12}
-    MAP = {
-        310004: {
-            'period': 0,
-            'prices': 2,
-            'category': 4,
-            'component': 5,
-            'series_id': 6,
-            'value': 8
-        },
-        2820011: {
-            'period': 0,
-            'geo': 1,
-            'classofworker': 2,
-            'industry': 3,
-            'sex': 4,
-            'series_id': 5,
-            'value': 7
-        },
-        2820012: {'period': 0, 'series_id': 5, 'value': 7},
-        3790031: {
-            'period': 0,
-            'geo': 1,
-            'seas': 2,
-            'prices': 3,
-            'naics': 4,
-            'series_id': 5,
-            'value': 7
-        },
-        3800084: {
-            'period': 0,
-            'geo': 1,
-            'seas': 2,
-            'est': 3,
-            'series_id': 4,
-            'value': 6
-        },
-        3800102: {'period': 0, 'series_id': 4, 'value': 6},
-        3800106: {'period': 0, 'series_id': 3, 'value': 5},
-        3800518: {'period': 0, 'series_id': 4, 'value': 6},
-        3800566: {'period': 0, 'series_id': 3, 'value': 5},
-        3800567: {'period': 0, 'series_id': 4, 'value': 6},
-        14100027: {'period': 0, 'series_id': 10, 'value': 12},
-        36100096: {
-            'period': 0,
-            'geo': 1,
-            'prices': 3,
-            'industry': 4,
-            'category': 5,
-            'component': 6,
-            'series_id': 11,
-            'value': 13
-        },
-        36100434: {'period': 0, 'series_id': 10, 'value': 12}
-    }
     url = f'https://www150.statcan.gc.ca/n1/tbl/csv/{archive_id:08n}-eng.zip'
+    TO_PARSE_DATES = (2820011, 3790031, 3800084, 36100108, 36100434)
     kwargs = {
         'header': 0,
-        'names': list(MAP.get(archive_id, MAP_DEFAULT).keys()),
+        'names': list(MAP_READ_CAN.get(archive_id, MAP_DEFAULT).keys()),
         'index_col': 0,
-        'usecols': list(MAP.get(archive_id, MAP_DEFAULT).values()),
-        'parse_dates': archive_id in (2820011, 3790031, 3800084, 36100108, 36100434)
+        'usecols': list(MAP_READ_CAN.get(archive_id, MAP_DEFAULT).values()),
+        'parse_dates': archive_id in TO_PARSE_DATES
     }
     if archive_id < 10 ** 7:
         kwargs['filepath_or_buffer'] = f'dataset_can_{archive_id:08n}-eng.zip'
@@ -532,21 +481,13 @@ def read_usa_hist(filepath_or_buffer: str) -> DataFrame:
         df.iloc[:, 1]      Values
         ================== =================================
     """
-    MAP = {
-        'dataset_douglas.zip': {'series_id': 4, 'period': 5, 'value': 6},
-        'dataset_usa_brown.zip': {'series_id': 5, 'period': 6, 'value': 7},
-        'dataset_usa_cobb-douglas.zip': {'series_id': 5, 'period': 6, 'value': 7},
-        'dataset_usa_kendrick.zip': {'series_id': 4, 'period': 5, 'value': 6},
-        'dataset_usa_mc_connell_brue.zip': {'series_id': 1, 'period': 2, 'value': 3},
-        'dataset_uscb.zip': {'series_id': 9, 'period': 10, 'value': 11},
-    }
     kwargs = {
         'filepath_or_buffer': filepath_or_buffer,
         'header': 0,
-        'names': tuple(MAP.get(filepath_or_buffer).keys()),
+        'names': tuple(MAP_READ_USA_HIST.get(filepath_or_buffer).keys()),
         'index_col': 1,
         'skiprows': (0, 4)[filepath_or_buffer == 'dataset_usa_brown.zip'],
-        'usecols': tuple(MAP.get(filepath_or_buffer).values()),
+        'usecols': tuple(MAP_READ_USA_HIST.get(filepath_or_buffer).values()),
     }
     return pd.read_csv(**kwargs)
 

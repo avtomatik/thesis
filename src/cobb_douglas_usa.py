@@ -21,7 +21,9 @@ def main(
 
     os.chdir(path_src)
     plot_cobb_douglas(
-        *combine_usa_manufacturing_latest().pipe(transform_cobb_douglas, year_base=year_base),
+        *combine_usa_manufacturing_latest().pipe(
+            transform_cobb_douglas, year_base=year_base
+        ),
         get_fig_map(year_base)
     )
 

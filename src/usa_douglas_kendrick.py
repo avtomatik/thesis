@@ -18,7 +18,7 @@ def main():
     usa_douglas()
 
     # =========================================================================
-    # 'KTA10S07', 'KTA10S08' Not Working
+    # {'KTA10S07': 'dataset_usa_kendrick.zip'}, {'KTA10S08': 'dataset_usa_kendrick.zip'} Not Working
     # =========================================================================
     usa_kendrick()
 

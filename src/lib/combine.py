@@ -897,11 +897,11 @@ def combine_uscb_unemployment_hours_worked() -> DataFrame:
     return df
 
 
-def combine_can(archive_ids: dict) -> DataFrame:
+def combine_can(blueprint: dict) -> DataFrame:
     """
     Parameters
     ----------
-    archive_ids : dict
+    blueprint : dict
         DESCRIPTION.
     Returns
     -------
@@ -915,9 +915,9 @@ def combine_can(archive_ids: dict) -> DataFrame:
     """
     PATH_SRC = '/media/green-machine/KINGSTON'
     kwargs = {
-        'filepath_or_buffer': Path(PATH_SRC).joinpath(f'{tuple(archive_ids)[0]}_preloaded.csv'),
+        'filepath_or_buffer': Path(PATH_SRC).joinpath(f'{tuple(blueprint)[0]}_preloaded.csv'),
     }
-    if Path(PATH_SRC).joinpath(f'{tuple(archive_ids)[0]}_preloaded.csv').is_file():
+    if Path(PATH_SRC).joinpath(f'{tuple(blueprint)[0]}_preloaded.csv').is_file():
         kwargs['index_col'] = 0
         _df = pd.read_csv(**kwargs)
     else:
@@ -927,9 +927,10 @@ def combine_can(archive_ids: dict) -> DataFrame:
             # =================================================================
             pull_can_capital,
             pull_can_capital_former
-        )[max(archive_ids) < 10 ** 7]
-        _df = read_can(tuple(archive_ids)[0]).pipe(
-            function, archive_ids.get(tuple(archive_ids)[0]))
+        )[max(blueprint) < 10 ** 7]
+        _df = read_can(tuple(blueprint)[0]).pipe(
+            function, blueprint.get(tuple(blueprint)[0])
+        )
         # =====================================================================
         # Kludge
         # =====================================================================
@@ -937,12 +938,17 @@ def combine_can(archive_ids: dict) -> DataFrame:
     df = pd.concat(
         [
             _df.loc[:, ('series_id', 'value')].pipe(
-                transform_stockpile).pipe(transform_sum, name="capital"),
-            read_can(tuple(archive_ids)[1]).pipe(
-                pull_by_series_id, archive_ids.get(tuple(archive_ids)[1])).apply(pd.to_numeric, errors='coerce'),
-            read_can(tuple(archive_ids)[-1]).pipe(
+                transform_stockpile
+            ).pipe(
+                transform_sum, name="capital"
+            ),
+            read_can(tuple(blueprint)[1]).pipe(
+                pull_by_series_id, blueprint.get(tuple(blueprint)[1])
+            ).apply(pd.to_numeric, errors='coerce'),
+            read_can(tuple(blueprint)[-1]).pipe(
                 transform_agg_sum,
-                archive_ids.get(tuple(archive_ids)[-1])),
+                blueprint.get(tuple(blueprint)[-1])
+            ),
         ],
         axis=1
     ).dropna(axis=0)

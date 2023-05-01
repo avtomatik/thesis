@@ -147,7 +147,7 @@ def pull_uscb_description(series_id: str) -> str:
         Series Description.
 
     """
-    MAP = {
+    MAP_FIELD = {
         'source': 0,
         'table': 1,
         'note': 3,
@@ -159,8 +159,8 @@ def pull_uscb_description(series_id: str) -> str:
     kwargs = {
         'filepath_or_buffer': 'dataset_uscb.zip',
         'header': 0,
-        'names': tuple(MAP.keys()),
-        'usecols': tuple(MAP.values()),
+        'names': tuple(MAP_FIELD.keys()),
+        'usecols': tuple(MAP_FIELD.values()),
         'low_memory': False
     }
     df = pd.read_csv(**kwargs)

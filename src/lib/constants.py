@@ -166,3 +166,35 @@ MEASURES_KENDRICK = (
     'Percentage',
     'Percentage',
 )
+
+
+MAP_READ_USA_HIST = {
+    'dataset_douglas.zip': {'series_id': 4, 'period': 5, 'value': 6},
+    'dataset_usa_brown.zip': {'series_id': 5, 'period': 6, 'value': 7},
+    'dataset_usa_cobb-douglas.zip': {'series_id': 5, 'period': 6, 'value': 7},
+    'dataset_usa_kendrick.zip': {'series_id': 4, 'period': 5, 'value': 6},
+    'dataset_usa_mc_connell_brue.zip': {'series_id': 1, 'period': 2, 'value': 3},
+    'dataset_uscb.zip': {'series_id': 9, 'period': 10, 'value': 11},
+}
+
+
+MAP_READ_CAN = {
+    310004: {'category': 4, 'component': 5, 'period': 0, 'prices': 2, 'series_id': 6, 'value': 8},
+    2820011: {'classofworker': 2, 'geo': 1, 'industry': 3, 'period': 0, 'series_id': 5, 'sex': 4, 'value': 7},
+    2820012: {'period': 0, 'series_id': 5, 'value': 7},
+    3790031: {'geo': 1, 'naics': 4, 'period': 0, 'prices': 3, 'seas': 2, 'series_id': 5, 'value': 7},
+    3800084: {'est': 3, 'geo': 1, 'period': 0, 'seas': 2, 'series_id': 4, 'value': 6},
+    3800102: {'period': 0, 'series_id': 4, 'value': 6},
+    3800106: {'period': 0, 'series_id': 3, 'value': 5},
+    3800518: {'period': 0, 'series_id': 4, 'value': 6},
+    3800566: {'period': 0, 'series_id': 3, 'value': 5},
+    3800567: {'period': 0, 'series_id': 4, 'value': 6},
+    14100027: {'period': 0, 'series_id': 10, 'value': 12},
+    14100235: {'period': 0, 'series_id': 8, 'value': 10},
+    16100053: {'period': 0, 'series_id': 9, 'value': 11},
+    36100096: {'category': 5, 'component': 6, 'geo': 1, 'industry': 4, 'period': 0, 'prices': 3, 'series_id': 11, 'value': 13},
+    36100207: {'period': 0, 'series_id': 9, 'value': 11},
+    36100303: {'period': 0, 'series_id': 9, 'value': 11},
+    36100305: {'period': 0, 'series_id': 9, 'value': 11},
+    36100434: {'period': 0, 'series_id': 10, 'value': 12}
+}

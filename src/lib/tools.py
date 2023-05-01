@@ -881,24 +881,6 @@ def price_inverse_double(df: DataFrame) -> DataFrame:
     return df.iloc[:, [-1]].dropna(axis=0)
 
 
-def archive_name_to_url(archive_name: str) -> str:
-    """
-
-
-    Parameters
-    ----------
-    archive_name : str
-        DESCRIPTION.
-
-    Returns
-    -------
-    str
-        DESCRIPTION.
-
-    """
-    return f'https://www150.statcan.gc.ca/n1/tbl/csv/{archive_name}'
-
-
 def filter_rolling_mean(df: DataFrame, k: int = None) -> tuple[DataFrame]:
     """
     Rolling Mean Filter

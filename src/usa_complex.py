@@ -17,8 +17,8 @@ YEAR_BASE = 1899
 df = combine_cobb_douglas().pipe(transform_cobb_douglas,
                                    year_base=YEAR_BASE).iloc[:, range(5)]
 
-for col in df.columns:
-    df.loc[:, [col]].pipe(plot_uscb_complex)
+for column in df.columns:
+    df.loc[:, [column]].pipe(plot_uscb_complex)
 
 SERIES_IDS = (
     {'D0004': 'dataset_uscb.zip'}, {'D0130': 'dataset_uscb.zip'},
