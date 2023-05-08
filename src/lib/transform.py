@@ -598,7 +598,7 @@ def transform_agg(df: DataFrame, agg: str) -> DataFrame:
     return df.groupby(df.columns[0]).sum()
 
 
-def transform_agg_sum(df: DataFrame) -> DataFrame:
+def transform_year_sum(df: DataFrame) -> DataFrame:
     return df.groupby(df.index.year).sum()
 
 

@@ -25,12 +25,12 @@ from thesis.src.lib.read import (read_can, read_temporary, read_usa_bea,
                                  read_usa_frb_us3, read_usa_fred,
                                  read_usa_hist)
 from thesis.src.lib.stockpile import stockpile_usa_bea, stockpile_usa_hist
-from thesis.src.lib.transform import (transform_agg_sum,
-                                      transform_cobb_douglas_extension_capital,
+from thesis.src.lib.transform import (transform_cobb_douglas_extension_capital,
                                       transform_mean, transform_stockpile,
                                       transform_sum, transform_usa_frb_fa,
                                       transform_usa_frb_fa_def,
-                                      transform_usa_manufacturing)
+                                      transform_usa_manufacturing,
+                                      transform_year_sum)
 
 
 def combine_cobb_douglas(series_number: int = 3) -> DataFrame:
@@ -531,7 +531,7 @@ def combine_usa_macroeconomics() -> DataFrame:
             # =================================================================
             # Capacity Utilization Series: CAPUTL.B50001.A, 1967--2012
             # =================================================================
-            read_usa_frb_g17().loc[:, (SERIES_ID,)].dropna(axis=0),
+            read_usa_frb_g17().loc[:, [SERIES_ID]].dropna(axis=0),
         ],
         axis=1,
         sort=True
@@ -587,7 +587,7 @@ def combine_usa_manufacturing_two_fold() -> tuple[DataFrame]:
             # =================================================================
             # Capacity Utilization Series: CAPUTL.B50001.A, 1967--2012
             # =================================================================
-            read_usa_frb_g17().loc[:, (SERIES_ID,)].dropna(axis=0),
+            read_usa_frb_g17().loc[:, [SERIES_ID]].dropna(axis=0),
         ],
         axis=1
     ).dropna(axis=0)
@@ -652,7 +652,7 @@ def combine_usa_manufacturing_three_fold() -> tuple[DataFrame]:
             # =================================================================
             # Capacity Utilization Series: CAPUTL.B50001.A, 1967--2012
             # =================================================================
-            read_usa_frb_g17().loc[:, (SERIES_ID,)].dropna(axis=0),
+            read_usa_frb_g17().loc[:, [SERIES_ID]].dropna(axis=0),
         ],
         axis=1
     ).dropna(axis=0)
@@ -946,7 +946,7 @@ def combine_can(blueprint: dict) -> DataFrame:
                 pull_by_series_id, blueprint.get(tuple(blueprint)[1])
             ).apply(pd.to_numeric, errors='coerce'),
             read_can(tuple(blueprint)[-1]).pipe(
-                transform_agg_sum,
+                transform_year_sum,
                 blueprint.get(tuple(blueprint)[-1])
             ),
         ],

@@ -118,13 +118,13 @@ SERIES_IDS = {
 df = stockpile_usa_hist(SERIES_IDS).truncate(before=1889)
 df.div(df.iloc[0, :]).mul(100).pipe(plot_uscb_gnp)
 
-SERIES_ID = {
+SERIES_IDS = {
     # =========================================================================
     # Census 1975, Land in Farms
     # =========================================================================
     'K0005': 'dataset_uscb.zip'
 }
-stockpile_usa_hist(SERIES_ID).pipe(plot_uscb_farm_lands)
+stockpile_usa_hist(SERIES_IDS).pipe(plot_uscb_farm_lands)
 
 SERIES_IDS = {
     # =========================================================================

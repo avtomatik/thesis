@@ -39,7 +39,9 @@ def read_can(archive_id: int) -> DataFrame:
     """
     MAP_DEFAULT = {'period': 0, 'series_id': 10, 'value': 12}
     url = f'https://www150.statcan.gc.ca/n1/tbl/csv/{archive_id:08n}-eng.zip'
-    TO_PARSE_DATES = (2820011, 3790031, 3800084, 36100108, 36100434)
+    TO_PARSE_DATES = (
+        2820011, 3790031, 3800084, 10100094, 14100221, 14100235, 14100238, 14100355, 16100109, 16100111, 36100108, 36100207, 36100434
+    )
     kwargs = {
         'header': 0,
         'names': list(MAP_READ_CAN.get(archive_id, MAP_DEFAULT).keys()),
@@ -55,8 +57,8 @@ def read_can(archive_id: int) -> DataFrame:
                 f'{archive_id:08n}-eng.zip'
             ).open(f'{archive_id:08n}.csv')
         else:
-            kwargs['filepath_or_buffer'] = ZipFile(io.BytesIO(
-                requests.get(url).content)
+            kwargs['filepath_or_buffer'] = ZipFile(
+                io.BytesIO(requests.get(url).content)
             ).open(f'{archive_id:08n}.csv')
     return pd.read_csv(**kwargs)
 

@@ -5,7 +5,7 @@ from thesis.src.lib.tools import (calculate_power_function_fit_params_a,
                                   calculate_power_function_fit_params_c)
 
 
-def main() -> None:
+def main(year_base: int = 1980) -> None:
     """
     'calculate_power_function_fit_params_a': Power Function Approximation,
     'calculate_power_function_fit_params_b': Power Function Approximation,
@@ -19,7 +19,7 @@ def main() -> None:
         'Валовой внутренний продукт, млрд долл. США': 'dataset_usa_mc_connell_brue.zip'
     }
     PARAMS = (2800, 0.01, 0.5)
-    stockpile_usa_hist(SERIES_IDS).truncate(before=1980).rename(columns=MAP_MC_CONNEL).pipe(
+    stockpile_usa_hist(SERIES_IDS).truncate(before=year_base).rename(columns=MAP_MC_CONNEL).pipe(
         calculate_power_function_fit_params_a, PARAMS
     )
 
@@ -28,7 +28,7 @@ def main() -> None:
         'Национальный доход, млрд долл. США': 'dataset_usa_mc_connell_brue.zip',
     }
     PARAMS = (4, 12, 9000, 3000, 0.87)
-    stockpile_usa_hist(SERIES_IDS).truncate(before=1980).rename(columns=MAP_MC_CONNEL).pipe(
+    stockpile_usa_hist(SERIES_IDS).truncate(before=year_base).rename(columns=MAP_MC_CONNEL).pipe(
         calculate_power_function_fit_params_b, PARAMS
     )
 
@@ -37,7 +37,7 @@ def main() -> None:
         'Валовой объем внутренних частных инвестиций, млрд долл. США': 'dataset_usa_mc_connell_brue.zip',
     }
     PARAMS = (1.5, 19, 1.7, 1760)
-    stockpile_usa_hist(SERIES_IDS).truncate(before=1980).rename(columns=MAP_MC_CONNEL).pipe(
+    stockpile_usa_hist(SERIES_IDS).truncate(before=year_base).rename(columns=MAP_MC_CONNEL).pipe(
         calculate_power_function_fit_params_c, PARAMS
     )
 
