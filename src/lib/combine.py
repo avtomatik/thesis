@@ -281,7 +281,7 @@ def combine_cobb_douglas_extension_manufacturing() -> DataFrame:
             # =================================================================
             # Federal Reserve, AIPMASAIX
             # =================================================================
-            read_usa_frb_us3().loc[:, ('AIPMA_SA_IX',)],
+            read_usa_frb_us3().loc[:, ['AIPMA_SA_IX']],
         ],
         axis=1
     )
@@ -642,7 +642,7 @@ def combine_usa_manufacturing_three_fold() -> tuple[DataFrame]:
             # =================================================================
             # Manufacturing Series: FRB G17 IP, AIPMA_SA_IX, 1919--2018
             # =================================================================
-            read_usa_frb_us3().loc[:, ('AIPMA_SA_IX',)],
+            read_usa_frb_us3().loc[:, ['AIPMA_SA_IX']],
         ],
         axis=1
     ).dropna(axis=0)

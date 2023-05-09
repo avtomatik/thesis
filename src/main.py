@@ -18,7 +18,7 @@ import usa_complex
 import usa_douglas_kendrick
 import usa_mc_connell
 import uscb
-import uscb_manufacturing
+import uscb_manufacturing_complex
 
 import lash_up_spline
 
@@ -52,7 +52,7 @@ def main():
     # =========================================================================
     # Subproject XI. USA Census J14
     # =========================================================================
-    uscb_manufacturing()
+    uscb_manufacturing_complex()
     # =========================================================================
     # Subproject XII. USA Douglas & Kendrick
     # =========================================================================

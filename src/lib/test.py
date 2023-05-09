@@ -14,7 +14,7 @@ from pandas import DataFrame
 from pandas.plotting import autocorrelation_plot
 
 from thesis.src.lib.pull import pull_by_series_id
-from thesis.src.lib.read import read_usa_bea_excel, read_usa_bls
+from thesis.src.lib.read import read_usa_bls
 from thesis.src.lib.stockpile import stockpile_usa_bea, stockpile_usa_hist
 
 
@@ -101,7 +101,9 @@ def test_douglas() -> None:
     df.loc[:, [0]] = df.loc[:, [0]].div(df.loc[1899, [0]]).mul(100).round(0)
     df['dif'] = df.iloc[:, 1].sub(df.iloc[:, 0])
     df.dropna(axis=0).plot(
-        title='Cobb--Douglas Data Comparison', legend=True, grid=True)
+        title='Cobb--Douglas Data Comparison', legend=True, grid=True
+    )
+
     SERIES_IDS = {
         # =================================================================
         # Cobb C.W., Douglas P.H. Capital Series: Total Fixed Capital in 1880 dollars (4)
@@ -112,22 +114,8 @@ def test_douglas() -> None:
     df = stockpile_usa_hist(SERIES_IDS)
     df['div'] = df.iloc[:, 0].div(df.iloc[:, 1])
     df.dropna(axis=0).plot(
-        title='Cobb--Douglas Data Comparison', legend=True, grid=True)
-
-
-def test_usa_bea_subtract(kwargs_list: list[dict]) -> None:
-    df = pd.concat(
-        [
-            # =================================================================
-            # TODO: UPDATE ACCORDING TO NEW SIGNATURE
-            # =================================================================
-            read_usa_bea_excel(**_kwargs) for _kwargs in kwargs_list
-        ],
-        axis=1,
-        sort=True
+        title='Cobb--Douglas Data Comparison', legend=True, grid=True
     )
-    df['diff_abs'] = df.iloc[:, 0].sub(df.iloc[:, 1]).sub(df.iloc[:, 2])
-    df.iloc[:, [-1]].dropna(axis=0).plot(grid=True)
 
 
 def test_subtract_a():
@@ -270,3 +258,4 @@ def test_usa_brown_kendrick() -> DataFrame:
             df_b.iloc[:, range(4)].truncate(before=1954)
         ]
     ).round()
+

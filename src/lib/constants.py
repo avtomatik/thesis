@@ -59,14 +59,6 @@ SERIES_IDS_LAB = {
 }
 
 
-MAP_MC_CONNEL = {
-    'Ставка прайм-рейт, %': 'prime_rate',
-    'Валовой объем внутренних частных инвестиций, млрд долл. США': 'A006RC',
-    'Национальный доход, млрд долл. США': 'A032RC',
-    'Валовой внутренний продукт, млрд долл. США': 'A191RC',
-}
-
-
 TITLES_DOUGLAS = (
     'Table I Indexes of Physical Production, 1899=100 [1899$-$1926]',
     'Table II Wholesale Price Indexes, 1899=100 [1899$-$1928]',
