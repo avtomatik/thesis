@@ -37,7 +37,7 @@ def main(
             stockpile_usa_hist(SERIES_ID_CB),
             pd.concat(
                 map(
-                    lambda _: read_usa_bls(_[1]).pipe(
+                    lambda _: read_usa_bls(_[-1]).pipe(
                         pull_by_series_id, _[0]
                     ),
                     SERIES_ID_LS.items()

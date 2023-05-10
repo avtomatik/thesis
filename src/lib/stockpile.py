@@ -34,9 +34,7 @@ def stockpile_usa_bea(series_ids: dict[str, str]) -> DataFrame:
     """
     return pd.concat(
         map(
-            lambda _: read_usa_bea(_[1]).pipe(
-                pull_by_series_id, _[0]
-            ),
+            lambda _: read_usa_bea(_[-1]).pipe(pull_by_series_id, _[0]),
             series_ids.items()
         ),
         axis=1,
@@ -65,9 +63,7 @@ def stockpile_usa_hist(series_ids: dict[str, str]) -> DataFrame:
     """
     return pd.concat(
         map(
-            lambda _: read_usa_hist(_[1]).pipe(
-                pull_by_series_id, _[0]
-            ),
+            lambda _: read_usa_hist(_[-1]).pipe(pull_by_series_id, _[0]),
             series_ids.items()
         ),
         axis=1,

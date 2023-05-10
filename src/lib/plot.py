@@ -326,7 +326,7 @@ def plot_uscb_metals(df: DataFrame, years_base: tuple[int]) -> None:
         'P294 - Railroad Passenger Cars Produced, {}=100',
         'P295 - Railroad Freight Cars Produced, {}=100',
     )
-    _DESCS = map(lambda _: _[0].format(_[1]), zip(_DESCS_RAW, years_base))
+    _DESCS = map(lambda _: _[0].format(_[-1]), zip(_DESCS_RAW, years_base))
     _MAPPING = dict(zip(df.columns, _DESCS))
     _COLUMN_LOCS = filter(lambda _: _ not in range(1, 6), range(df.shape[1]))
     plt.figure(1)
@@ -359,7 +359,7 @@ def plot_uscb_metals(df: DataFrame, years_base: tuple[int]) -> None:
 def plot_uscb_commodities(series_ids: dict[str, str]) -> None:
     df = pd.concat(
         map(
-            lambda _: read_usa_hist(_[1]).pipe(
+            lambda _: read_usa_hist(_[-1]).pipe(
                 pull_by_series_id, _[0]
             ).sort_index().pipe(transform_rebase),
             series_ids.items()

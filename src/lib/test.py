@@ -7,11 +7,8 @@ Created on Sun Jun 12 12:19:54 2022
 """
 
 
-from pathlib import Path
-
 import pandas as pd
 from pandas import DataFrame
-from pandas.plotting import autocorrelation_plot
 
 from thesis.src.lib.pull import pull_by_series_id
 from thesis.src.lib.read import read_usa_bls
@@ -118,88 +115,6 @@ def test_douglas() -> None:
     )
 
 
-def test_subtract_a():
-    """
-    Tested: "k3n31gd1es00" = "k3n31gd1eq00" + "k3n31gd1ip00" + "k3n31gd1st00"
-    """
-    SERIES_ID = {
-        'k3n31gd1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt'
-    }
-    SERIES_IDS = {
-        'k3n31gd1eq00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
-        'k3n31gd1ip00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
-        'k3n31gd1st00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt'
-    }
-    df = stockpile_usa_bea(SERIES_ID | SERIES_IDS)
-    df["sum"] = df.loc[:, list(SERIES_IDS)].sum(axis=1)
-    df["delta"] = df.iloc[:, 0].sub(df.iloc[:, -1])
-    df.iloc[:, [-1]].pipe(autocorrelation_plot)
-
-
-def test_subtract_b(df: DataFrame):
-    # =========================================================================
-    # df['delta_eq'] = df.iloc[:, 0].sub(df.iloc[:, -1])
-    # =========================================================================
-    df['delta_eq'] = df.iloc[:, 0].mul(4).div(
-        df.iloc[:, 0].add(df.iloc[:, -1])).sub(2)
-    df.iloc[:, [-1]].dropna(axis=0).plot(grid=True)
-
-
-def test_usa_bea_sfat_series_ids(
-    path_src: str = '/media/green-machine/KINGSTON',
-    file_name: str = 'dataset_usa_bea-nipa-selected.zip',
-    source_id: str = 'Table 4.3. Historical-Cost Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization',
-    series_id: str = 'k3n31gd1es000'
-) -> DataFrame:
-    """
-    Earlier Version of 'k3n31gd1es000'
-    """
-    # =========================================================================
-    # Fixed Assets Series, 1925--2016
-    # Test if Ratio of Manufacturing Fixed Assets to Overall Fixed Assets
-    # =========================================================================
-    SERIES_IDS = {
-        'k3n31gd1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
-        'k3n31gd1eq00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
-        'k3n31gd1ip00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
-        'k3n31gd1st00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt'
-    }
-    df_test = stockpile_usa_bea(SERIES_IDS)
-
-    kwargs = {
-        'filepath_or_buffer': Path(path_src).joinpath(file_name),
-        'header': 0,
-        'names': ('source_id', 'series_id', 'period', 'value'),
-        'index_col': 2,
-        'usecols': (0, 8, 9, 10),
-    }
-    df = pd.read_csv(**kwargs)
-    # =========================================================================
-    # Option I
-    # =========================================================================
-    df = df[df.iloc[:, 1] == series_id]
-
-    df_control = DataFrame()
-    for source_id in sorted(set(df.iloc[:, 0])):
-        chunk = df[df.iloc[:, 0] == source_id].iloc[:, [2]]
-        chunk.columns = [
-            ''.join((source_id.split()[1].replace('.', '_'), series_id))
-        ]
-        df_control = pd.concat([df_control, chunk], axis=1, sort=True)
-
-    # =========================================================================
-    # # =========================================================================
-    # # Option II
-    # # =========================================================================
-    # df_control = df[
-    #     (df.loc[:, 'source_id'] == source_id) &
-    #     (df.loc[:, 'series_id'] == series_id)
-    # ].iloc[:, [-1]].rename(columns={"value": series_id})
-    # =========================================================================
-
-    return pd.concat([df_test, df_control], axis=1, sort=True)
-
-
 def test_usa_brown_kendrick() -> DataFrame:
     """
     Fetch Data from:
@@ -258,4 +173,3 @@ def test_usa_brown_kendrick() -> DataFrame:
             df_b.iloc[:, range(4)].truncate(before=1954)
         ]
     ).round()
-
