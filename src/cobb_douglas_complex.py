@@ -28,9 +28,10 @@ def main(path_src: str = '/media/green-machine/KINGSTON') -> None:
     # =========================================================================
     df_d, df_e = combine_usa_manufacturing_two_fold()
     df_f, df_g, df_h = combine_usa_manufacturing_three_fold()
+
     df.iloc[:, range(3)].pipe(plot_cobb_douglas_complex)
-    df.iloc[:, (0, 1, 3)].pipe(plot_cobb_douglas_complex)
-    df.iloc[:, (0, 1, 4)].pipe(plot_cobb_douglas_complex)
+    df.iloc[:, [0, 1, 3]].pipe(plot_cobb_douglas_complex)
+    df.iloc[:, [0, 1, 4]].pipe(plot_cobb_douglas_complex)
     # =========================================================================
     # No Capacity Utilization Adjustment
     # =========================================================================

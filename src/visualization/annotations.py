@@ -154,10 +154,12 @@ def main(
     # Option 6: 1929--2013
     # =========================================================================
     pd.concat([df['cap_0x3'], L, df['prd_0x4']], axis=1).pipe(
-        transform_add_dx_dy).pipe(plot_increment)
+        transform_add_dx_dy
+    ).pipe(plot_increment)
 
     combine_usa_manufacturing_latest().pipe(
-        transform_add_dx_dy).pipe(plot_increment)
+        transform_add_dx_dy
+    ).pipe(plot_increment)
 
 
 if __name__ == '__main__':

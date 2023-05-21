@@ -57,18 +57,19 @@ def transform_investment(df: DataFrame) -> DataFrame:
     Parameters
     ----------
     df : DataFrame
-        DESCRIPTION.
-
-    Returns
-    -------
-    DataFrame
         ================== =================================
         df.index           Period
         df.iloc[:, 0]      Gross Domestic Investment
         df.iloc[:, 1]      Nominal Gross Domestic Product
         df.iloc[:, 2]      Real Gross Domestic Product
-        df.iloc[:, 3]      Prime Rate
-        ================== =================================
+        df.iloc[:, 3]      <M1> OR <Prime Rate>
+        ================== =================================.
+
+    Returns
+    -------
+    DataFrame
+        DESCRIPTION.
+
     """
     # =========================================================================
     # "Real" Investment
@@ -667,31 +668,6 @@ def transform_rebase(df: DataFrame) -> DataFrame:
     return df.div(df.iloc[0, :]).mul(100)
 
 
-def transform_usa_manufacturing_money(df: DataFrame) -> DataFrame:
-    """
-
-
-    Parameters
-    ----------
-    df : DataFrame
-        ================== =================================
-        df.index           Period
-        df.iloc[:, 0]      Gross Domestic Investment
-        df.iloc[:, 1]      Nominal Gross Domestic Product
-        df.iloc[:, 2]      Real Gross Domestic Product
-        df.iloc[:, 3]      M1
-        ================== =================================.
-
-    Returns
-    -------
-    DataFrame
-        DESCRIPTION.
-
-    """
-    df['investment'] = df.iloc[:, 0].mul(df.iloc[:, 2]).div(df.iloc[:, 1])
-    return df
-
-
 def transform_usa_manufacturing(df: DataFrame) -> DataFrame:
     return df.div(df.iloc[0, :])
 
@@ -743,6 +719,9 @@ def transform_approx_linear(df: DataFrame) -> tuple[DataFrame, int, np.ndarray]:
     # Yhat
     # =========================================================================
     df[f'{df.columns[3]}_estimate'] = np.poly1d(polyfit_linear)(df.iloc[:, -2])
+    # =========================================================================
+    # Delivery Block
+    # =========================================================================
     print('Period From: {} Through: {}'.format(*df.index[[0, -1]]))
     print(f'Prices: {year_base}=100')
     print('Model: Yhat = {:.4f} + {:.4f}*X'.format(*polyfit_linear[::-1]))
@@ -871,10 +850,9 @@ def transform_usa_sahr_infcf(df: DataFrame) -> DataFrame:
     # =========================================================================
     return pd.concat(
         map(
-            lambda _: df.pipe(pull_by_series_id, _).rdiv(
-                1).pct_change().mul(-1),
+            lambda _: df.pipe(pull_by_series_id, _).rdiv(1),
             df.iloc[:, 0].unique()[:14]
         ),
         axis=1,
         sort=True
-    )
+    ).pct_change().mul(-1)

@@ -93,10 +93,10 @@ def combine_cobb_douglas_deflator() -> DataFrame:
     # =========================================================================
     # =========================================================================
     # Results:
-    # {'L0036': 'dataset_uscb.zip'} Offset With {'E0183': 'dataset_uscb.zip'}
-    # {'L0038': 'dataset_uscb.zip'} Offset With {'E0184': 'dataset_uscb.zip'}
-    # {'L0039': 'dataset_uscb.zip'} Offset With {'E0185': 'dataset_uscb.zip'}
-    # {'E0052': 'dataset_uscb.zip'} Offset With {'L0002': 'dataset_uscb.zip'}
+    # {'E0183': 'dataset_uscb.zip'} or {'L0036': 'dataset_uscb.zip'}
+    # {'E0184': 'dataset_uscb.zip'} or {'L0038': 'dataset_uscb.zip'}
+    # {'E0185': 'dataset_uscb.zip'} or {'L0039': 'dataset_uscb.zip'}
+    # {'L0002': 'dataset_uscb.zip'} or {'E0052': 'dataset_uscb.zip'}
     # =========================================================================
     # =========================================================================
     # Cost-Of-Living Indexes
@@ -106,9 +106,7 @@ def combine_cobb_douglas_deflator() -> DataFrame:
     # E0184: Burgess, 1913=100
     # E0185: Douglas, 1890-99=100
     # =========================================================================
-    # =========================================================================
     # Bureau of the Census
-    # =========================================================================
     # =========================================================================
     # Correlation Test:
     # 'df.corr(method='kendall')'
@@ -117,14 +115,19 @@ def combine_cobb_douglas_deflator() -> DataFrame:
     # Correlation Test Result: kendall & pearson & spearman: L2, L15, E7, E23, E40, E68
     # =========================================================================
     SERIES_IDS_CB = {
-        'L0002': ('dataset_uscb.zip', None),
-        'L0015': ('dataset_uscb.zip', None),
-        'E0007': ('dataset_uscb.zip', None),
-        'E0023': ('dataset_uscb.zip', None),
-        'E0040': ('dataset_uscb.zip', None),
-        'E0068': ('dataset_uscb.zip', None),
-        'P0107': ('dataset_uscb.zip', 1885),
-        'P0110': ('dataset_uscb.zip', 1885),
+        # =========================================================================
+        # Warren & Pearson
+        # =========================================================================
+        'L0002': 'dataset_uscb.zip',
+        'L0015': 'dataset_uscb.zip',
+        'E0007': 'dataset_uscb.zip',
+        'E0023': 'dataset_uscb.zip',
+        'E0040': 'dataset_uscb.zip',
+        'E0068': 'dataset_uscb.zip',
+    }
+    SERIES_IDS_PRCH = {
+        'P0107': 'dataset_uscb.zip',
+        'P0110': 'dataset_uscb.zip',
     }
     # =========================================================================
     # Bureau of Economic Analysis
@@ -144,16 +147,8 @@ def combine_cobb_douglas_deflator() -> DataFrame:
             # =================================================================
             # Bureau of the Census
             # =================================================================
-            pd.concat(
-                [
-                    read_usa_hist(archive_name).pipe(
-                        pull_by_series_id, series_id).sort_index().truncate(before=year)
-                    for series_id, (archive_name, year) in SERIES_IDS_CB.items()
-                ],
-                axis=1,
-                verify_integrity=True,
-                sort=True
-            ),
+            stockpile_usa_hist(SERIES_IDS_CB).truncate(before=1794),
+            stockpile_usa_hist(SERIES_IDS_PRCH).truncate(before=1885),
             # =================================================================
             # Bureau of Economic Analysis
             # =================================================================
@@ -163,9 +158,8 @@ def combine_cobb_douglas_deflator() -> DataFrame:
             # =================================================================
             read_usa_frb().pipe(transform_usa_frb_fa_def),
         ],
-        axis=1,
-        sort=True
-    ).truncate(before=1794)
+        axis=1
+    )
     SERIES_IDS_CB = tuple(SERIES_IDS_CB)
     SERIES_IDS_EA = tuple(SERIES_IDS_EA)
     df['fa_def_cb'] = df.loc[:, SERIES_IDS_CB[-2]
@@ -180,10 +174,7 @@ def combine_cobb_douglas_deflator() -> DataFrame:
     # =========================================================================
     # Strip Deflators
     # =========================================================================
-    return pd.concat(
-        map(lambda _: df.loc[:, [_]].pct_change(), df.columns),
-        axis=1
-    )
+    return df.pct_change()
 
 
 def combine_cobb_douglas_extension_labor() -> DataFrame:
@@ -279,7 +270,7 @@ def combine_cobb_douglas_extension_manufacturing() -> DataFrame:
             # =================================================================
             read_usa_davis_ip(),
             # =================================================================
-            # Federal Reserve, AIPMASAIX
+            # Manufacturing Series: FRB G17 IP, AIPMA_SA_IX, 1919--2018
             # =================================================================
             read_usa_frb_us3().loc[:, ['AIPMA_SA_IX']],
         ],
@@ -738,13 +729,7 @@ def combine_uscb_cap_deflator() -> DataFrame:
     # =========================================================================
     # Strip Deflators
     # =========================================================================
-    return pd.concat(
-        map(
-            lambda _: df.iloc[:, [-(1+_)]].pct_change().dropna(axis=0),
-            range(6)
-        ),
-        axis=1
-    )
+    return df.iloc[:, -6:].pct_change().dropna(axis=0, how='all')
 
 
 def combine_uscb_cap(smoothing: bool = False) -> DataFrame:
@@ -937,14 +922,23 @@ def combine_can(blueprint: dict) -> DataFrame:
         _df = _df.set_index(_df.iloc[:, 0])
     df = pd.concat(
         [
+            # =================================================================
+            # Capital
+            # =================================================================
             _df.loc[:, ('series_id', 'value')].pipe(
                 transform_stockpile
             ).pipe(
                 transform_sum, name="capital"
             ),
+            # =================================================================
+            # Labor
+            # =================================================================
             read_can(tuple(blueprint)[1]).pipe(
                 pull_by_series_id, blueprint.get(tuple(blueprint)[1])
             ).apply(pd.to_numeric, errors='coerce'),
+            # =================================================================
+            # Manufacturing
+            # =================================================================
             read_can(tuple(blueprint)[-1]).pipe(
                 transform_year_sum,
                 blueprint.get(tuple(blueprint)[-1])

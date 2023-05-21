@@ -15,7 +15,7 @@ from thesis.src.lib.transform import transform_cobb_douglas
 
 YEAR_BASE = 1899
 df = combine_cobb_douglas().pipe(transform_cobb_douglas,
-                                 year_base=YEAR_BASE).iloc[:, range(5)]
+                                 year_base=YEAR_BASE)[0].iloc[:, range(5)]
 
 for column in df.columns:
     df.loc[:, [column]].pipe(plot_uscb_complex)

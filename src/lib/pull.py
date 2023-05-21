@@ -61,7 +61,7 @@ def pull_can_capital(df: DataFrame, params: tuple[int, str]) -> DataFrame:
     DataFrame
 
     """
-    DIR = "/home/green-machine/data_science"
+    PATH_SRC = "/home/green-machine/data_science"
     DBNAME = "capital"
     stmt = f"""
     SELECT * FROM {DBNAME}
@@ -73,7 +73,8 @@ def pull_can_capital(df: DataFrame, params: tuple[int, str]) -> DataFrame:
         AND component IN {params[-1]}
     ;
     """
-    with sqlite3.connect(Path(DIR).joinpath(f"{DBNAME}.db")) as conn:
+    database = Path(PATH_SRC).joinpath(f"{DBNAME}.db")
+    with sqlite3.connect(database) as conn:
         cursor = conn.cursor()
         df.to_sql(DBNAME, conn, if_exists="replace", index=True)
         cursor = conn.execute(stmt)
@@ -102,7 +103,7 @@ def pull_can_capital_former(df: DataFrame, params: tuple[int, str]) -> DataFrame
     DataFrame
 
     """
-    DIR = "/home/green-machine/data_science"
+    PATH_SRC = "/home/green-machine/data_science"
     DBNAME = "capital"
     stmt = f"""
     SELECT * FROM {DBNAME}
@@ -112,7 +113,8 @@ def pull_can_capital_former(df: DataFrame, params: tuple[int, str]) -> DataFrame
         AND lower(component) LIKE '%{params[-1]}%'
     ;
     """
-    with sqlite3.connect(Path(DIR).joinpath(f"{DBNAME}.db")) as conn:
+    database = Path(PATH_SRC).joinpath(f"{DBNAME}.db")
+    with sqlite3.connect(database) as conn:
         cursor = conn.cursor()
         df.to_sql(DBNAME, conn, if_exists="replace", index=True)
         cursor = conn.execute(stmt)

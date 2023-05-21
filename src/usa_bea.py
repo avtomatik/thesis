@@ -20,8 +20,7 @@ from thesis.src.lib.plot import (plot_d, plot_e, plot_investment,
 from thesis.src.lib.read import read_temporary
 from thesis.src.lib.transform import (transform_d, transform_e,
                                       transform_investment,
-                                      transform_investment_manufacturing,
-                                      transform_usa_manufacturing_money)
+                                      transform_investment_manufacturing)
 
 # =============================================================================
 # Project: Initial Version Dated: 05 October 2012
@@ -39,7 +38,7 @@ combine_usa_investment().pipe(transform_investment).pipe(plot_investment)
 # Project: Initial Version Dated: 16 June 2013
 # =============================================================================
 combine_usa_manufacturing_money().pipe(
-    transform_usa_manufacturing_money
+    transform_investment
 ).pipe(
     plot_manufacturing_money
 )

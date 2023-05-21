@@ -742,8 +742,8 @@ def plot_lab_cap_inty(df: DataFrame) -> None:
     df_o = pd.concat(
         [
             df.iloc[:, [-1]],
-            filter_rolling_mean(df.iloc[:, [-1]], _k)[0].iloc[:, [-1]],
-            filter_kol_zur(df.iloc[:, [-1]], _k)[0].iloc[:, [-1]],
+            df.iloc[:, [-1]].pipe(filter_rolling_mean, k=_k)[0].iloc[:, [-1]],
+            df.iloc[:, [-1]].pipe(filter_kol_zur, k=_k)[0].iloc[:, [-1]],
             df.iloc[:, [-1]].ewm(alpha=0.25, adjust=False).mean(),
         ],
         axis=1,
@@ -753,8 +753,8 @@ def plot_lab_cap_inty(df: DataFrame) -> None:
     # =========================================================================
     df_e = pd.concat(
         [
-            filter_rolling_mean(df.iloc[:, [-1]], _k)[1].iloc[:, [-1]],
-            filter_kol_zur(df.iloc[:, [-1]], _k)[1].iloc[:, [-1]],
+            df.iloc[:, [-1]].pipe(filter_rolling_mean, k=_k)[1].iloc[:, [-1]],
+            df.iloc[:, [-1]].pipe(filter_kol_zur, k=_k)[1].iloc[:, [-1]],
         ],
         axis=1,
     )
@@ -816,8 +816,8 @@ def plot_lab_prty(df: DataFrame) -> None:
     df_o = pd.concat(
         [
             df.iloc[:, [-1]],
-            filter_rolling_mean(df.iloc[:, [-1]], _k)[0].iloc[:, [-1]],
-            filter_kol_zur(df.iloc[:, [-1]], _k)[0].iloc[:, [1]],
+            df.iloc[:, [-1]].pipe(filter_rolling_mean, k=_k)[0].iloc[:, [-1]],
+            df.iloc[:, [-1]].pipe(filter_kol_zur, k=_k)[0].iloc[:, [1]],
             df.iloc[:, [-1]].ewm(alpha=0.25, adjust=False).mean(),
             df.iloc[:, [-1]].ewm(alpha=0.35, adjust=False).mean(),
             df.iloc[:, [-1]].ewm(alpha=0.45, adjust=False).mean(),
@@ -829,8 +829,8 @@ def plot_lab_prty(df: DataFrame) -> None:
     # =========================================================================
     df_e = pd.concat(
         [
-            filter_rolling_mean(df.iloc[:, [-1]], _k)[1],
-            filter_kol_zur(df.iloc[:, [-1]], _k)[1],
+            df.iloc[:, [-1]].pipe(filter_rolling_mean, k=_k)[1],
+            df.iloc[:, [-1]].pipe(filter_kol_zur, k=_k)[1],
         ],
         axis=1,
     )
@@ -913,16 +913,6 @@ def plot_built_in() -> None:
                 plt.title(country)
                 plt.grid()
         plt.show()
-
-
-def plot_can_test(df: DataFrame) -> None:
-    plt.figure()
-    df.plot(logy=True)
-    plt.title('Discrepancy')
-    plt.xlabel('Period')
-    plt.ylabel('Index')
-    plt.grid()
-    plt.show()
 
 
 def plot_model_capital(df: DataFrame, year_base: int) -> None:
@@ -1397,7 +1387,8 @@ def plot_douglas(
             plt.figure(_n)
             for _ in range(_lw, _up, skip):
                 plt.plot(
-                    read_usa_hist(archive_name).pipe(pull_by_series_id, _SERIES_IDS[_]),
+                    read_usa_hist(archive_name).pipe(
+                        pull_by_series_id, _SERIES_IDS[_]),
                     label=MAP_SERIES_IDS[_SERIES_IDS[_]]
                 )
             plt.title(_tt)
@@ -1420,7 +1411,8 @@ def plot_douglas(
             plt.figure(_n)
             for _ in range(_lw, _up, skip):
                 plt.plot(
-                    read_usa_hist(archive_name).pipe(pull_by_series_id, _SERIES_IDS[_]),
+                    read_usa_hist(archive_name).pipe(
+                        pull_by_series_id, _SERIES_IDS[_]),
                     label=MAP_SERIES_IDS[_SERIES_IDS[_]]
                 )
             plt.title(_tt)
@@ -1732,7 +1724,7 @@ def plot_filter_kol_zur(df: DataFrame) -> None:
     -------
     None
     """
-    df_o, df_e, residuals_o, residuals_e = filter_kol_zur(df)
+    df_o, df_e, df_residuals_o, df_residuals_e = df.pipe(filter_kol_zur)
 
     plt.figure(1)
     plt.title('Kolmogorov$-$Zurbenko Filter')
@@ -1745,12 +1737,12 @@ def plot_filter_kol_zur(df: DataFrame) -> None:
     )
     plt.plot(
         df_o.iloc[:, 1:],
-        label=['$filter_kol_zur(\\lambda = {})$'.format(int(_.split('_')[-1], 16))
+        label=['$KZF(\\lambda = {})$'.format(int(_.split('_')[-1], 16))
                for _ in df_o.columns[1:]]
     )
     plt.plot(
         df_e,
-        label=['$filter_kol_zur(\\lambda = {})$'.format(int(_.split('_')[-1], 16))
+        label=['$KZF(\\lambda = {})$'.format(int(_.split('_')[-1], 16))
                for _ in df_e.columns]
     )
     plt.grid()
@@ -1760,19 +1752,19 @@ def plot_filter_kol_zur(df: DataFrame) -> None:
     plt.xlabel('Period')
     plt.ylabel('Index')
     plt.scatter(
-        residuals_o.iloc[:, [0]].index,
-        residuals_o.iloc[:, [0]],
+        df_residuals_o.iloc[:, [0]].index,
+        df_residuals_o.iloc[:, [0]],
         label='Residuals'
     )
     plt.plot(
-        residuals_o.iloc[:, 1:],
-        label=['$\\delta filter_kol_zur(\\lambda = {})$'.format(int(_.split('_')[-1], 16))
-               for _ in residuals_o.columns[1:]]
+        df_residuals_o.iloc[:, 1:],
+        label=['$\\delta KZF(\\lambda = {})$'.format(int(_.split('_')[-1], 16))
+               for _ in df_residuals_o.columns[1:]]
     )
     plt.plot(
-        residuals_e,
-        label=['$\\delta filter_kol_zur(\\lambda = {})$'.format(int(_.split('_')[-1], 16))
-               for _ in residuals_e.columns]
+        df_residuals_e,
+        label=['$\\delta KZF(\\lambda = {})$'.format(int(_.split('_')[-1], 16))
+               for _ in df_residuals_e.columns]
     )
     plt.grid()
     plt.legend()
@@ -2025,15 +2017,15 @@ def plot_pearson_r_test(df: DataFrame) -> None:
         # =====================================================================
         # Shift Mean Values to Left
         # =====================================================================
-        _l_frame = df.iloc[:, 0].rolling(1 + _).mean().shift(-_)
+        df_l = df.iloc[:, 0].rolling(1 + _).mean().shift(-_)
         # =====================================================================
         # Shift Mean Values to Right
         # =====================================================================
-        _r_frame = df.iloc[:, 0].rolling(1 + _).mean()
+        df_r = df.iloc[:, 0].rolling(1 + _).mean()
         _pearson.loc[_] = [
-            stats.pearsonr(df.iloc[:, 0][_r_frame.notna()], _r_frame.dropna(axis=0))[0] /
+            stats.pearsonr(df.iloc[:, 0][df_r.notna()], df_r.dropna(axis=0))[0] /
             stats.pearsonr(
-                df.iloc[:, 0][_l_frame.notna()], _l_frame.dropna(axis=0))[0]
+                df.iloc[:, 0][df_l.notna()], df_l.dropna(axis=0))[0]
         ]
     # =========================================================================
     # Plot 'Window' to 'Right-Side to Left-Side Pearson R
@@ -2064,7 +2056,7 @@ def plot_filter_rolling_mean(df: DataFrame) -> None:
     None
     """
     _df = df.copy()
-    df_o, df_e, residuals_o, residuals_e = filter_rolling_mean(_df)
+    df_o, df_e, df_residuals_o, df_residuals_e = filter_rolling_mean(_df)
     plt.figure(1)
     plt.title(
         f'Rolling Mean {df_o.index[0]}$-${df_o.index[-1]}'
@@ -2095,19 +2087,19 @@ def plot_filter_rolling_mean(df: DataFrame) -> None:
     plt.xlabel('Period')
     plt.ylabel('Residuals ($\\delta$), Percent')
     plt.scatter(
-        residuals_o.iloc[:, [0]].index,
-        residuals_o.iloc[:, [0]],
+        df_residuals_o.iloc[:, [0]].index,
+        df_residuals_o.iloc[:, [0]],
         label='Residuals'
     )
     plt.plot(
-        residuals_o.iloc[:, 1:],
+        df_residuals_o.iloc[:, 1:],
         label=['$\\delta(\\hat Y_{{m = {}}})$'.format(int(_.split('_')[-1], 16))
-               for _ in residuals_o.columns[1:]]
+               for _ in df_residuals_o.columns[1:]]
     )
     plt.plot(
-        residuals_e,
+        df_residuals_e,
         label=['$\\delta(\\hat Y_{{m = {}}})$'.format(int(_.split('_')[-1], 16))
-               for _ in residuals_e.columns]
+               for _ in df_residuals_e.columns]
     )
     plt.grid()
     plt.legend()
@@ -2299,9 +2291,12 @@ def plot_usa_nber_showcase() -> None:
     )
     aggs = ('mean', 'sum')
     for agg in aggs:
-        sic = read_usa_nber(FILEPATH_OR_BUFFER[0]).pipe(transform_agg, agg=agg)
+        sic = read_usa_nber(FILEPATH_OR_BUFFER[0]).pipe(
+            transform_agg, agg=agg
+        )
         naics = read_usa_nber(FILEPATH_OR_BUFFER[1]).pipe(
-            transform_agg, agg=agg)
+            transform_agg, agg=agg
+        )
         plot_usa_nber(sic, naics, agg)
 
 
@@ -2328,8 +2323,7 @@ def plot_capital_acquisition(df: DataFrame) -> None:
         Draws matplotlib.pyplot Plots.
 
     """
-    _df = df.copy()
-    _df.reset_index(level=0, inplace=True)
+    _df = df.reset_index(level=0).copy()
     _df.columns = ('period', *_df.columns[1:])
     # =========================================================================
     # Basic Year
@@ -2550,8 +2544,7 @@ def plot_capital_retirement(df: DataFrame) -> None:
         Draws matplotlib.pyplot Plots.
 
     """
-    _df = df.copy()
-    _df.reset_index(level=0, inplace=True)
+    _df = df.reset_index(level=0).copy()
     _df.columns = ('period', *_df.columns[1:])
     # =========================================================================
     # Define Basic Year for Deflator

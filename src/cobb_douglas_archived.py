@@ -31,17 +31,19 @@ def main(
     # Project I. Classified
     # =========================================================================
     df = combine_cobb_douglas(5)
-    df_b = df.iloc[:, (0, 1, 3)]
+    df_b = df.iloc[:, [0, 1, 3]]
     plot_cobb_douglas_alt(*df.pipe(transform_cobb_douglas_alt), MAP_FIG)
     plot_cobb_douglas_alt(*df_b.pipe(transform_cobb_douglas_alt), MAP_FIG)
 
     df_a = df.iloc[:, range(3)]
-    df_c = df.iloc[:, (0, 1, 4)]
+    df_c = df.iloc[:, [0, 1, 4]]
     df_d, df_e = combine_usa_manufacturing_two_fold()
     df_f, df_g, df_h = combine_usa_manufacturing_three_fold()
 
     # =========================================================================
-    # combine_cobb_douglas().pipe(transform_cobb_douglas, year_base=YEAR_BASE)[0].iloc[:, [3, 4]].pipe(calculate_curve_fit_params)
+    # combine_cobb_douglas().pipe(
+    #     transform_cobb_douglas, year_base=YEAR_BASE
+    # )[0].iloc[:, [3, 4]].pipe(calculate_curve_fit_params)
     # =========================================================================
 
     df_a.pipe(calculate_curve_fit_params)
@@ -97,8 +99,9 @@ def main(
         *df_h.pipe(transform_cobb_douglas, year_base=1967), MAP_FIG
     )
     plot_cobb_douglas(
-        *combine_usa_manufacturing_latest().pipe(transform_cobb_douglas,
-                                                 year_base=1967), MAP_FIG
+        *combine_usa_manufacturing_latest().pipe(
+            transform_cobb_douglas, year_base=1967
+        ), MAP_FIG
     )
     # =========================================================================
     # Project III. Scipy Signal Wiener Filter

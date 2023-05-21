@@ -27,7 +27,7 @@ def main() -> None:
     _df = read_unstats()
     _df = _df[_df.iloc[:, 1] == 'Gross Domestic Product (GDP)']
     _df = _df.drop(_df.columns[:2], axis=1).transpose()
-    df = pd.DataFrame()
+    df = DataFrame()
     df['us_to_world'] = _df.loc[:, 'United States'].div(_df.sum(axis=1))
     df.plot(grid=True)
 

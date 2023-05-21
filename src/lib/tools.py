@@ -175,7 +175,7 @@ def filter_kol_zur(df: DataFrame, k: int = None) -> tuple[DataFrame]:
     # =========================================================================
     # DataFrame for Kolmogorov--Zurbenko Filter Residuals: Odd
     # =========================================================================
-    residuals_o = pd.concat(
+    df_residuals_o = pd.concat(
         [
             # =================================================================
             # Period Shift
@@ -187,7 +187,7 @@ def filter_kol_zur(df: DataFrame, k: int = None) -> tuple[DataFrame]:
     # =========================================================================
     # DataFrame for Kolmogorov--Zurbenko Filter Residuals: Even
     # =========================================================================
-    residuals_e = pd.concat(
+    df_residuals_e = pd.concat(
         [
             # =================================================================
             # No Period Shift
@@ -215,9 +215,9 @@ def filter_kol_zur(df: DataFrame, k: int = None) -> tuple[DataFrame]:
             # =================================================================
             # DataFrame for Kolmogorov--Zurbenko Filter Residuals: Odd
             # =================================================================
-            residuals_o = pd.concat(
+            df_residuals_o = pd.concat(
                 [
-                    residuals_o,
+                    df_residuals_o,
                     df_o.iloc[:, [-2]].pct_change(),
                 ],
                 axis=1
@@ -238,22 +238,19 @@ def filter_kol_zur(df: DataFrame, k: int = None) -> tuple[DataFrame]:
             # =================================================================
             # DataFrame for Kolmogorov--Zurbenko Filter Residuals: Even
             # =================================================================
-            residuals_e = pd.concat(
+            df_residuals_e = pd.concat(
                 [
-                    residuals_e,
+                    df_residuals_e,
                     df_e.iloc[:, [-1]].pct_change(-1).mul(-1),
                 ],
                 axis=1
             )
-    df_o.set_index(df_o.columns[0], inplace=True)
-    df_e.set_index(df_e.columns[0], inplace=True)
-    residuals_o.set_index(residuals_o.columns[0], inplace=True)
-    residuals_e.set_index(residuals_e.columns[0], inplace=True)
-    df_o.dropna(how='all', inplace=True)
-    df_e.dropna(how='all', inplace=True)
-    residuals_o.dropna(how='all', inplace=True)
-    residuals_e.dropna(how='all', inplace=True)
-    return df_o, df_e, residuals_o, residuals_e
+    return (
+        df_o.set_index(df_o.columns[0]).dropna(how='all'),
+        df_e.set_index(df_e.columns[0]).dropna(how='all'),
+        df_residuals_o.set_index(df_residuals_o.columns[0]).dropna(how='all'),
+        df_residuals_e.set_index(df_residuals_e.columns[0]).dropna(how='all')
+    )
 
 
 def lash_up_spline_ea(df: DataFrame, n_spans: int, knots: tuple[int]) -> tuple[DataFrame, tuple[float]]:
@@ -802,7 +799,7 @@ def filter_rolling_mean(df: DataFrame, k: int = None) -> tuple[DataFrame]:
     # =========================================================================
     # DataFrame for Rolling Mean Filter Residuals: Odd
     # =========================================================================
-    residuals_o = pd.concat(
+    df_residuals_o = pd.concat(
         [
             # =================================================================
             # Period Shift
@@ -814,7 +811,7 @@ def filter_rolling_mean(df: DataFrame, k: int = None) -> tuple[DataFrame]:
     # =========================================================================
     # DataFrame for Rolling Mean Filter Residuals: Even
     # =========================================================================
-    residuals_e = pd.concat(
+    df_residuals_e = pd.concat(
         [
             # =================================================================
             # No Period Shift
@@ -840,9 +837,9 @@ def filter_rolling_mean(df: DataFrame, k: int = None) -> tuple[DataFrame]:
             # =================================================================
             # DataFrame for Rolling Mean Filter Residuals: Odd
             # =================================================================
-            residuals_o = pd.concat(
+            df_residuals_o = pd.concat(
                 [
-                    residuals_o,
+                    df_residuals_o,
                     df_o.iloc[:, [-2]].pct_change(),
                 ],
                 axis=1,
@@ -863,22 +860,19 @@ def filter_rolling_mean(df: DataFrame, k: int = None) -> tuple[DataFrame]:
             # =================================================================
             # DataFrame for Rolling Mean Filter Residuals: Even
             # =================================================================
-            residuals_e = pd.concat(
+            df_residuals_e = pd.concat(
                 [
-                    residuals_e,
+                    df_residuals_e,
                     df_e.iloc[:, [-1]].pct_change(-1).mul(-1),
                 ],
                 axis=1,
             )
-    df_o.set_index(df_o.columns[0], inplace=True)
-    df_e.set_index(df_e.columns[0], inplace=True)
-    residuals_o.set_index(residuals_o.columns[0], inplace=True)
-    residuals_e.set_index(residuals_e.columns[0], inplace=True)
-    df_o.dropna(how='all', inplace=True)
-    df_e.dropna(how='all', inplace=True)
-    residuals_o.dropna(how='all', inplace=True)
-    residuals_e.dropna(how='all', inplace=True)
-    return df_o, df_e, residuals_o, residuals_e
+    return (
+        df_o.set_index(df_o.columns[0]).dropna(how='all'),
+        df_e.set_index(df_e.columns[0]).dropna(how='all'),
+        df_residuals_o.set_index(df_residuals_o.columns[0]).dropna(how='all'),
+        df_residuals_e.set_index(df_residuals_e.columns[0]).dropna(how='all')
+    )
 
 
 def simple_linear_regression(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
