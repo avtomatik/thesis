@@ -30,10 +30,12 @@ combine_usa_investment_manufacturing().pipe(
 ).pipe(
     plot_investment_manufacturing
 )
+
 # =============================================================================
 # Project: Initial Version Dated: 23 November 2012
 # =============================================================================
 combine_usa_investment().pipe(transform_investment).pipe(plot_investment)
+
 # =============================================================================
 # Project: Initial Version Dated: 16 June 2013
 # =============================================================================
@@ -42,15 +44,18 @@ combine_usa_manufacturing_money().pipe(
 ).pipe(
     plot_manufacturing_money
 )
+
 # =============================================================================
 # Project: Initial Version Dated: 15 June 2015
 # =============================================================================
 plot_d(*combine_usa_d().pipe(transform_d))
+
 # =============================================================================
 # Project: Initial Version Dated: 17 February 2013
 # =============================================================================
-for _df in combine_usa_e().pipe(transform_e):
-    _df.pipe(plot_e)
+for df in combine_usa_e().pipe(transform_e):
+    df.pipe(plot_e)
+
 # =============================================================================
 # Project: BEA Data Compared with Kurenkov Yu.V. Data
 # =============================================================================

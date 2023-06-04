@@ -363,7 +363,7 @@ def read_usa_frb_us3() -> DataFrame:
 
 def read_usa_fred(series_id: str) -> DataFrame:
     """
-    ('PPIACO', 'PRIME')
+    ('PCUOMFGOMFG', 'PPIACO', 'PRIME')
 
     Returns
     -------

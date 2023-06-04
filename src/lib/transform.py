@@ -144,7 +144,7 @@ def transform_cobb_douglas(df: DataFrame, year_base: int) -> tuple[DataFrame, tu
     return df, (k, np.exp(b))
 
 
-def transform_cobb_douglas_alt(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
+def transform_cobb_douglas_alt(df: DataFrame, year_base: int) -> tuple[DataFrame, tuple[float]]:
     """
         ================== =================================
         df.index           Period
@@ -154,6 +154,7 @@ def transform_cobb_douglas_alt(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
         df.iloc[:, 3]      Product Alternative
         ================== =================================
     """
+    df = df.div(df.loc[year_base, :])
     # =========================================================================
     # Labor Capital Intensity
     # =========================================================================
@@ -225,7 +226,7 @@ def transform_cobb_douglas_alt(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
     df['_prod_comp_roll'] = df.iloc[:, -
                                     1].rolling(window=3, center=True).mean()
     df['_prod_comp_roll_sub'] = df.iloc[:, -2].sub(df.iloc[:, -1])
-    return df, (k, np.exp(b)), (_k, np.exp(_b))
+    return df, ((k, np.exp(b)), (_k, np.exp(_b)))
 
 
 def transform_cobb_douglas_extension_capital(df: DataFrame) -> DataFrame:
@@ -275,7 +276,7 @@ def transform_cobb_douglas_extension_capital(df: DataFrame) -> DataFrame:
     # =========================================================================
     # Cobb C.W., Douglas P.H. -- FRB (Blended) Series
     # =========================================================================
-    df['nominal_cbb_dg_frb'] = df.iloc[:, (8, -5)].mean(axis=1)
+    df['nominal_cbb_dg_frb'] = df.iloc[:, [8, -5]].mean(axis=1)
     # =========================================================================
     # Capital Structure Series: "Cobb C.W., Douglas P.H. -- FRB (Blended) Series" to "Douglas P.H. -- Kendrick J.W. (Blended) Series"
     # =========================================================================
@@ -304,7 +305,7 @@ def transform_cobb_douglas_extension_capital(df: DataFrame) -> DataFrame:
     # =========================================================================
     # Blending Previous Series with 'nominal_extended'
     # =========================================================================
-    df.iloc[:, -1] = df.iloc[:, (-8, -1)].mean(axis=1)
+    df.iloc[:, -1] = df.iloc[:, [-8, -1]].mean(axis=1)
     return df.iloc[:, [-1]].dropna(axis=0)
 
 
@@ -562,7 +563,7 @@ def transform_usa_frb_fa(df: DataFrame) -> DataFrame:
     """
     df['frb_nominal'] = ((df.iloc[:, 1].mul(df.iloc[:, 2]).div(df.iloc[:, 0])).add(
         df.iloc[:, 4].mul(df.iloc[:, 5]).div(df.iloc[:, 3]))).div(1000)
-    df['frb_real'] = df.iloc[:, (2, 5)].sum(axis=1).div(1000)
+    df['frb_real'] = df.iloc[:, [2, 5]].sum(axis=1).div(1000)
     return df.iloc[:, -2:]
 
 

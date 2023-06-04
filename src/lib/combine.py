@@ -22,8 +22,7 @@ from thesis.src.lib.pull import (pull_by_series_id, pull_can_capital,
 from thesis.src.lib.read import (read_can, read_temporary, read_usa_bea,
                                  read_usa_davis_ip, read_usa_frb,
                                  read_usa_frb_g17, read_usa_frb_h6,
-                                 read_usa_frb_us3, read_usa_fred,
-                                 read_usa_hist)
+                                 read_usa_frb_us3, read_usa_fred)
 from thesis.src.lib.stockpile import stockpile_usa_bea, stockpile_usa_hist
 from thesis.src.lib.transform import (transform_cobb_douglas_extension_capital,
                                       transform_mean, transform_stockpile,
@@ -93,10 +92,9 @@ def combine_cobb_douglas_deflator() -> DataFrame:
     # =========================================================================
     # =========================================================================
     # Results:
-    # {'E0183': 'dataset_uscb.zip'} or {'L0036': 'dataset_uscb.zip'}
-    # {'E0184': 'dataset_uscb.zip'} or {'L0038': 'dataset_uscb.zip'}
-    # {'E0185': 'dataset_uscb.zip'} or {'L0039': 'dataset_uscb.zip'}
-    # {'L0002': 'dataset_uscb.zip'} or {'E0052': 'dataset_uscb.zip'}
+    # {'E0183' or 'L0036': 'dataset_uscb.zip'}
+    # {'E0184' or 'L0038': 'dataset_uscb.zip'}
+    # {'E0185' or 'L0039': 'dataset_uscb.zip'}
     # =========================================================================
     # =========================================================================
     # Cost-Of-Living Indexes
@@ -118,7 +116,7 @@ def combine_cobb_douglas_deflator() -> DataFrame:
         # =========================================================================
         # Warren & Pearson
         # =========================================================================
-        'L0002': 'dataset_uscb.zip',
+        'L0002' or 'E0052': 'dataset_uscb.zip',
         'L0015': 'dataset_uscb.zip',
         'E0007': 'dataset_uscb.zip',
         'E0023': 'dataset_uscb.zip',
@@ -192,7 +190,7 @@ def combine_cobb_douglas_extension_labor() -> DataFrame:
     # TODO: Bureau of Labor Statistics
     # TODO: Federal Reserve Board
     # =========================================================================
-    FILE_NAME = "dataset_usa_reference_ru_kurenkov_yu_v.csv"
+    FILE_NAME = 'dataset_usa_reference_ru_kurenkov_yu_v.csv'
     SERIES_IDS = {
         # =====================================================================
         # Cobb C.W., Douglas P.H. Labor Series: Average Number Employed (in thousands)
@@ -226,8 +224,12 @@ def combine_cobb_douglas_extension_labor() -> DataFrame:
     df = pd.concat(
         [
             stockpile_usa_hist(SERIES_IDS),
+            # =================================================================
+            # U.S. Bureau of Economic Analysis (BEA), Manufacturing Labor Series
+            # =================================================================
             stockpile_usa_bea(SERIES_IDS_LAB).pipe(
-                transform_mean, name="bea_labor_mfg"),
+                transform_mean, name='bea_labor_mfg'
+            ),
             # =================================================================
             # Kurenkov Yu.V.
             # =================================================================
@@ -311,12 +313,15 @@ def combine_usa_capital() -> DataFrame:
         # =====================================================================
         'DT63AS01': 'dataset_douglas.zip',
         # =====================================================================
+        # 'Чистый основной капитал (в млн. долл., 1929 г.)'
+        # =====================================================================
+        # =====================================================================
         # 'brown_0x1': 'dataset_usa_brown.zip'
         # =====================================================================
     }
     return pd.concat(
         [
-            stockpile_usa_hist(SERIES_IDS).truncate(before=1869),
+            stockpile_usa_hist(SERIES_IDS),
             # =================================================================
             # FRB Data
             # =================================================================
@@ -420,7 +425,7 @@ def combine_usa_investment_turnover_bls() -> DataFrame:
     return (
         df.loc[:, ['investment', 'A191RX',
                    'capital', 'ratio_mu']].dropna(axis=0),
-        df.loc[:, ('ratio_mu',)].dropna(axis=0),
+        df.loc[:, ['ratio_mu']].dropna(axis=0),
     )
 
 
@@ -462,73 +467,6 @@ def combine_usa_investment_turnover() -> DataFrame:
     )
 
 
-def combine_usa_macroeconomics() -> DataFrame:
-    """Data Fetch"""
-    SERIES_ID = 'CAPUTL.B50001.A'
-    SERIES_IDS = {
-        # =====================================================================
-        # Nominal Gross Domestic Product Series: A191RC, 1929--2021
-        # =====================================================================
-        'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        # =====================================================================
-        # Real Gross Domestic Product Series: A191RX, 1929--2021, 2012=100
-        # =====================================================================
-        'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        # =====================================================================
-        # Deflator Gross Domestic Product, A191RD, 1929--2021, 2012=100
-        # =====================================================================
-        'A191RD': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        # =====================================================================
-        # National Income: A032RC, 1929--2021
-        # =====================================================================
-        'A032RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        # =====================================================================
-        # Fixed Assets Series: K10070, 1951--2021
-        # =====================================================================
-        'K10070': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        # =====================================================================
-        # Fixed Assets Series: k1ntotl1si00, 1925--2020
-        # =====================================================================
-        'k1ntotl1si00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
-        # =====================================================================
-        # Fixed Assets Series: k3ntotl1si00, 1925--2020
-        # =====================================================================
-        'k3ntotl1si00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
-        # =====================================================================
-        # Fixed Assets Series: k1n31gd1es00, 1925--2020
-        # =====================================================================
-        'k1n31gd1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
-        # =====================================================================
-        # Fixed Assets Series: k3n31gd1es00, 1925--2020
-        # =====================================================================
-        'k3n31gd1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
-    }
-    return pd.concat(
-        [
-            pd.concat(
-                [
-                    (
-                        read_usa_bea(url).pipe(pull_by_series_id, series_id),
-                        read_usa_bea(url).pipe(
-                            pull_by_series_id, series_id).rdiv(100)
-                    )[series_id == 'A191RD']
-                    for series_id, url in SERIES_IDS.items()
-                ],
-                axis=1,
-                sort=True
-            ),
-            stockpile_usa_bea(SERIES_IDS_LAB).pipe(
-                transform_mean, name="bea_labor_mfg"),
-            # =================================================================
-            # Capacity Utilization Series: CAPUTL.B50001.A, 1967--2012
-            # =================================================================
-            read_usa_frb_g17().loc[:, [SERIES_ID]].dropna(axis=0),
-        ],
-        axis=1,
-        sort=True
-    )
-
-
 def combine_usa_manufacturing_two_fold() -> tuple[DataFrame]:
     """
     Data Fetch Archived
@@ -563,8 +501,12 @@ def combine_usa_manufacturing_two_fold() -> tuple[DataFrame]:
     df = pd.concat(
         [
             stockpile_usa_bea(SERIES_IDS),
+            # =================================================================
+            # U.S. Bureau of Economic Analysis (BEA), Manufacturing Labor Series
+            # =================================================================
             stockpile_usa_bea(SERIES_IDS_LAB).pipe(
-                transform_mean, name="bea_labor_mfg"),
+                transform_mean, name='bea_labor_mfg'
+            ),
         ],
         axis=1
     ).dropna(axis=0)
@@ -628,8 +570,12 @@ def combine_usa_manufacturing_three_fold() -> tuple[DataFrame]:
             # Fixed Assets: kcn31gd1es00, 1925--2016, Table 4.2. Chain-Type Quantity Indexes for Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
             # =================================================================
             stockpile_usa_bea(SERIES_IDS),
+            # =================================================================
+            # U.S. Bureau of Economic Analysis (BEA), Manufacturing Labor Series
+            # =================================================================
             stockpile_usa_bea(SERIES_IDS_LAB).pipe(
-                transform_mean, name="bea_labor_mfg"),
+                transform_mean, name='bea_labor_mfg'
+            ),
             # =================================================================
             # Manufacturing Series: FRB G17 IP, AIPMA_SA_IX, 1919--2018
             # =================================================================
@@ -668,7 +614,9 @@ def combine_usa_manufacturing_latest() -> DataFrame:
             # =================================================================
             # Data Fetch for Capital
             # =================================================================
-            combine_usa_capital().pipe(transform_cobb_douglas_extension_capital),
+            combine_usa_capital().truncate(before=1869).pipe(
+                transform_cobb_douglas_extension_capital
+            ),
             # =================================================================
             # Data Fetch for Capital Deflator
             # =================================================================
@@ -1003,7 +951,7 @@ def combine_usa_investment() -> DataFrame:
         ================== =================================.
 
     """
-    FILE_NAME = "dataset_usa_0025_p_r.txt"
+    FILE_NAME = 'dataset_usa_0025_p_r.txt'
     SERIES_IDS = {
         # =====================================================================
         # Nominal Investment Series: A006RC
@@ -1250,8 +1198,11 @@ def combine_usa_kurenkov() -> DataFrame:
     return pd.concat(
         [
             stockpile_usa_bea(SERIES_IDS),
+            # =================================================================
+            # U.S. Bureau of Economic Analysis (BEA), Manufacturing Labor Series
+            # =================================================================
             stockpile_usa_bea(SERIES_IDS_LAB).pipe(
-                transform_mean, name="bea_labor_mfg"
+                transform_mean, name='bea_labor_mfg'
             ),
             read_usa_frb_us3().loc[:, ['AIPMA_SA_IX']],
             read_usa_frb_g17().loc[:, ['CAPUTL.B50001.A']],

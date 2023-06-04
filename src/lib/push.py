@@ -37,7 +37,7 @@ def push_data_frame_listing(
 
 
 def push_files_to_zip(archive_name: str, file_names: tuple[str]) -> None:
-    with ZipFile(f'{archive_name}.zip', 'w') as archive:
+    with ZipFile(archive_name, 'w') as archive:
         for file_name in file_names:
             archive.write(file_name, compress_type=zipfile.ZIP_DEFLATED)
             os.unlink(file_name)

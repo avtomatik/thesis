@@ -14,8 +14,8 @@ from thesis.src.lib.combine import (combine_cobb_douglas,
                                     combine_usa_manufacturing_three_fold,
                                     combine_usa_manufacturing_two_fold)
 from thesis.src.lib.plot import (plot_capital_purchases, plot_cobb_douglas,
-                                 plot_cobb_douglas_alt)
-from thesis.src.lib.tools import calculate_curve_fit_params
+                                 plot_cobb_douglas_alt,
+                                 plot_cobb_douglas_complex)
 from thesis.src.lib.transform import (transform_cobb_douglas,
                                       transform_cobb_douglas_alt)
 
@@ -28,60 +28,72 @@ def main(
 
     os.chdir(path_src)
     # =========================================================================
-    # Project I. Classified
+    # Project I. Archived
+    # =========================================================================
+    # =========================================================================
+    # On Original Dataset
     # =========================================================================
     df = combine_cobb_douglas(5)
-    df_b = df.iloc[:, [0, 1, 3]]
-    plot_cobb_douglas_alt(*df.pipe(transform_cobb_douglas_alt), MAP_FIG)
-    plot_cobb_douglas_alt(*df_b.pipe(transform_cobb_douglas_alt), MAP_FIG)
 
-    df_a = df.iloc[:, range(3)]
-    df_c = df.iloc[:, [0, 1, 4]]
-    df_d, df_e = combine_usa_manufacturing_two_fold()
-    df_f, df_g, df_h = combine_usa_manufacturing_three_fold()
+    plot_cobb_douglas_alt(
+        *df.iloc[:, [0, 1, 3]].pipe(transform_cobb_douglas_alt), MAP_FIG
+    )
+    plot_cobb_douglas_alt(
+        *df.iloc[:, [0, 1, 4]].pipe(transform_cobb_douglas_alt), MAP_FIG
+    )
+
+    df.iloc[:, range(3)].pipe(plot_cobb_douglas_complex)
+    df.iloc[:, [0, 1, 3]].pipe(plot_cobb_douglas_complex)
+    df.iloc[:, [0, 1, 4]].pipe(plot_cobb_douglas_complex)
 
     # =========================================================================
     # combine_cobb_douglas().pipe(
     #     transform_cobb_douglas, year_base=YEAR_BASE
-    # )[0].iloc[:, [3, 4]].pipe(calculate_curve_fit_params)
+    # )[0].iloc[:, [3, 4]].pipe(plot_cobb_douglas_complex)
     # =========================================================================
 
-    df_a.pipe(calculate_curve_fit_params)
-    df_b.pipe(calculate_curve_fit_params)
-    df_c.pipe(calculate_curve_fit_params)
+    # =========================================================================
+    # On Expanded Dataset
+    # =========================================================================
+    df_d, df_e = combine_usa_manufacturing_two_fold()
+    df_f, df_g, df_h = combine_usa_manufacturing_three_fold()
+
     # =========================================================================
     # No Capacity Utilization Adjustment
     # =========================================================================
-    df_d.pipe(calculate_curve_fit_params)
+    df_d.pipe(plot_cobb_douglas_complex)
     # =========================================================================
     # Capacity Utilization Adjustment
     # =========================================================================
-    df_e.pipe(calculate_curve_fit_params)
+    df_e.pipe(plot_cobb_douglas_complex)
     # =========================================================================
     # Option: 1929--2013, No Capacity Utilization Adjustment
     # =========================================================================
-    df_f.pipe(calculate_curve_fit_params)
+    df_f.pipe(plot_cobb_douglas_complex)
     # =========================================================================
     # Option: 1967--2013, No Capacity Utilization Adjustment
     # =========================================================================
-    df_g.pipe(calculate_curve_fit_params)
+    df_g.pipe(plot_cobb_douglas_complex)
     # =========================================================================
     # Option: 1967--2012, Capacity Utilization Adjustment
     # =========================================================================
-    df_h.pipe(calculate_curve_fit_params)
-    combine_usa_manufacturing_latest().pipe(calculate_curve_fit_params)
+    df_h.pipe(plot_cobb_douglas_complex)
+    combine_usa_manufacturing_latest().pipe(plot_cobb_douglas_complex)
 
     # =========================================================================
     # Project II. Scipy Signal Median Filter, Non-Linear Low-Pass Filter
     # =========================================================================
     plot_cobb_douglas(
-        *df_a.pipe(transform_cobb_douglas, year_base=year_base), MAP_FIG
+        *df.iloc[:, range(3)].pipe(transform_cobb_douglas,
+                                   year_base=year_base), MAP_FIG
     )
     plot_cobb_douglas(
-        *df_b.pipe(transform_cobb_douglas, year_base=year_base), MAP_FIG
+        *df.iloc[:, [0, 1, 3]].pipe(transform_cobb_douglas,
+                                    year_base=year_base), MAP_FIG
     )
     plot_cobb_douglas(
-        *df_c.pipe(transform_cobb_douglas, year_base=year_base), MAP_FIG
+        *df.iloc[:, [0, 1, 4]].pipe(transform_cobb_douglas,
+                                    year_base=year_base), MAP_FIG
     )
     plot_cobb_douglas(
         *df_d.pipe(transform_cobb_douglas, year_base=1929), MAP_FIG

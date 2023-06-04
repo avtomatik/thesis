@@ -994,7 +994,7 @@ def plot_model_capital(df: DataFrame, year_base: int) -> None:
         _df.iloc[:, -3:],
         label=['$K\\left(\\pi = \\frac{7}{8}\\right)$',
                '$K\\left(\\pi = 1\\right)$',
-               '$K\\left(\\pi = \\frac{9}{8}\\right)$', ]
+               '$K\\left(\\pi = \\frac{9}{8}\\right)$']
     )
     plt.grid()
     plt.legend()
@@ -1055,7 +1055,7 @@ def plot_cobb_douglas(df: DataFrame, params: tuple[float], mapping: dict) -> Non
     plt.legend()
     plt.figure(2)
     plt.semilogy(
-        df.iloc[:, (2, 9)],
+        df.iloc[:, [2, 9]],
         label=[
             'Actual Product',
             'Computed Product, $P\' = {:,.4f}L^{{{:,.4f}}}C^{{{:,.4f}}}$'.format(
@@ -1073,7 +1073,7 @@ def plot_cobb_douglas(df: DataFrame, params: tuple[float], mapping: dict) -> Non
     plt.legend()
     plt.figure(3)
     plt.plot(
-        df.iloc[:, (8, 11)],
+        df.iloc[:, [8, 11]],
         label=[
             'Deviations of $P$',
             'Deviations of $P\'$',
@@ -1144,7 +1144,7 @@ def plot_cobb_douglas_3d(df: DataFrame) -> None:
     plt.show()
 
 
-def plot_cobb_douglas_alt(df: DataFrame, params: tuple[float], mapping: dict) -> None:
+def plot_cobb_douglas_alt(df: DataFrame, params: tuple[tuple[float]], mapping: dict) -> None:
     """
     Cobb--Douglas Algorithm as per C.W. Cobb, P.H. Douglas. A Theory of Production, 1928;
     """
@@ -1162,31 +1162,29 @@ def plot_cobb_douglas_alt(df: DataFrame, params: tuple[float], mapping: dict) ->
     )
     plt.xlabel('Period')
     plt.ylabel('Indexes')
-    plt.title(mapping['fg_a'].format(*df.index[[0, -1]],
-                                     mapping['year_base']))
+    plt.title(mapping['fg_a'].format(*df.index[[0, -1]], mapping['year_base']))
     plt.grid()
     plt.legend()
     plt.figure(2)
     plt.plot(
-        df.iloc[:, (3, 17)],
+        df.iloc[:, [3, 17]],
         label=[
             'Actual Product',
             'Computed Product, $P\' = {:,.4f}L^{{{:,.4f}}}C^{{{:,.4f}}}$'.format(
-                params[1],
-                1-params[0],
-                params[0],
+                params[0][1],
+                1-params[0][0],
+                params[0][0],
             ),
         ]
     )
     plt.xlabel('Period')
     plt.ylabel('Production')
-    plt.title(mapping['fg_b'].format(*df.index[[0, -1]],
-                                     mapping['year_base']))
+    plt.title(mapping['fg_b'].format(*df.index[[0, -1]], mapping['year_base']))
     plt.grid()
     plt.legend()
     plt.figure(3)
     plt.plot(
-        df.iloc[:, (15, 18)],
+        df.iloc[:, [15, 18]],
         label=[
             'Deviations of $P$',
             'Deviations of $P\'$',
@@ -1212,12 +1210,12 @@ def plot_cobb_douglas_alt(df: DataFrame, params: tuple[float], mapping: dict) ->
     lc = np.arange(0.2, 1.0, 0.005)
     plt.plot(
         lc,
-        lab_productivity(lc, *params),
+        lab_productivity(lc, *params[0]),
         label='$\\frac{3}{4}\\frac{P}{L}$'
     )
     plt.plot(
         lc,
-        cap_productivity(lc, *params),
+        cap_productivity(lc, *params[0]),
         label='$\\frac{1}{4}\\frac{P}{C}$'
     )
     plt.xlabel('$\\frac{L}{C}$')
@@ -2387,7 +2385,7 @@ def plot_capital_acquisition(df: DataFrame) -> None:
     # =========================================================================
     # Pi & Pi Switch Points
     # =========================================================================
-    pi, _knots = [], [0, ]
+    pi, _knots = [], [0]
     _ = 0
     if N == 1:
         _knots.append(_df.index[-1])
@@ -2412,7 +2410,7 @@ def plot_capital_acquisition(df: DataFrame) -> None:
     # =========================================================================
     # Calculate Dynamic Values
     # =========================================================================
-    _calculated = [np.nan, ]
+    _calculated = [np.nan]
     if N == 1:
         j = 0
         for i in range(_knots[j], _knots[1 + j]):
@@ -2594,7 +2592,7 @@ def plot_capital_retirement(df: DataFrame) -> None:
     # =========================================================================
     # Pi & Pi Switch Points
     # =========================================================================
-    pi, _knots = [], [0, ]
+    pi, _knots = [], [0]
     _ = 0
     if N == 1:
         _knots.append(_df.index[-1])
@@ -2621,11 +2619,11 @@ def plot_capital_retirement(df: DataFrame) -> None:
     # =========================================================================
     # Fixed Assets Retirement Value
     # =========================================================================
-    _value = [np.nan, ]
+    _value = [np.nan]
     # =========================================================================
     # Fixed Assets Retirement Ratio
     # =========================================================================
-    _ratio = [np.nan, ]
+    _ratio = [np.nan]
     if N == 1:
         j = 0
         for i in range(_knots[j], _knots[1 + j]):

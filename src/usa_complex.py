@@ -13,9 +13,14 @@ from thesis.src.lib.plot import plot_uscb_complex
 from thesis.src.lib.stockpile import stockpile_usa_hist
 from thesis.src.lib.transform import transform_cobb_douglas
 
+# =============================================================================
+# Subproject VIII. Complex
+# =============================================================================
+
 YEAR_BASE = 1899
-df = combine_cobb_douglas().pipe(transform_cobb_douglas,
-                                 year_base=YEAR_BASE)[0].iloc[:, range(5)]
+df = combine_cobb_douglas().pipe(
+    transform_cobb_douglas, year_base=YEAR_BASE
+)[0].iloc[:, range(5)]
 
 for column in df.columns:
     df.loc[:, [column]].pipe(plot_uscb_complex)

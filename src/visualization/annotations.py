@@ -9,8 +9,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from pandas import DataFrame
 
-from thesis.src.lib.combine import (combine_usa_macroeconomics,
-                                    combine_usa_manufacturing_latest)
+from remnants.src.lib.combine import combine_usa_macroeconomics
+from thesis.src.lib.combine import combine_usa_manufacturing_latest
 from thesis.src.lib.plot import plot_increment
 
 
@@ -109,7 +109,7 @@ def main(
     # =========================================================================
 
     os.chdir(path_src)
-    df = combine_usa_macroeconomics().pipe(transform_macroeconomics)
+    df = combine_usa_macroeconomics().pipe(transform_usa_macroeconomics)
 
     # =========================================================================
     # Option 1: 1967--2012
