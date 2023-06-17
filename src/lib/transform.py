@@ -10,8 +10,8 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame
 
-from thesis.src.lib.pull import pull_by_series_id
-from thesis.src.lib.tools import get_price_base_nr
+from lib.pull import pull_by_series_id
+from lib.tools import get_price_base_nr
 
 
 def transform_investment_manufacturing(df: DataFrame) -> DataFrame:

@@ -16,15 +16,14 @@ from pandas import DataFrame
 from scipy.signal import wiener
 from sklearn.impute import SimpleImputer
 
-from thesis.src.lib.constants import SERIES_IDS_LAB
-from thesis.src.lib.pull import (pull_by_series_id, pull_can_capital,
+from lib.constants import SERIES_IDS_LAB
+from lib.pull import (pull_by_series_id, pull_can_capital,
                                  pull_can_capital_former)
-from thesis.src.lib.read import (read_can, read_temporary, read_usa_bea,
-                                 read_usa_davis_ip, read_usa_frb,
+from lib.read import (read_can, read_temporary, read_usa_davis_ip, read_usa_frb,
                                  read_usa_frb_g17, read_usa_frb_h6,
                                  read_usa_frb_us3, read_usa_fred)
-from thesis.src.lib.stockpile import stockpile_usa_bea, stockpile_usa_hist
-from thesis.src.lib.transform import (transform_cobb_douglas_extension_capital,
+from lib.stockpile import stockpile_usa_bea, stockpile_usa_hist
+from lib.transform import (transform_cobb_douglas_extension_capital,
                                       transform_mean, transform_stockpile,
                                       transform_sum, transform_usa_frb_fa,
                                       transform_usa_frb_fa_def,

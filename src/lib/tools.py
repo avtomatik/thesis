@@ -11,17 +11,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import scipy.optimize as optimization
+from lib.stockpile import stockpile_usa_hist
+from lib.transform import transform_deflator
 from pandas import DataFrame
 from scipy.interpolate import UnivariateSpline
 from sklearn.metrics import r2_score
 
-from thesis.src.lib.stockpile import stockpile_usa_hist
-from thesis.src.lib.transform import transform_deflator
-
 
 def calculate_capital(df: DataFrame, p_i: tuple[float], p_t: tuple[float], ratio: float) -> pd.Series:
     """
-    
+
 
     Parameters
     ----------
@@ -915,7 +914,7 @@ def simple_linear_regression(df: DataFrame) -> tuple[DataFrame, tuple[float]]:
     print('Model: Yhat = {:,.4f} + {:,.4f}*X'.format(*params[::-1]))
     for _, param in enumerate(params[::-1]):
         print(f'Model Parameter: A_{_} = {param:,.4f}')
-    
+
     print(
         'Model Result: ESS = {:,.4f}; TSS = {:,.4f}; R^2 = {:,.4f}'.format(
             _ess[0],
@@ -1002,4 +1001,3 @@ def lab_productivity(array: np.array, k: float = 0.25, b: float = 1.01) -> np.ar
 
 def cap_productivity(array: np.array, k: float = 0.25, b: float = 1.01) -> np.array:
     return np.multiply(np.power(array, 1-k), b)
-

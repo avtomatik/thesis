@@ -1,27 +1,26 @@
-from thesis.src.lib.constants import MEASURES_KENDRICK, TITLES_KENDRICK
-from thesis.src.lib.plot import plot_douglas
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Jun 17 19:00:30 2023
 
+@author: green-machine
+"""
 
-def usa_kendrick() -> None:
+import os
+
+from lib.constants import TITLES_KENDRICK, YLABELS_KENDRICK
+from lib.plot import plot_douglas
+
+if __name__ == '__main__':
     # =========================================================================
     # Kendrick Macroeconomic Series
     # =========================================================================
-    ARCHIVE_NAME = 'dataset_usa_kendrick.zip'
-    GROUP_ITERS = (
-        0,
-        8,
-        19,
-        30,
-        38,
-        46,
-        54,
-        60,
-        72,
-        84,
-        96,
-        100,
-        111,
-        118,
-    )
 
-    plot_douglas(ARCHIVE_NAME, GROUP_ITERS, TITLES_KENDRICK, MEASURES_KENDRICK)
+    PATH_SRC = '/home/green-machine/data_science/data/interim'
+
+    ARCHIVE_NAME = 'dataset_usa_kendrick.zip'
+
+    os.chdir(PATH_SRC)
+
+    plot_douglas(ARCHIVE_NAME, TITLES_KENDRICK, YLABELS_KENDRICK, 'description', 'K')
+

@@ -102,7 +102,7 @@ TITLES_DOUGLAS = (
         [
             'Chart 71. Birth, Death, and Net Fertility Rates in France, 1801$-$1931.',
             'Table XXIX Birth, Death and Net Fertility Rates for France, 1801$-$1931.',
-            'Source: Statistique generale de la France: Mouvement de la Population.'
+            'Source: Statistique générale de la France: Mouvement de la Population.'
         ]
     ),
     '\n'.join(
@@ -111,7 +111,7 @@ TITLES_DOUGLAS = (
             'Table XXX Birth, Death And Net Fertility Rates For:',
             '(A) Germany, 1871$-$1931;',
             '(B) Prussia, 1816$-$1930.',
-            'Source: Statistisches Jahrbuch fur das Deutsche Reich.'
+            'Source: Statistisches Jahrbuch für das Deutsche Reich.'
         ]
     ),
     '\n'.join(
@@ -143,10 +143,14 @@ DATA_PLOT_DOUGLAS = {
 }
 
 
-TITLES_DEU = (
-    'Germany Birth Rate', 'Germany Death Rate', 'Germany Net Fertility Rate',
-    'Prussia Birth Rate', 'Prussia Death Rate', 'Prussia Net Fertility Rate',
-)
+TITLES_DEU = [
+    'Germany Birth Rate',
+    'Germany Death Rate',
+    'Germany Net Fertility Rate',
+    'Prussia Birth Rate',
+    'Prussia Death Rate',
+    'Prussia Net Fertility Rate',
+]
 
 
 COUNTRIES = [
@@ -172,8 +176,12 @@ TITLES_KENDRICK = (
     'Table A-XV National Economy: Real Capital Stocks, By Major Sector, 1869$-$1957 (Millions Of 1929 Dollars)',
     'Table A-XVI Domestic Economy And Private Sectors: Real Capital Stocks, By Major Type, 1869$-$1953 (Millions Of 1929 Dollars)',
     'Table A-XIX National Economy: Real Net Product, Inputs, And Productivity Ratios, Kuznets Concept, National Security Version, 1869$-$1957 (1929=100)',
-    'Table A-XXII Private Domestic Economy. Real Gross Product, Inputs, And Productivity Ratios, Commerce Concept, 1869$-$1957 (1929=100)',
-    'Table A-XXII: Supplement Private Domestic Economy: Productivity Ratios Based On Unweighted Inputs, 1869$-$1957 (1929=100)',
+    '\n'.join(
+        [
+            'Table A-XXII Private Domestic Economy. Real Gross Product, Inputs, And Productivity Ratios, Commerce Concept, 1869$-$1957 (1929=100)',
+            'Table A-XXII: Supplement Private Domestic Economy: Productivity Ratios Based On Unweighted Inputs, 1869$-$1957 (1929=100)'
+        ]
+    ),
     'Table A-XXIII Private Domestic Nonfarm Economy: Real Gross Product, Inputs, And Productivity Ratios, Commerce Concept, 1869$-$1957 (1929=100)',
     'Table D-II. Manufacturing: Output, Labor Inputs, and Labor Productivity Ratios, 1869-1957 (1929=100)',
 )
@@ -203,7 +211,7 @@ YLABELS_DOUGLAS = (
 )
 
 
-MEASURES_KENDRICK = (
+YLABELS_KENDRICK = (
     'Millions Of 1929 Dollars',
     'Millions Of 1929 Dollars',
     'Millions Of Current Dollars',
@@ -212,7 +220,6 @@ MEASURES_KENDRICK = (
     'Millions',
     'Millions Of 1929 Dollars',
     'Millions Of 1929 Dollars',
-    'Percentage',
     'Percentage',
     'Percentage',
     'Percentage',

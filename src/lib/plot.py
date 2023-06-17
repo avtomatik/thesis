@@ -14,24 +14,24 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from common import get_fig_map
+from lib.combine import combine_data_frames_by_columns
+from lib.pull import (pull_by_series_id, pull_series_ids_description,
+                      pull_uscb_description)
+from lib.read import read_usa_hist, read_usa_nber, read_worldbank
+from lib.stockpile import stockpile_usa_hist
+from lib.tools import (calculate_capital, cap_productivity, filter_kol_zur,
+                       filter_rolling_mean, get_price_base_nr,
+                       lab_productivity,
+                       simple_linear_regression)
+from lib.transform import (transform_agg, transform_cobb_douglas,
+                           transform_rebase)
 from pandas import DataFrame
 from pandas.plotting import autocorrelation_plot, lag_plot
 from scipy import stats
 from sklearn.metrics import r2_score
 
-from thesis.src.common import get_fig_map
-from thesis.src.lib.combine import combine_data_frames_by_columns
-from thesis.src.lib.pull import (pull_by_series_id,
-                                 pull_series_ids_description,
-                                 pull_uscb_description)
-from thesis.src.lib.read import read_usa_hist, read_usa_nber, read_worldbank
-from thesis.src.lib.stockpile import stockpile_usa_hist
-from thesis.src.lib.tools import (calculate_capital, cap_productivity,
-                                  filter_kol_zur, filter_rolling_mean,
-                                  get_price_base_nr, lab_productivity,
-                                  simple_linear_regression)
-from thesis.src.lib.transform import (transform_agg, transform_cobb_douglas,
-                                      transform_rebase)
+from common import get_labels, group_series_ids
 
 
 def plot_investment_manufacturing(df: DataFrame) -> None:
@@ -1338,86 +1338,53 @@ def plot_cobb_douglas_tight_layout(df: DataFrame, params: tuple[float], mapping:
 
 def plot_douglas(
     archive_name: str,
-    group_iters: tuple[int],
     titles: tuple[str],
-    measures: tuple[str],
-    legends: tuple[str] = None,
-    start_at: int = 1,
-    skip: int = 1
+    ylabels: tuple[str],
+    key: str,
+    scenario: str,
 ) -> None:
     """
-    Specialised Plotting
+
 
     Parameters
     ----------
     archive_name : str
-        File Name of Archive for Dataset.
-    group_iters : tuple[int]
-        Iteration Groups.
+        DESCRIPTION.
     titles : tuple[str]
-        Plot Titles.
-    measures : tuple[str]
-        Series Dimenstion.
-    legends : tuple[str], optional
-        Additional Sublabels. The default is None.
-    start_at : int, optional
-        Number of the First Plot. The default is 1.
-    skip : int, optional
-        Step over Iteration. The default is 1.
+        DESCRIPTION.
+    ylabels : tuple[str]
+        DESCRIPTION.
 
     Returns
     -------
     None
+        DESCRIPTION.
+
     """
-    MAP_SERIES_IDS = pull_series_ids_description(archive_name)
-    _SERIES_IDS = tuple(MAP_SERIES_IDS.keys())
-    if not legends is None:
-        for _n, (_lw, _up, _tt, _mr, _lb) in enumerate(
-                zip(
-                    group_iters[:-1],
-                    group_iters[1:],
-                    titles,
-                    measures,
-                    legends
-                ),
-                start=start_at
-        ):
-            plt.figure(_n)
-            for _ in range(_lw, _up, skip):
-                plt.plot(
-                    read_usa_hist(archive_name).pipe(
-                        pull_by_series_id, _SERIES_IDS[_]),
-                    label=MAP_SERIES_IDS[_SERIES_IDS[_]]
-                )
-            plt.title(_tt)
-            plt.xlabel('Period')
-            plt.ylabel(_mr)
-            plt.grid()
-            if not _lb is None:
-                plt.legend(_lb)
-            plt.show()
-    else:
-        for _n, (_lw, _up, _tt, _mr) in enumerate(
-                zip(
-                    group_iters[:-1],
-                    group_iters[1:],
-                    titles,
-                    measures,
-                ),
-                start=start_at
-        ):
-            plt.figure(_n)
-            for _ in range(_lw, _up, skip):
-                plt.plot(
-                    read_usa_hist(archive_name).pipe(
-                        pull_by_series_id, _SERIES_IDS[_]),
-                    label=MAP_SERIES_IDS[_SERIES_IDS[_]]
-                )
-            plt.title(_tt)
-            plt.xlabel('Period')
-            plt.ylabel(_mr)
-            plt.grid()
-            plt.show()
+    map_series_ids = pull_series_ids_description(archive_name, key)
+
+    series_ids_struct = {}
+    for series_id_group, series_ids in group_series_ids(sorted(map_series_ids), scenario).items():
+        series_ids_struct[series_id_group] = dict(
+            zip(series_ids, [archive_name] * len(series_ids))
+        )
+
+    labels = get_labels(archive_name, key, scenario)
+
+    for _, (series_ids, title, ylabel, label) in enumerate(
+            zip(series_ids_struct.values(), titles, ylabels, labels)
+    ):
+        plt.figure(_)
+        plt.plot(
+            stockpile_usa_hist(series_ids),
+            label=label
+        )
+        plt.title(title)
+        plt.xlabel('Period')
+        plt.ylabel(ylabel)
+        plt.grid()
+        plt.legend()
+        plt.show()
 
 
 def plot_elasticity(df: DataFrame, plot_title: tuple[str]) -> None:

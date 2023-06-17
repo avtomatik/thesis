@@ -12,16 +12,7 @@ Subproject XII. USA Douglas & Kendrick
 from thesis.src.usa_douglas import usa_douglas
 from thesis.src.usa_kendrick import usa_kendrick
 
-
-def main():
-
+if __name__ == '__main__':
     usa_douglas()
 
-    # =========================================================================
-    # {'KTA10S07': 'dataset_usa_kendrick.zip'}, {'KTA10S08': 'dataset_usa_kendrick.zip'} Not Working
-    # =========================================================================
     usa_kendrick()
-
-
-if __name__ == '__main__':
-    main()

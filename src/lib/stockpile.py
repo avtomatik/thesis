@@ -7,10 +7,9 @@ Created on Sun Jun 12 11:52:01 2022
 
 
 import pandas as pd
+from lib.pull import pull_by_series_id
+from lib.read import read_usa_bea, read_usa_hist
 from pandas import DataFrame
-
-from thesis.src.lib.pull import pull_by_series_id
-from thesis.src.lib.read import read_usa_bea, read_usa_hist
 
 
 def stockpile_usa_bea(series_ids: dict[str, str]) -> DataFrame:
