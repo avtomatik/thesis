@@ -5,27 +5,27 @@ Created on Sun Mar 26 03:26:36 2023
 
 @author: green-machine
 
-Subproject X. USA Census
+Project X. USA Census
 """
 
 import itertools
 
-from thesis.src.lib.combine import (combine_uscb_employment_conflicts,
-                                    combine_uscb_trade_by_countries,
-                                    combine_uscb_unemployment_hours_worked)
-from thesis.src.lib.plot import (plot_uscb_employment_conflicts,
-                                 plot_uscb_finance, plot_uscb_gnp,
-                                 plot_uscb_immigration, plot_uscb_money_stock,
-                                 plot_uscb_trade, plot_uscb_trade_by_countries,
-                                 plot_uscb_trade_gold_silver,
-                                 plot_uscb_unemployment_hours_worked)
-from thesis.src.lib.stockpile import stockpile_usa_hist
-from thesis.src.lib.transform import transform_sum
-from thesis.src.uscb_capital import uscb_capital
-from thesis.src.uscb_commodities import uscb_commodities
-from thesis.src.uscb_farm_lands import uscb_farm_lands
-from thesis.src.uscb_manufacturing import uscb_manufacturing
-from thesis.src.uscb_metals import uscb_metals
+from lib.combine import (combine_uscb_employment_conflicts,
+                         combine_uscb_trade_by_countries,
+                         combine_uscb_unemployment_hours_worked)
+from lib.plot import (plot_uscb_employment_conflicts, plot_uscb_finance,
+                      plot_uscb_gnp, plot_uscb_immigration,
+                      plot_uscb_money_stock, plot_uscb_trade,
+                      plot_uscb_trade_by_countries,
+                      plot_uscb_trade_gold_silver,
+                      plot_uscb_unemployment_hours_worked)
+from lib.stockpile import stockpile_usa_hist
+from lib.transform import transform_sum
+from uscb_capital import uscb_capital
+from uscb_commodities import uscb_commodities
+from uscb_farm_lands import uscb_farm_lands
+from uscb_manufacturing import uscb_manufacturing
+from uscb_metals import uscb_metals
 
 uscb_manufacturing()
 

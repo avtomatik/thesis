@@ -8,10 +8,9 @@ Created on Sun Nov 20 17:42:38 2022
 
 import numpy as np
 import pandas as pd
-from pandas import DataFrame
-
 from lib.pull import pull_by_series_id
 from lib.tools import get_price_base_nr
+from pandas import DataFrame
 
 
 def transform_investment_manufacturing(df: DataFrame) -> DataFrame:
@@ -125,7 +124,7 @@ def transform_cobb_douglas(df: DataFrame, year_base: int) -> tuple[DataFrame, tu
     # =========================================================================
     # Product Trend Line=3 Year Moving Average
     # =========================================================================
-    df['prod_roll'] = df.iloc[:, 2].rolling(window=3, center=True).mean()
+    df['prod_roll'] = df.iloc[:, 2].rolling(3, center=True).mean()
     df['prod_roll_sub'] = df.iloc[:, 2].sub(df.iloc[:, -1])
     # =========================================================================
     # Computed Product
@@ -135,7 +134,7 @@ def transform_cobb_douglas(df: DataFrame, year_base: int) -> tuple[DataFrame, tu
     # =========================================================================
     # Computed Product Trend Line=3 Year Moving Average
     # =========================================================================
-    df['prod_comp_roll'] = df.iloc[:, -1].rolling(window=3, center=True).mean()
+    df['prod_comp_roll'] = df.iloc[:, -1].rolling(3, center=True).mean()
     df['prod_comp_roll_sub'] = df.iloc[:, -2].sub(df.iloc[:, -1])
     # =========================================================================
     #     print(f"R**2: {r2_score(df.iloc[:, 2], df.iloc[:, 3]):,.4f}")
@@ -182,7 +181,7 @@ def transform_cobb_douglas_alt(df: DataFrame, year_base: int) -> tuple[DataFrame
     # =========================================================================
     # Product Trend Line=3 Year Moving Average
     # =========================================================================
-    df['prod_roll'] = df.iloc[:, 2].rolling(window=3, center=True).mean()
+    df['prod_roll'] = df.iloc[:, 2].rolling(3, center=True).mean()
     df['prod_roll_sub'] = df.iloc[:, 2].sub(df.iloc[:, -1])
     # =========================================================================
     # Computed Product
@@ -192,7 +191,7 @@ def transform_cobb_douglas_alt(df: DataFrame, year_base: int) -> tuple[DataFrame
     # =========================================================================
     # Computed Product Trend Line=3 Year Moving Average
     # =========================================================================
-    df['prod_comp_roll'] = df.iloc[:, -1].rolling(window=3, center=True).mean()
+    df['prod_comp_roll'] = df.iloc[:, -1].rolling(3, center=True).mean()
     df['prod_comp_roll_sub'] = df.iloc[:, -2].sub(df.iloc[:, -1])
     # =========================================================================
     # Labor Productivity Alternative
@@ -213,7 +212,7 @@ def transform_cobb_douglas_alt(df: DataFrame, year_base: int) -> tuple[DataFrame
     # =========================================================================
     # Product Alternative Trend Line=3 Year Moving Average
     # =========================================================================
-    df['_prod_roll'] = df.iloc[:, 3].rolling(window=3, center=True).mean()
+    df['_prod_roll'] = df.iloc[:, 3].rolling(3, center=True).mean()
     df['_prod_roll_sub'] = df.iloc[:, 3].sub(df.iloc[:, -1])
     # =========================================================================
     # Computed Product Alternative
@@ -224,7 +223,7 @@ def transform_cobb_douglas_alt(df: DataFrame, year_base: int) -> tuple[DataFrame
     # Computed Product Alternative Trend Line=3 Year Moving Average
     # =========================================================================
     df['_prod_comp_roll'] = df.iloc[:, -
-                                    1].rolling(window=3, center=True).mean()
+                                    1].rolling(3, center=True).mean()
     df['_prod_comp_roll_sub'] = df.iloc[:, -2].sub(df.iloc[:, -1])
     return df, ((k, np.exp(b)), (_k, np.exp(_b)))
 

@@ -14,7 +14,7 @@ from thesis.src.lib.transform import transform_cobb_douglas
 
 def main(year_base: int = 2012) -> None:
     # =========================================================================
-    # Subproject V. Cobb--Douglas for Canada
+    # Project V. Cobb--Douglas for Canada
     # =========================================================================
     # =========================================================================
     # First Figure: Exact Correspondence with 'note_incomplete_th05_2014_07_10.docx'

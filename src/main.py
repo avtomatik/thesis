@@ -15,16 +15,17 @@ import usa_bea
 import usa_bea_approximation
 import usa_capital
 import usa_complex
-import usa_douglas_kendrick
 import usa_mc_connell
-import uscb
 import uscb_manufacturing_complex
 
 import lash_up_spline
+import uscb
+from thesis.src.usa_douglas import usa_douglas
+from thesis.src.usa_kendrick import usa_kendrick
 
 
 def main():
-    
+
     usa_bea_approximation()
 
     usa_mc_connell()
@@ -42,22 +43,24 @@ def main():
     usa_complex()
 
     # =========================================================================
-    # Subproject IX. USA BEA
+    # Project IX. USA BEA
     # =========================================================================
     usa_bea()
     # =========================================================================
-    # Subproject X. USA Census
+    # Project X. USA Census
     # =========================================================================
     uscb()
     # =========================================================================
-    # Subproject XI. USA Census J14
+    # Project XI. USA Census J14
     # =========================================================================
     uscb_manufacturing_complex()
     # =========================================================================
-    # Subproject XII. USA Douglas & Kendrick
+    # Project XII. USA Douglas & Kendrick
     # =========================================================================
-    usa_douglas_kendrick()
+    usa_douglas()
+
+    usa_kendrick()
+
 
 if __name__ == '__main__':
     main()
-

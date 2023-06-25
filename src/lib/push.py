@@ -6,9 +6,6 @@ Created on Sun Jun 12 12:40:09 2022
 @author: Alexander Mikhailov
 """
 
-import os
-import zipfile
-from zipfile import ZipFile
 
 from pandas import DataFrame
 
@@ -34,10 +31,3 @@ def push_data_frame_listing(
         for _, series_id in enumerate(df.columns):
             print(f'{series_id:*^50}', file=f)
             print(sorted(set(df.iloc[:, _])), file=f)
-
-
-def push_files_to_zip(archive_name: str, file_names: tuple[str]) -> None:
-    with ZipFile(archive_name, 'w') as archive:
-        for file_name in file_names:
-            archive.write(file_name, compress_type=zipfile.ZIP_DEFLATED)
-            os.unlink(file_name)

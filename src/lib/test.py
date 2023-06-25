@@ -7,9 +7,9 @@ Created on Sun Jun 12 12:19:54 2022
 """
 
 
-from thesis.src.lib.pull import pull_by_series_id
-from thesis.src.lib.read import read_usa_bls
-from thesis.src.lib.stockpile import stockpile_usa_bea, stockpile_usa_hist
+from lib.pull import pull_by_series_id
+from lib.read import read_usa_bls
+from lib.stockpile import stockpile_usa_bea, stockpile_usa_hist
 
 
 def options_reviewed():

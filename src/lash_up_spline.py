@@ -5,7 +5,7 @@ Created on Sun Mar 26 03:14:01 2023
 
 @author: green-machine
 
-Subproject VII. Lash-Up Spline
+Project VII. Lash-Up Spline
 """
 
 from thesis.src.lib.combine import combine_cobb_douglas
@@ -15,7 +15,7 @@ from thesis.src.lib.tools import (lash_up_spline_ea, lash_up_spline_eb,
 from thesis.src.lib.transform import transform_cobb_douglas
 
 # =============================================================================
-# Subproject VII. Lash-Up Spline
+# Project VII. Lash-Up Spline
 # =============================================================================
 # =============================================================================
 # Lash-Up Splines

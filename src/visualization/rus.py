@@ -8,8 +8,8 @@ Created on Wed Dec 18 21:04:02 2019
 
 import os
 
-from thesis.src.lib.plot import plot_rus_grigoriev, plot_rus_is_lm
-from thesis.src.lib.read import read_rus_grigoriev, read_rus_is_lm
+from lib.plot import plot_rus_grigoriev, plot_rus_is_lm
+from lib.read import read_rus_grigoriev, read_rus_is_lm
 
 
 def main(path_src: str = '/media/green-machine/KINGSTON') -> None:

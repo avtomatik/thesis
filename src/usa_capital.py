@@ -5,17 +5,17 @@ Created on Sun Mar 26 02:50:18 2023
 
 @author: green-machine
 
-Subproject II. Capital
+Project II. Capital
 """
 
-from thesis.src.lib.combine import (combine_usa_investment_turnover,
-                                    combine_usa_investment_turnover_bls)
-from thesis.src.lib.plot import plot_fourier_discrete, plot_model_capital
+from lib.combine import (combine_usa_investment_turnover,
+                         combine_usa_investment_turnover_bls)
+from lib.plot import plot_fourier_discrete, plot_model_capital
 
 
 def main() -> None:
     # =========================================================================
-    # Subproject II. Capital
+    # Project II. Capital
     # =========================================================================
     # =========================================================================
     # Project: Fixed Assets Dynamics Modelling:

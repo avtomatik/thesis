@@ -12,7 +12,7 @@ def main() -> None:
         f'P{_:04n}': ARCHIVE_NAME
         for _ in itertools.chain(
             range(248, 252),
-            (262,),
+            [262],
             range(265, 270),
             range(293, 296),
         )

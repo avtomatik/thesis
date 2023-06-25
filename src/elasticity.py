@@ -5,7 +5,7 @@ Created on Sun Mar 26 03:09:50 2023
 
 @author: green-machine
 
-Subproject VI. Elasticity
+Project VI. Elasticity
 """
 
 from thesis.src.lib.plot import plot_elasticity, plot_growth_elasticity

@@ -257,3 +257,27 @@ MAP_READ_CAN = {
     36100305: {'period': 0, 'series_id': 9, 'value': 11},
     36100434: {'period': 0, 'series_id': 10, 'value': 12}
 }
+
+
+SERIES_IDS_PRCH = {
+    'P0107': 'dataset_uscb.zip',
+    'P0110': 'dataset_uscb.zip',
+}
+
+
+SERIES_IDS_CB = {
+    'E0007': 'dataset_uscb.zip',
+    # 'E0008': 'dataset_uscb.zip',
+    'E0023': 'dataset_uscb.zip',
+    'E0040': 'dataset_uscb.zip',
+    'E0068': 'dataset_uscb.zip',
+    # # =====================================================================
+    # # Snyder-Tucker
+    # # =====================================================================
+    # 'L0001': 'dataset_uscb.zip',
+    # =====================================================================
+    # Warren & Pearson
+    # =====================================================================
+    'L0002' or 'E0052': 'dataset_uscb.zip',
+    'L0015': 'dataset_uscb.zip',
+}

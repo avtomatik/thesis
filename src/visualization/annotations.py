@@ -7,11 +7,11 @@ import os
 
 import matplotlib.pyplot as plt
 import pandas as pd
+from lib.combine import combine_usa_manufacturing_latest
+from lib.plot import plot_increment
 from pandas import DataFrame
 
 from remnants.src.lib.combine import combine_usa_macroeconomics
-from thesis.src.lib.combine import combine_usa_manufacturing_latest
-from thesis.src.lib.plot import plot_increment
 
 
 def transform_add_dx_dy(df: DataFrame) -> DataFrame:

@@ -5,16 +5,16 @@ Created on Sun Mar 26 03:16:06 2023
 
 @author: green-machine
 
-Subproject VIII. Complex
+Project VIII. Complex
 """
 
-from thesis.src.lib.combine import combine_cobb_douglas
-from thesis.src.lib.plot import plot_uscb_complex
-from thesis.src.lib.stockpile import stockpile_usa_hist
-from thesis.src.lib.transform import transform_cobb_douglas
+from lib.combine import combine_cobb_douglas
+from lib.plot import plot_uscb_complex
+from lib.stockpile import stockpile_usa_hist
+from lib.transform import transform_cobb_douglas
 
 # =============================================================================
-# Subproject VIII. Complex
+# Project VIII. Complex
 # =============================================================================
 
 YEAR_BASE = 1899

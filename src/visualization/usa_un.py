@@ -6,9 +6,8 @@ Created on Sat May  2 22:26:24 2020
 """
 
 
-import pandas as pd
-
-from thesis.src.lib.read import read_unstats
+from lib.read import read_unstats
+from pandas import DataFrame
 
 
 def main() -> None:

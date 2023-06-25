@@ -14,7 +14,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from common import get_fig_map
+from common import get_fig_map, get_labels, group_series_ids
 from lib.combine import combine_data_frames_by_columns
 from lib.pull import (pull_by_series_id, pull_series_ids_description,
                       pull_uscb_description)
@@ -22,16 +22,13 @@ from lib.read import read_usa_hist, read_usa_nber, read_worldbank
 from lib.stockpile import stockpile_usa_hist
 from lib.tools import (calculate_capital, cap_productivity, filter_kol_zur,
                        filter_rolling_mean, get_price_base_nr,
-                       lab_productivity,
-                       simple_linear_regression)
+                       lab_productivity, simple_linear_regression)
 from lib.transform import (transform_agg, transform_cobb_douglas,
                            transform_rebase)
 from pandas import DataFrame
 from pandas.plotting import autocorrelation_plot, lag_plot
 from scipy import stats
 from sklearn.metrics import r2_score
-
-from common import get_labels, group_series_ids
 
 
 def plot_investment_manufacturing(df: DataFrame) -> None:
@@ -50,13 +47,13 @@ def plot_investment_manufacturing(df: DataFrame) -> None:
             *df.index[[0, -1]]
         )
     )
-    new_var = [
+    LABEL = [
         'Gross Private Domestic Investment',
         'National Income',
     ]
 
     plt.plot(
-        df.iloc[:, -4:-2], label=new_var
+        df.iloc[:, -4:-2], label=LABEL
     )
     plt.xlabel('Period')
     plt.ylabel('Index')
@@ -128,14 +125,14 @@ def plot_manufacturing_money(df: DataFrame) -> None:
 
     """
     plt.figure()
-    new_var = [
+    LABEL = [
         'Real Gross Domestic Product',
         'Money Supply',
         'Real Gross Domestic Investment',
     ]
 
     plt.plot(
-        df.iloc[:, range(2, 5)], label=new_var
+        df.iloc[:, range(2, 5)], label=LABEL
     )
     plt.title('Indexes, {}$-${}'.format(*df.index[[0, -1]]))
     plt.xlabel('Period')
@@ -248,25 +245,25 @@ def plot_e(df: DataFrame) -> None:
     )
     plt.xlabel('Investment, Billions of Dollars')
     plt.ylabel('Gross Domestic Product, Billions of Dollars')
-    new_var = [
+    LABEL = [
         '$P(I)$',
         'Investment to Production'
     ]
 
-    plt.legend(new_var)
+    plt.legend(LABEL)
     plt.grid()
     plt.show()
 
 
 def plot_uscb_manufacturing(df: DataFrame, year_base: int) -> None:
     plt.figure()
-    new_var = [
+    LABEL = [
         'Fabricant S., Shiskin J., NBER',
         'E. Frickey',
     ]
 
     plt.plot(
-        df.iloc[:, [0, 2]], label=new_var
+        df.iloc[:, [0, 2]], label=LABEL
     )
     plt.plot(df.iloc[:, 1], color='red', linewidth=4, label='W.M. Persons')
     plt.axvline(x=year_base, linestyle=':')
@@ -285,8 +282,8 @@ def plot_uscb_manufacturing(df: DataFrame, year_base: int) -> None:
 def plot_uscb_cap(df: DataFrame) -> None:
     """Census Manufacturing Fixed Assets Series"""
     plt.figure()
-    new_var = ['Total', 'Structures', 'Equipment']
-    plt.semilogy(df, label=new_var)
+    LABEL = ['Total', 'Structures', 'Equipment']
+    plt.semilogy(df, label=LABEL)
     plt.title(
         'Census Manufacturing Fixed Assets, {}$-${}'.format(
             *df.index[[0, -1]]
@@ -437,12 +434,12 @@ def plot_uscb_employment_conflicts(df: DataFrame) -> None:
 
 def plot_uscb_gnp(df: DataFrame) -> None:
     plt.figure()
-    new_var = [
+    LABEL = [
         'Gross National Product',
         'Gross National Product Per Capita',
     ]
 
-    plt.plot(df, label=new_var)
+    plt.plot(df, label=LABEL)
     plt.title(
         'Gross National Product, Prices {}=100, {}=100'.format(
             1958, df.index[0]
@@ -467,13 +464,13 @@ def plot_uscb_farm_lands(df: DataFrame) -> None:
 
 def plot_uscb_trade(df: DataFrame) -> None:
     plt.figure()
-    new_var = [
+    LABEL = [
         'Exports, U1',
         'Imports, U8',
         'Net Exports, U15',
     ]
 
-    plt.plot(df, label=new_var)
+    plt.plot(df, label=LABEL)
     plt.title(
         'Exports & Imports of Goods and Services, {}$-${}'.format(
             *df.index[[0, -1]]
@@ -488,13 +485,13 @@ def plot_uscb_trade(df: DataFrame) -> None:
 
 def plot_uscb_trade_gold_silver(df: DataFrame) -> None:
     plt.figure()
-    new_var = [
+    LABEL = [
         'Exports, U187',
         'Imports, U188',
         'Net Exports, U189',
     ]
 
-    plt.plot(df, label=new_var)
+    plt.plot(df, label=LABEL)
     plt.title(
         'Total Merchandise, Gold and Silver, {}$-${}'.format(
             *df.index[[0, -1]]
@@ -545,15 +542,15 @@ def plot_uscb_trade_by_countries(df: DataFrame) -> None:
 def plot_uscb_money_stock(df: DataFrame) -> None:
     YEAR_BASE = 1915
     plt.figure()
-    new_var = [
+    LABEL = [
         'Currency Held by the Public',
         'M1 Money Supply (Currency Plus Demand Deposits)',
         'M2 Money Supply (M1 Plus Time Deposits)',
     ]
 
-    plt.semilogy(df, label=new_var)
+    plt.semilogy(df, label=LABEL)
     plt.axvline(x=YEAR_BASE, linestyle=':')
-    plt.title('Currency Dynamics, {}=100'.format(YEAR_BASE))
+    plt.title(f'Currency Dynamics, {YEAR_BASE}=100')
     plt.xlabel('Period')
     plt.ylabel('Percentage')
     plt.grid()
@@ -675,7 +672,7 @@ def plot_approx_linear_log(df: DataFrame, year_base: int, params: np.ndarray) ->
             year_base, *df.index[[0, -1]]
         )
     )
-    plt.xlabel('Logarithm Prime Rate, $X(\\tau)$, {}=100'.format(df.index[0]))
+    plt.xlabel(f'Logarithm Prime Rate, $X(\\tau)$, {df.index[0]}=100')
     plt.ylabel(
         'Logarithm {}, $Y(\\tau)$, {}=100, {}=100'.format(
             MAP_DESC[df.columns[3]], year_base, df.index[0]
@@ -774,7 +771,7 @@ def plot_lab_cap_inty(df: DataFrame) -> None:
     )
     plt.plot(
         df_o.iloc[:, 3],
-        label='Single Exponential Smoothing, Alpha={:,.2f}'.format(0.25)
+        label=f'Single Exponential Smoothing, Alpha={0.25:,.2f}'
     )
     plt.plot(
         df_e,
@@ -850,15 +847,15 @@ def plot_lab_prty(df: DataFrame) -> None:
     )
     plt.plot(
         df_o.iloc[:, 3],
-        label='Single Exponential Smoothing, Alpha={:,.2f}'.format(0.25)
+        label=f'Single Exponential Smoothing, Alpha={0.25:,.2f}'
     )
     plt.plot(
         df_o.iloc[:, 4],
-        label='Single Exponential Smoothing, Alpha={:,.2f}'.format(0.35)
+        label=f'Single Exponential Smoothing, Alpha={0.35:,.2f}'
     )
     plt.plot(
         df_o.iloc[:, 5],
-        label='Single Exponential Smoothing, Alpha={:,.2f}'.format(0.45)
+        label=f'Single Exponential Smoothing, Alpha={0.45:,.2f}'
     )
     plt.plot(
         df_e,
@@ -906,7 +903,7 @@ def plot_built_in() -> None:
     _df = read_worldbank(SOURCE_ID)
     for func in FUNCTIONS:
         for _, country in enumerate(_df.columns, start=1):
-            chunk = _df.loc[:, (country,)].dropna(axis=0)
+            chunk = _df.loc[:, [country]].dropna(axis=0)
             if not chunk.empty:
                 plt.figure(_)
                 partial(func, chunk)()
@@ -989,7 +986,7 @@ def plot_model_capital(df: DataFrame, year_base: int) -> None:
     plt.figure(4)
     plt.title('$K$ for the US, {}$-${}'.format(*_df.index[[0, -2]]))
     plt.xlabel('Period')
-    plt.ylabel('Billions of Dollars, {}=100'.format(year_base))
+    plt.ylabel(f'Billions of Dollars, {year_base}=100')
     plt.semilogy(
         _df.iloc[:, -3:],
         label=['$K\\left(\\pi = \\frac{7}{8}\\right)$',
@@ -1004,8 +1001,8 @@ def plot_model_capital(df: DataFrame, year_base: int) -> None:
 def plot_capital_purchases(df: DataFrame) -> None:
     assert df.shape[1] == 27, "Works on DataFrame Produced with 'combine_usa_capital_purchases()"
     plt.figure()
-    new_var = [
-        '$s^{2;1}_{Cobb-Douglas}$',
+    LABEL = [
+        '$s^{2;1}_{Cobb--Douglas}$',
         'Total',
         'Structures',
         'Equipment',
@@ -1013,7 +1010,7 @@ def plot_capital_purchases(df: DataFrame) -> None:
 
     plt.semilogy(
         df.loc[:, (df.columns[0], *df.columns[-3:])],
-        label=new_var
+        label=LABEL
     )
     plt.title('Fixed Assets Purchases, {}$-${}'.format(*df.index[[0, -1]]))
     plt.xlabel('Period')

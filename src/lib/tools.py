@@ -644,7 +644,7 @@ def run_lash_up_spline(df: DataFrame, kernel: callable) -> None:
         df_splined.iloc[:, 0],
         df_splined.iloc[:, 2],
         color='red',
-        label='$s_{}(\\tau)$'.format(0,)
+        label=f'$s_{0}(\\tau)$'
     )
     _go_no_go = input('Does the Resulting Series Need an Improvement?, Y: ')
     if _go_no_go.lower() == 'y':
@@ -669,7 +669,7 @@ def run_lash_up_spline(df: DataFrame, kernel: callable) -> None:
             df_splined.iloc[:, 0],
             df_splined.iloc[:, 2],
             color='g',
-            label='$s_{}(\\tau)$'.format(1,)
+            label=f'$s_{1}(\\tau)$'
         )
     plt.grid()
     plt.legend()

@@ -5,7 +5,7 @@ Created on Sun Mar 26 02:40:19 2023
 
 @author: green-machine
 
-Subproject I. Approximation
+Project I. Approximation
 """
 
 

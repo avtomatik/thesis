@@ -68,6 +68,9 @@ def get_blueprint(year_base: int = 2012) -> dict:
 
 
 def group_series_ids(series_ids: list[str], scenario: str, sep: str = 'S', upper_bound: int = 4) -> dict[str, list[str]]:
+    # =============================================================================
+    # TODO: Refactor
+    # =============================================================================
     series_id_groups = {}
 
     if scenario == 'K':
@@ -79,6 +82,7 @@ def group_series_ids(series_ids: list[str], scenario: str, sep: str = 'S', upper
             else:
                 series_id_groups[series_id_group_here].append(series_id)
             series_id_group_init = series_id_group_here
+
     if scenario == 'D':
         series_id_group = ''
         for series_id in series_ids:
@@ -92,6 +96,9 @@ def group_series_ids(series_ids: list[str], scenario: str, sep: str = 'S', upper
 
 
 def get_labels(archive_name: str, key: str, scenario: str) -> list[list[str]]:
+    # =============================================================================
+    # TODO: Refactor
+    # =============================================================================
     map_series_ids = pull_series_ids_description(archive_name, key)
 
     series_ids_struct = {}

@@ -12,23 +12,20 @@ from operator import itemgetter
 from pathlib import Path
 
 import pandas as pd
+from lib.constants import SERIES_IDS_LAB, SERIES_IDS_PRCH
+from lib.pull import (pull_by_series_id, pull_can_capital,
+                      pull_can_capital_former)
+from lib.read import (read_can, read_temporary, read_usa_davis_ip,
+                      read_usa_frb, read_usa_frb_g17, read_usa_frb_h6,
+                      read_usa_frb_us3, read_usa_fred)
+from lib.stockpile import stockpile_usa_bea, stockpile_usa_hist
+from lib.transform import (transform_cobb_douglas_extension_capital,
+                           transform_mean, transform_stockpile, transform_sum,
+                           transform_usa_frb_fa, transform_usa_frb_fa_def,
+                           transform_usa_manufacturing, transform_year_sum)
 from pandas import DataFrame
 from scipy.signal import wiener
 from sklearn.impute import SimpleImputer
-
-from lib.constants import SERIES_IDS_LAB
-from lib.pull import (pull_by_series_id, pull_can_capital,
-                                 pull_can_capital_former)
-from lib.read import (read_can, read_temporary, read_usa_davis_ip, read_usa_frb,
-                                 read_usa_frb_g17, read_usa_frb_h6,
-                                 read_usa_frb_us3, read_usa_fred)
-from lib.stockpile import stockpile_usa_bea, stockpile_usa_hist
-from lib.transform import (transform_cobb_douglas_extension_capital,
-                                      transform_mean, transform_stockpile,
-                                      transform_sum, transform_usa_frb_fa,
-                                      transform_usa_frb_fa_def,
-                                      transform_usa_manufacturing,
-                                      transform_year_sum)
 
 
 def combine_cobb_douglas(series_number: int = 3) -> DataFrame:
@@ -78,100 +75,35 @@ def combine_cobb_douglas(series_number: int = 3) -> DataFrame:
     return df.iloc[:, range(series_number)].dropna(axis=0)
 
 
-def combine_cobb_douglas_deflator() -> DataFrame:
+def combine_deflator_hist(SERIES_IDS_CB, SERIES_IDS_PRCH) -> DataFrame:
     """Fixed Assets Deflator, 2009=100"""
     # =========================================================================
-    # TODO: Change Name; Be Careful with Usage Due to Change in Behavior
+    # TODO: Be Careful with Usage Due to Change in Behavior
     # =========================================================================
     # =========================================================================
-    # Combine L2, L15, E7, E23, E40, E68 & P107/P110
+    # Combine E0007, E0023, E0040, E0068, L0002, L0015 & P107/P110
     # =========================================================================
     # =========================================================================
-    # Bureau of Labor Statistics: Data Not Used As It Covers Only Years of 1998--2017
+    # TODO: Bureau of Labor Statistics: PPIACO
     # =========================================================================
-    # =========================================================================
-    # Results:
-    # {'E0183' or 'L0036': 'dataset_uscb.zip'}
-    # {'E0184' or 'L0038': 'dataset_uscb.zip'}
-    # {'E0185' or 'L0039': 'dataset_uscb.zip'}
-    # =========================================================================
-    # =========================================================================
-    # Cost-Of-Living Indexes
-    # =========================================================================
-    # =========================================================================
-    # E0183: Federal Reserve Bank, 1913=100
-    # E0184: Burgess, 1913=100
-    # E0185: Douglas, 1890-99=100
-    # =========================================================================
-    # Bureau of the Census
-    # =========================================================================
-    # Correlation Test:
-    # 'df.corr(method='kendall')'
-    # 'df.corr(method='pearson')'
-    # 'df.corr(method='spearman')'
-    # Correlation Test Result: kendall & pearson & spearman: L2, L15, E7, E23, E40, E68
-    # =========================================================================
-    SERIES_IDS_CB = {
-        # =========================================================================
-        # Warren & Pearson
-        # =========================================================================
-        'L0002' or 'E0052': 'dataset_uscb.zip',
-        'L0015': 'dataset_uscb.zip',
-        'E0007': 'dataset_uscb.zip',
-        'E0023': 'dataset_uscb.zip',
-        'E0040': 'dataset_uscb.zip',
-        'E0068': 'dataset_uscb.zip',
-    }
-    SERIES_IDS_PRCH = {
-        'P0107': 'dataset_uscb.zip',
-        'P0110': 'dataset_uscb.zip',
-    }
-    # =========================================================================
-    # Bureau of Economic Analysis
-    # =========================================================================
-    SERIES_IDS_EA = {
-        # =====================================================================
-        # Fixed Assets: k1n31gd1es00, 1925--2019, Table 4.1. Current-Cost Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
-        # =====================================================================
-        'k1n31gd1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
-        # =====================================================================
-        # Fixed Assets: kcn31gd1es00, 1925--2019, Table 4.2. Chain-Type Quantity Indexes for Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
-        # =====================================================================
-        'kcn31gd1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
-    }
-    df = pd.concat(
+
+    return pd.concat(
         [
             # =================================================================
             # Bureau of the Census
             # =================================================================
-            stockpile_usa_hist(SERIES_IDS_CB).truncate(before=1794),
-            stockpile_usa_hist(SERIES_IDS_PRCH).truncate(before=1885),
-            # =================================================================
-            # Bureau of Economic Analysis
-            # =================================================================
-            stockpile_usa_bea(SERIES_IDS_EA),
+            stockpile_usa_hist(SERIES_IDS_CB).pct_change().truncate(
+                before=1795
+            ).pipe(transform_mean, name='df_uscb'),
+            construct_usa_hist_deflator(SERIES_IDS_PRCH).truncate(before=1885),
             # =================================================================
             # Federal Reserve Board Data
             # =================================================================
-            read_usa_frb().pipe(transform_usa_frb_fa_def),
+            read_usa_frb().pipe(transform_usa_frb_fa_def).pct_change(),
         ],
-        axis=1
-    )
-    SERIES_IDS_CB = tuple(SERIES_IDS_CB)
-    SERIES_IDS_EA = tuple(SERIES_IDS_EA)
-    df['fa_def_cb'] = df.loc[:, SERIES_IDS_CB[-2]
-                             ].div(df.loc[:, SERIES_IDS_CB[-1]])
-    df['ppi_bea'] = df.loc[:, SERIES_IDS_EA[0]].div(
-        df.loc[:, SERIES_IDS_EA[1]]).div(df.loc[2012, SERIES_IDS_EA[0]]).mul(100)
-    df.drop(
-        [*SERIES_IDS_CB[-2:], *SERIES_IDS_EA],
         axis=1,
-        inplace=True
+        sort=True
     )
-    # =========================================================================
-    # Strip Deflators
-    # =========================================================================
-    return df.pct_change()
 
 
 def combine_cobb_douglas_extension_labor() -> DataFrame:
@@ -462,7 +394,7 @@ def combine_usa_investment_turnover() -> DataFrame:
     return (
         df.loc[:, ['_investment', 'A191RX',
                    '_capital', '_ratio_mu']].dropna(axis=0),
-        df.loc[:, ('_ratio_mu',)].dropna(axis=0),
+        df.loc[:, ['_ratio_mu']].dropna(axis=0),
     )
 
 
@@ -606,7 +538,7 @@ def combine_usa_manufacturing_three_fold() -> tuple[DataFrame]:
 def combine_usa_manufacturing_latest() -> DataFrame:
     """Data Fetch"""
     # =========================================================================
-    # TODO: Update Accodring to Change in combine_cobb_douglas_deflator()
+    # TODO: Update Accodring to Change in combine_deflator_hist()
     # =========================================================================
     df_capital = pd.concat(
         [
@@ -619,7 +551,7 @@ def combine_usa_manufacturing_latest() -> DataFrame:
             # =================================================================
             # Data Fetch for Capital Deflator
             # =================================================================
-            combine_cobb_douglas_deflator().pipe(
+            combine_deflator_hist().pipe(
                 transform_mean, name="def_mean").dropna(axis=0),
         ],
         axis=1,
@@ -772,7 +704,7 @@ def combine_uscb_metals() -> tuple[DataFrame, tuple[int]]:
         SERIES_IDS_EXT, map(itemgetter(1), SERIES_IDS_EXT.values())
     ))
     for series_id, year in SERIES_IDS.items():
-        df.loc[:, series_id] = df.loc[:, (series_id,)].div(
+        df.loc[:, series_id] = df.loc[:, [series_id]].div(
             df.loc[year, series_id]
         )
     return df.mul(100), tuple(map(itemgetter(1), SERIES_IDS_EXT.values()))
