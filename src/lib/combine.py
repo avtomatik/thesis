@@ -108,7 +108,7 @@ def combine_deflator_hist(SERIES_IDS_CB, SERIES_IDS_PRCH) -> DataFrame:
 
 def combine_cobb_douglas_extension_labor() -> DataFrame:
     """
-    Manufacturing Laborers` Series Comparison
+    Manufacturing Laborers' Series Comparison
     Returns
     -------
     DataFrame
@@ -121,7 +121,16 @@ def combine_cobb_douglas_extension_labor() -> DataFrame:
     # TODO: Bureau of Labor Statistics
     # TODO: Federal Reserve Board
     # =========================================================================
+
+    YEAR_BASE = 1929
+    COL_NAME = 'historical'
+
     FILE_NAME = 'dataset_usa_reference_ru_kurenkov_yu_v.csv'
+    # =========================================================================
+    # Kendrick J.W., Productivity Trends in the United States, Table D-II, 'Persons Engaged' Column, pp. 465--466
+    # =========================================================================
+    SERIES_ID = {'KTD02S02': 'dataset_usa_kendrick.zip'}
+
     SERIES_IDS = {
         # =====================================================================
         # Cobb C.W., Douglas P.H. Labor Series: Average Number Employed (in thousands)
@@ -132,13 +141,14 @@ def combine_cobb_douglas_extension_labor() -> DataFrame:
         # =====================================================================
         'D0069': 'dataset_uscb.zip',
         # =====================================================================
-        # Bureau of the Census 1949, J0004
-        # =====================================================================
-        'J0004': 'dataset_uscb.zip',
-        # =====================================================================
         # Bureau of the Census 1975, D0130
         # =====================================================================
         'D0130': 'dataset_uscb.zip',
+    } or {
+        # =====================================================================
+        # Bureau of the Census 1949, J0004
+        # =====================================================================
+        'J0004': 'dataset_uscb.zip',
         # =====================================================================
         # Bureau of the Census 1975, P0005
         # =====================================================================
@@ -147,33 +157,28 @@ def combine_cobb_douglas_extension_labor() -> DataFrame:
         # Bureau of the Census 1975, P0062
         # =====================================================================
         'P0062': 'dataset_uscb.zip',
-        # =====================================================================
-        # Kendrick J.W., Productivity Trends in the United States, Table D-II, 'Persons Engaged' Column, pp. 465--466
-        # =====================================================================
-        'KTD02S02': 'dataset_usa_kendrick.zip',
     }
+
     df = pd.concat(
         [
             stockpile_usa_hist(SERIES_IDS),
-            # =================================================================
-            # U.S. Bureau of Economic Analysis (BEA), Manufacturing Labor Series
-            # =================================================================
             stockpile_usa_bea(SERIES_IDS_LAB).pipe(
                 transform_mean, name='bea_labor_mfg'
             ),
-            # =================================================================
-            # Kurenkov Yu.V.
-            # =================================================================
-            read_temporary(FILE_NAME).iloc[:, [1]],
+            read_temporary(FILE_NAME).iloc[:, [1]]
         ],
         axis=1
-    ).truncate(before=1889)
-    YEAR_BASE = 1899
-    df.iloc[:, 6] = df.iloc[:, 6].mul(
-        df.loc[YEAR_BASE, df.columns[0]]
-    ).div(df.loc[YEAR_BASE, df.columns[6]])
-    df['labor'] = df.iloc[:, (0, 1, 3, 6, 7, 8)].mean(axis=1)
-    return df.iloc[:, [-1]]
+    ).pipe(transform_mean, name=COL_NAME)
+
+    return pd.concat(
+        [
+            stockpile_usa_hist(SERIES_ID).mul(
+                df.at[YEAR_BASE, COL_NAME]
+            ).div(100),
+            df
+        ],
+        axis=1
+    ).pipe(transform_mean, name='labor_combined')
 
 
 def combine_cobb_douglas_extension_manufacturing() -> DataFrame:

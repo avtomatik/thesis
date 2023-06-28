@@ -324,12 +324,12 @@ def plot_uscb_metals(df: DataFrame, years_base: tuple[int]) -> None:
         'P295 - Railroad Freight Cars Produced, {}=100',
     )
     _DESCS = map(lambda _: _[0].format(_[-1]), zip(_DESCS_RAW, years_base))
-    _MAPPING = dict(zip(df.columns, _DESCS))
+    MAP_DESCS = dict(zip(df.columns, _DESCS))
     _COLUMN_LOCS = filter(lambda _: _ not in range(1, 6), range(df.shape[1]))
     plt.figure(1)
     plt.semilogy(
         df.iloc[:, range(1, 6)],
-        label=[_MAPPING[_] for _ in df.columns[range(1, 6)]]
+        label=[MAP_DESCS[_] for _ in df.columns[range(1, 6)]]
     )
     for _ in range(1, 6):
         plt.axvline(x=years_base[_], linestyle=':')
@@ -341,7 +341,7 @@ def plot_uscb_metals(df: DataFrame, years_base: tuple[int]) -> None:
     plt.figure(2)
     plt.semilogy(
         df.iloc[:, _COLUMN_LOCS],
-        label=[_MAPPING[_] for _ in df.columns[_COLUMN_LOCS]]
+        label=[MAP_DESCS[_] for _ in df.columns[_COLUMN_LOCS]]
     )
     for _ in _COLUMN_LOCS:
         plt.axvline(x=years_base[_], linestyle=':')
