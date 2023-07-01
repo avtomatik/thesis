@@ -4,7 +4,6 @@ import os
 
 import matplotlib.pyplot as plt
 from lib.constants import COUNTRIES
-
 from thesis_work.src.usa_douglas import stockpile_usa_hist
 
 if __name__ == '__main__':

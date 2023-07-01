@@ -9,7 +9,6 @@ Created on Sun Apr  2 13:18:11 2023
 
 ARCHIVE_NAMES_UTILISED = (
     'dataset_douglas.zip',
-    'dataset_rus_m1.zip',
     'dataset_usa_bea-nipa-selected.zip',
     'dataset_usa_brown.zip',
     'dataset_usa_cobb-douglas.zip',
@@ -21,7 +20,6 @@ ARCHIVE_NAMES_UTILISED = (
 
 
 FILE_NAMES_UTILISED = (
-    'dataset_rus_grigoriev_v.csv',
     'dataset_usa_0025_p_r.txt',
     'dataset_usa_bls-2015-02-23-ln.data.1.AllData',
     'dataset_usa_bls-2017-07-06-ln.data.1.AllData',

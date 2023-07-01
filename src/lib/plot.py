@@ -1563,11 +1563,6 @@ def plot_fourier_discrete(df: DataFrame, precision: int = 10) -> None:
     plt.show()
 
 
-def plot_rus_grigoriev(df: DataFrame) -> None:
-    for series_id in sorted(set(df.loc[:, "series"])):
-        df.pipe(pull_by_series_id, series_id).plot(grid=True)
-
-
 def plot_growth_elasticity(df: DataFrame) -> None:
     """Growth Elasticity Plotting
         ================== =================================
@@ -1645,30 +1640,6 @@ def plot_increment(
         )
     else:
         plt.show()
-
-
-def plot_rus_is_lm(df: DataFrame) -> None:
-    """
-    Plotting
-
-    Parameters
-    ----------
-    df : DataFrame
-        DESCRIPTION.
-
-    Returns
-    -------
-    None
-        DESCRIPTION.
-
-    """
-    plt.figure()
-    plt.plot(df.iloc[:, 0], df.iloc[:, 1])
-    plt.xlabel('Percentage')
-    plt.ylabel('RUB, Millions')
-    plt.title('M1 Dependency on Prime Rate')
-    plt.grid()
-    plt.show()
 
 
 def plot_filter_kol_zur(df: DataFrame) -> None:

@@ -45,34 +45,36 @@ def combine_cobb_douglas(series_number: int = 3) -> DataFrame:
         df.iloc[:, 2]      Product
         ================== =================================
     """
-    SERIES_IDS_EXT = {
+    MAP = {
+        'CDT2S4': 'capital',
+        'CDT3S1': 'labor',
+        'J0014': 'product',
+        'J0013': 'product_nber',
+        'DT24AS01': 'product_rev',
+    }
+    SERIES_IDS = {
         # =====================================================================
         # Cobb C.W., Douglas P.H. Capital Series: Total Fixed Capital in 1880 dollars (4)
         # =====================================================================
-        'CDT2S4': ('dataset_usa_cobb-douglas.zip', 'capital'),
+        'CDT2S4': 'dataset_usa_cobb-douglas.zip',
         # =====================================================================
         # Cobb C.W., Douglas P.H. Labor Series: Average Number Employed (in thousands)
         # =====================================================================
-        'CDT3S1': ('dataset_usa_cobb-douglas.zip', 'labor'),
+        'CDT3S1': 'dataset_usa_cobb-douglas.zip',
         # =====================================================================
         # Bureau of the Census, 1949, Page 179, J14: Warren M. Persons, Index of Physical Production of Manufacturing
         # =====================================================================
-        'J0014': ('dataset_uscb.zip', 'product'),
+        'J0014': 'dataset_uscb.zip',
         # =====================================================================
         # Bureau of the Census, 1949, Page 179, J13: National Bureau of Economic Research Index of Physical Output, All Manufacturing Industries.
         # =====================================================================
-        'J0013': ('dataset_uscb.zip', 'product_nber'),
+        'J0013': 'dataset_uscb.zip',
         # =====================================================================
         # The Revised Index of Physical Production for All Manufacturing In the United States, 1899--1926
         # =====================================================================
-        'DT24AS01': ('dataset_douglas.zip', 'product_rev'),
+        'DT24AS01': 'dataset_douglas.zip',
     }
-    SERIES_IDS = dict(zip(
-        SERIES_IDS_EXT, map(itemgetter(0), SERIES_IDS_EXT.values())
-    ))
-    df = stockpile_usa_hist(SERIES_IDS)
-    df.columns = map(itemgetter(1), SERIES_IDS_EXT.values())
-    return df.iloc[:, range(series_number)].dropna(axis=0)
+    return stockpile_usa_hist(SERIES_IDS).rename(columns=MAP).iloc[:, range(series_number)].dropna(axis=0)
 
 
 def combine_deflator_hist(SERIES_IDS_CB, SERIES_IDS_PRCH) -> DataFrame:

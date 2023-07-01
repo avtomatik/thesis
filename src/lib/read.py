@@ -89,44 +89,6 @@ def read_temporary(
     return pd.read_csv(**kwargs)
 
 
-def read_rus_grigoriev() -> DataFrame:
-    """
-
-
-    Returns
-    -------
-    DataFrame
-        DESCRIPTION.
-
-    """
-    kwargs = {
-        'filepath_or_buffer': 'dataset_rus_grigoriev_v.csv',
-        'index_col': 1,
-        'usecols': range(2, 5)
-    }
-    return pd.read_csv(**kwargs).sort_index()
-
-
-def read_rus_is_lm() -> DataFrame:
-    """
-    Read Data
-
-    Returns
-    -------
-    DataFrame
-        DESCRIPTION.
-
-    """
-    kwargs = {
-        'filepath_or_buffer': 'dataset_rus_m1.zip',
-        'names': ('period', 'prime_rate', 'm1'),
-        'index_col': 0,
-        'skiprows': 1,
-        'parse_dates': True
-    }
-    return pd.read_csv(**kwargs)
-
-
 def read_unstats(url: str = 'https://unstats.un.org/unsd/amaapi/api/file/2') -> DataFrame:
     """
 
