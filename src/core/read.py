@@ -14,9 +14,8 @@ from zipfile import ZipFile
 
 import pandas as pd
 import requests
+from core.constants import MAP_READ_CAN, MAP_READ_USA_HIST
 from pandas import DataFrame
-
-from .constants import MAP_READ_CAN, MAP_READ_USA_HIST
 
 
 @cache

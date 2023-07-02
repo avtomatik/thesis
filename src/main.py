@@ -17,11 +17,11 @@ import usa_capital
 import usa_complex
 import usa_mc_connell
 import uscb_manufacturing_complex
+from core.usa_douglas import usa_douglas
+from core.usa_kendrick import usa_kendrick
 
 import lash_up_spline
 import uscb
-from thesis.src.usa_douglas import usa_douglas
-from thesis.src.usa_kendrick import usa_kendrick
 
 
 def main():

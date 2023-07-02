@@ -7,17 +7,14 @@ Created on Wed Feb  5 22:19:02 2020
 
 import os
 
-from thesis.src.common import get_fig_map
-from thesis.src.lib.combine import (combine_cobb_douglas,
-                                    combine_usa_capital_purchases,
-                                    combine_usa_manufacturing_latest,
-                                    combine_usa_manufacturing_three_fold,
-                                    combine_usa_manufacturing_two_fold)
-from thesis.src.lib.plot import (plot_capital_purchases, plot_cobb_douglas,
-                                 plot_cobb_douglas_alt,
-                                 plot_cobb_douglas_complex)
-from thesis.src.lib.transform import (transform_cobb_douglas,
-                                      transform_cobb_douglas_alt)
+from core.combine import (combine_cobb_douglas, combine_usa_capital_purchases,
+                          combine_usa_manufacturing_latest,
+                          combine_usa_manufacturing_three_fold,
+                          combine_usa_manufacturing_two_fold)
+from core.common import get_fig_map
+from core.plot import (plot_capital_purchases, plot_cobb_douglas,
+                       plot_cobb_douglas_alt, plot_cobb_douglas_complex)
+from core.transform import transform_cobb_douglas, transform_cobb_douglas_alt
 
 
 def main(

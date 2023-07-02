@@ -1,5 +1,5 @@
-from thesis.src.lib.plot import plot_uscb_manufacturing
-from thesis.src.lib.stockpile import stockpile_usa_hist
+from core.plot import plot_uscb_manufacturing
+from core.stockpile import stockpile_usa_hist
 
 
 def main():

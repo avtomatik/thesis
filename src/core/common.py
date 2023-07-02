@@ -1,5 +1,5 @@
-from lib.constants import TITLES_DEU
-from lib.pull import pull_series_ids_description
+from core.constants import TITLES_DEU
+from core.pull import pull_series_ids_description
 
 
 def get_fig_map(year_base: int = 1899) -> dict[str, str]:

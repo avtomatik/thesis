@@ -7,8 +7,8 @@ Created on Sun Jun 12 11:52:01 2022
 
 
 import pandas as pd
-from lib.pull import pull_by_series_id
-from lib.read import read_usa_bea, read_usa_hist
+from core.pull import pull_by_series_id
+from core.read import read_usa_bea, read_usa_hist
 from pandas import DataFrame
 
 

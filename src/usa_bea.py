@@ -9,18 +9,16 @@ Project IX. USA BEA
 """
 
 
-from thesis.src.lib.combine import (combine_usa_d, combine_usa_e,
-                                    combine_usa_investment,
-                                    combine_usa_investment_manufacturing,
-                                    combine_usa_kurenkov,
-                                    combine_usa_manufacturing_money)
-from thesis.src.lib.plot import (plot_d, plot_e, plot_investment,
-                                 plot_investment_manufacturing,
-                                 plot_manufacturing_money, plot_usa_kurenkov)
-from thesis.src.lib.read import read_temporary
-from thesis.src.lib.transform import (transform_d, transform_e,
-                                      transform_investment,
-                                      transform_investment_manufacturing)
+from core.combine import (combine_usa_d, combine_usa_e, combine_usa_investment,
+                          combine_usa_investment_manufacturing,
+                          combine_usa_kurenkov,
+                          combine_usa_manufacturing_money)
+from core.plot import (plot_d, plot_e, plot_investment,
+                       plot_investment_manufacturing, plot_manufacturing_money,
+                       plot_usa_kurenkov)
+from core.read import read_temporary
+from core.transform import (transform_d, transform_e, transform_investment,
+                            transform_investment_manufacturing)
 
 # =============================================================================
 # Project: Initial Version Dated: 05 October 2012

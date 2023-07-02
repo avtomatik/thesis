@@ -14,17 +14,17 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from common import get_fig_map, get_labels, group_series_ids
-from lib.combine import combine_data_frames_by_columns
-from lib.pull import (pull_by_series_id, pull_series_ids_description,
-                      pull_uscb_description)
-from lib.read import read_usa_hist, read_usa_nber, read_worldbank
-from lib.stockpile import stockpile_usa_hist
-from lib.tools import (calculate_capital, cap_productivity, filter_kol_zur,
-                       filter_rolling_mean, get_price_base_nr,
-                       lab_productivity, simple_linear_regression)
-from lib.transform import (transform_agg, transform_cobb_douglas,
-                           transform_rebase)
+from core.combine import combine_data_frames_by_columns
+from core.common import get_fig_map, get_labels, group_series_ids
+from core.pull import (pull_by_series_id, pull_series_ids_description,
+                       pull_uscb_description)
+from core.read import read_usa_hist, read_usa_nber, read_worldbank
+from core.stockpile import stockpile_usa_hist
+from core.tools import (calculate_capital, cap_productivity, filter_kol_zur,
+                        filter_rolling_mean, get_price_base_nr,
+                        lab_productivity, simple_linear_regression)
+from core.transform import (transform_agg, transform_cobb_douglas,
+                            transform_rebase)
 from pandas import DataFrame
 from pandas.plotting import autocorrelation_plot, lag_plot
 from scipy import stats

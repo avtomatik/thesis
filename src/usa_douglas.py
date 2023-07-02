@@ -8,8 +8,8 @@ Created on Thu Jun 15 23:30:39 2023
 
 import os
 
-from lib.constants import TITLES_DOUGLAS, YLABELS_DOUGLAS
-from lib.plot import plot_douglas
+from core.constants import TITLES_DOUGLAS, YLABELS_DOUGLAS
+from core.plot import plot_douglas
 
 if __name__ == '__main__':
     # =========================================================================

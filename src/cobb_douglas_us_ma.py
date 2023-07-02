@@ -1,9 +1,9 @@
 import os
 
-from thesis.src.common import get_fig_map_us_ma
-from thesis.src.lib.plot import plot_cobb_douglas
-from thesis.src.lib.stockpile import stockpile_usa_hist
-from thesis.src.lib.transform import transform_cobb_douglas
+from core.common import get_fig_map_us_ma
+from core.plot import plot_cobb_douglas
+from core.stockpile import stockpile_usa_hist
+from core.transform import transform_cobb_douglas
 
 
 def main(

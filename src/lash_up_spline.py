@@ -8,11 +8,11 @@ Created on Sun Mar 26 03:14:01 2023
 Project VII. Lash-Up Spline
 """
 
-from thesis.src.lib.combine import combine_cobb_douglas
-from thesis.src.lib.tools import (lash_up_spline_ea, lash_up_spline_eb,
-                                  lash_up_spline_la, lash_up_spline_lb,
-                                  lash_up_spline_lls, run_lash_up_spline)
-from thesis.src.lib.transform import transform_cobb_douglas
+from core.combine import combine_cobb_douglas
+from core.tools import (lash_up_spline_ea, lash_up_spline_eb,
+                        lash_up_spline_la, lash_up_spline_lb,
+                        lash_up_spline_lls, run_lash_up_spline)
+from core.transform import transform_cobb_douglas
 
 # =============================================================================
 # Project VII. Lash-Up Spline

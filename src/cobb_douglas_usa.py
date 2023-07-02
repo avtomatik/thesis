@@ -8,10 +8,10 @@ Created on Mon Apr 12 22:46:08 2021
 
 import os
 
-from thesis.src.common import get_fig_map
-from thesis.src.lib.combine import combine_usa_manufacturing_latest
-from thesis.src.lib.plot import plot_cobb_douglas
-from thesis.src.lib.transform import transform_cobb_douglas
+from core.combine import combine_usa_manufacturing_latest
+from core.common import get_fig_map
+from core.plot import plot_cobb_douglas
+from core.transform import transform_cobb_douglas
 
 
 def main(

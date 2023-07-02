@@ -8,8 +8,8 @@ Created on Sun Nov 20 17:42:38 2022
 
 import numpy as np
 import pandas as pd
-from lib.pull import pull_by_series_id
-from lib.tools import get_price_base_nr
+from core.pull import pull_by_series_id
+from core.tools import get_price_base_nr
 from pandas import DataFrame
 
 

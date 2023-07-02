@@ -1,8 +1,0 @@
-collect
-plot
-pull
-push
-read
-test
-toolkit
-transform

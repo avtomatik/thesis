@@ -11,9 +11,8 @@ Project XI. USA Census J14
 
 import os
 
-from thesis.src.lib.plot import (plot_filter_rolling_mean,
-                                 plot_growth_elasticity)
-from thesis.src.lib.stockpile import stockpile_usa_hist
+from core.plot import plot_filter_rolling_mean, plot_growth_elasticity
+from core.stockpile import stockpile_usa_hist
 
 
 def main(

@@ -9,10 +9,9 @@ Project I. Approximation
 """
 
 
-from thesis.src.lib.plot import plot_approx_linear, plot_approx_linear_log
-from thesis.src.lib.stockpile import stockpile_usa_bea
-from thesis.src.lib.transform import (transform_approx_linear,
-                                      transform_approx_linear_log)
+from core.plot import plot_approx_linear, plot_approx_linear_log
+from core.stockpile import stockpile_usa_bea
+from core.transform import transform_approx_linear, transform_approx_linear_log
 
 
 def linear() -> None:

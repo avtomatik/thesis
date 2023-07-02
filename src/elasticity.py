@@ -8,9 +8,9 @@ Created on Sun Mar 26 03:09:50 2023
 Project VI. Elasticity
 """
 
-from thesis.src.lib.plot import plot_elasticity, plot_growth_elasticity
-from thesis.src.lib.stockpile import stockpile_usa_bea
-from thesis.src.lib.transform import transform_elasticity
+from core.plot import plot_elasticity, plot_growth_elasticity
+from core.stockpile import stockpile_usa_bea
+from core.transform import transform_elasticity
 
 SERIES_IDS = {
     'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',

@@ -6,10 +6,10 @@ Created on Sat Jun 18 11:29:40 2022
 @author: Alexander Mikhailov
 """
 
-from thesis.src.common import get_blueprint, get_fig_map
-from thesis.src.lib.combine import combine_can
-from thesis.src.lib.plot import plot_cobb_douglas, plot_cobb_douglas_3d
-from thesis.src.lib.transform import transform_cobb_douglas
+from core.combine import combine_can
+from core.common import get_blueprint, get_fig_map
+from core.plot import plot_cobb_douglas, plot_cobb_douglas_3d
+from core.transform import transform_cobb_douglas
 
 
 def main(year_base: int = 2012) -> None:

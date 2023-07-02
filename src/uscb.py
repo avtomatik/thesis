@@ -10,17 +10,17 @@ Project X. USA Census
 
 import itertools
 
-from lib.combine import (combine_uscb_employment_conflicts,
-                         combine_uscb_trade_by_countries,
-                         combine_uscb_unemployment_hours_worked)
-from lib.plot import (plot_uscb_employment_conflicts, plot_uscb_finance,
-                      plot_uscb_gnp, plot_uscb_immigration,
-                      plot_uscb_money_stock, plot_uscb_trade,
-                      plot_uscb_trade_by_countries,
-                      plot_uscb_trade_gold_silver,
-                      plot_uscb_unemployment_hours_worked)
-from lib.stockpile import stockpile_usa_hist
-from lib.transform import transform_sum
+from core.combine import (combine_uscb_employment_conflicts,
+                          combine_uscb_trade_by_countries,
+                          combine_uscb_unemployment_hours_worked)
+from core.plot import (plot_uscb_employment_conflicts, plot_uscb_finance,
+                       plot_uscb_gnp, plot_uscb_immigration,
+                       plot_uscb_money_stock, plot_uscb_trade,
+                       plot_uscb_trade_by_countries,
+                       plot_uscb_trade_gold_silver,
+                       plot_uscb_unemployment_hours_worked)
+from core.stockpile import stockpile_usa_hist
+from core.transform import transform_sum
 from uscb_capital import uscb_capital
 from uscb_commodities import uscb_commodities
 from uscb_farm_lands import uscb_farm_lands

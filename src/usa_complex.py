@@ -8,10 +8,10 @@ Created on Sun Mar 26 03:16:06 2023
 Project VIII. Complex
 """
 
-from lib.combine import combine_cobb_douglas
-from lib.plot import plot_uscb_complex
-from lib.stockpile import stockpile_usa_hist
-from lib.transform import transform_cobb_douglas
+from core.combine import combine_cobb_douglas
+from core.plot import plot_uscb_complex
+from core.stockpile import stockpile_usa_hist
+from core.transform import transform_cobb_douglas
 
 # =============================================================================
 # Project VIII. Complex

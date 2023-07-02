@@ -1,6 +1,6 @@
-from thesis.src.lib.combine import combine_uscb_cap, combine_uscb_cap_deflator
-from thesis.src.lib.plot import plot_uscb_cap, plot_uscb_cap_deflator
-from thesis.src.lib.transform import transform_mean
+from core.combine import combine_uscb_cap, combine_uscb_cap_deflator
+from core.plot import plot_uscb_cap, plot_uscb_cap_deflator
+from core.transform import transform_mean
 
 
 def main() -> None:

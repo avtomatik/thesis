@@ -1,6 +1,6 @@
 import itertools
 
-from thesis.src.lib.plot import plot_uscb_commodities
+from core.plot import plot_uscb_commodities
 
 
 def main() -> None:

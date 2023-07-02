@@ -8,8 +8,8 @@ Created on Sat Jun 17 19:00:30 2023
 
 import os
 
-from lib.constants import TITLES_KENDRICK, YLABELS_KENDRICK
-from lib.plot import plot_douglas
+from core.constants import TITLES_KENDRICK, YLABELS_KENDRICK
+from core.plot import plot_douglas
 
 if __name__ == '__main__':
     # =========================================================================

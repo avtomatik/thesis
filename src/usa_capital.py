@@ -8,9 +8,9 @@ Created on Sun Mar 26 02:50:18 2023
 Project II. Capital
 """
 
-from lib.combine import (combine_usa_investment_turnover,
-                         combine_usa_investment_turnover_bls)
-from lib.plot import plot_fourier_discrete, plot_model_capital
+from core.combine import (combine_usa_investment_turnover,
+                          combine_usa_investment_turnover_bls)
+from core.plot import plot_fourier_discrete, plot_model_capital
 
 
 def main() -> None:

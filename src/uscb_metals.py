@@ -1,5 +1,5 @@
-from thesis.src.lib.combine import combine_uscb_metals
-from thesis.src.lib.plot import plot_uscb_metals
+from core.combine import combine_uscb_metals
+from core.plot import plot_uscb_metals
 
 
 def uscb_metals():

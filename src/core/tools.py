@@ -11,8 +11,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import scipy.optimize as optimization
-from lib.stockpile import stockpile_usa_hist
-from lib.transform import transform_deflator
+from core.stockpile import stockpile_usa_hist
+from core.transform import transform_deflator
 from pandas import DataFrame
 from scipy.interpolate import UnivariateSpline
 from sklearn.metrics import r2_score
