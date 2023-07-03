@@ -7,9 +7,9 @@ Created on Sun Jun 12 12:19:54 2022
 """
 
 
-from core.pull import pull_by_series_id
-from core.read import read_usa_bls
-from core.stockpile import stockpile_usa_bea, stockpile_usa_hist
+from .pull import pull_by_series_id
+from .read import read_usa_bls
+from .stockpile import stockpile_usa_bea, stockpile_usa_hist
 
 
 def options_reviewed():

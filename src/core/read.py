@@ -14,8 +14,9 @@ from zipfile import ZipFile
 
 import pandas as pd
 import requests
-from core.constants import MAP_READ_CAN, MAP_READ_USA_HIST
 from pandas import DataFrame
+
+from .constants import MAP_READ_CAN, MAP_READ_USA_HIST
 
 
 @cache
@@ -404,24 +405,6 @@ def read_usa_nber(filepath_or_buffer: str) -> DataFrame:
     # =========================================================================
     # Re-Load
     # =========================================================================
-    return pd.read_csv(**kwargs)
-
-
-def read_usa_sahr_infcf() -> DataFrame:
-    """
-
-
-    Returns
-    -------
-    TYPE
-        DESCRIPTION.
-
-    """
-    kwargs = {
-        'filepath_or_buffer': 'dataset_usa_infcf16652007.zip',
-        'index_col': 1,
-        'usecols': range(4, 7)
-    }
     return pd.read_csv(**kwargs)
 
 

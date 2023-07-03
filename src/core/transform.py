@@ -8,9 +8,10 @@ Created on Sun Nov 20 17:42:38 2022
 
 import numpy as np
 import pandas as pd
-from core.pull import pull_by_series_id
-from core.tools import get_price_base_nr
 from pandas import DataFrame
+
+from .pull import pull_by_series_id
+from .tools import get_price_base_nr
 
 
 def transform_investment_manufacturing(df: DataFrame) -> DataFrame:
@@ -836,23 +837,3 @@ def transform_elasticity(df: DataFrame) -> tuple[DataFrame, tuple[str]]:
     df[f'{df.columns[2]}_elasticity_d'] = df.iloc[:, 3].shift(-1).add(df.iloc[:, 3].shift(-2)).sub(
         df.iloc[:, 3].shift(1)).sub(df.iloc[:, 3]).div(df.iloc[:, 3].add(df.iloc[:, 3].shift(-1)).mul(2))
     return df, plot_title
-
-
-def transform_usa_sahr_infcf(df: DataFrame) -> DataFrame:
-    """
-    Retrieves Yearly Price Rates from 'dataset_usa_infcf16652007.zip'
-    Returns
-    -------
-    DataFrame
-    """
-    # =========================================================================
-    # Retrieve First 14 Series
-    # =========================================================================
-    return pd.concat(
-        map(
-            lambda _: df.pipe(pull_by_series_id, _).rdiv(1),
-            df.iloc[:, 0].unique()[:14]
-        ),
-        axis=1,
-        sort=True
-    ).pct_change().mul(-1)

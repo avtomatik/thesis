@@ -9,10 +9,8 @@ Created on Sun Apr  2 13:18:11 2023
 
 ARCHIVE_NAMES_UTILISED = (
     'dataset_douglas.zip',
-    'dataset_usa_bea-nipa-selected.zip',
     'dataset_usa_brown.zip',
     'dataset_usa_cobb-douglas.zip',
-    'dataset_usa_infcf16652007.zip',
     'dataset_usa_kendrick.zip',
     'dataset_usa_mc_connell_brue.zip',
     'dataset_uscb.zip',
