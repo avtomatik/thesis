@@ -11,7 +11,7 @@ import pandas as pd
 from pandas import DataFrame
 
 from .pull import pull_by_series_id
-from .tools import get_price_base_nr
+from .tools import calculate_capital, get_price_base_nr
 
 
 def transform_investment_manufacturing(df: DataFrame) -> DataFrame:
@@ -837,3 +837,54 @@ def transform_elasticity(df: DataFrame) -> tuple[DataFrame, tuple[str]]:
     df[f'{df.columns[2]}_elasticity_d'] = df.iloc[:, 3].shift(-1).add(df.iloc[:, 3].shift(-2)).sub(
         df.iloc[:, 3].shift(1)).sub(df.iloc[:, 3]).div(df.iloc[:, 3].add(df.iloc[:, 3].shift(-1)).mul(2))
     return df, plot_title
+
+
+def transform_model_capital(df: DataFrame) -> tuple[DataFrame, np.ndarray]:
+    params_i = np.polyfit(
+        df.index.to_series().astype(int),
+        df.iloc[:, 0].div(df.iloc[:, 1]).astype(float),
+        deg=1
+    )
+    params_t = np.polyfit(
+        df.index.to_series().astype(int),
+        df.iloc[:, 1].div(df.iloc[:, 2]).astype(float),
+        deg=1
+    )
+    # =========================================================================
+    # Gross Fixed Investment to Gross Domestic Product Ratio
+    # =========================================================================
+    df['inv_to_pro'] = np.poly1d(params_i)(df.index.to_series())
+    # =========================================================================
+    # Fixed Assets Turnover
+    # =========================================================================
+    df['c_turnover'] = np.poly1d(params_t)(df.index.to_series())
+    df['cap_a'] = df.pipe(calculate_capital, params_i, params_t, 0.875)
+    df['cap_b'] = df.pipe(calculate_capital, params_i, params_t, 1)
+    df['cap_c'] = df.pipe(calculate_capital, params_i, params_t, 1.125)
+    return df, params_i, params_t
+
+
+def transform_fourier_discrete(df: DataFrame, precision: int):
+    _p = np.polyfit(
+        df.index.to_series().astype(int),
+        df.iloc[:, 0].astype(float),
+        deg=1
+    )
+    df['period_calibrated'] = df.index.to_series().sub(
+        df.index[0]).div(df.shape[0]).mul(2).mul(np.pi).astype(float)
+    df[f'{df.columns[0]}_line'] = np.poly1d(_p)(df.index.to_series())
+    df[f'{df.columns[0]}_wave'] = df.iloc[:, 0].sub(df.iloc[:, 2])
+    # =========================================================================
+    # DataFrame for Fourier Coefficients
+    # =========================================================================
+    df_fourier = DataFrame(columns=['cos', 'sin'])
+    for _ in range(1, precision):
+        df_fourier.loc[_] = [
+            df.iloc[:, 3].mul(np.cos(df.iloc[:, 1].mul(_))).mul(2).mean(),
+            df.iloc[:, 3].mul(np.sin(df.iloc[:, 1].mul(_))).mul(2).mean()
+        ]
+    # =========================================================================
+    # First Entry Correction
+    # =========================================================================
+    df_fourier.loc[0, 'cos'] /= 2
+    return df, df_fourier

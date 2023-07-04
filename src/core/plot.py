@@ -8,27 +8,25 @@ Created on Sun Jun 12 08:59:10 2022
 
 
 import itertools
-from functools import partial
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from pandas import DataFrame
-from pandas.plotting import autocorrelation_plot, lag_plot
 from scipy import stats
 from sklearn.metrics import r2_score
 
 from .combine import combine_data_frames_by_columns
 from .common import get_fig_map, get_labels, group_series_ids
-from .pull import (pull_by_series_id, pull_series_ids_description,
-                   pull_uscb_description)
-from .read import read_usa_hist, read_usa_nber, read_worldbank
+from .pull import pull_series_ids_description, pull_uscb_description
+from .read import read_usa_nber
 from .stockpile import stockpile_usa_hist
-from .tools import (calculate_capital, cap_productivity, filter_kol_zur,
-                    filter_rolling_mean, lab_productivity,
-                    simple_linear_regression)
-from .transform import transform_agg, transform_cobb_douglas, transform_rebase
+from .tools import (cap_productivity, filter_kol_zur, filter_rolling_mean,
+                    lab_productivity, simple_linear_regression)
+from .transform import (transform_agg, transform_cobb_douglas,
+                        transform_fourier_discrete, transform_model_capital,
+                        transform_rebase)
 
 
 def plot_investment_manufacturing(df: DataFrame) -> None:
@@ -41,17 +39,17 @@ def plot_investment_manufacturing(df: DataFrame) -> None:
         df.iloc[:, 3]      Real Gross Domestic Product
         ================== =================================
     """
+    LABEL = [
+        'Gross Private Domestic Investment',
+        'National Income',
+    ]
+
     plt.figure()
     plt.title(
         'Gross Private Domestic Investment & National Income, {}$-${}'.format(
             *df.index[[0, -1]]
         )
     )
-    LABEL = [
-        'Gross Private Domestic Investment',
-        'National Income',
-    ]
-
     plt.plot(
         df.iloc[:, -4:-2], label=LABEL
     )
@@ -124,13 +122,13 @@ def plot_manufacturing_money(df: DataFrame) -> None:
         DESCRIPTION.
 
     """
-    plt.figure()
     LABEL = [
         'Real Gross Domestic Product',
         'Money Supply',
         'Real Gross Domestic Investment',
     ]
 
+    plt.figure()
     plt.plot(
         df.iloc[:, range(2, 5)], label=LABEL
     )
@@ -235,6 +233,11 @@ def plot_e(df: DataFrame) -> None:
         DESCRIPTION.
 
     """
+    LABEL = [
+        '$P(I)$',
+        'Investment to Production'
+    ]
+
     plt.figure()
     plt.semilogy(df.iloc[:, 0], df.iloc[:, 1])
     plt.semilogy(df.iloc[:, 0], df.iloc[:, 5])
@@ -245,23 +248,18 @@ def plot_e(df: DataFrame) -> None:
     )
     plt.xlabel('Investment, Billions of Dollars')
     plt.ylabel('Gross Domestic Product, Billions of Dollars')
-    LABEL = [
-        '$P(I)$',
-        'Investment to Production'
-    ]
-
     plt.legend(LABEL)
     plt.grid()
     plt.show()
 
 
 def plot_uscb_manufacturing(df: DataFrame, year_base: int) -> None:
-    plt.figure()
     LABEL = [
         'Fabricant S., Shiskin J., NBER',
         'E. Frickey',
     ]
 
+    plt.figure()
     plt.plot(
         df.iloc[:, [0, 2]], label=LABEL
     )
@@ -281,8 +279,9 @@ def plot_uscb_manufacturing(df: DataFrame, year_base: int) -> None:
 
 def plot_uscb_cap(df: DataFrame) -> None:
     """Census Manufacturing Fixed Assets Series"""
-    plt.figure()
     LABEL = ['Total', 'Structures', 'Equipment']
+
+    plt.figure()
     plt.semilogy(df, label=LABEL)
     plt.title(
         'Census Manufacturing Fixed Assets, {}$-${}'.format(
@@ -353,25 +352,15 @@ def plot_uscb_metals(df: DataFrame, years_base: tuple[int]) -> None:
     plt.show()
 
 
-def plot_uscb_commodities(series_ids: dict[str, str]) -> None:
-    df = pd.concat(
-        map(
-            lambda _: read_usa_hist(_[-1]).pipe(
-                pull_by_series_id, _[0]
-            ).sort_index().pipe(transform_rebase),
-            series_ids.items()
-        ),
-        axis=1,
-        sort=True
-    )
+def plot_uscb_commodities(df: DataFrame, series_ids: dict[str, str]) -> None:
     for series_id in series_ids:
         print(f'<{series_id}> {pull_uscb_description(series_id)}')
-    _title = 'Series P 231$-$300. Physical Output of Selected Manufactured Commodities: {}$-${}'.format(
+    title = 'Series P 231$-$300. Physical Output of Selected Manufactured Commodities: {}$-${}'.format(
         *df.index[[0, -1]]
     )
     plt.figure()
     plt.semilogy(df)
-    plt.title(_title)
+    plt.title(title)
     plt.xlabel('Period')
     plt.ylabel('Percentage')
     plt.legend(series_ids)
@@ -433,12 +422,12 @@ def plot_uscb_employment_conflicts(df: DataFrame) -> None:
 
 
 def plot_uscb_gnp(df: DataFrame) -> None:
-    plt.figure()
     LABEL = [
         'Gross National Product',
         'Gross National Product Per Capita',
     ]
 
+    plt.figure()
     plt.plot(df, label=LABEL)
     plt.title(
         'Gross National Product, Prices {}=100, {}=100'.format(
@@ -463,13 +452,13 @@ def plot_uscb_farm_lands(df: DataFrame) -> None:
 
 
 def plot_uscb_trade(df: DataFrame) -> None:
-    plt.figure()
     LABEL = [
         'Exports, U1',
         'Imports, U8',
         'Net Exports, U15',
     ]
 
+    plt.figure()
     plt.plot(df, label=LABEL)
     plt.title(
         'Exports & Imports of Goods and Services, {}$-${}'.format(
@@ -484,13 +473,13 @@ def plot_uscb_trade(df: DataFrame) -> None:
 
 
 def plot_uscb_trade_gold_silver(df: DataFrame) -> None:
-    plt.figure()
     LABEL = [
         'Exports, U187',
         'Imports, U188',
         'Net Exports, U189',
     ]
 
+    plt.figure()
     plt.plot(df, label=LABEL)
     plt.title(
         'Total Merchandise, Gold and Silver, {}$-${}'.format(
@@ -541,13 +530,13 @@ def plot_uscb_trade_by_countries(df: DataFrame) -> None:
 
 def plot_uscb_money_stock(df: DataFrame) -> None:
     YEAR_BASE = 1915
-    plt.figure()
     LABEL = [
         'Currency Held by the Public',
         'M1 Money Supply (Currency Plus Demand Deposits)',
         'M2 Money Supply (M1 Plus Time Deposits)',
     ]
 
+    plt.figure()
     plt.semilogy(df, label=LABEL)
     plt.axvline(x=YEAR_BASE, linestyle=':')
     plt.title(f'Currency Dynamics, {YEAR_BASE}=100')
@@ -575,10 +564,13 @@ def plot_uscb_finance() -> None:
 
     for _, series_id in enumerate(SERIES_IDS, start=1):
         df = stockpile_usa_hist(series_id).pipe(transform_rebase)
-        descr = pull_uscb_description(series_id)
         plt.figure(_)
         plt.plot(df, label=series_id)
-        plt.title('{}, {}$-${}'.format(descr, *df.index[[0, -1]]))
+        plt.title(
+            '{}, {}$-${}'.format(
+                pull_uscb_description(series_id), *df.index[[0, -1]]
+            )
+        )
         plt.xlabel('Period')
         plt.ylabel('Percentage')
         plt.grid()
@@ -877,41 +869,6 @@ def plot_lab_prty(df: DataFrame) -> None:
     plt.show()
 
 
-def plot_built_in() -> None:
-    """
-    Purpose: Draw:
-
-    Returns
-    -------
-    None
-    """
-    FUNCTIONS = (
-        # =====================================================================
-        # Correlogram, Pandas;
-        # =====================================================================
-        autocorrelation_plot,
-        # =====================================================================
-        # Bootstrap Plot, Pandas;
-        # =====================================================================
-        # bootstrap_plot,
-        # =====================================================================
-        # Lag Plot, Pandas
-        # =====================================================================
-        lag_plot,
-    )
-    SOURCE_ID = 'NY.GDP.MKTP.CD'
-    _df = read_worldbank(SOURCE_ID)
-    for func in FUNCTIONS:
-        for _, country in enumerate(_df.columns, start=1):
-            chunk = _df.loc[:, [country]].dropna(axis=0)
-            if not chunk.empty:
-                plt.figure(_)
-                partial(func, chunk)()
-                plt.title(country)
-                plt.grid()
-        plt.show()
-
-
 def plot_model_capital(df: DataFrame, year_base: int) -> None:
     """
         ================== =================================
@@ -922,73 +879,53 @@ def plot_model_capital(df: DataFrame, year_base: int) -> None:
         df.iloc[:, 3]      Capital Retirement
         ================== =================================
     """
-    _params_i = np.polyfit(
-        df.index.to_series().astype(int),
-        df.iloc[:, 0].div(df.iloc[:, 1]).astype(float),
-        deg=1
-    )
-    _params_t = np.polyfit(
-        df.index.to_series().astype(int),
-        df.iloc[:, 1].div(df.iloc[:, 2]).astype(float),
-        deg=1
-    )
-    _df = df.copy()
-    # =========================================================================
-    # Gross Fixed Investment to Gross Domestic Product Ratio
-    # =========================================================================
-    _df['inv_to_pro'] = np.poly1d(_params_i)(_df.index.to_series())
-    # =========================================================================
-    # Fixed Assets Turnover
-    # =========================================================================
-    _df['c_turnover'] = np.poly1d(_params_t)(_df.index.to_series())
-    _df['cap_a'] = df.pipe(calculate_capital, _params_i, _params_t, 0.875)
-    _df['cap_b'] = df.pipe(calculate_capital, _params_i, _params_t, 1)
-    _df['cap_c'] = df.pipe(calculate_capital, _params_i, _params_t, 1.125)
+    df, params_i, params_t = df.pipe(transform_model_capital)
+
     plt.figure(1)
     plt.title(
         'Fixed Assets Turnover ($\\lambda$) for the US, {}$-${}'.format(
-            *_df.index[[0, -1]]
+            *df.index[[0, -1]]
         )
     )
     plt.xlabel('Period')
     plt.ylabel('Index')
-    plt.plot(_df.iloc[:, 1].div(_df.iloc[:, 2]), label='$\\lambda$')
+    plt.plot(df.iloc[:, 1].div(df.iloc[:, 2]), label='$\\lambda$')
     label = '$\\lambda = {1:,.4f}\\ {0:,.4f}\\times t$'.format(
-        *_params_t) if _params_t[0] < 0 else '$\\lambda = {1:,.4f} + {0:,.4f} \\times t$'.format(*_params_t)
-    plt.plot(_df.iloc[:, -4], label=label)
+        *params_t) if params_t[0] < 0 else '$\\lambda = {1:,.4f} + {0:,.4f} \\times t$'.format(*params_t)
+    plt.plot(df.iloc[:, -4], label=label)
     plt.grid()
     plt.legend()
     plt.figure(2)
     plt.title(
         'Gross Fixed Investment as Percentage of GDP ($S$) for the US, {}$-${}'.format(
-            *_df.index[[0, -1]]
+            *df.index[[0, -1]]
         )
     )
     plt.xlabel('Period')
     plt.ylabel('Index')
-    plt.plot(_df.iloc[:, 0].div(_df.iloc[:, 1]), label='$S$')
+    plt.plot(df.iloc[:, 0].div(df.iloc[:, 1]), label='$S$')
     label = '$S = {1:,.4f}\\ {0:,.4f}\\times t$'.format(
-        *_params_i) if _params_i[0] < 0 else '$S = {1:,.4f} + {0:,.4f} \\times t$'.format(*_params_i)
-    plt.plot(_df.iloc[:, -5], label=label)
+        *params_i) if params_i[0] < 0 else '$S = {1:,.4f} + {0:,.4f} \\times t$'.format(*params_i)
+    plt.plot(df.iloc[:, -5], label=label)
     plt.grid()
     plt.legend()
     plt.figure(3)
     plt.title(
         '$\\alpha$ for the US, {}$-${}'.format(
-            *_df.index[[0, -2]]
+            *df.index[[0, -2]]
         )
     )
     plt.xlabel('Period')
     plt.ylabel('Index')
-    plt.plot(_df.iloc[:, 3], label='$\\alpha$')
+    plt.plot(df.iloc[:, 3], label='$\\alpha$')
     plt.grid()
     plt.legend()
     plt.figure(4)
-    plt.title('$K$ for the US, {}$-${}'.format(*_df.index[[0, -2]]))
+    plt.title('$K$ for the US, {}$-${}'.format(*df.index[[0, -2]]))
     plt.xlabel('Period')
     plt.ylabel(f'Billions of Dollars, {year_base}=100')
     plt.semilogy(
-        _df.iloc[:, -3:],
+        df.iloc[:, -3:],
         label=['$K\\left(\\pi = \\frac{7}{8}\\right)$',
                '$K\\left(\\pi = 1\\right)$',
                '$K\\left(\\pi = \\frac{9}{8}\\right)$']
@@ -1000,7 +937,6 @@ def plot_model_capital(df: DataFrame, year_base: int) -> None:
 
 def plot_capital_purchases(df: DataFrame) -> None:
     assert df.shape[1] == 27, "Works on DataFrame Produced with 'combine_usa_capital_purchases()"
-    plt.figure()
     LABEL = [
         '$s^{2;1}_{Cobb--Douglas}$',
         'Total',
@@ -1008,6 +944,7 @@ def plot_capital_purchases(df: DataFrame) -> None:
         'Equipment',
     ]
 
+    plt.figure()
     plt.semilogy(
         df.loc[:, (df.columns[0], *df.columns[-3:])],
         label=LABEL
@@ -1522,41 +1459,18 @@ def plot_fourier_discrete(df: DataFrame, precision: int = 10) -> None:
         df.iloc[:, 0]      Target Series
         ================== =================================
     """
-    _df = df.copy()
-    precision += 1
-    _p = np.polyfit(
-        _df.index.to_series().astype(int),
-        _df.iloc[:, 0].astype(float),
-        deg=1
-    )
-    _df['period_calibrated'] = _df.index.to_series().sub(
-        _df.index[0]).div(_df.shape[0]).mul(2).mul(np.pi).astype(float)
-    _df[f'{_df.columns[0]}_line'] = np.poly1d(_p)(_df.index.to_series())
-    _df[f'{_df.columns[0]}_wave'] = _df.iloc[:, 0].sub(_df.iloc[:, 2])
-    # =========================================================================
-    # DataFrame for Fourier Coefficients
-    # =========================================================================
-    _fourier = DataFrame(columns=['cos', 'sin'])
-    for _ in range(precision):
-        _fourier.loc[_] = [
-            _df.iloc[:, 3].mul(np.cos(_df.iloc[:, 1].mul(_))).mul(2).mean(),
-            _df.iloc[:, 3].mul(np.sin(_df.iloc[:, 1].mul(_))).mul(2).mean()
-        ]
-    # =========================================================================
-    # First Entry Correction
-    # =========================================================================
-    _fourier.loc[0, 'cos'] /= 2
+    df, df_fourier = df.pipe(transform_fourier_discrete, precision)
     plt.figure()
-    plt.title(f'$\\alpha$ for the US, {_df.index[0]}$-${_df.index[-1]}')
+    plt.title(f'$\\alpha$ for the US, {df.index[0]}$-${df.index[-1]}')
     plt.xlabel('Period')
     plt.ylabel('Index')
-    plt.scatter(_df.index, _df.iloc[:, 0], label='$\\alpha$')
-    _df[f'{_df.columns[0]}_fourier_{0}'] = np.cos(_df.iloc[:, 1].mul(0)).mul(
-        _fourier.loc[0, 'cos']).add(np.sin(_df.iloc[:, 1].mul(0)).mul(_fourier.loc[0, 'sin']))
+    plt.scatter(df.index, df.iloc[:, 0], label='$\\alpha$')
+    df[f'{df.columns[0]}_fourier_{0}'] = np.cos(df.iloc[:, 1].mul(0)).mul(
+        df_fourier.loc[0, 'cos']).add(np.sin(df.iloc[:, 1].mul(0)).mul(df_fourier.loc[0, 'sin']))
     for _ in range(1, precision):
-        _df[f'{_df.columns[0]}_fourier_{_}'] = _df.iloc[:, -1].add(np.cos(_df.iloc[:, 1].mul(_)).mul(
-            _fourier.loc[_, 'cos'])).add(np.sin(_df.iloc[:, 1].mul(_)).mul(_fourier.loc[_, 'sin']))
-        plt.plot(_df.iloc[:, 2].add(_df.iloc[:, -1]),
+        df[f'{df.columns[0]}_fourier_{_}'] = df.iloc[:, -1].add(np.cos(df.iloc[:, 1].mul(_)).mul(
+            df_fourier.loc[_, 'cos'])).add(np.sin(df.iloc[:, 1].mul(_)).mul(df_fourier.loc[_, 'sin']))
+        plt.plot(df.iloc[:, 2].add(df.iloc[:, -1]),
                  label=f'$FT_{{{_:02}}}(\\alpha)$')
     plt.grid()
     plt.legend()

@@ -36,15 +36,17 @@ uscb_metals()
 uscb_commodities()
 
 ARCHIVE_NAME = 'dataset_uscb.zip'
-SERIES_IDS = {
-    f'C{_:04n}': ARCHIVE_NAME
-    for _ in itertools.chain(
-        range(91, 102),
-        range(103, 110),
-        range(111, 116),
-        range(117, 120),
-    )
-}
+SERIES_IDS = dict.fromkeys(
+    map(
+        lambda _: f'C{_:04n}', itertools.chain(
+            range(91, 102),
+            range(103, 110),
+            range(111, 116),
+            range(117, 120),
+        )
+    ),
+    ARCHIVE_NAME
+)
 stockpile_usa_hist(SERIES_IDS).pipe(
     transform_sum, name="C0089"
 ).pipe(plot_uscb_immigration)

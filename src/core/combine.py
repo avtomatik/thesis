@@ -721,17 +721,19 @@ def combine_uscb_metals() -> tuple[DataFrame, tuple[int]]:
 def combine_uscb_trade_by_countries() -> DataFrame:
     """Census Foreign Trade Series"""
     ARCHIVE_NAME = 'dataset_uscb.zip'
-    SERIES_IDS = {
-        f'U{_:04n}': ARCHIVE_NAME
-        for _ in itertools.chain(
-            range(319, 324),
-            range(325, 329),
-            range(330, 335),
-            range(337, 342),
-            range(343, 347),
-            range(348, 353),
-        )
-    }
+    SERIES_IDS = dict.fromkeys(
+        map(
+            lambda _: f'U{_:04n}', itertools.chain(
+                range(319, 324),
+                range(325, 329),
+                range(330, 335),
+                range(337, 342),
+                range(343, 347),
+                range(348, 353),
+            )
+        ),
+        ARCHIVE_NAME
+    )
     df = stockpile_usa_hist(SERIES_IDS)
 
     for _ in range(len(SERIES_IDS) // 2):
