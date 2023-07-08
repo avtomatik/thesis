@@ -224,34 +224,34 @@ YLABELS_KENDRICK = (
 
 
 MAP_READ_USA_HIST = {
-    'dataset_douglas.zip': {'series_id': 4, 'period': 5, 'value': 6},
-    'dataset_usa_brown.zip': {'series_id': 5, 'period': 6, 'value': 7},
-    'dataset_usa_cobb-douglas.zip': {'series_id': 5, 'period': 6, 'value': 7},
-    'dataset_usa_kendrick.zip': {'series_id': 4, 'period': 5, 'value': 6},
-    'dataset_usa_mc_connell_brue.zip': {'series_id': 1, 'period': 2, 'value': 3},
-    'dataset_uscb.zip': {'series_id': 9, 'period': 10, 'value': 11},
+    'dataset_douglas.zip': dict(zip(['series_id', 'period', 'value'], [4, 5, 6])),
+    'dataset_usa_brown.zip': dict(zip(['series_id', 'period', 'value'], [5, 6, 7])),
+    'dataset_usa_cobb-douglas.zip': dict(zip(['series_id', 'period', 'value'], [5, 6, 7])),
+    'dataset_usa_kendrick.zip': dict(zip(['series_id', 'period', 'value'], [4, 5, 6])),
+    'dataset_usa_mc_connell_brue.zip': dict(zip(['series_id', 'period', 'value'], [1, 2, 3])),
+    'dataset_uscb.zip': dict(zip(['series_id', 'period', 'value'], [9, 10, 11])),
 }
 
 
 MAP_READ_CAN = {
-    310004: {'category': 4, 'component': 5, 'period': 0, 'prices': 2, 'series_id': 6, 'value': 8},
-    2820011: {'classofworker': 2, 'geo': 1, 'industry': 3, 'period': 0, 'series_id': 5, 'sex': 4, 'value': 7},
-    2820012: {'period': 0, 'series_id': 5, 'value': 7},
-    3790031: {'geo': 1, 'naics': 4, 'period': 0, 'prices': 3, 'seas': 2, 'series_id': 5, 'value': 7},
-    3800084: {'est': 3, 'geo': 1, 'period': 0, 'seas': 2, 'series_id': 4, 'value': 6},
-    3800102: {'period': 0, 'series_id': 4, 'value': 6},
-    3800106: {'period': 0, 'series_id': 3, 'value': 5},
-    3800518: {'period': 0, 'series_id': 4, 'value': 6},
-    3800566: {'period': 0, 'series_id': 3, 'value': 5},
-    3800567: {'period': 0, 'series_id': 4, 'value': 6},
-    14100027: {'period': 0, 'series_id': 10, 'value': 12},
-    14100235: {'period': 0, 'series_id': 8, 'value': 10},
-    16100053: {'period': 0, 'series_id': 9, 'value': 11},
-    36100096: {'category': 5, 'component': 6, 'geo': 1, 'industry': 4, 'period': 0, 'prices': 3, 'series_id': 11, 'value': 13},
-    36100207: {'period': 0, 'series_id': 9, 'value': 11},
-    36100303: {'period': 0, 'series_id': 9, 'value': 11},
-    36100305: {'period': 0, 'series_id': 9, 'value': 11},
-    36100434: {'period': 0, 'series_id': 10, 'value': 12}
+    310004: dict(zip(['category', 'component', 'period', 'prices', 'series_id', 'value'], [4, 5, 0, 2, 6, 8])),
+    2820011: dict(zip(['classofworker', 'geo', 'industry', 'period', 'series_id', 'sex', 'value'], [2, 1, 3, 0, 5, 4, 7])),
+    2820012: dict(zip(['period', 'series_id', 'value'], [0, 5, 7])),
+    3790031: dict(zip(['geo', 'naics', 'period', 'prices', 'seas', 'series_id', 'value'], [1, 4, 0, 3, 2, 5, 7])),
+    3800084: dict(zip(['est', 'geo', 'period', 'seas', 'series_id', 'value'], [3, 1, 0, 2, 4, 6])),
+    3800102: dict(zip(['period', 'series_id', 'value'], [0, 4, 6])),
+    3800106: dict(zip(['period', 'series_id', 'value'], [0, 3, 5])),
+    3800518: dict(zip(['period', 'series_id', 'value'], [0, 4, 6])),
+    3800566: dict(zip(['period', 'series_id', 'value'], [0, 3, 5])),
+    3800567: dict(zip(['period', 'series_id', 'value'], [0, 4, 6])),
+    14100027: dict(zip(['period', 'series_id', 'value'], [0, 10, 12])),
+    14100235: dict(zip(['period', 'series_id', 'value'], [0, 8, 10])),
+    16100053: dict(zip(['period', 'series_id', 'value'], [0, 9, 11])),
+    36100096: dict(zip(['category', 'component', 'geo', 'industry', 'period', 'prices', 'series_id', 'value'], [5, 6, 1, 4, 0, 3, 11, 13])),
+    36100207: dict(zip(['period', 'series_id', 'value'], [0, 9, 11])),
+    36100303: dict(zip(['period', 'series_id', 'value'], [0, 9, 11])),
+    36100305: dict(zip(['period', 'series_id', 'value'], [0, 9, 11])),
+    36100434: dict(zip(['period', 'series_id', 'value'], [0, 10, 12]))
 }
 
 
