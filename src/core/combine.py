@@ -304,15 +304,12 @@ def combine_usa_capital_purchases() -> DataFrame:
     df = stockpile_usa_hist(SERIES_IDS).mul(
         tuple(map(itemgetter(1), SERIES_IDS_EXT.values()))
     ).truncate(before=1875)
-    df['total'] = wiener(
-        df.loc[:, ('CDT2S1', 'J0149', 'P0107')].mean(axis=1)
-    ).round()
-    df['struc'] = wiener(
-        df.loc[:, ('J0150', 'P0108')].mean(axis=1)
-    ).round()
-    df['equip'] = wiener(
-        df.loc[:, ('J0151', 'P0109')].mean(axis=1)
-    ).round()
+    df['total'] = df.loc[:, ['CDT2S1', 'J0149', 'P0107']].mean(
+        axis=1).pipe(wiener).round()
+    df['struc'] = df.loc[:, ['J0150', 'P0108']].mean(
+        axis=1).pipe(wiener).round()
+    df['equip'] = df.loc[:, ['J0151', 'P0109']].mean(
+        axis=1).pipe(wiener).round()
     return df
 
 
@@ -587,81 +584,89 @@ def combine_usa_manufacturing_latest() -> DataFrame:
 
 def combine_uscb_cap_deflator() -> DataFrame:
     """Returns Census Fused Capital Deflator"""
-    SERIES_IDS_EXT = {
-        'P0107': ('dataset_uscb.zip', 1000, 'nominal, billions'),
-        'P0108': ('dataset_uscb.zip', 1000, 'nominal, billions'),
-        'P0109': ('dataset_uscb.zip', 1000, 'nominal, billions'),
-        'P0110': ('dataset_uscb.zip', 1000, '1958=100, billions'),
-        'P0111': ('dataset_uscb.zip', 1000, '1958=100, billions'),
-        'P0112': ('dataset_uscb.zip', 1000, '1958=100, billions'),
-        'P0113': ('dataset_uscb.zip', 1000, 'nominal, billions'),
-        'P0114': ('dataset_uscb.zip', 1000, 'nominal, billions'),
-        'P0115': ('dataset_uscb.zip', 1000, 'nominal, billions'),
-        'P0116': ('dataset_uscb.zip', 1000, '1958=100, billions'),
-        'P0117': ('dataset_uscb.zip', 1000, '1958=100, billions'),
-        'P0118': ('dataset_uscb.zip', 1000, '1958=100, billions'),
-    }
-    SERIES_IDS = dict(zip(
-        SERIES_IDS_EXT, map(itemgetter(0), SERIES_IDS_EXT.values())
-    ))
-    df = stockpile_usa_hist(SERIES_IDS).mul(
-        tuple(map(itemgetter(1), SERIES_IDS_EXT.values()))
-    ).truncate(before=1879)
-    df['total_purchases'] = df.iloc[:, 0].div(df.iloc[:, 3])
-    df['struc_purchases'] = df.iloc[:, 1].div(df.iloc[:, 4])
-    df['equip_purchases'] = df.iloc[:, 2].div(df.iloc[:, 5])
-    df['total_depreciat'] = df.iloc[:, 6].div(df.iloc[:, 9])
-    df['struc_depreciat'] = df.iloc[:, 7].div(df.iloc[:, 10])
-    df['equip_depreciat'] = df.iloc[:, 8].div(df.iloc[:, 11])
+
+    ARCHIVE_NAME = 'dataset_uscb.zip'
+
+    SERIES_IDS_NOM = ['P0107', 'P0108', 'P0109', 'P0113', 'P0114', 'P0115']
+
+    SERIES_IDS_REA = ['P0110', 'P0111', 'P0112', 'P0116', 'P0117', 'P0118']
+
+    COLUMNS = [
+        'total_purchases',
+        'struc_purchases',
+        'equip_purchases',
+        'total_depreciat',
+        'struc_depreciat',
+        'equip_depreciat',
+    ]
+
+    YEAR_BASE = 1879
+
+    df_num = stockpile_usa_hist(
+        dict.fromkeys(SERIES_IDS_NOM, ARCHIVE_NAME)
+    ).set_axis(COLUMNS, axis=1)
+
+    df_den = stockpile_usa_hist(
+        dict.fromkeys(SERIES_IDS_REA, ARCHIVE_NAME)
+    ).set_axis(COLUMNS, axis=1)
+
     # =========================================================================
     # Strip Deflators
     # =========================================================================
-    return df.iloc[:, -6:].pct_change().dropna(axis=0, how='all')
+    return df_num.div(df_den).truncate(before=YEAR_BASE).pct_change().dropna(axis=0, how='all')
 
 
 def combine_uscb_cap(smoothing: bool = False) -> DataFrame:
     """Returns Nominal Million-Dollar Capital, Including Structures & Equipment, Series"""
-    SERIES_IDS_EXT = {
-        'J0149': ('dataset_uscb.zip', 1, 'nominal, millions'),
-        'J0150': ('dataset_uscb.zip', 1, 'nominal, millions'),
-        'J0151': ('dataset_uscb.zip', 1, 'nominal, millions'),
-        'P0107': ('dataset_uscb.zip', 1000, 'nominal, billions'),
-        'P0108': ('dataset_uscb.zip', 1000, 'nominal, billions'),
-        'P0109': ('dataset_uscb.zip', 1000, 'nominal, billions'),
-        'P0110': ('dataset_uscb.zip', 1000, '1958=100, billions'),
-        'P0111': ('dataset_uscb.zip', 1000, '1958=100, billions'),
-        'P0112': ('dataset_uscb.zip', 1000, '1958=100, billions'),
-        'P0113': ('dataset_uscb.zip', 1000, 'nominal, billions'),
-        'P0114': ('dataset_uscb.zip', 1000, 'nominal, billions'),
-        'P0115': ('dataset_uscb.zip', 1000, 'nominal, billions'),
-        'P0116': ('dataset_uscb.zip', 1000, '1958=100, billions'),
-        'P0117': ('dataset_uscb.zip', 1000, '1958=100, billions'),
-        'P0118': ('dataset_uscb.zip', 1000, '1958=100, billions'),
-        'P0119': ('dataset_uscb.zip', 1000, '1958=100, billions'),
-        'P0120': ('dataset_uscb.zip', 1000, '1958=100, billions'),
-        'P0121': ('dataset_uscb.zip', 1000, '1958=100, billions'),
-        'P0122': ('dataset_uscb.zip', 1000, '1958=100, billions'),
-    }
-    SERIES_IDS = dict(zip(
-        SERIES_IDS_EXT, map(itemgetter(0), SERIES_IDS_EXT.values())
-    ))
-    df = stockpile_usa_hist(SERIES_IDS).mul(
-        tuple(map(itemgetter(1), SERIES_IDS_EXT.values()))
+    ARCHIVE_NAME = 'dataset_uscb.zip'
+
+    SERIES_IDS = [
+        'J0149',
+        'J0150',
+        'J0151',
+        'P0107',
+        'P0108',
+        'P0109',
+        'P0110',
+        'P0111',
+        'P0112',
+        'P0113',
+        'P0114',
+        'P0115',
+        'P0116',
+        'P0117',
+        'P0118',
+        'P0119',
+        'P0120',
+        'P0121',
+        'P0122'
+    ]
+
+    UNIT_A = 'nominal, millions'
+    UNIT_B = 'nominal, billions'
+    UNIT_C = '1958=100, billions'
+
+    ACCESSORY = dict.fromkeys(SERIES_IDS[:3], UNIT_A) | dict.fromkeys(
+        SERIES_IDS[3:6] + SERIES_IDS[9:12], UNIT_B) | dict.fromkeys(SERIES_IDS[6:9] + SERIES_IDS[12:], UNIT_C)
+
+    df = stockpile_usa_hist(dict.fromkeys(SERIES_IDS, ARCHIVE_NAME)).mul(
+        (
+            dict.fromkeys(SERIES_IDS[:3], 1) |
+            dict.fromkeys(SERIES_IDS[3:], 1000)
+        ).values()
     ).truncate(before=1875)
     if smoothing:
-        df['total'] = wiener(
-            df.loc[:, ('J0149', 'P0107')].mean(axis=1)
-        ).round()
-        df['struc'] = wiener(
-            df.loc[:, ('J0150', 'P0108')].mean(axis=1)
-        ).round()
-        df['equip'] = wiener(
-            df.loc[:, ('J0151', 'P0109')].mean(axis=1)
-        ).round()
+        df['total'] = df.loc[:, ['J0149', 'P0107']].mean(
+            axis=1).pipe(wiener).round()
+        df['struc'] = df.loc[:, ['J0150', 'P0108']].mean(
+            axis=1).pipe(wiener).round()
+        df['equip'] = df.loc[:, ['J0151', 'P0109']].mean(
+            axis=1).pipe(wiener).round()
+
     else:
-        df['total'] = df.loc[:, ('J0149', 'P0107')].mean(axis=1)
-        df['struc'] = df.loc[:, ('J0150', 'P0108')].mean(axis=1)
-        df['equip'] = df.loc[:, ('J0151', 'P0109')].mean(axis=1)
+        df['total'] = df.loc[:, ['J0149', 'P0107']].mean(axis=1)
+        df['struc'] = df.loc[:, ['J0150', 'P0108']].mean(axis=1)
+        df['equip'] = df.loc[:, ['J0151', 'P0109']].mean(axis=1)
     return df.iloc[:, -3:]
 
 
@@ -691,31 +696,31 @@ def combine_uscb_employment_conflicts() -> DataFrame:
     )
 
 
-def combine_uscb_metals() -> tuple[DataFrame, tuple[int]]:
+def combine_uscb_metals() -> tuple[DataFrame, list[int]]:
     """Census Primary Metals & Railroad-Related Products Manufacturing Series"""
-    SERIES_IDS_EXT = {
-        'P0262': ('dataset_uscb.zip', 1875),
-        'P0265': ('dataset_uscb.zip', 1875),
-        'P0266': ('dataset_uscb.zip', 1875),
-        'P0267': ('dataset_uscb.zip', 1875),
-        'P0268': ('dataset_uscb.zip', 1875),
-        'P0269': ('dataset_uscb.zip', 1909),
-        'P0293': ('dataset_uscb.zip', 1880),
-        'P0294': ('dataset_uscb.zip', 1875),
-        'P0295': ('dataset_uscb.zip', 1875)
-    }
-    SERIES_IDS = dict(zip(
-        SERIES_IDS_EXT, map(itemgetter(0), SERIES_IDS_EXT.values())
-    ))
-    df = stockpile_usa_hist(SERIES_IDS)
-    SERIES_IDS = dict(zip(
-        SERIES_IDS_EXT, map(itemgetter(1), SERIES_IDS_EXT.values())
-    ))
-    for series_id, year in SERIES_IDS.items():
+    ARCHIVE_NAME = 'dataset_uscb.zip'
+
+    SERIES_IDS = [
+        'P0262',
+        'P0265',
+        'P0266',
+        'P0267',
+        'P0268',
+        'P0269',
+        'P0293',
+        'P0294',
+        'P0295'
+    ]
+
+    df = stockpile_usa_hist(dict.fromkeys(SERIES_IDS, ARCHIVE_NAME))
+
+    YEARS_BASE = [1875, 1875, 1875, 1875, 1875, 1909, 1880, 1875, 1875]
+
+    for series_id, year in zip(SERIES_IDS, YEARS_BASE):
         df.loc[:, series_id] = df.loc[:, [series_id]].div(
             df.loc[year, series_id]
         )
-    return df.mul(100), tuple(map(itemgetter(1), SERIES_IDS_EXT.values()))
+    return df.mul(100), YEARS_BASE
 
 
 def combine_uscb_trade_by_countries() -> DataFrame:

@@ -10,7 +10,6 @@ Created on Sun Jun 12 12:25:52 2022
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import scipy.optimize as optimization
 from pandas import DataFrame
 from scipy.interpolate import UnivariateSpline
 from sklearn.metrics import r2_score
@@ -64,27 +63,6 @@ def calculate_capital(df: DataFrame, p_i: tuple[float], p_t: tuple[float], ratio
         ),
         df.iloc[:, 2].shift(1)
     )
-
-
-def calculate_curve_fit_params(df: DataFrame) -> None:
-    """
-        ================== =================================
-        df.index           Period
-        df.iloc[:, 0]      Labor Capital Intensity
-        df.iloc[:, 1]      Labor Productivity
-        ================== =================================
-    """
-
-    def _curve(regressor: pd.Series, b: float, k: float) -> pd.Series:
-        return regressor.pow(k).mul(b)
-
-    params, _matrix = optimization.curve_fit(
-        _curve,
-        df.iloc[:, -2],
-        df.iloc[:, -1],
-        np.array([1.0, 0.5])
-    )
-    print('Factor, b: {:,.4f}; Index, k: {:,.4f}'.format(*params))
 
 
 def calculate_plot_uspline(df: DataFrame):

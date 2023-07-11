@@ -1,6 +1,7 @@
 import itertools
 
 from core.plot import plot_uscb_commodities
+from core.stockpile import stockpile_usa_hist_tuned
 
 
 def main() -> None:
@@ -37,7 +38,8 @@ def main() -> None:
         ARCHIVE_NAME
     )
 
-    stockpile_usa_hist_tuned(SERIES_IDS).pipe(plot_uscb_commodities, SERIES_IDS)
+    stockpile_usa_hist_tuned(SERIES_IDS).pipe(
+        plot_uscb_commodities, SERIES_IDS)
 
 
 if __name__ == '__main__':

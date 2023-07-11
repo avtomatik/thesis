@@ -27,14 +27,29 @@ from uscb_farm_lands import uscb_farm_lands
 from uscb_manufacturing import uscb_manufacturing
 from uscb_metals import uscb_metals
 
+# =============================================================================
+# Census Manufacturing Indexes
+# =============================================================================
 uscb_manufacturing()
 
+# =============================================================================
+# Census Structures & Equipment
+# =============================================================================
 uscb_capital()
 
+# =============================================================================
+# Census Primary Metals & Railroad-Related Products Manufacturing Series
+# =============================================================================
 uscb_metals()
 
+# =============================================================================
+# Census Manufacturing Series
+# =============================================================================
 uscb_commodities()
 
+# =============================================================================
+# Census Immigration
+# =============================================================================
 ARCHIVE_NAME = 'dataset_uscb.zip'
 SERIES_IDS = dict.fromkeys(
     map(
@@ -51,12 +66,18 @@ stockpile_usa_hist(SERIES_IDS).pipe(
     transform_sum, name="C0089"
 ).pipe(plot_uscb_immigration)
 
+# =============================================================================
+# Census Employment Series
+# =============================================================================
 combine_uscb_unemployment_hours_worked().pipe(
     plot_uscb_unemployment_hours_worked
 )
 
 combine_uscb_employment_conflicts().pipe(plot_uscb_employment_conflicts)
 
+# =============================================================================
+# Census Gross National Product Series
+# =============================================================================
 SERIES_IDS = {
     # =========================================================================
     # Census Gross National Product Series
