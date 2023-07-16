@@ -8,7 +8,6 @@ Created on Tue Apr  4 21:55:10 2023
 
 
 import itertools
-from operator import itemgetter
 from pathlib import Path
 
 import pandas as pd
@@ -272,38 +271,67 @@ def combine_usa_capital() -> DataFrame:
 
 
 def combine_usa_capital_purchases() -> DataFrame:
-    SERIES_IDS_EXT = {
-        'CDT2S1': ('dataset_usa_cobb-douglas.zip', 1, 'nominal, millions'),
-        'CDT2S3': ('dataset_usa_cobb-douglas.zip', 1, '1880=100, millions'),
-        'DT63AS01': ('dataset_douglas.zip', 1, '1880=100, millions'),
-        'DT63AS02': ('dataset_douglas.zip', 1, 'DO_NOT_USE_nominal, millions'),
-        'DT63AS03': ('dataset_douglas.zip', 1, 'DO_NOT_USE_nominal, millions'),
-        'J0149': ('dataset_uscb.zip', 1, 'nominal, millions'),
-        'J0150': ('dataset_uscb.zip', 1, 'nominal, millions'),
-        'J0151': ('dataset_uscb.zip', 1, 'nominal, millions'),
-        'P0107': ('dataset_uscb.zip', 1000, 'nominal, billions'),
-        'P0108': ('dataset_uscb.zip', 1000, 'nominal, billions'),
-        'P0109': ('dataset_uscb.zip', 1000, 'nominal, billions'),
-        'P0110': ('dataset_uscb.zip', 1000, '1958=100, billions'),
-        'P0111': ('dataset_uscb.zip', 1000, '1958=100, billions'),
-        'P0112': ('dataset_uscb.zip', 1000, '1958=100, billions'),
-        'P0113': ('dataset_uscb.zip', 1000, 'nominal, billions'),
-        'P0114': ('dataset_uscb.zip', 1000, 'nominal, billions'),
-        'P0115': ('dataset_uscb.zip', 1000, 'nominal, billions'),
-        'P0116': ('dataset_uscb.zip', 1000, '1958=100, billions'),
-        'P0117': ('dataset_uscb.zip', 1000, '1958=100, billions'),
-        'P0118': ('dataset_uscb.zip', 1000, '1958=100, billions'),
-        'P0119': ('dataset_uscb.zip', 1000, '1958=100, billions'),
-        'P0120': ('dataset_uscb.zip', 1000, '1958=100, billions'),
-        'P0121': ('dataset_uscb.zip', 1000, '1958=100, billions'),
-        'P0122': ('dataset_uscb.zip', 1000, '1958=100, billions'),
-    }
-    SERIES_IDS = dict(zip(
-        SERIES_IDS_EXT, map(itemgetter(0), SERIES_IDS_EXT.values())
-    ))
-    df = stockpile_usa_hist(SERIES_IDS).mul(
-        tuple(map(itemgetter(1), SERIES_IDS_EXT.values()))
-    ).truncate(before=1875)
+
+    ARCHIVE_NAME_CD = 'dataset_usa_cobb-douglas.zip'
+    ARCHIVE_NAME_DG = 'dataset_douglas.zip'
+    ARCHIVE_NAME_CB = 'dataset_uscb.zip'
+
+    SERIES_IDS = [
+        'CDT2S1',
+        'CDT2S3',
+        'DT63AS01',
+        'DT63AS02',
+        'DT63AS03',
+        'J0149',
+        'J0150',
+        'J0151',
+        'P0107',
+        'P0108',
+        'P0109',
+        'P0110',
+        'P0111',
+        'P0112',
+        'P0113',
+        'P0114',
+        'P0115',
+        'P0116',
+        'P0117',
+        'P0118',
+        'P0119',
+        'P0120',
+        'P0121',
+        'P0122'
+    ]
+
+    UNIT_A = 'nominal, millions'
+    UNIT_B = '1880=100, millions'
+    UNIT_C = 'nominal, billions'
+    UNIT_D = '1958=100, billions'
+
+    YEAR_BASE = 1875
+
+    ACCESSORY = dict.fromkeys(
+        SERIES_IDS[:1] + SERIES_IDS[3:8], UNIT_A
+    ) | dict.fromkeys(
+        SERIES_IDS[1:3], UNIT_B
+    ) | dict.fromkeys(
+        SERIES_IDS[8:11] + SERIES_IDS[14:17], UNIT_C
+    ) | dict.fromkeys(
+        SERIES_IDS[11:14] + SERIES_IDS[17:], UNIT_D
+    )
+
+    df = stockpile_usa_hist(
+        dict.fromkeys(
+            SERIES_IDS[:2], ARCHIVE_NAME_CD
+        ) | dict.fromkeys(
+            SERIES_IDS[2:5], ARCHIVE_NAME_DG
+        ) | dict.fromkeys(
+            SERIES_IDS[5:], ARCHIVE_NAME_CB
+        )
+    ).mul(
+        dict.fromkeys(SERIES_IDS[:8], 1) | dict.fromkeys(SERIES_IDS[8:], 1000)
+    ).truncate(before=YEAR_BASE)
+
     df['total'] = df.loc[:, ['CDT2S1', 'J0149', 'P0107']].mean(
         axis=1).pipe(wiener).round()
     df['struc'] = df.loc[:, ['J0150', 'P0108']].mean(
@@ -646,15 +674,22 @@ def combine_uscb_cap(smoothing: bool = False) -> DataFrame:
     UNIT_B = 'nominal, billions'
     UNIT_C = '1958=100, billions'
 
-    ACCESSORY = dict.fromkeys(SERIES_IDS[:3], UNIT_A) | dict.fromkeys(
-        SERIES_IDS[3:6] + SERIES_IDS[9:12], UNIT_B) | dict.fromkeys(SERIES_IDS[6:9] + SERIES_IDS[12:], UNIT_C)
+    YEAR_BASE = 1875
+
+    ACCESSORY = dict.fromkeys(
+        SERIES_IDS[:3], UNIT_A
+    ) | dict.fromkeys(
+        SERIES_IDS[3:6] + SERIES_IDS[9:12], UNIT_B
+    ) | dict.fromkeys(
+        SERIES_IDS[6:9] + SERIES_IDS[12:], UNIT_C
+    )
 
     df = stockpile_usa_hist(dict.fromkeys(SERIES_IDS, ARCHIVE_NAME)).mul(
         (
             dict.fromkeys(SERIES_IDS[:3], 1) |
             dict.fromkeys(SERIES_IDS[3:], 1000)
         ).values()
-    ).truncate(before=1875)
+    ).truncate(before=YEAR_BASE)
     if smoothing:
         df['total'] = df.loc[:, ['J0149', 'P0107']].mean(
             axis=1).pipe(wiener).round()
