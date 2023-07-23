@@ -7,16 +7,6 @@ Created on Sun Apr  2 13:18:11 2023
 """
 
 
-ARCHIVE_NAMES_UTILISED = (
-    'dataset_douglas.zip',
-    'dataset_usa_brown.zip',
-    'dataset_usa_cobb-douglas.zip',
-    'dataset_usa_kendrick.zip',
-    'dataset_usa_mc_connell_brue.zip',
-    'dataset_uscb.zip',
-)
-
-
 FILE_NAMES_UTILISED = (
     'dataset_usa_0025_p_r.txt',
     'dataset_usa_bls-2015-02-23-ln.data.1.AllData',
@@ -221,16 +211,6 @@ YLABELS_KENDRICK = (
     'Percentage',
     'Percentage',
 )
-
-
-MAP_READ_USA_HIST = {
-    'dataset_douglas.zip': dict(zip(['series_id', 'period', 'value'], [4, 5, 6])),
-    'dataset_usa_brown.zip': dict(zip(['series_id', 'period', 'value'], [5, 6, 7])),
-    'dataset_usa_cobb-douglas.zip': dict(zip(['series_id', 'period', 'value'], [5, 6, 7])),
-    'dataset_usa_kendrick.zip': dict(zip(['series_id', 'period', 'value'], [4, 5, 6])),
-    'dataset_usa_mc_connell_brue.zip': dict(zip(['series_id', 'period', 'value'], [1, 2, 3])),
-    'dataset_uscb.zip': dict(zip(['series_id', 'period', 'value'], [9, 10, 11])),
-}
 
 
 MAP_READ_CAN = {
