@@ -38,19 +38,20 @@ def options_reviewed():
 
 def test_data_usa_bea():
     """Project II: USA Fixed Assets Data Comparison"""
+    URL_FIXED_ASSETS = 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt'
     SERIES_IDS = {
         # =====================================================================
         # Fixed Assets Series: k1ntotl1si00, 1925--2016
         # =====================================================================
-        'k1ntotl1si00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
+        'k1ntotl1si00': URL_FIXED_ASSETS,
         # =====================================================================
         # Fixed Assets Series: kcntotl1si00, 1925--2016
         # =====================================================================
-        'kcntotl1si00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
+        'kcntotl1si00': URL_FIXED_ASSETS,
         # =====================================================================
         # Not Used: Fixed Assets: k3ntotl1si00, 1925--2016, Table 2.3. Historical-Cost Net Stock of Private Fixed Assets, Equipment, Structures, and Intellectual Property Products by Type
         # =====================================================================
-        'k3ntotl1si00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
+        'k3ntotl1si00': URL_FIXED_ASSETS,
     }
     return stockpile_usa_bea(SERIES_IDS)
 

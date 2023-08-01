@@ -21,11 +21,12 @@ def linear() -> None:
     -------
     None.
     """
+    URL_NIPA_DATA_A = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
     SERIES_IDS = {
-        'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        'A006RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
+        'A191RX': URL_NIPA_DATA_A,
+        'A191RC': URL_NIPA_DATA_A,
+        'A006RC': URL_NIPA_DATA_A,
+        'A191RC': URL_NIPA_DATA_A
     }
     plot_approx_linear(
         *stockpile_usa_bea(SERIES_IDS).dropna(axis=0).pipe(transform_approx_linear)
@@ -39,21 +40,23 @@ def linear_log() -> None:
     -------
     None.
     """
+    URL_FIXED_ASSETS = 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt'
+    URL_NIPA_DATA_A = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
     SERIES_IDS = {
-        'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        'kcptotl1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
-        'A032RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
+        'A191RX': URL_NIPA_DATA_A,
+        'A191RC': URL_NIPA_DATA_A,
+        'kcptotl1es00': URL_FIXED_ASSETS,
+        'A032RC': URL_NIPA_DATA_A
     }
     plot_approx_linear_log(
         *stockpile_usa_bea(SERIES_IDS).dropna(axis=0).pipe(transform_approx_linear_log)
     )
 
     SERIES_IDS = {
-        'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        'kcptotl1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
-        'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
+        'A191RX': URL_NIPA_DATA_A,
+        'A191RC': URL_NIPA_DATA_A,
+        'kcptotl1es00': URL_FIXED_ASSETS,
+        'A191RC': URL_NIPA_DATA_A
     }
     plot_approx_linear_log(
         *stockpile_usa_bea(SERIES_IDS).dropna(axis=0).pipe(transform_approx_linear_log)

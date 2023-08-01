@@ -22,6 +22,7 @@ FILE_NAMES_UTILISED = (
 )
 
 
+URL_NIPA_DATA_A = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
 SERIES_IDS_LAB = {
     # =========================================================================
     # U.S. Bureau of Economic Analysis (BEA), Manufacturing Labor Series
@@ -29,19 +30,19 @@ SERIES_IDS_LAB = {
     # =========================================================================
     # 1929--1948
     # =========================================================================
-    'H4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+    'H4313C': URL_NIPA_DATA_A,
     # =========================================================================
     # 1948--1987
     # =========================================================================
-    'J4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+    'J4313C': URL_NIPA_DATA_A,
     # =========================================================================
     # 1987--2000
     # =========================================================================
-    'A4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+    'A4313C': URL_NIPA_DATA_A,
     # =========================================================================
     # 1998--2020
     # =========================================================================
-    'N4313C': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+    'N4313C': URL_NIPA_DATA_A,
 }
 
 

@@ -149,15 +149,12 @@ def pull_uscb_description(series_id: str) -> str:
         Series Description.
 
     """
-    MAP_FIELD = {
-        'source': 0,
-        'table': 1,
-        'note': 3,
-        'group1': 4,
-        'group2': 5,
-        'group3': 6,
-        'series_id': 9
-    }
+    MAP_FIELD = dict(
+        zip(
+            ['source', 'table', 'note', 'group1', 'group2', 'group3', 'series_id'],
+            [0, 1, 3, 4, 5, 6, 9]
+        )
+    )
     kwargs = {
         'filepath_or_buffer': 'dataset_uscb.zip',
         'header': 0,

@@ -343,19 +343,21 @@ def combine_usa_capital_purchases() -> DataFrame:
 
 def combine_usa_investment_turnover_bls() -> DataFrame:
     SERIES_ID = 'PPIACO'
+    URL_FIXED_ASSETS = 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt'
+    URL_NIPA_DATA_A = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
     SERIES_IDS = {
         # =====================================================================
         # Nominal Investment Series: A006RC, 1929--2021
         # =====================================================================
-        'A006RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        'A006RC': URL_NIPA_DATA_A,
         # =====================================================================
         # Real Gross Domestic Product Series, 2012=100: A191RX, 1929--2021
         # =====================================================================
-        'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        'A191RX': URL_NIPA_DATA_A,
         # =====================================================================
         # Fixed Assets Series: k1n31gd1es00, 1929--2020
         # =====================================================================
-        'k1n31gd1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
+        'k1n31gd1es00': URL_FIXED_ASSETS,
     }
     df = pd.concat(
         [
@@ -394,19 +396,21 @@ def combine_usa_investment_turnover_bls() -> DataFrame:
 
 
 def combine_usa_investment_turnover() -> DataFrame:
+    URL_FIXED_ASSETS = 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt'
+    URL_NIPA_DATA_A = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
     SERIES_IDS = {
-        'A006RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        'A006RD': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
-        'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        'A006RC': URL_NIPA_DATA_A,
+        'A006RD': URL_NIPA_DATA_A,
+        'A191RC': URL_NIPA_DATA_A,
+        'A191RX': URL_NIPA_DATA_A,
         # =====================================================================
         # Not Used: Fixed Assets: k3n31gd1es00, 1925--2020, Table 4.3. Historical-Cost Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
         # =====================================================================
-        'k3n31gd1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
+        'k3n31gd1es00': URL_FIXED_ASSETS,
         # =====================================================================
         # Fixed Assets: kcn31gd1es00, 1925--2020, Table 4.2. Chain-Type Quantity Indexes for Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
         # =====================================================================
-        'kcn31gd1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
+        'kcn31gd1es00': URL_FIXED_ASSETS,
     }
     df = stockpile_usa_bea(SERIES_IDS)
     # =========================================================================
@@ -452,15 +456,17 @@ def combine_usa_manufacturing_two_fold() -> tuple[DataFrame]:
         ================== =================================
     """
     SERIES_ID = 'CAPUTL.B50001.A'
+    URL_FIXED_ASSETS = 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt'
+    URL_NIPA_DATA_A = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
     SERIES_IDS = {
         # =================================================================
         # Fixed Assets: kcn31gd1es00, 1925--2020, Table 4.2. Chain-Type Quantity Indexes for Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
         # =================================================================
-        'kcn31gd1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
+        'kcn31gd1es00': URL_FIXED_ASSETS,
         # =================================================================
         # Real Gross Domestic Product Series, 2012=100: A191RX, 1929--2021
         # =================================================================
-        'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        'A191RX': URL_NIPA_DATA_A,
     }
     df = pd.concat(
         [
@@ -525,8 +531,9 @@ def combine_usa_manufacturing_three_fold() -> tuple[DataFrame]:
         ================== =================================
     """
     SERIES_ID = 'CAPUTL.B50001.A'
+    URL_FIXED_ASSETS = 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt'
     SERIES_IDS = {
-        'kcn31gd1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt'
+        'kcn31gd1es00': URL_FIXED_ASSETS
     }
     df = pd.concat(
         [
@@ -895,23 +902,24 @@ def combine_usa_investment_manufacturing() -> DataFrame:
         ================== =================================.
 
     """
+    URL_NIPA_DATA_A = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
     SERIES_IDS = {
         # =====================================================================
         # Nominal Investment Series: A006RC
         # =====================================================================
-        'A006RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        'A006RC': URL_NIPA_DATA_A,
         # =====================================================================
         # Nominal National income Series: A032RC
         # =====================================================================
-        'A032RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        'A032RC': URL_NIPA_DATA_A,
         # =====================================================================
         # Nominal Gross Domestic Product Series: A191RC
         # =====================================================================
-        'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        'A191RC': URL_NIPA_DATA_A,
         # =====================================================================
         # Real Gross Domestic Product Series, 2012=100: A191RX
         # =====================================================================
-        'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        'A191RX': URL_NIPA_DATA_A,
     }
     return stockpile_usa_bea(SERIES_IDS)
 
@@ -933,19 +941,20 @@ def combine_usa_investment() -> DataFrame:
 
     """
     FILE_NAME = 'dataset_usa_0025_p_r.txt'
+    URL_NIPA_DATA_A = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
     SERIES_IDS = {
         # =====================================================================
         # Nominal Investment Series: A006RC
         # =====================================================================
-        'A006RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        'A006RC': URL_NIPA_DATA_A,
         # =====================================================================
         # Nominal Gross Domestic Product Series: A191RC
         # =====================================================================
-        'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        'A191RC': URL_NIPA_DATA_A,
         # =====================================================================
         # Real Gross Domestic Product Series, 2012=100: A191RX
         # =====================================================================
-        'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        'A191RX': URL_NIPA_DATA_A,
     }
     return pd.concat(
         [
@@ -972,19 +981,20 @@ def combine_usa_manufacturing() -> DataFrame:
         ================== =================================.
 
     """
+    URL_NIPA_DATA_A = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
     SERIES_IDS = {
         # =====================================================================
         # Nominal Investment Series: A006RC
         # =====================================================================
-        'A006RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        'A006RC': URL_NIPA_DATA_A,
         # =====================================================================
         # Nominal Gross Domestic Product Series: A191RC
         # =====================================================================
-        'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        'A191RC': URL_NIPA_DATA_A,
         # =====================================================================
         # Real Gross Domestic Product Series, 2012=100: A191RX
         # =====================================================================
-        'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        'A191RX': URL_NIPA_DATA_A,
     }
     return stockpile_usa_bea(SERIES_IDS).dropna(axis=0)
 
@@ -1060,27 +1070,28 @@ def combine_usa_d() -> DataFrame:
         ================== =================================.
 
     """
+    URL_NIPA_DATA_A = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
     SERIES_IDS = {
         # =====================================================================
         # Nominal Investment Series: A006RC
         # =====================================================================
-        'A006RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        'A006RC': URL_NIPA_DATA_A,
         # =====================================================================
         # Implicit Price Deflator Series: A006RD
         # =====================================================================
-        'A006RD': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        'A006RD': URL_NIPA_DATA_A,
         # =====================================================================
         # Gross private domestic investment -- Nonresidential: A008RC
         # =====================================================================
-        'A008RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        'A008RC': URL_NIPA_DATA_A,
         # =====================================================================
         # Implicit Price Deflator -- Gross private domestic investment -- Nonresidential: A008RD
         # =====================================================================
-        'A008RD': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        'A008RD': URL_NIPA_DATA_A,
         # =====================================================================
         # Real Gross Domestic Product Series, 2012=100: A191RX
         # =====================================================================
-        'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        'A191RX': URL_NIPA_DATA_A,
     }
     return stockpile_usa_bea(SERIES_IDS)
 
@@ -1100,23 +1111,25 @@ def combine_usa_e() -> DataFrame:
         ================== =================================.
 
     """
+    URL_FIXED_ASSETS = 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt'
+    URL_NIPA_DATA_A = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
     SERIES_IDS = {
         # =====================================================================
         # Nominal Investment Series: A006RC
         # =====================================================================
-        'A006RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        'A006RC': URL_NIPA_DATA_A,
         # =====================================================================
         # Nominal Gross Domestic Product Series: A191RC
         # =====================================================================
-        'A191RC': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        'A191RC': URL_NIPA_DATA_A,
         # =====================================================================
         # Real Gross Domestic Product Series, 2012=100: A191RX
         # =====================================================================
-        'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        'A191RX': URL_NIPA_DATA_A,
         # =====================================================================
         # Fixed Assets Series: k1n31gd1es00
         # =====================================================================
-        'k1n31gd1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
+        'k1n31gd1es00': URL_FIXED_ASSETS,
     }
     return stockpile_usa_bea(SERIES_IDS).dropna(axis=0)
 
@@ -1166,15 +1179,17 @@ def combine_data_frames_by_columns(
 
 
 def combine_usa_kurenkov() -> DataFrame:
+    URL_FIXED_ASSETS = 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt'
+    URL_NIPA_DATA_A = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
     SERIES_IDS = {
         # =====================================================================
         # Real Gross Domestic Product Series, 2012=100: A191RX
         # =====================================================================
-        'A191RX': 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt',
+        'A191RX': URL_NIPA_DATA_A,
         # =====================================================================
         # Fixed Assets Series: k1n31gd1es00
         # =====================================================================
-        'k1n31gd1es00': 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt',
+        'k1n31gd1es00': URL_FIXED_ASSETS,
     }
     return pd.concat(
         [
