@@ -149,19 +149,19 @@ def pull_uscb_description(series_id: str) -> str:
         Series Description.
 
     """
-    MAP_FIELD = dict(
-        zip(
-            ['source', 'table', 'note', 'group1', 'group2', 'group3', 'series_id'],
-            [0, 1, 3, 4, 5, 6, 9]
-        )
-    )
+    NAMES = [
+        'source', 'table', 'note', 'group1', 'group2', 'group3', 'series_id'
+    ]
+    USECOLS = [0, 1, 3, 4, 5, 6, 9]
+
     kwargs = {
         'filepath_or_buffer': 'dataset_uscb.zip',
         'header': 0,
-        'names': tuple(MAP_FIELD.keys()),
-        'usecols': tuple(MAP_FIELD.values()),
+        'names': NAMES,
+        'usecols': USECOLS,
         'low_memory': False
     }
+
     df = pd.read_csv(**kwargs)
     lookup_columns = ('group1', 'group2', 'group3', 'note')
     df = df[df.loc[:, 'series_id'] == series_id].loc[:, lookup_columns]
