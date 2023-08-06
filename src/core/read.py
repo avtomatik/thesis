@@ -64,32 +64,6 @@ def read_can(archive_id: int) -> DataFrame:
     return pd.read_csv(**kwargs)
 
 
-def read_temporary(
-    file_name: str, path_src: str = '/home/green-machine/data_science/data/interim'
-) -> DataFrame:
-    """
-
-
-    Parameters
-    ----------
-    file_name : str
-        DESCRIPTION.
-    path_src : str, optional
-        DESCRIPTION. The default is '/home/green-machine/data_science/data/interim'.
-
-    Returns
-    -------
-    DataFrame
-        DESCRIPTION.
-
-    """
-    kwargs = {
-        'filepath_or_buffer': Path(path_src).joinpath(file_name),
-        'index_col': 0,
-    }
-    return pd.read_csv(**kwargs)
-
-
 def read_unstats(url: str = 'https://unstats.un.org/unsd/amaapi/api/file/2') -> DataFrame:
     """
 

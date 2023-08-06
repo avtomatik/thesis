@@ -1,3 +1,6 @@
+from pathlib import Path
+from typing import Any
+
 from .constants import TITLES_DEU
 from .pull import pull_series_ids_description
 
@@ -119,3 +122,25 @@ def get_labels(archive_name: str, key: str, scenario: str) -> list[list[str]]:
             labels.append(list(map(map_series_ids.get, series_ids.keys())))
 
     return labels
+
+
+def get_pre_kwargs(file_name: str) -> dict[str, Any]:
+    """
+    Returns `kwargs` for `pd.read_csv()` for Usual Cases
+
+    Parameters
+    ----------
+    file_name : str
+        DESCRIPTION.
+
+    Returns
+    -------
+    dict[str, Any]
+        DESCRIPTION.
+
+    """
+    PATH_SRC = '/home/green-machine/data_science/data/interim'
+    return {
+        'filepath_or_buffer': Path(PATH_SRC).joinpath(file_name),
+        'index_col': 0,
+    }

@@ -15,11 +15,12 @@ from pandas import DataFrame
 from scipy.signal import wiener
 from sklearn.impute import SimpleImputer
 
+from thesis.src.core.common import get_pre_kwargs
+
 from .constants import SERIES_IDS_LAB
 from .pull import pull_by_series_id, pull_can_capital, pull_can_capital_former
-from .read import (read_can, read_temporary, read_usa_davis_ip, read_usa_frb,
-                   read_usa_frb_g17, read_usa_frb_h6, read_usa_frb_us3,
-                   read_usa_fred)
+from .read import (read_can, read_usa_davis_ip, read_usa_frb, read_usa_frb_g17,
+                   read_usa_frb_h6, read_usa_frb_us3, read_usa_fred)
 from .stockpile import stockpile_usa_bea, stockpile_usa_hist
 from .tools import construct_usa_hist_deflator
 from .transform import (transform_cobb_douglas_extension_capital,
@@ -167,7 +168,7 @@ def combine_cobb_douglas_extension_labor() -> DataFrame:
             stockpile_usa_bea(SERIES_IDS_LAB).pipe(
                 transform_mean, name='bea_labor_mfg'
             ),
-            read_temporary(FILE_NAME).iloc[:, [1]]
+            pd.read_csv(**get_pre_kwargs(FILE_NAME)).iloc[:, [1]]
         ],
         axis=1
     ).pipe(transform_mean, name=COL_NAME)
@@ -959,7 +960,7 @@ def combine_usa_investment() -> DataFrame:
     return pd.concat(
         [
             stockpile_usa_bea(SERIES_IDS),
-            read_temporary(FILE_NAME)
+            pd.read_csv(**get_pre_kwargs(FILE_NAME))
         ],
         axis=1,
         sort=True

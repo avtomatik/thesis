@@ -9,6 +9,7 @@ Project IX. USA BEA
 """
 
 
+import pandas as pd
 from core.combine import (combine_usa_d, combine_usa_e, combine_usa_investment,
                           combine_usa_investment_manufacturing,
                           combine_usa_kurenkov,
@@ -16,9 +17,10 @@ from core.combine import (combine_usa_d, combine_usa_e, combine_usa_investment,
 from core.plot import (plot_d, plot_e, plot_investment,
                        plot_investment_manufacturing, plot_manufacturing_money,
                        plot_usa_kurenkov)
-from core.read import read_temporary
 from core.transform import (transform_d, transform_e, transform_investment,
                             transform_investment_manufacturing)
+
+from thesis.src.core.common import get_pre_kwargs
 
 # =============================================================================
 # Project: Initial Version Dated: 05 October 2012
@@ -65,7 +67,7 @@ COLUMNS_TO_TEST = [
     ['CAPUTL.B50001.A']
 ]
 
-df_control = read_temporary(FILE_NAME)
+df_control = pd.read_csv(**get_pre_kwargs(FILE_NAME))
 df_test = combine_usa_kurenkov()
 
 plot_usa_kurenkov(df_control, df_test, COLUMNS_TO_TEST)
