@@ -594,12 +594,6 @@ def transform_usa_frb_fa_def(df: DataFrame) -> DataFrame:
     return df.iloc[:, [-1]]
 
 
-def transform_agg(df: DataFrame, agg: str) -> DataFrame:
-    if agg == 'mean':
-        return df.groupby(df.columns[0]).mean()
-    return df.groupby(df.columns[0]).sum()
-
-
 def transform_year_sum(df: DataFrame) -> DataFrame:
     return df.groupby(df.index.year).sum()
 

@@ -16,8 +16,6 @@ FILE_NAMES_UTILISED = (
     'dataset_usa_frb_g17_all_annual_2013_06_23.csv',
     'dataset_usa_frb_invest_capital.csv',
     'dataset_usa_frb_us3_ip_2018_09_02.csv',
-    'dataset_usa_nber_ces_mid_naics5811.csv',
-    'dataset_usa_nber_ces_mid_sic5811.csv',
     'dataset_usa_reference_ru_kurenkov_yu_v.csv',
 )
 

@@ -20,13 +20,11 @@ from sklearn.metrics import r2_score
 from .combine import combine_data_frames_by_columns
 from .common import get_fig_map, get_labels, group_series_ids
 from .pull import pull_series_ids_description, pull_uscb_description
-from .read import read_usa_nber
 from .stockpile import stockpile_usa_hist
 from .tools import (cap_productivity, filter_kol_zur, filter_rolling_mean,
                     lab_productivity, simple_linear_regression)
-from .transform import (transform_agg, transform_cobb_douglas,
-                        transform_fourier_discrete, transform_model_capital,
-                        transform_rebase)
+from .transform import (transform_cobb_douglas, transform_fourier_discrete,
+                        transform_model_capital, transform_rebase)
 
 
 def plot_investment_manufacturing(df: DataFrame) -> None:
@@ -2115,36 +2113,3 @@ def plot_turnover(df: DataFrame) -> None:
     plt.grid()
     plt.legend()
     plt.show()
-
-
-def plot_usa_nber(df_sic: DataFrame, df_naics: DataFrame, agg: str) -> None:
-    """Project V: USA NBER Data Plotting"""
-    for _, (sic_id, naics_id) in enumerate(zip(df_sic.columns, df_naics.columns)):
-        # =====================================================================
-        # Ensures Columns in Two DataFrames Are in the Same Ordering
-        # =====================================================================
-        series_id = tuple(set((sic_id, naics_id)))
-        plt.plot(df_sic.iloc[:, _], label='sic_{}'.format(*series_id))
-        plt.plot(df_naics.iloc[:, _], label='naics_{}'.format(*series_id))
-        plt.title('NBER CES: {} {}'.format(*series_id, agg))
-        plt.xlabel('Period')
-        plt.ylabel('Dimension')
-        plt.grid()
-        plt.legend()
-        plt.show()
-
-
-def plot_usa_nber_showcase() -> None:
-    FILEPATH_OR_BUFFER = (
-        'dataset_usa_nber_ces_mid_sic5811.csv',
-        'dataset_usa_nber_ces_mid_naics5811.csv',
-    )
-    aggs = ('mean', 'sum')
-    for agg in aggs:
-        sic = read_usa_nber(FILEPATH_OR_BUFFER[0]).pipe(
-            transform_agg, agg=agg
-        )
-        naics = read_usa_nber(FILEPATH_OR_BUFFER[1]).pipe(
-            transform_agg, agg=agg
-        )
-        plot_usa_nber(sic, naics, agg)

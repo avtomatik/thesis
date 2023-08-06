@@ -367,36 +367,3 @@ def read_usa_hist(token: Token) -> DataFrame:
     """
 
     return pd.read_csv(**token.get_kwargs())
-
-
-def read_usa_nber(filepath_or_buffer: str) -> DataFrame:
-    """
-
-
-    Parameters
-    ----------
-    filepath_or_buffer : str
-        DESCRIPTION.
-    agg : str
-        ("mean" | "sum").
-
-    Returns
-    -------
-    DataFrame
-        ================== =================================
-        df.index           Period
-        df.iloc[:, ...]    Series
-        ================== =================================
-    """
-    kwargs = {"filepath_or_buffer": filepath_or_buffer}
-    # =========================================================================
-    # Load
-    # =========================================================================
-    df = pd.read_csv(**kwargs)
-    kwargs['header'] = 0
-    kwargs['names'] = ('period', *map(str.strip, df.columns[2:]))
-    kwargs['index_col'] = 0
-    # =========================================================================
-    # Re-Load
-    # =========================================================================
-    return pd.read_csv(**kwargs)
