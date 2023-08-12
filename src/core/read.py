@@ -159,7 +159,7 @@ def read_usa_frb_h6() -> DataFrame:
         'parse_dates': True
     }
     df = pd.read_csv(**kwargs)
-    return df.groupby(df.index.year).mean()
+    return df.groupby(df.index.year).agg('mean')
 
 
 def read_usa_frb_us3() -> DataFrame:
@@ -196,7 +196,7 @@ def read_usa_frb_us3() -> DataFrame:
     # Re-Load
     # =========================================================================
     df = pd.read_csv(**kwargs)
-    return df.groupby(df.index.year).mean()
+    return df.groupby(df.index.year).agg('mean')
 
 
 def read_usa_fred(series_id: str) -> DataFrame:
@@ -220,4 +220,4 @@ def read_usa_fred(series_id: str) -> DataFrame:
         'parse_dates': True
     }
     df = pd.read_csv(**kwargs)
-    return df.groupby(df.index.year).mean()
+    return df.groupby(df.index.year).agg('mean')
