@@ -9,92 +9,22 @@ Created on Sun Jun 12 00:44:36 2022
 
 import io
 from functools import cache
-from pathlib import Path
-from zipfile import ZipFile
 
 import pandas as pd
 import requests
-from core.classes import Token
+from core.classes import SeriesID
 from pandas import DataFrame
 
-from .constants import MAP_READ_CAN
-
 
 @cache
-def read_can(archive_id: int) -> DataFrame:
+def read_source(series_id: SeriesID) -> DataFrame:
     """
 
 
     Parameters
     ----------
-    archive_id : int
-
-    Returns
-    -------
-    DataFrame
-        ================== =================================
-        df.index           Period
-        ...                ...
-        df.iloc[:, -1]     Values
-        ================== =================================
-    """
-    MAP_DEFAULT = dict(zip(['period', 'series_id', 'value'], [0, 10, 12]))
-    url = f'https://www150.statcan.gc.ca/n1/tbl/csv/{archive_id:08n}-eng.zip'
-    TO_PARSE_DATES = (
-        2820011, 3790031, 3800084, 10100094, 14100221, 14100235, 14100238, 14100355, 16100109, 16100111, 36100108, 36100207, 36100434
-    )
-    kwargs = {
-        'header': 0,
-        'names': list(MAP_READ_CAN.get(archive_id, MAP_DEFAULT).keys()),
-        'index_col': 0,
-        'usecols': list(MAP_READ_CAN.get(archive_id, MAP_DEFAULT).values()),
-        'parse_dates': archive_id in TO_PARSE_DATES
-    }
-    if archive_id < 10 ** 7:
-        kwargs['filepath_or_buffer'] = f'dataset_can_{archive_id:08n}-eng.zip'
-    else:
-        if Path(f'{archive_id:08n}-eng.zip').is_file():
-            kwargs['filepath_or_buffer'] = ZipFile(
-                f'{archive_id:08n}-eng.zip'
-            ).open(f'{archive_id:08n}.csv')
-        else:
-            kwargs['filepath_or_buffer'] = ZipFile(
-                io.BytesIO(requests.get(url).content)
-            ).open(f'{archive_id:08n}.csv')
-    return pd.read_csv(**kwargs)
-
-
-def read_unstats(url: str = 'https://unstats.un.org/unsd/amaapi/api/file/2') -> DataFrame:
-    """
-
-
-    Parameters
-    ----------
-    url : str, optional
-        DESCRIPTION. The default is 'https://unstats.un.org/unsd/amaapi/api/file/2'.
-
-    Returns
-    -------
-    DataFrame
+    series_id : SeriesID
         DESCRIPTION.
-
-    """
-    kwargs = {
-        'io': io.BytesIO(requests.get(url).content),
-        'index_col': 1,
-        'skiprows': 2,
-    }
-    return pd.read_excel(**kwargs)
-
-
-@cache
-def read_usa_bea(url: str) -> DataFrame:
-    """
-    Retrieves U.S. Bureau of Economic Analysis DataFrame from URL
-
-    Parameters
-    ----------
-    url : str
 
     Returns
     -------
@@ -103,19 +33,10 @@ def read_usa_bea(url: str) -> DataFrame:
         df.index           Period
         df.iloc[:, 0]      Series IDs
         df.iloc[:, 1]      Values
-        ================== =================================
+        ================== =================================.
+
     """
-    kwargs = {
-        'header': 0,
-        'names': ('series_ids', 'period', 'value'),
-        'index_col': 1,
-        'thousands': ','
-    }
-    if requests.head(url).status_code == 200:
-        kwargs['filepath_or_buffer'] = io.BytesIO(requests.get(url).content)
-    else:
-        kwargs['filepath_or_buffer'] = url.split('/')[-1]
-    return pd.read_csv(**kwargs)
+    return pd.read_csv(**series_id.source.get_kwargs())
 
 
 def read_usa_bls(filepath_or_buffer: str) -> DataFrame:
@@ -147,26 +68,6 @@ def read_usa_bls(filepath_or_buffer: str) -> DataFrame:
     df = pd.read_csv(**kwargs)
     df.loc[:, 'series_id'] = df.loc[:, 'series_id'].str.strip()
     return df[df.loc[:, 'sub_period'] == 'M13'].loc[:, ('series_id', 'value')]
-
-
-def read_usa_davis_ip() -> DataFrame:
-    """
-
-
-    Returns
-    -------
-    DataFrame
-        DESCRIPTION.
-
-    """
-    kwargs = {
-        'io': 'dataset_usa_davis-j-h-ip-total.xls',
-        'header': None,
-        'names': ('period', 'davis_index'),
-        'index_col': 0,
-        'skiprows': 5
-    }
-    return pd.read_excel(**kwargs)
 
 
 @cache
@@ -320,24 +221,3 @@ def read_usa_fred(series_id: str) -> DataFrame:
     }
     df = pd.read_csv(**kwargs)
     return df.groupby(df.index.year).mean()
-
-
-@cache
-def read_usa_hist(token: Token) -> DataFrame:
-    """
-    Retrieves Data from Enumerated Historical Datasets
-    Parameters
-    ----------
-    token : Token
-
-    Returns
-    -------
-    DataFrame
-        ================== =================================
-        df.index           Period
-        df.iloc[:, 0]      Series IDs
-        df.iloc[:, 1]      Values
-        ================== =================================
-    """
-
-    return pd.read_csv(**token.get_kwargs())

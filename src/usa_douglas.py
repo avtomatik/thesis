@@ -18,7 +18,7 @@ if __name__ == '__main__':
 
     PATH_SRC = '/home/green-machine/data_science/data/interim'
 
-    ARCHIVE_NAME = 'dataset_douglas.zip'
+    ARCHIVE_NAME = Dataset.DOUGLAS
 
     os.chdir(PATH_SRC)
 

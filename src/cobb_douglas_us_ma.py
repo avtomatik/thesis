@@ -2,7 +2,7 @@ import os
 
 from core.common import get_fig_map_us_ma
 from core.plot import plot_cobb_douglas
-from core.stockpile import stockpile_usa_hist
+from core.stockpile import stockpile
 from core.transform import transform_cobb_douglas
 
 
@@ -31,14 +31,14 @@ def main(
     # Douglas Production Function
     # =========================================================================
     SERIES_IDS = {
-        'DT19AS03': 'dataset_douglas.zip',
-        'DT19AS02': 'dataset_douglas.zip',
-        'DT19AS01': 'dataset_douglas.zip'
+        'DT19AS03': Dataset.DOUGLAS,
+        'DT19AS02': Dataset.DOUGLAS,
+        'DT19AS01': Dataset.DOUGLAS
     }
 
     os.chdir(path_src)
     plot_cobb_douglas(
-        *stockpile_usa_hist(SERIES_IDS).pipe(
+        *stockpile(SERIES_IDS).pipe(
             transform_cobb_douglas, year_base=year_base
         ),
         get_fig_map_us_ma(year_base)

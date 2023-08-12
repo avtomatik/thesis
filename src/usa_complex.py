@@ -8,9 +8,10 @@ Created on Sun Mar 26 03:16:06 2023
 Project VIII. Complex
 """
 
+from core.classes import Dataset
 from core.combine import combine_cobb_douglas
 from core.plot import plot_uscb_complex
-from core.stockpile import stockpile_usa_hist
+from core.stockpile import stockpile
 from core.transform import transform_cobb_douglas
 
 # =============================================================================
@@ -25,14 +26,10 @@ df = combine_cobb_douglas().pipe(
 for column in df.columns:
     df.loc[:, [column]].pipe(plot_uscb_complex)
 
-SERIES_IDS = (
-    {'D0004': 'dataset_uscb.zip'}, {'D0130': 'dataset_uscb.zip'},
-    {'F0003': 'dataset_uscb.zip'}, {'F0004': 'dataset_uscb.zip'},
-    {'P0110': 'dataset_uscb.zip'}, {'U0001': 'dataset_uscb.zip'},
-    {'U0008': 'dataset_uscb.zip'}, {'X0414': 'dataset_uscb.zip'},
-    {'X0415': 'dataset_uscb.zip'}
-)
+SERIES_IDS = 'D0004 D0130 F0003 F0004 P0110 U0001 U0008 X0414 X0415'.split()
 
 for series_id in SERIES_IDS:
     print(f'Processing {series_id}')
-    stockpile_usa_hist(series_id).pipe(plot_uscb_complex)
+    stockpile(
+        enlist_series_ids([series_id], Dataset.USCB)
+    ).pipe(plot_uscb_complex)

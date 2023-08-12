@@ -7,10 +7,8 @@ Created on Sun Nov 20 17:42:38 2022
 """
 
 import numpy as np
-import pandas as pd
 from pandas import DataFrame
 
-from .pull import pull_by_series_id
 from .tools import calculate_capital, get_price_base_nr
 
 
@@ -482,64 +480,6 @@ def transform_mean(df: DataFrame, name: str) -> DataFrame:
     return df.iloc[:, [-1]]
 
 
-def transform_stockpile(df: DataFrame) -> DataFrame:
-    """
-
-
-    Parameters
-    ----------
-    df : DataFrame
-        ================== =================================
-        df.index           Period
-        df.iloc[:, 0]      Series IDs
-        df.iloc[:, 1]      Values
-        ================== =================================
-    name : str
-        New Column Name.
-
-    Returns
-    -------
-    DataFrame
-        ================== =================================
-        df.index           Period
-        df.iloc[:, 0]      Sum of <series_ids>
-        ================== =================================
-    """
-    return pd.concat(
-        map(
-            lambda _: df.pipe(pull_by_series_id, _),
-            sorted(set(df.iloc[:, 0]))
-        ),
-        axis=1
-    ).apply(pd.to_numeric, errors='coerce')
-
-
-def transform_sum(df: DataFrame, name: str) -> DataFrame:
-    """
-
-
-    Parameters
-    ----------
-    df : DataFrame
-        ================== =================================
-        df.index           Period
-        df.iloc[:, ...]    Series
-        ================== =================================
-    name : str
-        New Column Name.
-
-    Returns
-    -------
-    DataFrame
-        ================== =================================
-        df.index           Period
-        df.iloc[:, 0]      Sum of <series_ids>
-        ================== =================================
-    """
-    df[name] = df.sum(axis=1)
-    return df.iloc[:, [-1]]
-
-
 def transform_usa_frb_fa(df: DataFrame) -> DataFrame:
     """
     Retrieves DataFrame for Manufacturing Fixed Assets Series, Billion USD
@@ -592,10 +532,6 @@ def transform_usa_frb_fa_def(df: DataFrame) -> DataFrame:
     df['fa_def_frb'] = (df.iloc[:, [1, 4]].sum(axis=1)).div(
         df.iloc[:, [0, 3]].sum(axis=1))
     return df.iloc[:, [-1]]
-
-
-def transform_year_sum(df: DataFrame) -> DataFrame:
-    return df.groupby(df.index.year).sum()
 
 
 def transform_pct_change(df: DataFrame) -> DataFrame:

@@ -10,7 +10,7 @@ Project I. Approximation
 
 
 from core.plot import plot_approx_linear, plot_approx_linear_log
-from core.stockpile import stockpile_usa_bea
+from core.stockpile import stockpile
 from core.transform import transform_approx_linear, transform_approx_linear_log
 
 
@@ -21,15 +21,11 @@ def linear() -> None:
     -------
     None.
     """
-    URL_NIPA_DATA_A = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
-    SERIES_IDS = {
-        'A191RX': URL_NIPA_DATA_A,
-        'A191RC': URL_NIPA_DATA_A,
-        'A006RC': URL_NIPA_DATA_A,
-        'A191RC': URL_NIPA_DATA_A
-    }
+
+    SERIES_IDS = ['A191RX', 'A191RC', 'A006RC', 'A191RC']
+    SERIES_IDS = enlist_series_ids(SERIES_IDS, URL.NIPA)
     plot_approx_linear(
-        *stockpile_usa_bea(SERIES_IDS).dropna(axis=0).pipe(transform_approx_linear)
+        *stockpile(SERIES_IDS).dropna(axis=0).pipe(transform_approx_linear)
     )
 
 
@@ -40,26 +36,25 @@ def linear_log() -> None:
     -------
     None.
     """
-    URL_FIXED_ASSETS = 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt'
-    URL_NIPA_DATA_A = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
+
     SERIES_IDS = {
-        'A191RX': URL_NIPA_DATA_A,
-        'A191RC': URL_NIPA_DATA_A,
-        'kcptotl1es00': URL_FIXED_ASSETS,
-        'A032RC': URL_NIPA_DATA_A
+        'A191RX': URL.NIPA,
+        'A191RC': URL.NIPA,
+        'kcptotl1es00': URL.FIAS,
+        'A032RC': URL.NIPA
     }
     plot_approx_linear_log(
-        *stockpile_usa_bea(SERIES_IDS).dropna(axis=0).pipe(transform_approx_linear_log)
+        *stockpile(SERIES_IDS).dropna(axis=0).pipe(transform_approx_linear_log)
     )
 
     SERIES_IDS = {
-        'A191RX': URL_NIPA_DATA_A,
-        'A191RC': URL_NIPA_DATA_A,
-        'kcptotl1es00': URL_FIXED_ASSETS,
-        'A191RC': URL_NIPA_DATA_A
+        'A191RX': URL.NIPA,
+        'A191RC': URL.NIPA,
+        'kcptotl1es00': URL.FIAS,
+        'A191RC': URL.NIPA
     }
     plot_approx_linear_log(
-        *stockpile_usa_bea(SERIES_IDS).dropna(axis=0).pipe(transform_approx_linear_log)
+        *stockpile(SERIES_IDS).dropna(axis=0).pipe(transform_approx_linear_log)
     )
 
 

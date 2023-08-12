@@ -12,16 +12,16 @@ Project XI. USA Census J14
 import os
 
 from core.plot import plot_filter_rolling_mean, plot_growth_elasticity
-from core.stockpile import stockpile_usa_hist
+from core.stockpile import stockpile
 
 
 def main(
     path_src: str = '/media/green-machine/KINGSTON',
-    series_id: dict[str, str] = {'J0014': 'dataset_uscb.zip'}
+    series_id: dict[str, str] = [SeriesID('J0014', Dataset.USCB)]
 ):
 
     os.chdir(path_src)
-    df = stockpile_usa_hist(series_id)
+    df = stockpile(series_id)
     df.pipe(plot_growth_elasticity)
     df.pipe(plot_filter_rolling_mean)
 

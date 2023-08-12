@@ -20,7 +20,6 @@ FILE_NAMES_UTILISED = (
 )
 
 
-URL_NIPA_DATA_A = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
 SERIES_IDS = [
     # =========================================================================
     # U.S. Bureau of Economic Analysis (BEA), Manufacturing Labor Series
@@ -42,7 +41,7 @@ SERIES_IDS = [
     # =========================================================================
     'N4313C',
 ]
-SERIES_IDS_LAB = dict.fromkeys(SERIES_IDS, URL_NIPA_DATA_A)
+SERIES_IDS_LAB = enlist_series_ids(SERIES_IDS, URL.NIPA)
 
 
 TITLES_DOUGLAS = (
@@ -213,35 +212,9 @@ YLABELS_KENDRICK = (
 )
 
 
-MAP_READ_CAN = {
-    310004: dict(zip(['category', 'component', 'period', 'prices', 'series_id', 'value'], [4, 5, 0, 2, 6, 8])),
-    2820011: dict(zip(['classofworker', 'geo', 'industry', 'period', 'series_id', 'sex', 'value'], [2, 1, 3, 0, 5, 4, 7])),
-    2820012: dict(zip(['period', 'series_id', 'value'], [0, 5, 7])),
-    3790031: dict(zip(['geo', 'naics', 'period', 'prices', 'seas', 'series_id', 'value'], [1, 4, 0, 3, 2, 5, 7])),
-    3800084: dict(zip(['est', 'geo', 'period', 'seas', 'series_id', 'value'], [3, 1, 0, 2, 4, 6])),
-    3800102: dict(zip(['period', 'series_id', 'value'], [0, 4, 6])),
-    3800106: dict(zip(['period', 'series_id', 'value'], [0, 3, 5])),
-    3800518: dict(zip(['period', 'series_id', 'value'], [0, 4, 6])),
-    3800566: dict(zip(['period', 'series_id', 'value'], [0, 3, 5])),
-    3800567: dict(zip(['period', 'series_id', 'value'], [0, 4, 6])),
-    14100027: dict(zip(['period', 'series_id', 'value'], [0, 10, 12])),
-    14100235: dict(zip(['period', 'series_id', 'value'], [0, 8, 10])),
-    16100053: dict(zip(['period', 'series_id', 'value'], [0, 9, 11])),
-    36100096: dict(zip(['category', 'component', 'geo', 'industry', 'period', 'prices', 'series_id', 'value'], [5, 6, 1, 4, 0, 3, 11, 13])),
-    36100207: dict(zip(['period', 'series_id', 'value'], [0, 9, 11])),
-    36100303: dict(zip(['period', 'series_id', 'value'], [0, 9, 11])),
-    36100305: dict(zip(['period', 'series_id', 'value'], [0, 9, 11])),
-    36100434: dict(zip(['period', 'series_id', 'value'], [0, 10, 12]))
-}
+SERIES_IDS = ['P0107', 'P0110']
+SERIES_IDS_PRCH = enlist_series_ids(SERIES_IDS, Dataset.USCB)
 
-
-SERIES_IDS_PRCH = {
-    'P0107': 'dataset_uscb.zip',
-    'P0110': 'dataset_uscb.zip',
-}
-
-
-ARCHIVE_NAME = 'dataset_uscb.zip'
 
 SERIES_IDS = [
     'E0007',
@@ -270,4 +243,4 @@ SERIES_IDS = [
     'L0037',
 ]
 
-SERIES_IDS_CB = dict.fromkeys(SERIES_IDS, ARCHIVE_NAME)
+SERIES_IDS_CB = enlist_series_ids(SERIES_IDS, Dataset.USCB)

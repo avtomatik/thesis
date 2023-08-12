@@ -14,7 +14,7 @@ from pandas import DataFrame
 from scipy.interpolate import UnivariateSpline
 from sklearn.metrics import r2_score
 
-from .stockpile import stockpile_usa_hist
+from .stockpile import stockpile
 from .transform import transform_deflator
 
 
@@ -971,7 +971,7 @@ def construct_usa_hist_deflator(series_ids: dict[str, str]) -> DataFrame:
         df.iloc[:, 0]      Deflator PRC
         ================== =================================
     """
-    return stockpile_usa_hist(series_ids).pipe(transform_deflator)
+    return stockpile(series_ids).pipe(transform_deflator)
 
 
 def lab_productivity(array: np.array, k: float = 0.25, b: float = 1.01) -> np.array:

@@ -1,14 +1,14 @@
 import itertools
 
 from core.plot import plot_uscb_commodities
-from core.stockpile import stockpile_usa_hist_tuned
+from core.stockpile import stockpile_rebased
 
 
 def main() -> None:
     # =============================================================================
     # Census Manufacturing Series
     # =============================================================================
-    ARCHIVE_NAME = 'dataset_uscb.zip'
+
     SERIES_IDS = dict.fromkeys(
         map(
             lambda _: f'P{_:04n}', itertools.chain(
@@ -24,7 +24,7 @@ def main() -> None:
                 range(293, 301),
             )
         ),
-        ARCHIVE_NAME
+        Dataset.USCB
     )
     SERIES_IDS = dict.fromkeys(
         map(
@@ -38,7 +38,7 @@ def main() -> None:
         ARCHIVE_NAME
     )
 
-    stockpile_usa_hist_tuned(SERIES_IDS).pipe(
+    stockpile_rebased(SERIES_IDS).pipe(
         plot_uscb_commodities, SERIES_IDS)
 
 

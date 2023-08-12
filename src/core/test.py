@@ -7,9 +7,8 @@ Created on Sun Jun 12 12:19:54 2022
 """
 
 
-from .pull import pull_by_series_id
 from .read import read_usa_bls
-from .stockpile import stockpile_usa_bea, stockpile_usa_hist
+from .stockpile import stockpile
 
 
 def options_reviewed():
@@ -17,43 +16,43 @@ def options_reviewed():
         # =====================================================================
         # The Revised Index of Physical Production for All Manufacturing In the United States, 1899--1926
         # =====================================================================
-        {'DT24AS01': 'dataset_douglas.zip'},
+        [SeriesID('DT24AS01', Dataset.DOUGLAS)],
         # =====================================================================
         # Not Suitable: Total Capital (in millions of 1880 dollars)
         # =====================================================================
-        {'DT63AS01': 'dataset_douglas.zip'},
+        [SeriesID('DT63AS01', Dataset.DOUGLAS)],
         # =====================================================================
         # Not Suitable: Annual Increase (in millions of 1880 dollars)
         # =====================================================================
-        {'DT63AS02': 'dataset_douglas.zip'},
+        [SeriesID('DT63AS02', Dataset.DOUGLAS)],
         # =====================================================================
         # Not Suitable: Percentage Rate of Growth
         # =====================================================================
-        {'DT63AS03': 'dataset_douglas.zip'}
+        [SeriesID('DT63AS03', Dataset.DOUGLAS)]
     )
 
     for series_id in SERIES_IDS:
-        print(stockpile_usa_hist(series_id))
+        print(stockpile(series_id))
 
 
 def test_data_usa_bea():
     """Project II: USA Fixed Assets Data Comparison"""
-    URL_FIXED_ASSETS = 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt'
+
     SERIES_IDS = {
         # =====================================================================
         # Fixed Assets Series: k1ntotl1si00, 1925--2016
         # =====================================================================
-        'k1ntotl1si00': URL_FIXED_ASSETS,
+        'k1ntotl1si00': URL.FIAS,
         # =====================================================================
         # Fixed Assets Series: kcntotl1si00, 1925--2016
         # =====================================================================
-        'kcntotl1si00': URL_FIXED_ASSETS,
+        'kcntotl1si00': URL.FIAS,
         # =====================================================================
         # Not Used: Fixed Assets: k3ntotl1si00, 1925--2016, Table 2.3. Historical-Cost Net Stock of Private Fixed Assets, Equipment, Structures, and Intellectual Property Products by Type
         # =====================================================================
-        'k3ntotl1si00': URL_FIXED_ASSETS,
+        'k3ntotl1si00': URL.FIAS,
     }
-    return stockpile_usa_bea(SERIES_IDS)
+    return stockpile(SERIES_IDS)
 
 
 def test_data_usa_bls():

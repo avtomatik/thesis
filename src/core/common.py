@@ -1,5 +1,8 @@
+import io
 from pathlib import Path
 from typing import Any
+
+import requests
 
 from .constants import TITLES_DEU
 from .pull import pull_series_ids_description
@@ -24,49 +27,6 @@ def get_fig_map_us_ma(year_base: int = 1899) -> dict[str, str]:
         'fg_d': 'Chart 17 The Percentage Deviations of the Computed Product ($P\'$) from the Actual Product ($P$) in Massachusetts Manufacturing, {}$-${}',
         'fg_e': 'Chart V Relative Final Productivities of Labor and Capital',
         'year_base': year_base,
-    }
-
-
-def get_blueprint_former(year_base: int = 2007) -> dict:
-    return {
-        # =====================================================================
-        # Capital
-        # =====================================================================
-        310004: (year_base, "Geometric (infinite) end-year net stock", "industrial"),
-        # =====================================================================
-        # Labor : {'v2523012': 2820012}, Preferred Over {'v3437501': 2820011} Which Is Quarterly
-        # =====================================================================
-        'v2523012': 2820012,
-        # =====================================================================
-        # Manufacturing
-        # =====================================================================
-        'v65201809': 3790031,
-    }
-
-
-def get_blueprint(year_base: int = 2012) -> dict:
-    return {
-        # =====================================================================
-        # Capital
-        # =====================================================================
-        36100096: (
-            year_base,
-            "Manufacturing",
-            "Linear end-year net stock",
-            (
-                "Non-residential buildings",
-                "Engineering construction",
-                "Machinery and equipment"
-            )
-        ),
-        # =====================================================================
-        # Labor : {'v2523012': 14100027}, Preferred Over {'v3437501': 2820011} Which Is Quarterly
-        # =====================================================================
-        'v2523012': 14100027,
-        # =====================================================================
-        # Manufacturing
-        # =====================================================================
-        'v65201809': 36100434,
     }
 
 
@@ -143,4 +103,23 @@ def get_pre_kwargs(file_name: str) -> dict[str, Any]:
     return {
         'filepath_or_buffer': Path(PATH_SRC).joinpath(file_name),
         'index_col': 0,
+    }
+
+
+def get_kwargs_usa_davis_ip() -> dict[str, Any]:
+    return {
+        'io': 'dataset_usa_davis-j-h-ip-total.xls',
+        'header': None,
+        'names': ['period', 'davis_index'],
+        'index_col': 0,
+        'skiprows': 5
+    }
+
+
+def get_kwargs_unstats() -> dict[str, Any]:
+    URL = 'https://unstats.un.org/unsd/amaapi/api/file/2'
+    return {
+        'io': io.BytesIO(requests.get(URL).content),
+        'index_col': 1,
+        'skiprows': 2,
     }

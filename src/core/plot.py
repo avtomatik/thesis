@@ -20,7 +20,7 @@ from sklearn.metrics import r2_score
 from .combine import combine_data_frames_by_columns
 from .common import get_fig_map, get_labels, group_series_ids
 from .pull import pull_series_ids_description, pull_uscb_description
-from .stockpile import stockpile_usa_hist
+from .stockpile import stockpile
 from .tools import (cap_productivity, filter_kol_zur, filter_rolling_mean,
                     lab_productivity, simple_linear_regression)
 from .transform import (transform_cobb_douglas, transform_fourier_discrete,
@@ -547,9 +547,9 @@ def plot_uscb_money_stock(df: DataFrame) -> None:
 
 def plot_uscb_finance() -> None:
     """Census Financial Markets & Institutions Series"""
-    ARCHIVE_NAME = 'dataset_uscb.zip'
+
     SERIES_IDS = (
-        {f'X{_:04n}': ARCHIVE_NAME}
+        {f'X{_:04n}': Dataset.USCB}
         for _ in itertools.chain(
             range(410, 424),
             range(580, 588),
@@ -561,7 +561,7 @@ def plot_uscb_finance() -> None:
     )
 
     for _, series_id in enumerate(SERIES_IDS, start=1):
-        df = stockpile_usa_hist(series_id).pipe(transform_rebase)
+        df = stockpile(series_id).pipe(transform_rebase)
         plt.figure(_)
         plt.plot(df, label=series_id)
         plt.title(
@@ -1308,7 +1308,7 @@ def plot_douglas(
     ):
         plt.figure(_)
         plt.plot(
-            stockpile_usa_hist(series_ids),
+            stockpile(series_ids),
             label=label
         )
         plt.title(title)

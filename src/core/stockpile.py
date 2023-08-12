@@ -9,18 +9,17 @@ Created on Sun Jun 12 11:52:01 2022
 import pandas as pd
 from pandas import DataFrame
 
-from .pull import pull_by_series_id
-from .read import read_usa_bea, read_usa_hist
+from .read import read_source
 from .transform import transform_rebase
 
 
-def stockpile_usa_bea(series_ids: dict[str, str]) -> DataFrame:
+def stockpile(series_ids: list[SeriesID]) -> DataFrame:
     """
 
 
     Parameters
     ----------
-    series_ids : dict[str, str]
+    series_ids : list[SeriesID]
         DESCRIPTION.
 
     Returns
@@ -30,55 +29,26 @@ def stockpile_usa_bea(series_ids: dict[str, str]) -> DataFrame:
         df.index           Period
         ...                ...
         df.iloc[:, -1]     Values
-        ================== =================================
+        ================== =================================.
 
     """
     return pd.concat(
         map(
-            lambda _: read_usa_bea(_[-1]).pipe(pull_by_series_id, _[0]),
-            series_ids.items()
+            lambda _: read_source(_).pipe(pull_by_series_id, _),
+            series_ids
         ),
         axis=1,
         sort=True
     )
 
 
-def stockpile_usa_hist(series_ids: dict[str, str]) -> DataFrame:
-    """
-
-
-    Parameters
-    ----------
-    series_ids : dict[str, str]
-        DESCRIPTION.
-
-    Returns
-    -------
-    DataFrame
-        ================== =================================
-        df.index           Period
-        ...                ...
-        df.iloc[:, -1]     Values
-        ================== =================================
-
-    """
+def stockpile_rebased(series_ids: list[SeriesID]) -> DataFrame:
     return pd.concat(
         map(
-            lambda _: read_usa_hist(_[-1]).pipe(pull_by_series_id, _[0]),
-            series_ids.items()
-        ),
-        axis=1,
-        sort=True
-    )
-
-
-def stockpile_usa_hist_tuned(series_ids: dict[str, str]) -> DataFrame:
-    return pd.concat(
-        map(
-            lambda _: read_usa_hist(_[-1]).pipe(
-                pull_by_series_id, _[0]
+            lambda _: read_source(_).pipe(
+                pull_by_series_id, _
             ).sort_index().pipe(transform_rebase),
-            series_ids.items()
+            series_ids
         ),
         axis=1,
         sort=True
