@@ -9,8 +9,9 @@ Project VI. Elasticity
 """
 
 from core.plot import plot_elasticity, plot_growth_elasticity
-from core.stockpile import stockpile
 from core.transform import transform_elasticity
+
+from thesis.src.core.backend import stockpile
 
 SERIES_IDS = ['A191RX', 'A191RC', 'A032RC']
 SERIES_IDS = enlist_series_ids(SERIES_IDS, URL.NIPA)

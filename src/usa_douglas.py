@@ -18,8 +18,12 @@ if __name__ == '__main__':
 
     PATH_SRC = '/home/green-machine/data_science/data/interim'
 
-    ARCHIVE_NAME = Dataset.DOUGLAS
-
     os.chdir(PATH_SRC)
 
-    plot_douglas(ARCHIVE_NAME, TITLES_DOUGLAS, YLABELS_DOUGLAS, 'series', 'D')
+    plot_douglas(
+        Dataset.DOUGLAS,
+        TITLES_DOUGLAS,
+        YLABELS_DOUGLAS,
+        'series',
+        'D'
+    )

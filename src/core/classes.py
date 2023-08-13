@@ -39,7 +39,7 @@ class Dataset(str, Enum):
             'header': 0,
             'names': NAMES,
             'index_col': 1,
-            'skiprows': (0, 4)[self.value == 'dataset_usa_brown.zip'],
+            'skiprows': (0, 4)[self.name in ['USA_BROWN']],
             'usecols': self.usecols,
         }
 

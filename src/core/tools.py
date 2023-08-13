@@ -14,7 +14,7 @@ from pandas import DataFrame
 from scipy.interpolate import UnivariateSpline
 from sklearn.metrics import r2_score
 
-from .stockpile import stockpile
+from .backend import stockpile
 from .transform import transform_deflator
 
 

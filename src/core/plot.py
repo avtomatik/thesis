@@ -17,10 +17,9 @@ from pandas import DataFrame
 from scipy import stats
 from sklearn.metrics import r2_score
 
+from .backend import read_get_desc, stockpile
 from .combine import combine_data_frames_by_columns
 from .common import get_fig_map, get_labels, group_series_ids
-from .pull import pull_series_ids_description, pull_uscb_description
-from .stockpile import stockpile
 from .tools import (cap_productivity, filter_kol_zur, filter_rolling_mean,
                     lab_productivity, simple_linear_regression)
 from .transform import (transform_cobb_douglas, transform_fourier_discrete,
@@ -352,7 +351,7 @@ def plot_uscb_metals(df: DataFrame, years_base: tuple[int]) -> None:
 
 def plot_uscb_commodities(df: DataFrame, series_ids: dict[str, str]) -> None:
     for series_id in series_ids:
-        print(f'<{series_id}> {pull_uscb_description(series_id)}')
+        print(f'<{series_id}> {read_uscb_get_desc().pipe(lookup_uscb_desc, series_id)}')
     title = 'Series P 231$-$300. Physical Output of Selected Manufactured Commodities: {}$-${}'.format(
         *df.index[[0, -1]]
     )
@@ -566,7 +565,7 @@ def plot_uscb_finance() -> None:
         plt.plot(df, label=series_id)
         plt.title(
             '{}, {}$-${}'.format(
-                pull_uscb_description(series_id), *df.index[[0, -1]]
+                read_uscb_get_desc().pipe(lookup_uscb_desc, series_id), *df.index[[0, -1]]
             )
         )
         plt.xlabel('Period')
@@ -1293,7 +1292,7 @@ def plot_douglas(
         DESCRIPTION.
 
     """
-    map_series_ids = pull_series_ids_description(archive_name, key)
+    map_series_ids = read_get_desc(archive_name, key)
 
     series_ids_struct = {}
     for series_id_group, series_ids in group_series_ids(sorted(map_series_ids), scenario).items():

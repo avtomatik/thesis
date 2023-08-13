@@ -4,8 +4,8 @@ from typing import Any
 
 import requests
 
+from .backend import read_get_desc
 from .constants import TITLES_DEU
-from .pull import pull_series_ids_description
 
 
 def get_fig_map(year_base: int = 1899) -> dict[str, str]:
@@ -62,7 +62,7 @@ def get_labels(archive_name: str, key: str, scenario: str) -> list[list[str]]:
     # =============================================================================
     # TODO: Refactor
     # =============================================================================
-    map_series_ids = pull_series_ids_description(archive_name, key)
+    map_series_ids = read_get_desc(archive_name, key)
 
     series_ids_struct = {}
     for series_id_group, series_ids in group_series_ids(sorted(map_series_ids), scenario).items():

@@ -1,5 +1,6 @@
 from core.plot import plot_uscb_farm_lands
-from core.stockpile import stockpile
+
+from thesis.src.core.backend import stockpile
 
 
 def main() -> None:

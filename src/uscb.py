@@ -10,6 +10,7 @@ Project X. USA Census
 
 import itertools
 
+from core.backend import stockpile
 from core.combine import (combine_uscb_employment_conflicts,
                           combine_uscb_trade_by_countries,
                           combine_uscb_unemployment_hours_worked)
@@ -19,7 +20,6 @@ from core.plot import (plot_uscb_employment_conflicts, plot_uscb_finance,
                        plot_uscb_trade_by_countries,
                        plot_uscb_trade_gold_silver,
                        plot_uscb_unemployment_hours_worked)
-from core.stockpile import stockpile
 from statcan.src.core.funcs import transform_sum
 from uscb_capital import uscb_capital
 from uscb_commodities import uscb_commodities

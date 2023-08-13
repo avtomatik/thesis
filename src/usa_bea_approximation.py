@@ -9,8 +9,8 @@ Project I. Approximation
 """
 
 
+from core.backend import stockpile
 from core.plot import plot_approx_linear, plot_approx_linear_log
-from core.stockpile import stockpile
 from core.transform import transform_approx_linear, transform_approx_linear_log
 
 

@@ -7,8 +7,8 @@ Created on Sun Jun 12 12:19:54 2022
 """
 
 
+from .backend import stockpile
 from .read import read_usa_bls
-from .stockpile import stockpile
 
 
 def options_reviewed():

@@ -1,7 +1,8 @@
 import itertools
 
 from core.plot import plot_uscb_commodities
-from core.stockpile import stockpile_rebased
+
+from thesis.src.core.backend import stockpile_rebased
 
 
 def main() -> None:
@@ -38,8 +39,7 @@ def main() -> None:
         ARCHIVE_NAME
     )
 
-    stockpile_rebased(SERIES_IDS).pipe(
-        plot_uscb_commodities, SERIES_IDS)
+    stockpile_rebased(SERIES_IDS).pipe(plot_uscb_commodities, SERIES_IDS)
 
 
 if __name__ == '__main__':

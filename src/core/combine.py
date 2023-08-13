@@ -17,10 +17,10 @@ from sklearn.impute import SimpleImputer
 from thesis.src.core.classes import Dataset, SeriesID
 from thesis.src.core.common import get_kwargs_usa_davis_ip, get_pre_kwargs
 
+from .backend import stockpile
 from .constants import SERIES_IDS_LAB
 from .read import (read_usa_frb, read_usa_frb_g17, read_usa_frb_h6,
                    read_usa_frb_us3, read_usa_fred)
-from .stockpile import stockpile
 from .tools import construct_usa_hist_deflator
 from .transform import (transform_cobb_douglas_extension_capital,
                         transform_mean, transform_usa_frb_fa,
