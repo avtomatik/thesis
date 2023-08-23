@@ -11,7 +11,6 @@ from functools import cache
 
 import pandas as pd
 from core.classes import DatasetDesc, SeriesID
-from core.read import read_source
 from core.transform import transform_rebase
 from pandas import DataFrame
 
@@ -56,6 +55,29 @@ def stockpile_rebased(series_ids: list[SeriesID]) -> DataFrame:
         axis=1,
         sort=True
     )
+
+
+@cache
+def read_source(series_id: SeriesID) -> DataFrame:
+    """
+
+
+    Parameters
+    ----------
+    series_id : SeriesID
+        DESCRIPTION.
+
+    Returns
+    -------
+    DataFrame
+        ================== =================================
+        df.index           Period
+        df.iloc[:, 0]      Series IDs
+        df.iloc[:, 1]      Values
+        ================== =================================.
+
+    """
+    return pd.read_csv(**series_id.source.get_kwargs())
 
 
 def pull_by_series_id(df: DataFrame, series_id: SeriesID) -> DataFrame:

@@ -268,15 +268,15 @@ def transform_cobb_douglas_extension_capital(df: DataFrame) -> DataFrame:
     df.iloc[:, -1] = df.iloc[:, -1].mul(
         df.loc[1929, df.columns[4]]).div(df.loc[1929, df.columns[3]])
     # =========================================================================
-    # Douglas P.H. -- Kendrick J.W. (Blended) Series
+    # P.H. Douglas -- J.W. Kendrick (Blended) Series
     # =========================================================================
     df['nominal_doug_kndrck'] = df.iloc[:, -2:].mean(axis=1)
     # =========================================================================
-    # Cobb C.W., Douglas P.H. -- FRB (Blended) Series
+    # C.W. Cobb, P.H. Douglas -- FRB (Blended) Series
     # =========================================================================
     df['nominal_cbb_dg_frb'] = df.iloc[:, [8, -5]].mean(axis=1)
     # =========================================================================
-    # Capital Structure Series: "Cobb C.W., Douglas P.H. -- FRB (Blended) Series" to "Douglas P.H. -- Kendrick J.W. (Blended) Series"
+    # Capital Structure Series: "C.W. Cobb, P.H. Douglas -- FRB (Blended) Series" to "P.H. Douglas -- J.W. Kendrick (Blended) Series"
     # =========================================================================
     df['struct_ratio'] = df.iloc[:, -1].div(df.iloc[:, -2])
     # =========================================================================
@@ -287,11 +287,11 @@ def transform_cobb_douglas_extension_capital(df: DataFrame) -> DataFrame:
         df.loc[1899, df.columns[-1]], inplace=True
     )
     # =========================================================================
-    # Patch Series "Douglas P.H. -- Kendrick J.W. (Blended) Series" Multiplied by "Capital Structure Series"
+    # Patch Series "P.H. Douglas -- J.W. Kendrick (Blended) Series" Multiplied by "Capital Structure Series"
     # =========================================================================
     df['nominal_patch'] = df.iloc[:, -3].mul(df.iloc[:, -1])
     # =========================================================================
-    # "Cobb C.W., Douglas P.H. -- FRB (Blended) Series" Patched with "Patch Series"
+    # "C.W. Cobb, P.H. Douglas -- FRB (Blended) Series" Patched with "Patch Series"
     # =========================================================================
     df['nominal_extended'] = df.iloc[:, -3::2].mean(axis=1)
     # =========================================================================

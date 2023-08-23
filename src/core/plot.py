@@ -547,9 +547,9 @@ def plot_uscb_money_stock(df: DataFrame) -> None:
 def plot_uscb_finance() -> None:
     """Census Financial Markets & Institutions Series"""
 
-    SERIES_IDS = (
-        {f'X{_:04n}': Dataset.USCB}
-        for _ in itertools.chain(
+    SERIES_IDS = map(
+        lambda _: [f'X{_:04n}'],
+        itertools.chain(
             range(410, 424),
             range(580, 588),
             range(610, 634),
@@ -558,6 +558,8 @@ def plot_uscb_finance() -> None:
             range(947, 957),
         )
     )
+
+    SERIES_IDS = map(lambda _: enlist_series_ids(_, Dataset.USCB), SERIES_IDS)
 
     for _, series_id in enumerate(SERIES_IDS, start=1):
         df = stockpile(series_id).pipe(transform_rebase)

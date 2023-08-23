@@ -12,31 +12,7 @@ from functools import cache
 
 import pandas as pd
 import requests
-from core.classes import SeriesID
 from pandas import DataFrame
-
-
-@cache
-def read_source(series_id: SeriesID) -> DataFrame:
-    """
-
-
-    Parameters
-    ----------
-    series_id : SeriesID
-        DESCRIPTION.
-
-    Returns
-    -------
-    DataFrame
-        ================== =================================
-        df.index           Period
-        df.iloc[:, 0]      Series IDs
-        df.iloc[:, 1]      Values
-        ================== =================================.
-
-    """
-    return pd.read_csv(**series_id.source.get_kwargs())
 
 
 def read_usa_bls(filepath_or_buffer: str) -> DataFrame:
@@ -60,7 +36,7 @@ def read_usa_bls(filepath_or_buffer: str) -> DataFrame:
         'filepath_or_buffer': filepath_or_buffer,
         'sep': '\t',
         'header': 0,
-        'names': ('series_id', 'period', 'sub_period', 'value'),
+        'names': ['series_id', 'period', 'sub_period', 'value'],
         'index_col': 1,
         'usecols': range(4),
         'low_memory': False
@@ -152,7 +128,7 @@ def read_usa_frb_h6() -> DataFrame:
     kwargs = {
         'filepath_or_buffer': io.BytesIO(requests.get(url).content),
         'header': 0,
-        'names': ('period', 'm1_m'),
+        'names': ['period', 'm1_m'],
         'index_col': 0,
         'usecols': range(2),
         'skiprows': 5,
@@ -215,7 +191,7 @@ def read_usa_fred(series_id: str) -> DataFrame:
     kwargs = {
         'filepath_or_buffer': io.BytesIO(requests.get(url).content),
         'header': 0,
-        'names': ('period', series_id.lower()),
+        'names': ['period', series_id.lower()],
         'index_col': 0,
         'parse_dates': True
     }

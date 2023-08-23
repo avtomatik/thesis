@@ -42,15 +42,15 @@ def test_data_usa_bea():
         # =====================================================================
         # Fixed Assets Series: k1ntotl1si00, 1925--2016
         # =====================================================================
-        'k1ntotl1si00': URL.FIAS,
+        SeriesID('k1ntotl1si00', URL.FIAS),
         # =====================================================================
         # Fixed Assets Series: kcntotl1si00, 1925--2016
         # =====================================================================
-        'kcntotl1si00': URL.FIAS,
+        SeriesID('kcntotl1si00', URL.FIAS),
         # =====================================================================
         # Not Used: Fixed Assets: k3ntotl1si00, 1925--2016, Table 2.3. Historical-Cost Net Stock of Private Fixed Assets, Equipment, Structures, and Intellectual Property Products by Type
         # =====================================================================
-        'k3ntotl1si00': URL.FIAS,
+        SeriesID('k3ntotl1si00', URL.FIAS),
     }
     return stockpile(SERIES_IDS)
 

@@ -10,6 +10,7 @@ Project I. Approximation
 
 
 from core.backend import stockpile
+from core.classes import URL
 from core.plot import plot_approx_linear, plot_approx_linear_log
 from core.transform import transform_approx_linear, transform_approx_linear_log
 
@@ -37,22 +38,28 @@ def linear_log() -> None:
     None.
     """
 
-    SERIES_IDS = {
-        'A191RX': URL.NIPA,
-        'A191RC': URL.NIPA,
-        'kcptotl1es00': URL.FIAS,
-        'A032RC': URL.NIPA
-    }
+    SERIES_IDS = ['A191RX', 'A191RC']
+    
+    SERIES_IDS = enlist_series_ids(
+        SERIES_IDS, URL.NIPA
+    ) + enlist_series_ids(
+        ['kcptotl1es00'], URL.FIAS
+    ) + enlist_series_ids(
+        ['A032RC'], URL.NIPA
+    )
     plot_approx_linear_log(
         *stockpile(SERIES_IDS).dropna(axis=0).pipe(transform_approx_linear_log)
     )
 
-    SERIES_IDS = {
-        'A191RX': URL.NIPA,
-        'A191RC': URL.NIPA,
-        'kcptotl1es00': URL.FIAS,
-        'A191RC': URL.NIPA
-    }
+    SERIES_IDS = ['A191RX', 'A191RC']
+    
+    SERIES_IDS = enlist_series_ids(
+        SERIES_IDS, URL.NIPA
+    ) + enlist_series_ids(
+        ['kcptotl1es00'], URL.FIAS
+    ) + enlist_series_ids(
+        ['A191RC'], URL.NIPA
+    )
     plot_approx_linear_log(
         *stockpile(SERIES_IDS).dropna(axis=0).pipe(transform_approx_linear_log)
     )

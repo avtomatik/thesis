@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from core.constants import COUNTRIES
 
 from thesis.src.core.backend import stockpile
+from thesis.src.core.classes import Dataset
 
 if __name__ == '__main__':
     SERIES_IDS = [

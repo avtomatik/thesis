@@ -51,28 +51,28 @@ def combine_cobb_douglas(series_number: int = 3) -> DataFrame:
         'J0013': 'product_nber',
         'DT24AS01': 'product_rev',
     }
-    SERIES_IDS = {
+    SERIES_IDS = [
         # =====================================================================
-        # Cobb C.W., Douglas P.H. Capital Series: Total Fixed Capital in 1880 dollars (4)
+        # C.W. Cobb, P.H. Douglas Capital Series: Total Fixed Capital in 1880 dollars (4)
         # =====================================================================
-        'CDT2S4': Dataset.USA_COBB_DOUGLAS,
+        SeriesID('CDT2S4', Dataset.USA_COBB_DOUGLAS),
         # =====================================================================
-        # Cobb C.W., Douglas P.H. Labor Series: Average Number Employed (in thousands)
+        # C.W. Cobb, P.H. Douglas Labor Series: Average Number Employed (in thousands)
         # =====================================================================
-        'CDT3S1': Dataset.USA_COBB_DOUGLAS,
+        SeriesID('CDT3S1', Dataset.USA_COBB_DOUGLAS),
         # =====================================================================
         # Bureau of the Census, 1949, Page 179, J14: Warren M. Persons, Index of Physical Production of Manufacturing
         # =====================================================================
-        'J0014': Dataset.USCB,
+        SeriesID('J0014', Dataset.USCB),
         # =====================================================================
         # Bureau of the Census, 1949, Page 179, J13: National Bureau of Economic Research Index of Physical Output, All Manufacturing Industries.
         # =====================================================================
-        'J0013': Dataset.USCB,
+        SeriesID('J0013', Dataset.USCB),
         # =====================================================================
         # The Revised Index of Physical Production for All Manufacturing In the United States, 1899--1926
         # =====================================================================
-        'DT24AS01': Dataset.DOUGLAS,
-    }
+        SeriesID('DT24AS01', Dataset.DOUGLAS),
+    ]
     return stockpile(SERIES_IDS).rename(columns=MAP).iloc[:, range(series_number)].dropna(axis=0)
 
 
@@ -120,45 +120,40 @@ def combine_cobb_douglas_extension_labor() -> DataFrame:
     """
     # =========================================================================
     # TODO: Bureau of Labor Statistics
+    # =========================================================================
+    # =========================================================================
     # TODO: Federal Reserve Board
     # =========================================================================
 
-    YEAR_BASE = 1929
-    COL_NAME = 'historical'
-
     FILE_NAME = 'dataset_usa_reference_ru_kurenkov_yu_v.csv'
-    # =========================================================================
-    # Kendrick J.W., Productivity Trends in the United States, Table D-II, 'Persons Engaged' Column, pp. 465--466
-    # =========================================================================
-    SERIES_ID = [SeriesID('KTD02S02', Dataset.USA_KENDRICK)]
 
-    SERIES_IDS = {
+    SERIES_IDS = [
         # =====================================================================
-        # Cobb C.W., Douglas P.H. Labor Series: Average Number Employed (in thousands)
+        # C.W. Cobb, P.H. Douglas Labor Series: Average Number Employed (in thousands)
         # =====================================================================
-        'CDT3S1': Dataset.USA_COBB_DOUGLAS,
+        SeriesID('CDT3S1', Dataset.USA_COBB_DOUGLAS),
         # =====================================================================
         # Bureau of the Census 1949, D0069
         # =====================================================================
-        'D0069': Dataset.USCB,
+        SeriesID('D0069', Dataset.USCB),
         # =====================================================================
         # Bureau of the Census 1975, D0130
         # =====================================================================
-        'D0130': Dataset.USCB,
-    } or {
+        SeriesID('D0130', Dataset.USCB),
+    ] or [
         # =====================================================================
         # Bureau of the Census 1949, J0004
         # =====================================================================
-        'J0004': Dataset.USCB,
+        SeriesID('J0004', Dataset.USCB),
         # =====================================================================
         # Bureau of the Census 1975, P0005
         # =====================================================================
-        'P0005': Dataset.USCB,
+        SeriesID('P0005', Dataset.USCB),
         # =====================================================================
         # Bureau of the Census 1975, P0062
         # =====================================================================
-        'P0062': Dataset.USCB,
-    }
+        SeriesID('P0062', Dataset.USCB),
+    ]
 
     df = pd.concat(
         [
@@ -170,6 +165,15 @@ def combine_cobb_douglas_extension_labor() -> DataFrame:
         ],
         axis=1
     ).pipe(transform_mean, name=COL_NAME)
+
+    # =========================================================================
+    # J.W. Kendrick, Productivity Trends in the United States, Table D-II, 'Persons Engaged' Column, pp. 465--466
+    # =========================================================================
+    SERIES_ID = [SeriesID('KTD02S02', Dataset.USA_KENDRICK)]
+
+    YEAR_BASE = 1929
+
+    COL_NAME = 'historical'
 
     return pd.concat(
         [
@@ -183,24 +187,24 @@ def combine_cobb_douglas_extension_labor() -> DataFrame:
 
 
 def combine_cobb_douglas_extension_manufacturing() -> DataFrame:
-    SERIES_IDS = {
+    SERIES_IDS = [
         # =====================================================================
         # Bureau of the Census, 1949, Page 179, J13: National Bureau of Economic Research Index of Physical Output, All Manufacturing Industries.
         # =====================================================================
-        'J0013': Dataset.USCB,
+        SeriesID('J0013', Dataset.USCB),
         # =====================================================================
         # Bureau of the Census, 1949, Page 179, J14: Warren M. Persons, Index of Physical Production of Manufacturing
         # =====================================================================
-        'J0014': Dataset.USCB,
+        SeriesID('J0014', Dataset.USCB),
         # =====================================================================
         # Bureau of the Census, 1975, Page 667, P17: Edwin Frickey Index of Manufacturing Production
         # =====================================================================
-        'P0017': Dataset.USCB,
+        SeriesID('P0017', Dataset.USCB),
         # =====================================================================
         # The Revised Index of Physical Production for All Manufacturing In the United States, 1899--1926
         # =====================================================================
-        'DT24AS01': Dataset.DOUGLAS,
-    }
+        SeriesID('DT24AS01', Dataset.DOUGLAS),
+    ]
     df = pd.concat(
         [
             stockpile(SERIES_IDS),
@@ -225,37 +229,31 @@ def combine_cobb_douglas_extension_manufacturing() -> DataFrame:
 
 
 def combine_usa_capital() -> DataFrame:
-    SERIES_IDS = {
+    SERIES_IDS = [
         # =====================================================================
         # Annual Increase in Terms of Cost Price (1)
         # =====================================================================
-        'CDT2S1': Dataset.USA_COBB_DOUGLAS,
+        SeriesID('CDT2S1', Dataset.USA_COBB_DOUGLAS),
         # =====================================================================
         # Annual Increase in Terms of 1880 dollars (3)
         # =====================================================================
-        'CDT2S3': Dataset.USA_COBB_DOUGLAS,
+        SeriesID('CDT2S3', Dataset.USA_COBB_DOUGLAS),
         # =====================================================================
         # Total Fixed Capital in 1880 dollars (4)
         # =====================================================================
-        'CDT2S4': Dataset.USA_COBB_DOUGLAS,
-        'P0107': Dataset.USCB,
-        'P0110': Dataset.USCB,
-        'P0119': Dataset.USCB,
+        SeriesID('CDT2S4', Dataset.USA_COBB_DOUGLAS),
+        SeriesID('P0107', Dataset.USCB),
+        SeriesID('P0110', Dataset.USCB),
+        SeriesID('P0119', Dataset.USCB),
         # =====================================================================
-        # Kendrick J.W., Productivity Trends in the United States, Page 320
+        # J.W. Kendrick, Productivity Trends in the United States, Page 320
         # =====================================================================
-        'KTA15S08': Dataset.USA_KENDRICK,
+        SeriesID('KTA15S08', Dataset.USA_KENDRICK),
         # =====================================================================
-        # Douglas P.H., Theory of Wages, Page 332
+        # P.H. Douglas, Theory of Wages, Page 332
         # =====================================================================
-        'DT63AS01': Dataset.DOUGLAS,
-        # =====================================================================
-        # 'Чистый основной капитал (в млн. долл., 1929 г.)'
-        # =====================================================================
-        # =====================================================================
-        # 'brown_0x1': Dataset.USA_BROWN
-        # =====================================================================
-    }
+        SeriesID('DT63AS01', Dataset.DOUGLAS),
+    ]
     return pd.concat(
         [
             stockpile(SERIES_IDS),
@@ -343,15 +341,15 @@ def combine_usa_investment_turnover_bls() -> DataFrame:
         # =====================================================================
         # Nominal Investment Series: A006RC, 1929--2021
         # =====================================================================
-        'A006RC': URL.NIPA,
+        SeriesID('A006RC', URL.NIPA),
         # =====================================================================
         # Real Gross Domestic Product Series, 2012=100: A191RX, 1929--2021
         # =====================================================================
-        'A191RX': URL.NIPA,
+        SeriesID('A191RX', URL.NIPA),
         # =====================================================================
         # Fixed Assets Series: k1n31gd1es00, 1929--2020
         # =====================================================================
-        'k1n31gd1es00': URL.FIAS,
+        SeriesID('k1n31gd1es00', URL.FIAS),
     }
     df = pd.concat(
         [
@@ -391,20 +389,20 @@ def combine_usa_investment_turnover_bls() -> DataFrame:
 
 def combine_usa_investment_turnover() -> DataFrame:
 
-    SERIES_IDS = {
-        'A006RC': URL.NIPA,
-        'A006RD': URL.NIPA,
-        'A191RC': URL.NIPA,
-        'A191RX': URL.NIPA,
+    SERIES_IDS = [
+        SeriesID('A006RC', URL.NIPA),
+        SeriesID('A006RD', URL.NIPA),
+        SeriesID('A191RC', URL.NIPA),
+        SeriesID('A191RX', URL.NIPA),
         # =====================================================================
         # Not Used: Fixed Assets: k3n31gd1es00, 1925--2020, Table 4.3. Historical-Cost Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
         # =====================================================================
-        'k3n31gd1es00': URL.FIAS,
+        SeriesID('k3n31gd1es00', URL.FIAS),
         # =====================================================================
         # Fixed Assets: kcn31gd1es00, 1925--2020, Table 4.2. Chain-Type Quantity Indexes for Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
         # =====================================================================
-        'kcn31gd1es00': URL.FIAS,
-    }
+        SeriesID('kcn31gd1es00', URL.FIAS),
+    ]
     df = stockpile(SERIES_IDS)
     # =========================================================================
     # Investment, 2012=100
@@ -454,11 +452,11 @@ def combine_usa_manufacturing_two_fold() -> tuple[DataFrame]:
         # =================================================================
         # Fixed Assets: kcn31gd1es00, 1925--2020, Table 4.2. Chain-Type Quantity Indexes for Net Stock of Private Nonresidential Fixed Assets by Industry Group and Legal Form of Organization
         # =================================================================
-        'kcn31gd1es00': URL.FIAS,
+        SeriesID('kcn31gd1es00', URL.FIAS),
         # =================================================================
         # Real Gross Domestic Product Series, 2012=100: A191RX, 1929--2021
         # =================================================================
-        'A191RX': URL.NIPA,
+        SeriesID('A191RX', URL.NIPA),
     }
     df = pd.concat(
         [
@@ -525,7 +523,7 @@ def combine_usa_manufacturing_three_fold() -> tuple[DataFrame]:
     SERIES_ID = 'CAPUTL.B50001.A'
 
     SERIES_IDS = {
-        'kcn31gd1es00': URL.FIAS
+        SeriesID('kcn31gd1es00', URL.FIAS)
     }
     df = pd.concat(
         [
@@ -702,16 +700,19 @@ def combine_uscb_cap(smoothing: bool = False) -> DataFrame:
 
 
 def combine_uscb_employment_conflicts() -> DataFrame:
-    SERIES_IDS = {
+    SERIES_IDS = [
         # =====================================================================
         # Stoppages
         # =====================================================================
-        'D0977': Dataset.USCB,
+        'D0977',
         # =====================================================================
         # Workers Involved
         # =====================================================================
-        'D0982': Dataset.USCB,
-    }
+        'D0982',
+    ]
+
+    SERIES_IDS = enlist_series_ids(SERIES_IDS, Dataset.USCB)
+
     df = stockpile(SERIES_IDS)
     # =========================================================================
     # Extend Period Index
@@ -756,19 +757,20 @@ def combine_uscb_metals() -> tuple[DataFrame, list[int]]:
 def combine_uscb_trade_by_countries() -> DataFrame:
     """Census Foreign Trade Series"""
 
-    SERIES_IDS = dict.fromkeys(
-        map(
-            lambda _: f'U{_:04n}', itertools.chain(
-                range(319, 324),
-                range(325, 329),
-                range(330, 335),
-                range(337, 342),
-                range(343, 347),
-                range(348, 353),
-            )
-        ),
-        Dataset.USCB
+    SERIES_IDS = map(
+        lambda _: f'U{_:04n}',
+        itertools.chain(
+            range(319, 324),
+            range(325, 329),
+            range(330, 335),
+            range(337, 342),
+            range(343, 347),
+            range(348, 353),
+        )
     )
+
+    SERIES_IDS = enlist_series_ids(SERIES_IDS, Dataset.USCB)
+
     df = stockpile(SERIES_IDS)
 
     for _ in range(len(SERIES_IDS) // 2):
@@ -801,6 +803,7 @@ def combine_uscb_unemployment_hours_worked() -> DataFrame:
         'D0796',
         'D0797',
     ]
+
     df = stockpile(enlist_series_ids(SERIES_IDS, Dataset.USCB))
     df['workers'] = df.iloc[:, 0].div(df.iloc[:, 1]).mul(100)
     return df
@@ -827,19 +830,19 @@ def combine_usa_investment_manufacturing() -> DataFrame:
         # =====================================================================
         # Nominal Investment Series: A006RC
         # =====================================================================
-        'A006RC': URL.NIPA,
+        SeriesID('A006RC', URL.NIPA),
         # =====================================================================
         # Nominal National income Series: A032RC
         # =====================================================================
-        'A032RC': URL.NIPA,
+        SeriesID('A032RC', URL.NIPA),
         # =====================================================================
         # Nominal Gross Domestic Product Series: A191RC
         # =====================================================================
-        'A191RC': URL.NIPA,
+        SeriesID('A191RC', URL.NIPA),
         # =====================================================================
         # Real Gross Domestic Product Series, 2012=100: A191RX
         # =====================================================================
-        'A191RX': URL.NIPA,
+        SeriesID('A191RX', URL.NIPA),
     }
     return stockpile(SERIES_IDS)
 
@@ -866,15 +869,15 @@ def combine_usa_investment() -> DataFrame:
         # =====================================================================
         # Nominal Investment Series: A006RC
         # =====================================================================
-        'A006RC': URL.NIPA,
+        SeriesID('A006RC', URL.NIPA),
         # =====================================================================
         # Nominal Gross Domestic Product Series: A191RC
         # =====================================================================
-        'A191RC': URL.NIPA,
+        SeriesID('A191RC', URL.NIPA),
         # =====================================================================
         # Real Gross Domestic Product Series, 2012=100: A191RX
         # =====================================================================
-        'A191RX': URL.NIPA,
+        SeriesID('A191RX', URL.NIPA),
     }
     return pd.concat(
         [
@@ -906,15 +909,15 @@ def combine_usa_manufacturing() -> DataFrame:
         # =====================================================================
         # Nominal Investment Series: A006RC
         # =====================================================================
-        'A006RC': URL.NIPA,
+        SeriesID('A006RC', URL.NIPA),
         # =====================================================================
         # Nominal Gross Domestic Product Series: A191RC
         # =====================================================================
-        'A191RC': URL.NIPA,
+        SeriesID('A191RC', URL.NIPA),
         # =====================================================================
         # Real Gross Domestic Product Series, 2012=100: A191RX
         # =====================================================================
-        'A191RX': URL.NIPA,
+        SeriesID('A191RX', URL.NIPA),
     }
     return stockpile(SERIES_IDS).dropna(axis=0)
 
@@ -995,23 +998,23 @@ def combine_usa_d() -> DataFrame:
         # =====================================================================
         # Nominal Investment Series: A006RC
         # =====================================================================
-        'A006RC': URL.NIPA,
+        SeriesID('A006RC', URL.NIPA),
         # =====================================================================
         # Implicit Price Deflator Series: A006RD
         # =====================================================================
-        'A006RD': URL.NIPA,
+        SeriesID('A006RD', URL.NIPA),
         # =====================================================================
         # Gross private domestic investment -- Nonresidential: A008RC
         # =====================================================================
-        'A008RC': URL.NIPA,
+        SeriesID('A008RC', URL.NIPA),
         # =====================================================================
         # Implicit Price Deflator -- Gross private domestic investment -- Nonresidential: A008RD
         # =====================================================================
-        'A008RD': URL.NIPA,
+        SeriesID('A008RD', URL.NIPA),
         # =====================================================================
         # Real Gross Domestic Product Series, 2012=100: A191RX
         # =====================================================================
-        'A191RX': URL.NIPA,
+        SeriesID('A191RX', URL.NIPA),
     }
     return stockpile(SERIES_IDS)
 
@@ -1036,19 +1039,19 @@ def combine_usa_e() -> DataFrame:
         # =====================================================================
         # Nominal Investment Series: A006RC
         # =====================================================================
-        'A006RC': URL.NIPA,
+        SeriesID('A006RC', URL.NIPA),
         # =====================================================================
         # Nominal Gross Domestic Product Series: A191RC
         # =====================================================================
-        'A191RC': URL.NIPA,
+        SeriesID('A191RC', URL.NIPA),
         # =====================================================================
         # Real Gross Domestic Product Series, 2012=100: A191RX
         # =====================================================================
-        'A191RX': URL.NIPA,
+        SeriesID('A191RX', URL.NIPA),
         # =====================================================================
         # Fixed Assets Series: k1n31gd1es00
         # =====================================================================
-        'k1n31gd1es00': URL.FIAS,
+        SeriesID('k1n31gd1es00', URL.FIAS),
     }
     return stockpile(SERIES_IDS).dropna(axis=0)
 
@@ -1103,11 +1106,11 @@ def combine_usa_kurenkov() -> DataFrame:
         # =====================================================================
         # Real Gross Domestic Product Series, 2012=100: A191RX
         # =====================================================================
-        'A191RX': URL.NIPA,
+        SeriesID('A191RX', URL.NIPA),
         # =====================================================================
         # Fixed Assets Series: k1n31gd1es00
         # =====================================================================
-        'k1n31gd1es00': URL.FIAS,
+        SeriesID('k1n31gd1es00', URL.FIAS),
     }
     return pd.concat(
         [

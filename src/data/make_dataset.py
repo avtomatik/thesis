@@ -14,7 +14,7 @@ pd.options.display.max_columns = 8
 
 def page_0x8e_table_0x1() -> DataFrame:
     """
-    # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 142: Table I
+    # C.W. Cobb, P.H. Douglas A Theory of Production, 1928, Page 142: Table I
     """
     period = (
         1879,
@@ -83,7 +83,7 @@ def page_0x8e_table_0x1() -> DataFrame:
 
 def page_0x90() -> DataFrame:
     """
-    # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 144
+    # C.W. Cobb, P.H. Douglas A Theory of Production, 1928, Page 144
     """
     val = (
         200,
@@ -124,7 +124,7 @@ def page_0x90() -> DataFrame:
 
 def page_0x91_table_0x2() -> DataFrame:
     """
-    # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 145: Table II
+    # C.W. Cobb, P.H. Douglas A Theory of Production, 1928, Page 145: Table II
     """
     col_a = (
         339,
@@ -228,7 +228,7 @@ def page_0x91_table_0x2() -> DataFrame:
 
 def page_0x92() -> DataFrame:
     """
-    # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 146
+    # C.W. Cobb, P.H. Douglas A Theory of Production, 1928, Page 146
     """
     ma = (
         105,
@@ -267,7 +267,7 @@ def page_0x92() -> DataFrame:
 
 def page_0x94_table_0x3() -> DataFrame:
     """
-    # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 148: Table III
+    # C.W. Cobb, P.H. Douglas A Theory of Production, 1928, Page 148: Table III
     """
     lab = (
         4713,
@@ -309,7 +309,7 @@ def page_0x94_table_0x3() -> DataFrame:
 
 def page_0x95_table_0x4() -> DataFrame:
     """
-    # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 149: Table IV
+    # C.W. Cobb, P.H. Douglas A Theory of Production, 1928, Page 149: Table IV
     """
     pro = (
         100,
@@ -349,7 +349,7 @@ def page_0x95_table_0x4() -> DataFrame:
 
 def page_0x96_table_0x5() -> DataFrame:
     """
-    # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 150: Table V
+    # C.W. Cobb, P.H. Douglas A Theory of Production, 1928, Page 150: Table V
     """
     df = pd.concat(
         [
@@ -365,7 +365,7 @@ def page_0x96_table_0x5() -> DataFrame:
 
 def page_0x98_table_0x6() -> DataFrame:
     """
-    # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 152: Table VI
+    # C.W. Cobb, P.H. Douglas A Theory of Production, 1928, Page 152: Table VI
     """
     pro_com = (
         101,
@@ -488,7 +488,7 @@ def page_0x98_table_0x6() -> DataFrame:
 
 def page_0x99_table_0x7() -> DataFrame:
     """
-    # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 153: Table VII
+    # C.W. Cobb, P.H. Douglas A Theory of Production, 1928, Page 153: Table VII
     """
     df = page_0x98_table_0x6().iloc[:, range(2)]
     df['sub_pro'] = df.iloc[:, 1].sub(
@@ -500,7 +500,7 @@ def page_0x99_table_0x7() -> DataFrame:
 
 def page_0x9f_table_0x8() -> DataFrame:
     """
-    # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 159: Table VIII
+    # C.W. Cobb, P.H. Douglas A Theory of Production, 1928, Page 159: Table VIII
     """
     pro = (
         100,
@@ -570,7 +570,7 @@ def page_0x9f_table_0x8() -> DataFrame:
 
 def page_0xa1() -> DataFrame:
     """
-    # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 161
+    # C.W. Cobb, P.H. Douglas A Theory of Production, 1928, Page 161
     """
     idx = (
         100,
@@ -610,7 +610,7 @@ def page_0xa1() -> DataFrame:
 
 def page_0xa2_table_0x9() -> DataFrame:
     """
-    # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 162: Table IX
+    # C.W. Cobb, P.H. Douglas A Theory of Production, 1928, Page 162: Table IX
     """
     def_mfg = (
         100,
@@ -681,7 +681,7 @@ def page_0xa2_table_0x9() -> DataFrame:
 
 def page_0xa3_footnote_0x25() -> DataFrame:
     """
-    # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 163: Table X
+    # C.W. Cobb, P.H. Douglas A Theory of Production, 1928, Page 163: Table X
     """
     idx = (
         101,
@@ -721,7 +721,7 @@ def page_0xa3_footnote_0x25() -> DataFrame:
 
 def page_0xa3_table_0xa() -> DataFrame:
     """
-    # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 163: Footnote 37
+    # C.W. Cobb, P.H. Douglas A Theory of Production, 1928, Page 163: Footnote 37
     """
     period = (
         1909,
@@ -761,7 +761,7 @@ def page_0xa3_table_0xa() -> DataFrame:
 
 def page_0xa4_table_0xb() -> DataFrame:
     """
-    # Cobb C.W., Douglas P.H. A Theory of Production, 1928, Page 164: Table XI
+    # C.W. Cobb, P.H. Douglas A Theory of Production, 1928, Page 164: Table XI
     """
     pro_val = (
         101,
