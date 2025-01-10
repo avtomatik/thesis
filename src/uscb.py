@@ -18,13 +18,12 @@ from core.plot import (plot_uscb_employment_conflicts, plot_uscb_finance,
                        plot_uscb_trade_by_countries,
                        plot_uscb_trade_gold_silver,
                        plot_uscb_unemployment_hours_worked)
+from thesis.src.uscb_immigration import uscb_immigration
 from uscb_capital import uscb_capital
 from uscb_commodities import uscb_commodities
 from uscb_farm_lands import uscb_farm_lands
 from uscb_manufacturing import uscb_manufacturing
 from uscb_metals import uscb_metals
-
-from thesis.src.uscb_immigration import uscb_immigration
 
 # =============================================================================
 # Census Manufacturing Indexes

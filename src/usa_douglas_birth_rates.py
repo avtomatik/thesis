@@ -1,10 +1,8 @@
-
-
 import os
 
 import matplotlib.pyplot as plt
-from core.constants import COUNTRIES
 
+from core.constants import COUNTRIES
 from thesis.src.core.backend import stockpile
 from thesis.src.core.classes import Dataset
 
@@ -23,7 +21,7 @@ if __name__ == '__main__':
         'DT31BS01',
         'DT32BS01'
     ]
-    
+
     SERIES_IDS = enlist_series_ids(SERIES_IDS, Dataset.DOUGLAS)
 
     PATH_SRC = '/home/green-machine/data_science/data/interim'

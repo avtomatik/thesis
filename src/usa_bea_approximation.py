@@ -39,7 +39,7 @@ def linear_log() -> None:
     """
 
     SERIES_IDS = ['A191RX', 'A191RC']
-    
+
     SERIES_IDS = enlist_series_ids(
         SERIES_IDS, URL.NIPA
     ) + enlist_series_ids(
@@ -52,7 +52,7 @@ def linear_log() -> None:
     )
 
     SERIES_IDS = ['A191RX', 'A191RC']
-    
+
     SERIES_IDS = enlist_series_ids(
         SERIES_IDS, URL.NIPA
     ) + enlist_series_ids(

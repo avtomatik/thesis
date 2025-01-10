@@ -9,18 +9,18 @@ Thesis Project
 
 
 import cobb_douglas_can
+
 import cobb_douglas_complex
 import elasticity
+import lash_up_spline
 import usa_bea
 import usa_bea_approximation
 import usa_capital
 import usa_complex
+import uscb
 import uscb_manufacturing_complex
 from core.usa_douglas import usa_douglas
 from core.usa_kendrick import usa_kendrick
-
-import lash_up_spline
-import uscb
 
 
 def main():
