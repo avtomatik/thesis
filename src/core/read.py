@@ -124,9 +124,22 @@ def read_usa_frb_h6() -> DataFrame:
     # =========================================================================
     # hex(3**3 * 23 * 197 * 2039 * 445466883143470280668577791313)
     # =========================================================================
-    url = 'https://www.federalreserve.gov/datadownload/Output.aspx?rel=H6&series=798e2796917702a5f8423426ba7e6b42&lastobs=&from=&to=&filetype=csv&label=include&layout=seriescolumn&type=package'
+    url = 'https://www.federalreserve.gov/datadownload/Output.aspx'
+    payload = {
+        'rel': 'H6',
+        'series': '798e2796917702a5f8423426ba7e6b42',
+        'lastobs': None,
+        'from': None,
+        'to': None,
+        'filetype': 'csv',
+        'label': 'include',
+        'layout': 'seriescolumn',
+        'type': 'package'
+    }
     kwargs = {
-        'filepath_or_buffer': io.BytesIO(requests.get(url).content),
+        'filepath_or_buffer': io.BytesIO(
+            requests.get(url, params=payload).content
+        ),
         'header': 0,
         'names': ['period', 'm1_m'],
         'index_col': 0,
@@ -151,7 +164,12 @@ def read_usa_frb_us3() -> DataFrame:
         ================== =================================
     """
     # =========================================================================
-    # TODO: https://www.federalreserve.gov/datadownload/Output.aspx?rel=g17&filetype=zip
+    # TODO:
+    # url = 'https://www.federalreserve.gov/datadownload/Output.aspx'
+    # payload = {
+    #     'rel': 'g17',
+    #     'filetype': 'zip'
+    # }
     # =========================================================================
     # =========================================================================
     # with ZipFile('FRB_g17.zip').open('G17_data.xml') as f:
@@ -187,9 +205,12 @@ def read_usa_fred(series_id: str) -> DataFrame:
         df.iloc[:, 0]      Series
         ================== =================================
     """
-    url = f'https://fred.stlouisfed.org/graph/fredgraph.csv?id={series_id}'
+    url = 'https://fred.stlouisfed.org/graph/fredgraph.csv'
+    payload = {'id': series_id}
     kwargs = {
-        'filepath_or_buffer': io.BytesIO(requests.get(url).content),
+        'filepath_or_buffer': io.BytesIO(
+            requests.get(url, params=payload).content
+        ),
         'header': 0,
         'names': ['period', series_id.lower()],
         'index_col': 0,
