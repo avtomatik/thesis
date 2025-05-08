@@ -9,10 +9,10 @@ Created on Sun Jul 23 19:22:22 2023
 import io
 from dataclasses import dataclass
 from enum import Enum
-from pathlib import Path
 from typing import Any, Union
 
 import requests
+from core.config import DATA_DIR
 
 
 class Dataset(str, Enum):
@@ -35,7 +35,7 @@ class Dataset(str, Enum):
         NAMES = ['series_id', 'period', 'value']
 
         return {
-            'filepath_or_buffer': Path(__file__).parent.parent.parent.joinpath('data').joinpath(self.value),
+            'filepath_or_buffer': DATA_DIR.joinpath(self.value),
             'header': 0,
             'names': NAMES,
             'index_col': 1,

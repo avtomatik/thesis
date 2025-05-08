@@ -8,6 +8,7 @@ Created on Sat Jun 17 19:00:30 2023
 
 import os
 
+from core.config import DATA_DIR
 from core.constants import TITLES_KENDRICK, YLABELS_KENDRICK
 from core.plot import plot_douglas
 
@@ -16,9 +17,7 @@ if __name__ == '__main__':
     # Kendrick Macroeconomic Series
     # =========================================================================
 
-    PATH_SRC = '/home/green-machine/data_science/data/interim'
-
-    os.chdir(PATH_SRC)
+    os.chdir(DATA_DIR)
 
     plot_douglas(
         Dataset.USA_KENDRICK,

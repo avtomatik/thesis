@@ -12,18 +12,18 @@ from core.combine import (combine_cobb_douglas, combine_usa_capital_purchases,
                           combine_usa_manufacturing_three_fold,
                           combine_usa_manufacturing_two_fold)
 from core.common import get_fig_map
+from core.config import DATA_DIR
 from core.plot import (plot_capital_purchases, plot_cobb_douglas,
                        plot_cobb_douglas_alt, plot_cobb_douglas_complex)
 from core.transform import transform_cobb_douglas, transform_cobb_douglas_alt
 
 
 def main(
-    path_src: str = '/media/green-machine/KINGSTON',
     year_base: int = 1899
 ) -> None:
     MAP_FIG = get_fig_map(year_base)
 
-    os.chdir(path_src)
+    os.chdir(DATA_DIR)
     # =========================================================================
     # Project I. Archived
     # =========================================================================

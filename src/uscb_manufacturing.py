@@ -1,4 +1,5 @@
 from core.plot import plot_uscb_manufacturing
+
 from thesis.src.core.backend import stockpile
 
 

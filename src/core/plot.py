@@ -8,11 +8,11 @@ Created on Sun Jun 12 08:59:10 2022
 
 
 import itertools
-from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from core.config import BASE_DIR
 from pandas import DataFrame
 from scipy import stats
 from sklearn.metrics import r2_score
@@ -351,7 +351,8 @@ def plot_uscb_metals(df: DataFrame, years_base: tuple[int]) -> None:
 
 def plot_uscb_commodities(df: DataFrame, series_ids: dict[str, str]) -> None:
     for series_id in series_ids:
-        print(f'<{series_id}> {read_uscb_get_desc().pipe(lookup_uscb_desc, series_id)}')
+        print(
+            f'<{series_id}> {read_uscb_get_desc().pipe(lookup_uscb_desc, series_id)}')
     title = 'Series P 231$-$300. Physical Output of Selected Manufactured Commodities: {}$-${}'.format(
         *df.index[[0, -1]]
     )
@@ -567,7 +568,8 @@ def plot_uscb_finance() -> None:
         plt.plot(df, label=series_id)
         plt.title(
             '{}, {}$-${}'.format(
-                read_uscb_get_desc().pipe(lookup_uscb_desc, series_id), *df.index[[0, -1]]
+                read_uscb_get_desc().pipe(lookup_uscb_desc, series_id), *
+                df.index[[0, -1]]
             )
         )
         plt.xlabel('Period')
@@ -1525,7 +1527,6 @@ def plot_growth_elasticity(df: DataFrame) -> None:
 def plot_increment(
     df: DataFrame,
     savefig: bool = False,
-    path_export: str = '/media/green-machine/KINGSTON',
     file_name: str = 'fig_file_name.pdf'
 ) -> None:
     fig, axes = plt.subplots(2, 1, figsize=(10, 20))
@@ -1549,7 +1550,7 @@ def plot_increment(
     fig.tight_layout()
     if savefig:
         fig.savefig(
-            Path(path_export).joinpath(file_name), format='pdf', dpi=900
+            BASE_DIR.joinpath(file_name), format='pdf', dpi=900
         )
     else:
         plt.show()

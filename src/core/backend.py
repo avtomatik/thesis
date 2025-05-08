@@ -10,10 +10,9 @@ Created on Sun Aug 13 14:54:44 2023
 from functools import cache
 
 import pandas as pd
-from pandas import DataFrame
-
 from core.classes import DatasetDesc, SeriesID
 from core.transform import transform_rebase
+from pandas import DataFrame
 
 
 def stockpile(series_ids: list[SeriesID]) -> DataFrame:

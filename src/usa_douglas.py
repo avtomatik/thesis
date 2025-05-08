@@ -8,6 +8,7 @@ Created on Thu Jun 15 23:30:39 2023
 
 import os
 
+from core.config import DATA_DIR
 from core.constants import TITLES_DOUGLAS, YLABELS_DOUGLAS
 from core.plot import plot_douglas
 
@@ -16,9 +17,7 @@ if __name__ == '__main__':
     # Douglas European Demographics & Growth of US Capital
     # =========================================================================
 
-    PATH_SRC = '/home/green-machine/data_science/data/interim'
-
-    os.chdir(PATH_SRC)
+    os.chdir(DATA_DIR)
 
     plot_douglas(
         Dataset.DOUGLAS,

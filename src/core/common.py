@@ -1,8 +1,8 @@
 import io
-from pathlib import Path
 from typing import Any
 
 import requests
+from core.config import DATA_DIR
 
 from .backend import read_get_desc
 from .constants import TITLES_DEU
@@ -99,9 +99,8 @@ def get_pre_kwargs(file_name: str) -> dict[str, Any]:
         DESCRIPTION.
 
     """
-    PATH_SRC = '/home/green-machine/data_science/data/interim'
     return {
-        'filepath_or_buffer': Path(PATH_SRC).joinpath(file_name),
+        'filepath_or_buffer': DATA_DIR.joinpath(file_name),
         'index_col': 0,
     }
 

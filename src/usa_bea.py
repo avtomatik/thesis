@@ -10,7 +10,6 @@ Project IX. USA BEA
 
 
 import pandas as pd
-
 from core.combine import (combine_usa_d, combine_usa_e, combine_usa_investment,
                           combine_usa_investment_manufacturing,
                           combine_usa_kurenkov,
@@ -20,6 +19,7 @@ from core.plot import (plot_d, plot_e, plot_investment,
                        plot_usa_kurenkov)
 from core.transform import (transform_d, transform_e, transform_investment,
                             transform_investment_manufacturing)
+
 from thesis.src.core.common import get_pre_kwargs
 
 # =============================================================================

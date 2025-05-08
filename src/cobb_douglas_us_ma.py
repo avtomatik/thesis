@@ -1,13 +1,14 @@
 import os
 
 from core.common import get_fig_map_us_ma
+from core.config import DATA_DIR
 from core.plot import plot_cobb_douglas
 from core.transform import transform_cobb_douglas
+
 from thesis.src.core.backend import stockpile
 
 
 def main(
-    path_src: str = '/media/green-machine/KINGSTON',
     year_base: int = 1899
 ) -> None:
     """
@@ -34,7 +35,7 @@ def main(
 
     SERIES_IDS = enlist_series_ids(SERIES_IDS, Dataset.DOUGLAS)
 
-    os.chdir(path_src)
+    os.chdir(DATA_DIR)
     plot_cobb_douglas(
         *stockpile(SERIES_IDS).pipe(
             transform_cobb_douglas, year_base=year_base

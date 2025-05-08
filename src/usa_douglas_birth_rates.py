@@ -1,8 +1,9 @@
 import os
 
 import matplotlib.pyplot as plt
-
+from core.config import DATA_DIR
 from core.constants import COUNTRIES
+
 from thesis.src.core.backend import stockpile
 from thesis.src.core.classes import Dataset
 
@@ -24,9 +25,7 @@ if __name__ == '__main__':
 
     SERIES_IDS = enlist_series_ids(SERIES_IDS, Dataset.DOUGLAS)
 
-    PATH_SRC = '/home/green-machine/data_science/data/interim'
-
-    os.chdir(PATH_SRC)
+    os.chdir(DATA_DIR)
 
     plt.figure(1)
     plt.plot(stockpile(SERIES_IDS), label=COUNTRIES)
