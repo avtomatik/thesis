@@ -9,6 +9,7 @@ Created on Sun Jul 23 19:22:22 2023
 import io
 from dataclasses import dataclass
 from enum import Enum
+from http import HTTPStatus
 from typing import Any, Union
 
 import requests
@@ -58,7 +59,7 @@ class URL(Enum):
             'index_col': 1,
             'thousands': ','
         }
-        if requests.head(self.value).status_code == 200:
+        if requests.head(self.value).status_code == HTTPStatus.OK:
             kwargs['filepath_or_buffer'] = io.BytesIO(
                 requests.get(self.value).content
             )
