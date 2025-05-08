@@ -106,8 +106,9 @@ def get_pre_kwargs(file_name: str) -> dict[str, Any]:
 
 
 def get_kwargs_usa_davis_ip() -> dict[str, Any]:
+    FILE_NAME = 'dataset_usa_davis-j-h-ip-total.xls'
     return {
-        'io': 'dataset_usa_davis-j-h-ip-total.xls',
+        'io': DATA_DIR.joinpath(FILE_NAME),
         'header': None,
         'names': ['period', 'davis_index'],
         'index_col': 0,
