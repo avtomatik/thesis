@@ -49,7 +49,6 @@ If you don’t have a `requirements.txt` file, you can manually install the nece
 Before running any analysis, you'll need the raw datasets. Download the required zipped files and place them in the `data/` folder. The scripts are designed to handle these files automatically.
 
 * **dataset_douglas.zip**: Data specific to the Cobb-Douglas model.
-* **dataset_usa_brown.zip**: U.S. economic data (Brown’s approximation).
 * **dataset_usa_cobb-douglas.zip**: U.S. economic data for Cobb-Douglas functions.
 * **dataset_usa_kendrick.zip**: U.S. economic data (Kendrick model).
 * **dataset_uscb.zip**: Data from the U.S. Census Bureau.

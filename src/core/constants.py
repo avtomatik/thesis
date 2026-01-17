@@ -9,6 +9,16 @@ Created on Sun Apr  2 13:18:11 2023
 from core.classes import URL, Dataset
 from core.combine import enlist_series_ids
 
+# =============================================================================
+# Dataset Class Constants
+# =============================================================================
+DATASET_NAMES = ["series_id", "period", "value"]
+INDEX_COL = 1
+USECOLS_WIDTH = len(DATASET_NAMES)
+
+BASE_URL = "https://apps.bea.gov/national"
+
+
 FILE_NAMES_UTILISED = (
     "dataset_usa_0025_p_r.txt",
     "dataset_usa_bls-2015-02-23-ln.data.1.AllData",

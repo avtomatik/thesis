@@ -15,60 +15,88 @@ from typing import Any
 import requests
 
 from core.config import DATA_DIR
+from core.constants import BASE_URL, DATASET_NAMES, INDEX_COL
 
 
 class Dataset(str, Enum):
+    """
+    Enum representing datasets with their respective file names and columns to
+    be used.
+    Each dataset can provide its configuration through the `get_kwargs` method.
+    """
 
-    def __new__(cls, value: str, usecols: range):
+    DOUGLAS = "dataset_douglas.zip", (4, 7)
+    USA_COBB_DOUGLAS = "dataset_usa_cobb-douglas.zip", (5, 8)
+    USA_KENDRICK = "dataset_usa_kendrick.zip", (4, 7)
+    USCB = "dataset_uscb.zip", (9, 12)
+
+    def __new__(cls, value: str, range_tuple: tuple) -> None:
+        """
+        Custom initialization for the Enum class that also stores the
+        `usecols` attribute for each dataset, computed from the range.
+        """
         obj = str.__new__(cls)
         obj._value_ = value
-        obj.usecols = usecols
+        obj.usecols = range(*range_tuple)  # Convert the tuple to a range
         return obj
 
-    DOUGLAS = "dataset_douglas.zip", range(4, 7)
-    USA_BROWN = "dataset_usa_brown.zip", range(5, 8)
-    USA_COBB_DOUGLAS = "dataset_usa_cobb-douglas.zip", range(5, 8)
-    USA_KENDRICK = "dataset_usa_kendrick.zip", range(4, 7)
-    USA_MC_CONNELL = "dataset_usa_mc_connell_brue.zip", range(1, 4)
-    USCB = "dataset_uscb.zip", range(9, 12)
-
     def get_kwargs(self) -> dict[str, Any]:
+        """
+        Returns a dictionary of keyword arguments to be used for loading
+        the dataset, including filepath, column configuration, and
+        data processing options.
 
-        NAMES = ["series_id", "period", "value"]
-
+        Returns:
+            dict: A dictionary of keyword arguments for dataset loading.
+        """
         return {
             "filepath_or_buffer": DATA_DIR / self.value,
             "header": 0,
-            "names": NAMES,
-            "index_col": 1,
-            "skiprows": (0, 4)[self.name in ["USA_BROWN"]],
+            "names": DATASET_NAMES,
+            "index_col": INDEX_COL,
             "usecols": self.usecols,
         }
 
 
-class URL(Enum):
-    FIAS = (
-        "https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt"
-    )
-    NIPA = "https://apps.bea.gov/national/Release/TXT/NipaDataA.txt"
+class URL(str, Enum):
+    """
+    Enum representing BEA data endpoints.
+    Provides keyword arguments suitable for pandas readers.
+    """
+
+    FIAS = f"{BASE_URL}/FixedAssets/Release/TXT/FixedAssets.txt"
+    NIPA = f"{BASE_URL}/Release/TXT/NipaDataA.txt"
 
     def get_kwargs(self) -> dict[str, Any]:
-
-        NAMES = ["series_ids", "period", "value"]
-
-        kwargs = {
+        """
+        Build keyword arguments for loading the dataset.
+        If the remote resource is reachable, load it into memory;
+        otherwise, fall back to a local filename.
+        """
+        return {
+            "filepath_or_buffer": self._resolve_source(),
             "header": 0,
-            "names": NAMES,
-            "index_col": 1,
+            "names": DATASET_NAMES,
+            "index_col": INDEX_COL,
             "thousands": ",",
         }
-        if requests.head(self.value).status_code == HTTPStatus.OK:
-            kwargs["filepath_or_buffer"] = io.BytesIO(
-                requests.get(self.value).content
-            )
-        else:
-            kwargs["filepath_or_buffer"] = self.value.split("/")[-1]
-        return kwargs
+
+    def _resolve_source(self) -> str | io.BytesIO:
+        """
+        Resolve the data source to either an in-memory buffer
+        or a local filename fallback.
+        """
+        response = requests.head(self.value)
+
+        if response.status_code == HTTPStatus.OK:
+            return io.BytesIO(requests.get(self.value).content)
+
+        return self._filename
+
+    @property
+    def _filename(self) -> str:
+        """Extract filename from URL."""
+        return self.value.rsplit("/", 1)[-1]
 
 
 @dataclass(frozen=True, eq=True)
