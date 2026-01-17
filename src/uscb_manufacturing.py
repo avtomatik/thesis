@@ -1,6 +1,7 @@
+from core.backend import stockpile
+from core.classes import Dataset
+from core.combine import enlist_series_ids
 from core.plot import plot_uscb_manufacturing
-
-from thesis.src.core.backend import stockpile
 
 
 def main():
@@ -11,15 +12,15 @@ def main():
         # =====================================================================
         # Bureau of the Census, 1949, Page 179, J13: National Bureau of Economic Research Index of Physical Output, All Manufacturing Industries.
         # =====================================================================
-        'J0013',
+        "J0013",
         # =====================================================================
         # Bureau of the Census, 1949, Page 179, J14: Warren M. Persons, Index of Physical Production of Manufacturing
         # =====================================================================
-        'J0014',
+        "J0014",
         # =====================================================================
         # HSUS 1975 Page 667, P17: Edwin Frickey Series, Indexes of Manufacturing Production
         # =====================================================================
-        'P0017',
+        "P0017",
     ]
 
     SERIES_IDS = enlist_series_ids(SERIES_IDS, Dataset.USCB)
@@ -30,5 +31,5 @@ def main():
     )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

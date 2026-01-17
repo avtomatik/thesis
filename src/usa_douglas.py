@@ -8,11 +8,12 @@ Created on Thu Jun 15 23:30:39 2023
 
 import os
 
+from core.classes import Dataset
 from core.config import DATA_DIR
 from core.constants import TITLES_DOUGLAS, YLABELS_DOUGLAS
 from core.plot import plot_douglas
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # =========================================================================
     # Douglas European Demographics & Growth of US Capital
     # =========================================================================
@@ -20,9 +21,5 @@ if __name__ == '__main__':
     os.chdir(DATA_DIR)
 
     plot_douglas(
-        Dataset.DOUGLAS,
-        TITLES_DOUGLAS,
-        YLABELS_DOUGLAS,
-        'series',
-        'D'
+        Dataset.DOUGLAS, TITLES_DOUGLAS, YLABELS_DOUGLAS, "series", "D"
     )

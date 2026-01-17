@@ -1,8 +1,9 @@
-import itertools
+from itertools import chain
 
+from core.backend import stockpile_rebased
+from core.classes import Dataset
+from core.combine import enlist_series_ids
 from core.plot import plot_uscb_commodities
-
-from thesis.src.core.backend import stockpile_rebased
 
 
 def main() -> None:
@@ -11,8 +12,8 @@ def main() -> None:
     # =============================================================================
 
     SERIES_IDS = map(
-        lambda _: f'P{_:04n}',
-        itertools.chain(
+        lambda _: f"P{_:04n}",
+        chain(
             range(231, 242),
             range(244, 245),
             range(247, 272),
@@ -23,19 +24,19 @@ def main() -> None:
             range(288, 289),
             range(290, 291),
             range(293, 301),
-        )
+        ),
     )
 
     SERIES_IDS = enlist_series_ids(SERIES_IDS, Dataset.USCB)
 
     SERIES_IDS = map(
-        lambda _: f'P{_:04n}',
-        itertools.chain(
+        lambda _: f"P{_:04n}",
+        chain(
             range(248, 252),
             [262],
             range(265, 270),
             range(293, 296),
-        )
+        ),
     )
 
     SERIES_IDS = enlist_series_ids(SERIES_IDS, Dataset.USCB)
@@ -43,5 +44,5 @@ def main() -> None:
     stockpile_rebased(SERIES_IDS).pipe(plot_uscb_commodities, SERIES_IDS)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

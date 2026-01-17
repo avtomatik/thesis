@@ -8,11 +8,12 @@ Created on Sat Jun 17 19:00:30 2023
 
 import os
 
+from core.classes import Dataset
 from core.config import DATA_DIR
 from core.constants import TITLES_KENDRICK, YLABELS_KENDRICK
 from core.plot import plot_douglas
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # =========================================================================
     # Kendrick Macroeconomic Series
     # =========================================================================
@@ -23,6 +24,6 @@ if __name__ == '__main__':
         Dataset.USA_KENDRICK,
         TITLES_KENDRICK,
         YLABELS_KENDRICK,
-        'description',
-        'K'
+        "description",
+        "K",
     )

@@ -23,10 +23,14 @@ from core.transform import transform_cobb_douglas
 # =============================================================================
 # Fixed Assets Turnover
 # =============================================================================
+
+
 YEAR_BASE = 1899
-df = combine_cobb_douglas().pipe(
-    transform_cobb_douglas, year_base=YEAR_BASE
-)[0].iloc[:, [6]]
+df = (
+    combine_cobb_douglas()
+    .pipe(transform_cobb_douglas, year_base=YEAR_BASE)[0]
+    .iloc[:, [6]]
+)
 # =============================================================================
 # Option 1
 # =============================================================================

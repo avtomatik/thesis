@@ -7,18 +7,18 @@ Created on Sun Nov 20 17:42:38 2022
 """
 
 import numpy as np
-from pandas import DataFrame
+import pandas as pd
 
-from .tools import calculate_capital, get_price_base_nr
+from core.tools import calculate_capital, get_price_base_nr
 
 
-def transform_investment_manufacturing(df: DataFrame) -> DataFrame:
+def transform_investment_manufacturing(df: pd.DataFrame) -> pd.DataFrame:
     """
 
 
     Parameters
     ----------
-    df : DataFrame
+    df : pd.DataFrame
         ================== =================================
         df.index           Period
         df.iloc[:, 0]      Gross Domestic Investment
@@ -29,7 +29,7 @@ def transform_investment_manufacturing(df: DataFrame) -> DataFrame:
 
     Returns
     -------
-    DataFrame
+    pd.DataFrame
         DESCRIPTION.
 
     """
@@ -37,24 +37,23 @@ def transform_investment_manufacturing(df: DataFrame) -> DataFrame:
     # =========================================================================
     # "Real" Investment
     # =========================================================================
-    df['investment'] = df.iloc[:, 0].mul(df.iloc[:, 3]).div(df.iloc[:, 2])
+    df["investment"] = df.iloc[:, 0].mul(df.iloc[:, 3]).div(df.iloc[:, 2])
     # =========================================================================
     # "Real" Manufacturing
     # =========================================================================
-    df['manufacturing'] = df.iloc[:, 1].mul(
-        df.iloc[:, 3]).div(df.iloc[:, 2])
-    df['inv_roll_mean'] = df.iloc[:, -2].rolling(2).mean()
-    df['prd_roll_mean'] = df.iloc[:, -2].rolling(2).mean()
+    df["manufacturing"] = df.iloc[:, 1].mul(df.iloc[:, 3]).div(df.iloc[:, 2])
+    df["inv_roll_mean"] = df.iloc[:, -2].rolling(2).mean()
+    df["prd_roll_mean"] = df.iloc[:, -2].rolling(2).mean()
     return df
 
 
-def transform_investment(df: DataFrame) -> DataFrame:
+def transform_investment(df: pd.DataFrame) -> pd.DataFrame:
     """
 
 
     Parameters
     ----------
-    df : DataFrame
+    df : pd.DataFrame
         ================== =================================
         df.index           Period
         df.iloc[:, 0]      Gross Domestic Investment
@@ -65,43 +64,46 @@ def transform_investment(df: DataFrame) -> DataFrame:
 
     Returns
     -------
-    DataFrame
+    pd.DataFrame
         DESCRIPTION.
 
     """
     # =========================================================================
     # "Real" Investment
     # =========================================================================
-    df['investment'] = df.iloc[:, 0].mul(df.iloc[:, 2]).div(df.iloc[:, 1])
+    df["investment"] = df.iloc[:, 0].mul(df.iloc[:, 2]).div(df.iloc[:, 1])
     return df
 
 
-def transform_cobb_douglas(df: DataFrame, year_base: int) -> tuple[DataFrame, tuple[float]]:
+def transform_cobb_douglas(
+    df: pd.DataFrame, year_base: int
+) -> tuple[pd.DataFrame, float, float]:
     """
-        ================== =================================
-        df.index           Period
-        df.iloc[:, 0]      Capital
-        df.iloc[:, 1]      Labor
-        df.iloc[:, 2]      Product
-        ================== =================================
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Capital
+    df.iloc[:, 1]      Labor
+    df.iloc[:, 2]      Product
+    ================== =================================
     """
     df = df.div(df.loc[year_base, :])
     # =========================================================================
     # Labor Capital Intensity
     # =========================================================================
-    df['lab_cap_int'] = df.iloc[:, 0].div(df.iloc[:, 1])
+    df["lab_cap_int"] = df.iloc[:, 0].div(df.iloc[:, 1])
     # =========================================================================
     # Labor Productivity
     # =========================================================================
-    df['lab_product'] = df.iloc[:, 2].div(df.iloc[:, 1])
+    df["lab_product"] = df.iloc[:, 2].div(df.iloc[:, 1])
     # =========================================================================
     # Original: k=0.25, b=1.01
     # =========================================================================
-    k, b = np.polyfit(
+    alpha, b = np.polyfit(
         np.log(df.iloc[:, -2].astype(float)),
         np.log(df.iloc[:, -1].astype(float)),
-        deg=1
+        deg=1,
     )
+    scale = np.exp(b)
     # =========================================================================
     # Scipy Signal Median Filter, Non-Linear Low-Pass Filter
     # =========================================================================
@@ -115,125 +117,131 @@ def transform_cobb_douglas(df: DataFrame, year_base: int) -> tuple[DataFrame, tu
     # =========================================================================
     # Description
     # =========================================================================
-    df['cap_to_lab'] = df.iloc[:, 1].div(df.iloc[:, 0])
+    df["cap_to_lab"] = df.iloc[:, 1].div(df.iloc[:, 0])
     # =========================================================================
     # Fixed Assets Turnover
     # =========================================================================
-    df['c_turnover'] = df.iloc[:, 2].div(df.iloc[:, 0])
+    df["c_turnover"] = df.iloc[:, 2].div(df.iloc[:, 0])
     # =========================================================================
     # Product Trend Line=3 Year Moving Average
     # =========================================================================
-    df['prod_roll'] = df.iloc[:, 2].rolling(3, center=True).mean()
-    df['prod_roll_sub'] = df.iloc[:, 2].sub(df.iloc[:, -1])
+    df["prod_roll"] = df.iloc[:, 2].rolling(3, center=True).mean()
+    df["prod_roll_sub"] = df.iloc[:, 2].sub(df.iloc[:, -1])
     # =========================================================================
     # Computed Product
     # =========================================================================
-    df['prod_comp'] = df.iloc[:, 0].pow(k).mul(
-        df.iloc[:, 1].pow(1-k)).mul(np.exp(b))
+    df["prod_comp"] = (
+        df.iloc[:, 0].pow(alpha).mul(df.iloc[:, 1].pow(1 - alpha)).mul(scale)
+    )
     # =========================================================================
     # Computed Product Trend Line=3 Year Moving Average
     # =========================================================================
-    df['prod_comp_roll'] = df.iloc[:, -1].rolling(3, center=True).mean()
-    df['prod_comp_roll_sub'] = df.iloc[:, -2].sub(df.iloc[:, -1])
-    # =========================================================================
-    #     print(f"R**2: {r2_score(df.iloc[:, 2], df.iloc[:, 3]):,.4f}")
-    #     print(df.iloc[:, 3].div(df.iloc[:, 2]).sub(1).abs().mean())
-    # =========================================================================
-    return df, (k, np.exp(b))
+    df["prod_comp_roll"] = df.iloc[:, -1].rolling(3, center=True).mean()
+    df["prod_comp_roll_sub"] = df.iloc[:, -2].sub(df.iloc[:, -1])
+
+    return df, alpha, scale
 
 
-def transform_cobb_douglas_alt(df: DataFrame, year_base: int) -> tuple[DataFrame, tuple[float]]:
+def transform_cobb_douglas_alt(
+    df: pd.DataFrame, year_base: int
+) -> tuple[pd.DataFrame, float, float, float, float]:
     """
-        ================== =================================
-        df.index           Period
-        df.iloc[:, 0]      Capital
-        df.iloc[:, 1]      Labor
-        df.iloc[:, 2]      Product
-        df.iloc[:, 3]      Product Alternative
-        ================== =================================
+    ================== =================================
+    df.index           Period
+    df.iloc[:, 0]      Capital
+    df.iloc[:, 1]      Labor
+    df.iloc[:, 2]      Product
+    df.iloc[:, 3]      Product Alternative
+    ================== =================================
     """
     df = df.div(df.loc[year_base, :])
     # =========================================================================
     # Labor Capital Intensity
     # =========================================================================
-    df['lab_cap_int'] = df.iloc[:, 0].div(df.iloc[:, 1])
+    df["lab_cap_int"] = df.iloc[:, 0].div(df.iloc[:, 1])
     # =========================================================================
     # Labor Productivity
     # =========================================================================
-    df['lab_product'] = df.iloc[:, 2].div(df.iloc[:, 1])
+    df["lab_product"] = df.iloc[:, 2].div(df.iloc[:, 1])
     # =========================================================================
     # Original: k=0.25, b=1.01
     # =========================================================================
-    k, b = np.polyfit(
-        np.log(df.iloc[:, -2]),
-        np.log(df.iloc[:, -1]),
-        deg=1
+    alpha1, b = np.polyfit(
+        np.log(df.iloc[:, -2]), np.log(df.iloc[:, -1]), deg=1
     )
+    scale1 = np.exp(b)
     # =========================================================================
     # Description
     # =========================================================================
-    df['cap_to_lab'] = df.iloc[:, 1].div(df.iloc[:, 0])
+    df["cap_to_lab"] = df.iloc[:, 1].div(df.iloc[:, 0])
     # =========================================================================
     # Fixed Assets Turnover
     # =========================================================================
-    df['c_turnover'] = df.iloc[:, 2].div(df.iloc[:, 0])
+    df["c_turnover"] = df.iloc[:, 2].div(df.iloc[:, 0])
     # =========================================================================
     # Product Trend Line=3 Year Moving Average
     # =========================================================================
-    df['prod_roll'] = df.iloc[:, 2].rolling(3, center=True).mean()
-    df['prod_roll_sub'] = df.iloc[:, 2].sub(df.iloc[:, -1])
+    df["prod_roll"] = df.iloc[:, 2].rolling(3, center=True).mean()
+    df["prod_roll_sub"] = df.iloc[:, 2].sub(df.iloc[:, -1])
     # =========================================================================
     # Computed Product
     # =========================================================================
-    df['prod_comp'] = df.iloc[:, 0].pow(k).mul(
-        df.iloc[:, 1].pow(1-k)).mul(np.exp(b))
+    df["prod_comp"] = (
+        df.iloc[:, 0]
+        .pow(alpha1)
+        .mul(df.iloc[:, 1].pow(1 - alpha1))
+        .mul(scale1)
+    )
     # =========================================================================
     # Computed Product Trend Line=3 Year Moving Average
     # =========================================================================
-    df['prod_comp_roll'] = df.iloc[:, -1].rolling(3, center=True).mean()
-    df['prod_comp_roll_sub'] = df.iloc[:, -2].sub(df.iloc[:, -1])
+    df["prod_comp_roll"] = df.iloc[:, -1].rolling(3, center=True).mean()
+    df["prod_comp_roll_sub"] = df.iloc[:, -2].sub(df.iloc[:, -1])
     # =========================================================================
     # Labor Productivity Alternative
     # =========================================================================
-    df['_lab_product'] = df.iloc[:, 3].div(df.iloc[:, 1])
+    df["_lab_product"] = df.iloc[:, 3].div(df.iloc[:, 1])
     # =========================================================================
     # Original: _k=0.25, _b=1.01
     # =========================================================================
-    _k, _b = np.polyfit(
-        np.log(df.iloc[:, 4]),
-        np.log(df.iloc[:, -1]),
-        deg=1
+    alpha2, _b = np.polyfit(
+        np.log(df.iloc[:, 4]), np.log(df.iloc[:, -1]), deg=1
     )
+    scale2 = np.exp(_b)
     # =========================================================================
     # Fixed Assets Turnover Alternative
     # =========================================================================
-    df['_c_turnover'] = df.iloc[:, 3].div(df.iloc[:, 0])
+    df["_c_turnover"] = df.iloc[:, 3].div(df.iloc[:, 0])
     # =========================================================================
     # Product Alternative Trend Line=3 Year Moving Average
     # =========================================================================
-    df['_prod_roll'] = df.iloc[:, 3].rolling(3, center=True).mean()
-    df['_prod_roll_sub'] = df.iloc[:, 3].sub(df.iloc[:, -1])
+    df["_prod_roll"] = df.iloc[:, 3].rolling(3, center=True).mean()
+    df["_prod_roll_sub"] = df.iloc[:, 3].sub(df.iloc[:, -1])
     # =========================================================================
     # Computed Product Alternative
     # =========================================================================
-    df['_prod_comp'] = df.iloc[:, 0].pow(_k).mul(
-        df.iloc[:, 1].pow(1-_k)).mul(np.exp(_b))
+    df["_prod_comp"] = (
+        df.iloc[:, 0]
+        .pow(alpha2)
+        .mul(df.iloc[:, 1].pow(1 - alpha2))
+        .mul(scale2)
+    )
     # =========================================================================
     # Computed Product Alternative Trend Line=3 Year Moving Average
     # =========================================================================
-    df['_prod_comp_roll'] = df.iloc[:, -
-                                    1].rolling(3, center=True).mean()
-    df['_prod_comp_roll_sub'] = df.iloc[:, -2].sub(df.iloc[:, -1])
-    return df, ((k, np.exp(b)), (_k, np.exp(_b)))
+    df["_prod_comp_roll"] = df.iloc[:, -1].rolling(3, center=True).mean()
+    df["_prod_comp_roll_sub"] = df.iloc[:, -2].sub(df.iloc[:, -1])
+
+    return df, alpha1, scale1, alpha2, scale2
 
 
-def transform_cobb_douglas_extension_capital(df: DataFrame) -> DataFrame:
+def transform_cobb_douglas_extension_capital(df: pd.DataFrame) -> pd.DataFrame:
     """
     Manufacturing Fixed Assets Series Comparison
 
     Parameters
     ----------
-    df : DataFrame
+    df : pd.DataFrame
         ================== =================================
         df.index           Period
         df.iloc[:, 0]      CDT2S1
@@ -258,27 +266,33 @@ def transform_cobb_douglas_extension_capital(df: DataFrame) -> DataFrame:
     # =========================================================================
     # Convert Capital Series into Current (Historical) Prices
     # =========================================================================
-    df['nominal_cbb_dg'] = df.iloc[:, 0].mul(
-        df.iloc[:, 2]).div(df.iloc[:, 1]).div(1000)
-    df['nominal_uscb'] = df.iloc[:, 3].mul(df.iloc[:, 5]).div(df.iloc[:, 4])
-    df['nominal_dougls'] = df.iloc[:, 0].mul(
-        df.iloc[:, 7]).div(df.iloc[:, 1]).div(1000)
-    df['nominal_kndrck'] = df.iloc[:, 3].mul(
-        df.iloc[:, 6]).div(df.iloc[:, 4]).div(1000)
-    df.iloc[:, -1] = df.iloc[:, -1].mul(
-        df.loc[1929, df.columns[4]]).div(df.loc[1929, df.columns[3]])
+    df["nominal_cbb_dg"] = (
+        df.iloc[:, 0].mul(df.iloc[:, 2]).div(df.iloc[:, 1]).div(1000)
+    )
+    df["nominal_uscb"] = df.iloc[:, 3].mul(df.iloc[:, 5]).div(df.iloc[:, 4])
+    df["nominal_dougls"] = (
+        df.iloc[:, 0].mul(df.iloc[:, 7]).div(df.iloc[:, 1]).div(1000)
+    )
+    df["nominal_kndrck"] = (
+        df.iloc[:, 3].mul(df.iloc[:, 6]).div(df.iloc[:, 4]).div(1000)
+    )
+    df.iloc[:, -1] = (
+        df.iloc[:, -1]
+        .mul(df.loc[1929, df.columns[4]])
+        .div(df.loc[1929, df.columns[3]])
+    )
     # =========================================================================
     # P.H. Douglas -- J.W. Kendrick (Blended) Series
     # =========================================================================
-    df['nominal_doug_kndrck'] = df.iloc[:, -2:].mean(axis=1)
+    df["nominal_doug_kndrck"] = df.iloc[:, -2:].mean(axis=1)
     # =========================================================================
     # C.W. Cobb, P.H. Douglas -- FRB (Blended) Series
     # =========================================================================
-    df['nominal_cbb_dg_frb'] = df.iloc[:, [8, -5]].mean(axis=1)
+    df["nominal_cbb_dg_frb"] = df.iloc[:, [8, -5]].mean(axis=1)
     # =========================================================================
     # Capital Structure Series: "C.W. Cobb, P.H. Douglas -- FRB (Blended) Series" to "P.H. Douglas -- J.W. Kendrick (Blended) Series"
     # =========================================================================
-    df['struct_ratio'] = df.iloc[:, -1].div(df.iloc[:, -2])
+    df["struct_ratio"] = df.iloc[:, -1].div(df.iloc[:, -2])
     # =========================================================================
     # Filling the Gaps within Capital Structure Series
     # =========================================================================
@@ -289,17 +303,19 @@ def transform_cobb_douglas_extension_capital(df: DataFrame) -> DataFrame:
     # =========================================================================
     # Patch Series "P.H. Douglas -- J.W. Kendrick (Blended) Series" Multiplied by "Capital Structure Series"
     # =========================================================================
-    df['nominal_patch'] = df.iloc[:, -3].mul(df.iloc[:, -1])
+    df["nominal_patch"] = df.iloc[:, -3].mul(df.iloc[:, -1])
     # =========================================================================
     # "C.W. Cobb, P.H. Douglas -- FRB (Blended) Series" Patched with "Patch Series"
     # =========================================================================
-    df['nominal_extended'] = df.iloc[:, -3::2].mean(axis=1)
+    df["nominal_extended"] = df.iloc[:, -3::2].mean(axis=1)
     # =========================================================================
     # Adjustment of Nominalized Census P119 to Retrieved Results
     # =========================================================================
-    df.iloc[:, -8] = df.iloc[:, -8].mul(
-        df.loc[1925, df.columns[-1]]
-    ).div(df.loc[1925, df.columns[-8]])
+    df.iloc[:, -8] = (
+        df.iloc[:, -8]
+        .mul(df.loc[1925, df.columns[-1]])
+        .div(df.loc[1925, df.columns[-8]])
+    )
     # =========================================================================
     # Blending Previous Series with 'nominal_extended'
     # =========================================================================
@@ -307,13 +323,13 @@ def transform_cobb_douglas_extension_capital(df: DataFrame) -> DataFrame:
     return df.iloc[:, [-1]].dropna(axis=0)
 
 
-def transform_d(df: DataFrame) -> tuple[DataFrame, np.int64]:
+def transform_d(df: pd.DataFrame) -> tuple[pd.DataFrame, np.int64]:
     """
 
 
     Parameters
     ----------
-    df : DataFrame
+    df : pd.DataFrame
         ================== =================================
         df.index           Period
         df.iloc[:, 0]      Gross Domestic Investment
@@ -343,7 +359,7 @@ def transform_d(df: DataFrame) -> tuple[DataFrame, np.int64]:
     # =========================================================================
     # Basic Year
     # =========================================================================
-    df['__deflator'] = df.iloc[:, 1].sub(100).abs()
+    df["__deflator"] = df.iloc[:, 1].sub(100).abs()
     year_base = df.iloc[:, -1].astype(float).argmin()
     df.drop(df.columns[-1], axis=1, inplace=True)
     # =========================================================================
@@ -353,23 +369,25 @@ def transform_d(df: DataFrame) -> tuple[DataFrame, np.int64]:
     # =========================================================================
     # Real Investment, Billions
     # =========================================================================
-    df['investment'] = df.iloc[:, 1].mul(
-        df.iloc[year_base, 0]).div(1000).div(100)
+    df["investment"] = (
+        df.iloc[:, 1].mul(df.iloc[year_base, 0]).div(1000).div(100)
+    )
     # =========================================================================
     # Real Fixed Investment, Billions
     # =========================================================================
-    df['investment_f'] = df.iloc[:, 3].mul(
-        df.iloc[year_base, 2]).div(1000).div(100)
+    df["investment_f"] = (
+        df.iloc[:, 3].mul(df.iloc[year_base, 2]).div(1000).div(100)
+    )
     return df, year_base
 
 
-def transform_e(df: DataFrame) -> tuple[DataFrame]:
+def transform_e(df: pd.DataFrame) -> tuple[pd.DataFrame]:
     """
 
 
     Parameters
     ----------
-    df : DataFrame
+    df : pd.DataFrame
         ================== =================================
         df.index           Period
         df.iloc[:, 0]      Investment
@@ -380,37 +398,37 @@ def transform_e(df: DataFrame) -> tuple[DataFrame]:
 
     Returns
     -------
-    tuple[DataFrame]
+    tuple[pd.DataFrame]
         DESCRIPTION.
 
     """
     # =========================================================================
     # "Real" Investment
     # =========================================================================
-    df['investment'] = df.iloc[:, 0].mul(df.iloc[:, 2]).div(df.iloc[:, 1])
+    df["investment"] = df.iloc[:, 0].mul(df.iloc[:, 2]).div(df.iloc[:, 1])
     # =========================================================================
     # "Real" Capital
     # =========================================================================
-    df['capital'] = df.iloc[:, 3].mul(df.iloc[:, 2]).div(df.iloc[:, 1])
+    df["capital"] = df.iloc[:, 3].mul(df.iloc[:, 2]).div(df.iloc[:, 1])
     return (
         # =====================================================================
-        # DataFrame Nominal
+        # pd.DataFrame Nominal
         # =====================================================================
         df.copy().iloc[:, [0, 1, 3]].pipe(transform_e_post),
         # =====================================================================
-        # DataFrame "Real"
+        # pd.DataFrame "Real"
         # =====================================================================
         df.copy().iloc[:, [-2, 2, -1]].pipe(transform_e_post),
     )
 
 
-def transform_e_post(df: DataFrame) -> DataFrame:
+def transform_e_post(df: pd.DataFrame) -> pd.DataFrame:
     """
 
 
     Parameters
     ----------
-    df : DataFrame
+    df : pd.DataFrame
         ================== =================================
         df.index           Period
         df.iloc[:, 0]      Investment
@@ -420,47 +438,43 @@ def transform_e_post(df: DataFrame) -> DataFrame:
 
     Returns
     -------
-    DataFrame
+    pd.DataFrame
         DESCRIPTION.
 
     """
     # =========================================================================
     # Investment to Production Ratio
     # =========================================================================
-    df['inv_to_pro'] = df.iloc[:, 0].div(df.iloc[:, 1])
+    df["inv_to_pro"] = df.iloc[:, 0].div(df.iloc[:, 1])
     # =========================================================================
     # Fixed Assets Turnover Ratio
     # =========================================================================
-    df['c_turnover'] = df.iloc[:, 1].div(df.iloc[:, 2])
+    df["c_turnover"] = df.iloc[:, 1].div(df.iloc[:, 2])
     _params_i = np.polyfit(
-        df.iloc[:, 0].astype(float),
-        df.iloc[:, 1].astype(float),
-        deg=1
+        df.iloc[:, 0].astype(float), df.iloc[:, 1].astype(float), deg=1
     )
     _params_t = np.polyfit(
-        df.iloc[:, 1].astype(float),
-        df.iloc[:, 2].astype(float),
-        deg=1
+        df.iloc[:, 1].astype(float), df.iloc[:, 2].astype(float), deg=1
     )
-    df['inv_to_pro_lin'] = np.poly1d(_params_i)(df.iloc[:, 0])
-    df['c_turnover_lin'] = np.poly1d(_params_t)(df.iloc[:, 2])
-    print('Investment to Production: Linear Approximation')
+    df["inv_to_pro_lin"] = np.poly1d(_params_i)(df.iloc[:, 0])
+    df["c_turnover_lin"] = np.poly1d(_params_t)(df.iloc[:, 2])
+    print("Investment to Production: Linear Approximation")
     print(df.iloc[:, 3].describe())
-    print('{:,.6f}+{:,.6f} X'.format(*_params_i[::-1]))
-    print('Fixed Assets Turnover: Linear Approximation')
+    print("{:,.6f}+{:,.6f} X".format(*_params_i[::-1]))
+    print("Fixed Assets Turnover: Linear Approximation")
     print(df.iloc[:, 4].describe())
-    print('{:,.6f}+{:,.6f} X'.format(*_params_t[::-1]))
+    print("{:,.6f}+{:,.6f} X".format(*_params_t[::-1]))
     print(df.info())
     return df
 
 
-def transform_mean(df: DataFrame, name: str) -> DataFrame:
+def transform_mean(df: pd.DataFrame, name: str) -> pd.DataFrame:
     """
 
 
     Parameters
     ----------
-    df : DataFrame
+    df : pd.DataFrame
         ================== =================================
         df.index           Period
         df.iloc[:, ...]    Series
@@ -470,7 +484,7 @@ def transform_mean(df: DataFrame, name: str) -> DataFrame:
 
     Returns
     -------
-    DataFrame
+    pd.DataFrame
         ================== =================================
         df.index           Period
         df.iloc[:, 0]      Sum of <series_ids>
@@ -480,13 +494,13 @@ def transform_mean(df: DataFrame, name: str) -> DataFrame:
     return df.iloc[:, [-1]]
 
 
-def transform_usa_frb_fa(df: DataFrame) -> DataFrame:
+def transform_usa_frb_fa(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Retrieves DataFrame for Manufacturing Fixed Assets Series, Billion USD
+    Retrieves pd.DataFrame for Manufacturing Fixed Assets Series, Billion USD
 
     Parameters
     ----------
-    df : DataFrame
+    df : pd.DataFrame
         ================== =================================
         df.index           Period
         ...                ...
@@ -494,26 +508,29 @@ def transform_usa_frb_fa(df: DataFrame) -> DataFrame:
         ================== =================================
     Returns
     -------
-    DataFrame
+    pd.DataFrame
         ================== =================================
         df.index           Period
         df.iloc[:, 0]      Nominal
         df.iloc[:, 1]      Real
         ================== =================================
     """
-    df['frb_nominal'] = ((df.iloc[:, 1].mul(df.iloc[:, 2]).div(df.iloc[:, 0])).add(
-        df.iloc[:, 4].mul(df.iloc[:, 5]).div(df.iloc[:, 3]))).div(1000)
-    df['frb_real'] = df.iloc[:, [2, 5]].sum(axis=1).div(1000)
+    df["frb_nominal"] = (
+        (df.iloc[:, 1].mul(df.iloc[:, 2]).div(df.iloc[:, 0])).add(
+            df.iloc[:, 4].mul(df.iloc[:, 5]).div(df.iloc[:, 3])
+        )
+    ).div(1000)
+    df["frb_real"] = df.iloc[:, [2, 5]].sum(axis=1).div(1000)
     return df.iloc[:, -2:]
 
 
-def transform_usa_frb_fa_def(df: DataFrame) -> DataFrame:
+def transform_usa_frb_fa_def(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Retrieves DataFrame for Deflator for Manufacturing Fixed Assets Series
+    Retrieves pd.DataFrame for Deflator for Manufacturing Fixed Assets Series
 
     Parameters
     ----------
-    df : DataFrame
+    df : pd.DataFrame
         ================== =================================
         df.index           Period
         ...                ...
@@ -522,44 +539,45 @@ def transform_usa_frb_fa_def(df: DataFrame) -> DataFrame:
 
     Returns
     -------
-    DataFrame
+    pd.DataFrame
         ================== =================================
         df.index           Period
         df.iloc[:, 0]      Deflator
         ================== =================================
 
     """
-    df['fa_def_frb'] = (df.iloc[:, [1, 4]].sum(axis=1)).div(
-        df.iloc[:, [0, 3]].sum(axis=1))
+    df["fa_def_frb"] = (df.iloc[:, [1, 4]].sum(axis=1)).div(
+        df.iloc[:, [0, 3]].sum(axis=1)
+    )
     return df.iloc[:, [-1]]
 
 
-def transform_pct_change(df: DataFrame) -> DataFrame:
+def transform_pct_change(df: pd.DataFrame) -> pd.DataFrame:
     """
 
 
     Parameters
     ----------
-    df : DataFrame
+    df : pd.DataFrame
         DESCRIPTION.
 
     Returns
     -------
-    DataFrame
+    pd.DataFrame
         DESCRIPTION.
 
     """
-    df[f'{df.columns[0]}_prc'] = df.iloc[:, 0].pct_change()
+    df[f"{df.columns[0]}_prc"] = df.iloc[:, 0].pct_change()
     return df.iloc[:, [-1]].dropna(axis=0)
 
 
-def transform_deflator(df: DataFrame) -> DataFrame:
+def transform_deflator(df: pd.DataFrame) -> pd.DataFrame:
     """
 
 
     Parameters
     ----------
-    df : DataFrame
+    df : pd.DataFrame
         ================== =================================
         df.index           Period
         df.iloc[:, 0]      Nominal
@@ -568,30 +586,30 @@ def transform_deflator(df: DataFrame) -> DataFrame:
 
     Returns
     -------
-    DataFrame
+    pd.DataFrame
         ================== =================================
         df.index           Period
         df.iloc[:, 0]      Deflator PRC
         ================== =================================
     """
     assert df.shape[1] == 2
-    df['deflator'] = df.iloc[:, 0].div(df.iloc[:, 1])
-    df['prc'] = df.iloc[:, -1].pct_change()
+    df["deflator"] = df.iloc[:, 0].div(df.iloc[:, 1])
+    df["prc"] = df.iloc[:, -1].pct_change()
     return df.iloc[:, [-1]].dropna(axis=0)
 
 
-def transform_rebase(df: DataFrame) -> DataFrame:
+def transform_rebase(df: pd.DataFrame) -> pd.DataFrame:
     """
 
 
     Parameters
     ----------
-    df : DataFrame
+    df : pd.DataFrame
         DESCRIPTION.
 
     Returns
     -------
-    DataFrame
+    pd.DataFrame
         DESCRIPTION.
 
     """
@@ -599,17 +617,19 @@ def transform_rebase(df: DataFrame) -> DataFrame:
     return df.div(df.iloc[0, :]).mul(100)
 
 
-def transform_usa_manufacturing(df: DataFrame) -> DataFrame:
+def transform_usa_manufacturing(df: pd.DataFrame) -> pd.DataFrame:
     return df.div(df.iloc[0, :])
 
 
-def transform_approx_linear(df: DataFrame) -> tuple[DataFrame, int, np.ndarray]:
+def transform_approx_linear(
+    df: pd.DataFrame,
+) -> tuple[pd.DataFrame, int, np.ndarray]:
     """
 
 
     Parameters
     ----------
-    df : DataFrame
+    df : pd.DataFrame
         ================== =================================
         df.index           Period
         df.iloc[:, 0]      Real Values for Price Deflator
@@ -636,38 +656,40 @@ def transform_approx_linear(df: DataFrame) -> tuple[DataFrame, int, np.ndarray]:
     # =========================================================================
     # Deflator
     # =========================================================================
-    df['deflator'] = df.iloc[:, 0].div(df.iloc[:, 1])
-    df[f'{df.columns[2]}_bas'] = df.iloc[:, 2].mul(df.iloc[:, 4]).div(
-        df.iloc[0, 2]).div(df.iloc[0, 4])
-    df[f'{df.columns[3]}_bas'] = df.iloc[:, 3].mul(df.iloc[:, 4]).div(
-        df.iloc[0, 3]).div(df.iloc[0, 4])
+    df["deflator"] = df.iloc[:, 0].div(df.iloc[:, 1])
+    df[f"{df.columns[2]}_bas"] = (
+        df.iloc[:, 2].mul(df.iloc[:, 4]).div(df.iloc[0, 2]).div(df.iloc[0, 4])
+    )
+    df[f"{df.columns[3]}_bas"] = (
+        df.iloc[:, 3].mul(df.iloc[:, 4]).div(df.iloc[0, 3]).div(df.iloc[0, 4])
+    )
     polyfit_linear = np.polyfit(
-        df.iloc[:, -2].astype(float),
-        df.iloc[:, -1].astype(float),
-        deg=1
+        df.iloc[:, -2].astype(float), df.iloc[:, -1].astype(float), deg=1
     )
     # =========================================================================
     # Yhat
     # =========================================================================
-    df[f'{df.columns[3]}_estimate'] = np.poly1d(polyfit_linear)(df.iloc[:, -2])
+    df[f"{df.columns[3]}_estimate"] = np.poly1d(polyfit_linear)(df.iloc[:, -2])
     # =========================================================================
     # Delivery Block
     # =========================================================================
-    print('Period From: {} Through: {}'.format(*df.index[[0, -1]]))
-    print(f'Prices: {year_base}=100')
-    print('Model: Yhat = {:.4f} + {:.4f}*X'.format(*polyfit_linear[::-1]))
+    print("Period From: {} Through: {}".format(*df.index[[0, -1]]))
+    print(f"Prices: {year_base}=100")
+    print("Model: Yhat = {:.4f} + {:.4f}*X".format(*polyfit_linear[::-1]))
     for _, param in enumerate(polyfit_linear[::-1]):
-        print(f'Model Parameter: A_{_} = {param:,.4f}')
+        print(f"Model Parameter: A_{_} = {param:,.4f}")
     return df, year_base, polyfit_linear
 
 
-def transform_approx_linear_log(df: DataFrame) -> tuple[DataFrame, int, np.ndarray]:
+def transform_approx_linear_log(
+    df: pd.DataFrame,
+) -> tuple[pd.DataFrame, int, np.ndarray]:
     """
 
 
     Parameters
     ----------
-    df : DataFrame
+    df : pd.DataFrame
         ================== =================================
         df.index           Period
         df.iloc[:, 0]      Real Values for Price Deflator
@@ -694,42 +716,41 @@ def transform_approx_linear_log(df: DataFrame) -> tuple[DataFrame, int, np.ndarr
     # =========================================================================
     # Deflator
     # =========================================================================
-    df['deflator'] = df.iloc[:, 0].div(df.iloc[:, 1])
-    df[f'{df.columns[2]}_log_bas'] = np.log(df.iloc[:, 2].div(df.iloc[0, 2]))
-    df[f'{df.columns[3]}_log_bas'] = np.log(df.iloc[:, 3].mul(df.iloc[:, 4]).div(
-        df.iloc[0, 3]).div(df.iloc[0, 4]))
+    df["deflator"] = df.iloc[:, 0].div(df.iloc[:, 1])
+    df[f"{df.columns[2]}_log_bas"] = np.log(df.iloc[:, 2].div(df.iloc[0, 2]))
+    df[f"{df.columns[3]}_log_bas"] = np.log(
+        df.iloc[:, 3].mul(df.iloc[:, 4]).div(df.iloc[0, 3]).div(df.iloc[0, 4])
+    )
     polyfit_linear = np.polyfit(
-        df.iloc[:, -2].astype(float),
-        df.iloc[:, -1].astype(float),
-        deg=1
+        df.iloc[:, -2].astype(float), df.iloc[:, -1].astype(float), deg=1
     )
     # =========================================================================
     # Yhat
     # =========================================================================
-    df[f'{df.columns[3]}_estimate'] = np.poly1d(polyfit_linear)(df.iloc[:, -2])
+    df[f"{df.columns[3]}_estimate"] = np.poly1d(polyfit_linear)(df.iloc[:, -2])
     # =========================================================================
     # Delivery Block
     # =========================================================================
-    print('Period From: {} Through: {}'.format(*df.index[[0, -1]]))
-    print(f'Prices: {year_base}=100')
-    print('Model: Yhat = {:.4f} + {:.4f}*Ln(X)'.format(*polyfit_linear[::-1]))
+    print("Period From: {} Through: {}".format(*df.index[[0, -1]]))
+    print(f"Prices: {year_base}=100")
+    print("Model: Yhat = {:.4f} + {:.4f}*Ln(X)".format(*polyfit_linear[::-1]))
     for _, param in enumerate(polyfit_linear[::-1]):
-        print(f'Model Parameter: A_{_} = {param:,.4f}')
+        print(f"Model Parameter: A_{_} = {param:,.4f}")
     return df, year_base, polyfit_linear
 
 
-def transform_elasticity(df: DataFrame) -> tuple[DataFrame, tuple[str]]:
+def transform_elasticity(df: pd.DataFrame) -> tuple[pd.DataFrame, tuple[str]]:
     """
 
 
     Parameters
     ----------
-    df : DataFrame
+    df : pd.DataFrame
         DESCRIPTION.
 
     Returns
     -------
-    tuple[DataFrame, tuple[str]]
+    tuple[pd.DataFrame, tuple[str]]
         DESCRIPTION.
 
     """
@@ -739,82 +760,107 @@ def transform_elasticity(df: DataFrame) -> tuple[DataFrame, tuple[str]]:
     year_base = df.pipe(get_price_base_nr)
     df.drop(df.columns[-1], axis=1, inplace=True)
     plot_title = (
-        'National Income' if df.columns[2] == 'A032RC' else 'Series',
+        "National Income" if df.columns[2] == "A032RC" else "Series",
         df.columns[2],
         year_base,
     )
-    df[f'{df.columns[2]}_real'] = df.iloc[:, 0].mul(
-        df.iloc[:, 2]).div(df.iloc[:, 1])
-    df[f'{df.columns[2]}_centered'] = df.iloc[:, 3].rolling(2).mean()
+    df[f"{df.columns[2]}_real"] = (
+        df.iloc[:, 0].mul(df.iloc[:, 2]).div(df.iloc[:, 1])
+    )
+    df[f"{df.columns[2]}_centered"] = df.iloc[:, 3].rolling(2).mean()
     # =========================================================================
     # \dfrac{x_{k} - x_{k-1}}{\dfrac{x_{k} + x_{k-1}}{2}}
     # =========================================================================
-    df[f'{df.columns[2]}_elasticity_a'] = df.iloc[:,
-                                                  3].diff().div(df.iloc[:, -1])
+    df[f"{df.columns[2]}_elasticity_a"] = (
+        df.iloc[:, 3].diff().div(df.iloc[:, -1])
+    )
     # =========================================================================
     # \frac{x_{k+1} - x_{k-1}}{2 x_{k}}
     # =========================================================================
-    df[f'{df.columns[2]}_elasticity_b'] = df.iloc[:, 3].diff(
-        2).shift(-1).div(df.iloc[:, 3]).div(2)
+    df[f"{df.columns[2]}_elasticity_b"] = (
+        df.iloc[:, 3].diff(2).shift(-1).div(df.iloc[:, 3]).div(2)
+    )
     # =========================================================================
     # 2 \times \frac{x_{k+1} - x_{k-1}}{x_{k-1} + 2 x_{k} + x_{k+1}}
     # =========================================================================
-    df[f'{df.columns[2]}_elasticity_c'] = df.iloc[:, 3].diff(2).shift(-1).div(
-        df.iloc[:, 3].mul(2).add(df.iloc[:, 3].shift(-1)).add(df.iloc[:, 3].shift(1))).mul(2)
+    df[f"{df.columns[2]}_elasticity_c"] = (
+        df.iloc[:, 3]
+        .diff(2)
+        .shift(-1)
+        .div(
+            df.iloc[:, 3]
+            .mul(2)
+            .add(df.iloc[:, 3].shift(-1))
+            .add(df.iloc[:, 3].shift(1))
+        )
+        .mul(2)
+    )
     # =========================================================================
     # \frac{-x_{k-1} - x_{k} + x_{k+1} + x_{k+2}}{2 \times (x_{k} + x_{k+1})}
     # =========================================================================
-    df[f'{df.columns[2]}_elasticity_d'] = df.iloc[:, 3].shift(-1).add(df.iloc[:, 3].shift(-2)).sub(
-        df.iloc[:, 3].shift(1)).sub(df.iloc[:, 3]).div(df.iloc[:, 3].add(df.iloc[:, 3].shift(-1)).mul(2))
+    df[f"{df.columns[2]}_elasticity_d"] = (
+        df.iloc[:, 3]
+        .shift(-1)
+        .add(df.iloc[:, 3].shift(-2))
+        .sub(df.iloc[:, 3].shift(1))
+        .sub(df.iloc[:, 3])
+        .div(df.iloc[:, 3].add(df.iloc[:, 3].shift(-1)).mul(2))
+    )
     return df, plot_title
 
 
-def transform_model_capital(df: DataFrame) -> tuple[DataFrame, np.ndarray]:
+def transform_model_capital(
+    df: pd.DataFrame,
+) -> tuple[pd.DataFrame, np.ndarray]:
     params_i = np.polyfit(
         df.index.to_series().astype(int),
         df.iloc[:, 0].div(df.iloc[:, 1]).astype(float),
-        deg=1
+        deg=1,
     )
     params_t = np.polyfit(
         df.index.to_series().astype(int),
         df.iloc[:, 1].div(df.iloc[:, 2]).astype(float),
-        deg=1
+        deg=1,
     )
     # =========================================================================
     # Gross Fixed Investment to Gross Domestic Product Ratio
     # =========================================================================
-    df['inv_to_pro'] = np.poly1d(params_i)(df.index.to_series())
+    df["inv_to_pro"] = np.poly1d(params_i)(df.index.to_series())
     # =========================================================================
     # Fixed Assets Turnover
     # =========================================================================
-    df['c_turnover'] = np.poly1d(params_t)(df.index.to_series())
-    df['cap_a'] = df.pipe(calculate_capital, params_i, params_t, 0.875)
-    df['cap_b'] = df.pipe(calculate_capital, params_i, params_t, 1)
-    df['cap_c'] = df.pipe(calculate_capital, params_i, params_t, 1.125)
+    df["c_turnover"] = np.poly1d(params_t)(df.index.to_series())
+    df["cap_a"] = df.pipe(calculate_capital, params_i, params_t, 0.875)
+    df["cap_b"] = df.pipe(calculate_capital, params_i, params_t, 1)
+    df["cap_c"] = df.pipe(calculate_capital, params_i, params_t, 1.125)
     return df, params_i, params_t
 
 
-def transform_fourier_discrete(df: DataFrame, precision: int):
+def transform_fourier_discrete(df: pd.DataFrame, precision: int):
     _p = np.polyfit(
-        df.index.to_series().astype(int),
-        df.iloc[:, 0].astype(float),
-        deg=1
+        df.index.to_series().astype(int), df.iloc[:, 0].astype(float), deg=1
     )
-    df['period_calibrated'] = df.index.to_series().sub(
-        df.index[0]).div(df.shape[0]).mul(2).mul(np.pi).astype(float)
-    df[f'{df.columns[0]}_line'] = np.poly1d(_p)(df.index.to_series())
-    df[f'{df.columns[0]}_wave'] = df.iloc[:, 0].sub(df.iloc[:, 2])
+    df["period_calibrated"] = (
+        df.index.to_series()
+        .sub(df.index[0])
+        .div(df.shape[0])
+        .mul(2)
+        .mul(np.pi)
+        .astype(float)
+    )
+    df[f"{df.columns[0]}_line"] = np.poly1d(_p)(df.index.to_series())
+    df[f"{df.columns[0]}_wave"] = df.iloc[:, 0].sub(df.iloc[:, 2])
     # =========================================================================
-    # DataFrame for Fourier Coefficients
+    # pd.DataFrame for Fourier Coefficients
     # =========================================================================
-    df_fourier = DataFrame(columns=['cos', 'sin'])
+    df_fourier = pd.DataFrame(columns=["cos", "sin"])
     for _ in range(1, precision):
         df_fourier.loc[_] = [
             df.iloc[:, 3].mul(np.cos(df.iloc[:, 1].mul(_))).mul(2).mean(),
-            df.iloc[:, 3].mul(np.sin(df.iloc[:, 1].mul(_))).mul(2).mean()
+            df.iloc[:, 3].mul(np.sin(df.iloc[:, 1].mul(_))).mul(2).mean(),
         ]
     # =========================================================================
     # First Entry Correction
     # =========================================================================
-    df_fourier.loc[0, 'cos'] /= 2
+    df_fourier.loc[0, "cos"] /= 2
     return df, df_fourier

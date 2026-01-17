@@ -10,9 +10,10 @@ import io
 from dataclasses import dataclass
 from enum import Enum
 from http import HTTPStatus
-from typing import Any, Union
+from typing import Any
 
 import requests
+
 from core.config import DATA_DIR
 
 
@@ -24,51 +25,53 @@ class Dataset(str, Enum):
         obj.usecols = usecols
         return obj
 
-    DOUGLAS = 'dataset_douglas.zip', range(4, 7)
-    USA_BROWN = 'dataset_usa_brown.zip', range(5, 8)
-    USA_COBB_DOUGLAS = 'dataset_usa_cobb-douglas.zip', range(5, 8)
-    USA_KENDRICK = 'dataset_usa_kendrick.zip', range(4, 7)
-    USA_MC_CONNELL = 'dataset_usa_mc_connell_brue.zip', range(1, 4)
-    USCB = 'dataset_uscb.zip', range(9, 12)
+    DOUGLAS = "dataset_douglas.zip", range(4, 7)
+    USA_BROWN = "dataset_usa_brown.zip", range(5, 8)
+    USA_COBB_DOUGLAS = "dataset_usa_cobb-douglas.zip", range(5, 8)
+    USA_KENDRICK = "dataset_usa_kendrick.zip", range(4, 7)
+    USA_MC_CONNELL = "dataset_usa_mc_connell_brue.zip", range(1, 4)
+    USCB = "dataset_uscb.zip", range(9, 12)
 
     def get_kwargs(self) -> dict[str, Any]:
 
-        NAMES = ['series_id', 'period', 'value']
+        NAMES = ["series_id", "period", "value"]
 
         return {
-            'filepath_or_buffer': DATA_DIR.joinpath(self.value),
-            'header': 0,
-            'names': NAMES,
-            'index_col': 1,
-            'skiprows': (0, 4)[self.name in ['USA_BROWN']],
-            'usecols': self.usecols,
+            "filepath_or_buffer": DATA_DIR / self.value,
+            "header": 0,
+            "names": NAMES,
+            "index_col": 1,
+            "skiprows": (0, 4)[self.name in ["USA_BROWN"]],
+            "usecols": self.usecols,
         }
 
 
 class URL(Enum):
-    FIAS = 'https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt'
-    NIPA = 'https://apps.bea.gov/national/Release/TXT/NipaDataA.txt'
+    FIAS = (
+        "https://apps.bea.gov/national/FixedAssets/Release/TXT/FixedAssets.txt"
+    )
+    NIPA = "https://apps.bea.gov/national/Release/TXT/NipaDataA.txt"
 
     def get_kwargs(self) -> dict[str, Any]:
 
-        NAMES = ['series_ids', 'period', 'value']
+        NAMES = ["series_ids", "period", "value"]
 
         kwargs = {
-            'header': 0,
-            'names': NAMES,
-            'index_col': 1,
-            'thousands': ','
+            "header": 0,
+            "names": NAMES,
+            "index_col": 1,
+            "thousands": ",",
         }
         if requests.head(self.value).status_code == HTTPStatus.OK:
-            kwargs['filepath_or_buffer'] = io.BytesIO(
+            kwargs["filepath_or_buffer"] = io.BytesIO(
                 requests.get(self.value).content
             )
         else:
-            kwargs['filepath_or_buffer'] = self.value.split('/')[-1]
+            kwargs["filepath_or_buffer"] = self.value.split("/")[-1]
         return kwargs
 
 
 @dataclass(frozen=True, eq=True)
 class SeriesID:
     series_id: str
-    source: Union[Dataset, URL]
+    source: Dataset | URL

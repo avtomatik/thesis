@@ -4,24 +4,21 @@ Created on Wed Feb  5 22:19:02 2020
 @author: Alexander Mikhailov
 """
 
-
 import os
 
 from core.combine import (combine_cobb_douglas, combine_usa_capital_purchases,
                           combine_usa_manufacturing_latest,
                           combine_usa_manufacturing_three_fold,
                           combine_usa_manufacturing_two_fold)
-from core.common import get_fig_map
+from core.common import get_figure_labels
 from core.config import DATA_DIR
 from core.plot import (plot_capital_purchases, plot_cobb_douglas,
                        plot_cobb_douglas_alt, plot_cobb_douglas_complex)
 from core.transform import transform_cobb_douglas, transform_cobb_douglas_alt
 
 
-def main(
-    year_base: int = 1899
-) -> None:
-    MAP_FIG = get_fig_map(year_base)
+def main(year_base: int = 1899) -> None:
+    MAP_FIG = get_figure_labels(year_base)
 
     os.chdir(DATA_DIR)
     # =========================================================================
@@ -81,16 +78,22 @@ def main(
     # Project II. Scipy Signal Median Filter, Non-Linear Low-Pass Filter
     # =========================================================================
     plot_cobb_douglas(
-        *df.iloc[:, range(3)].pipe(transform_cobb_douglas,
-                                   year_base=year_base), MAP_FIG
+        *df.iloc[:, range(3)].pipe(
+            transform_cobb_douglas, year_base=year_base
+        ),
+        MAP_FIG
     )
     plot_cobb_douglas(
-        *df.iloc[:, [0, 1, 3]].pipe(transform_cobb_douglas,
-                                    year_base=year_base), MAP_FIG
+        *df.iloc[:, [0, 1, 3]].pipe(
+            transform_cobb_douglas, year_base=year_base
+        ),
+        MAP_FIG
     )
     plot_cobb_douglas(
-        *df.iloc[:, [0, 1, 4]].pipe(transform_cobb_douglas,
-                                    year_base=year_base), MAP_FIG
+        *df.iloc[:, [0, 1, 4]].pipe(
+            transform_cobb_douglas, year_base=year_base
+        ),
+        MAP_FIG
     )
     plot_cobb_douglas(
         *df_d.pipe(transform_cobb_douglas, year_base=1929), MAP_FIG
@@ -110,7 +113,8 @@ def main(
     plot_cobb_douglas(
         *combine_usa_manufacturing_latest().pipe(
             transform_cobb_douglas, year_base=1967
-        ), MAP_FIG
+        ),
+        MAP_FIG
     )
     # =========================================================================
     # Project III. Scipy Signal Wiener Filter
@@ -118,5 +122,5 @@ def main(
     combine_usa_capital_purchases().pipe(plot_capital_purchases)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

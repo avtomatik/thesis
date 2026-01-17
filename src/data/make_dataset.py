@@ -5,14 +5,12 @@ Created on Thu Oct 29 23:21:52 2020
 @author: Alexander Mikhailov
 """
 
-
 import pandas as pd
-from pandas import DataFrame
 
 pd.options.display.max_columns = 8
 
 
-def page_0x8e_table_0x1() -> DataFrame:
+def page_0x8e_table_0x1() -> pd.DataFrame:
     """
     # C.W. Cobb, P.H. Douglas A Theory of Production, 1928, Page 142: Table I
     """
@@ -27,24 +25,24 @@ def page_0x8e_table_0x1() -> DataFrame:
         1922,
     )
     bldg_per = (
-        13.,
+        13.0,
         13.4,
         14.8,
         15.8,
-        16.,
+        16.0,
         16.2,
         16.4,
         16.5,
     )
     mach_per = (
-        24.,
+        24.0,
         24.3,
         25.9,
         27.5,
         28.1,
         28.7,
         29.5,
-        30.,
+        30.0,
     )
     bldg_val = (
         363,
@@ -67,21 +65,21 @@ def page_0x8e_table_0x1() -> DataFrame:
         15783,
     )
 
-    df = DataFrame.from_dict(
+    df = pd.DataFrame.from_dict(
         {
-            'period': period,
-            'CDT1S1': bldg_per,
-            'CDT1S2': mach_per,
-            'CDT1S3': bldg_val,
-            'CDT1S4': mach_val,
+            "period": period,
+            "CDT1S1": bldg_per,
+            "CDT1S2": mach_per,
+            "CDT1S3": bldg_val,
+            "CDT1S4": mach_val,
         }
     )
     df.set_index(df.columns[0], inplace=True, verify_integrity=True)
-    df['CDT1S5'] = df.iloc[:, 2].add(df.iloc[:, 3])
+    df["CDT1S5"] = df.iloc[:, 2].add(df.iloc[:, 3])
     return df
 
 
-def page_0x90() -> DataFrame:
+def page_0x90() -> pd.DataFrame:
     """
     # C.W. Cobb, P.H. Douglas A Theory of Production, 1928, Page 144
     """
@@ -110,19 +108,19 @@ def page_0x90() -> DataFrame:
         12.5,
     )
 
-    df = DataFrame.from_dict(
+    df = pd.DataFrame.from_dict(
         {
-            'period': range(1880, 1890),
-            'val': val,
-            'per': per,
+            "period": range(1880, 1890),
+            "val": val,
+            "per": per,
         }
     )
     df.set_index(df.columns[0], inplace=True, verify_integrity=True)
-    df.loc['Total'] = df.sum()
+    df.loc["Total"] = df.sum()
     return df
 
 
-def page_0x91_table_0x2() -> DataFrame:
+def page_0x91_table_0x2() -> pd.DataFrame:
     """
     # C.W. Cobb, P.H. Douglas A Theory of Production, 1928, Page 145: Table II
     """
@@ -205,12 +203,12 @@ def page_0x91_table_0x2() -> DataFrame:
         650,
     )
 
-    df = DataFrame.from_dict(
+    df = pd.DataFrame.from_dict(
         {
-            'period': range(1899, 1923),
-            'CDT2S1': col_a,
-            'CDT2S2': col_b,
-            'CDT2S3': col_c,
+            "period": range(1899, 1923),
+            "CDT2S1": col_a,
+            "CDT2S2": col_b,
+            "CDT2S3": col_c,
         }
     )
     df.set_index(df.columns[0], inplace=True, verify_integrity=True)
@@ -220,13 +218,14 @@ def page_0x91_table_0x2() -> DataFrame:
     #     # ===================================================================
     #     df['CDT2S3'] = df.iloc[:, 0].div(df.iloc[:, 1]).mul(100).round().astype(int)
     # =========================================================================
-    df['CDT2S4'] = df.iloc[:, -1].cumsum().add(4062)
-    df['CDT2S5'] = df.iloc[:, -
-                           1].div(df.iloc[0, -1]).mul(100).round().astype(int)
+    df["CDT2S4"] = df.iloc[:, -1].cumsum().add(4062)
+    df["CDT2S5"] = (
+        df.iloc[:, -1].div(df.iloc[0, -1]).mul(100).round().astype(int)
+    )
     return df
 
 
-def page_0x92() -> DataFrame:
+def page_0x92() -> pd.DataFrame:
     """
     # C.W. Cobb, P.H. Douglas A Theory of Production, 1928, Page 146
     """
@@ -255,17 +254,17 @@ def page_0x92() -> DataFrame:
         263,
     )
 
-    df = DataFrame.from_dict(
+    df = pd.DataFrame.from_dict(
         {
-            'period': range(1911, 1921),
-            'CDT0S7': ma,
-            'CDT0S8': us,
+            "period": range(1911, 1921),
+            "CDT0S7": ma,
+            "CDT0S8": us,
         }
     )
     return df.set_index(df.columns[0], verify_integrity=True)
 
 
-def page_0x94_table_0x3() -> DataFrame:
+def page_0x94_table_0x3() -> pd.DataFrame:
     """
     # C.W. Cobb, P.H. Douglas A Theory of Production, 1928, Page 148: Table III
     """
@@ -296,18 +295,18 @@ def page_0x94_table_0x3() -> DataFrame:
         7602,
     )
 
-    df = DataFrame.from_dict(
+    df = pd.DataFrame.from_dict(
         {
-            'period': range(1899, 1923),
-            'CDT3S1': lab,
+            "period": range(1899, 1923),
+            "CDT3S1": lab,
         }
     )
     df.set_index(df.columns[0], inplace=True, verify_integrity=True)
-    df['idx'] = df.iloc[:, 0].div(df.iloc[0, 0]).mul(100).round().astype(int)
+    df["idx"] = df.iloc[:, 0].div(df.iloc[0, 0]).mul(100).round().astype(int)
     return df
 
 
-def page_0x95_table_0x4() -> DataFrame:
+def page_0x95_table_0x4() -> pd.DataFrame:
     """
     # C.W. Cobb, P.H. Douglas A Theory of Production, 1928, Page 149: Table IV
     """
@@ -338,16 +337,16 @@ def page_0x95_table_0x4() -> DataFrame:
         240,
     )
 
-    df = DataFrame.from_dict(
+    df = pd.DataFrame.from_dict(
         {
-            'period': range(1899, 1923),
-            'J0014': pro,
+            "period": range(1899, 1923),
+            "J0014": pro,
         }
     )
     return df.set_index(df.columns[0], verify_integrity=True)
 
 
-def page_0x96_table_0x5() -> DataFrame:
+def page_0x96_table_0x5() -> pd.DataFrame:
     """
     # C.W. Cobb, P.H. Douglas A Theory of Production, 1928, Page 150: Table V
     """
@@ -356,14 +355,15 @@ def page_0x96_table_0x5() -> DataFrame:
             page_0x91_table_0x2().iloc[:, [-1]],
             page_0x94_table_0x3().iloc[:, [-1]],
         ],
-        axis=1
+        axis=1,
     )
-    df['lab_to_cap'] = df.iloc[:, 1].div(
-        df.iloc[:, 0]).mul(100).round().astype(int)
+    df["lab_to_cap"] = (
+        df.iloc[:, 1].div(df.iloc[:, 0]).mul(100).round().astype(int)
+    )
     return df.iloc[:, [-1]]
 
 
-def page_0x98_table_0x6() -> DataFrame:
+def page_0x98_table_0x6() -> pd.DataFrame:
     """
     # C.W. Cobb, P.H. Douglas A Theory of Production, 1928, Page 152: Table VI
     """
@@ -446,59 +446,62 @@ def page_0x98_table_0x6() -> DataFrame:
         13,
     )
     ba = (
-        'Подъём',
-        'Подъём; Кратковременный Рецессия',
-        'Подъём',
-        'Подъём',
-        'Подъём; рецессия',
-        'Умеренный спад; оживление',
-        'Подъём',
-        'Подъём',
-        'Подъём, паника, рецессия, Спад',
-        'Спад',
-        'Оживление, умеренный подъём',
-        'Рецессия',
-        'Умеренный спад',
-        'Оживление; подъём',
-        'Подъём; рецессия',
-        'Спад',
-        'Оживление; подъём',
-        'Подъём',
-        'Подъём; военные действия',
-        'Военные действия; рецессия',
-        'Оживление; подъём',
-        'Подъём; рецессия, спад',
-        'Спад',
-        'Оживление; подъём',
+        "Подъём",
+        "Подъём; Кратковременный Рецессия",
+        "Подъём",
+        "Подъём",
+        "Подъём; рецессия",
+        "Умеренный спад; оживление",
+        "Подъём",
+        "Подъём",
+        "Подъём, паника, рецессия, Спад",
+        "Спад",
+        "Оживление, умеренный подъём",
+        "Рецессия",
+        "Умеренный спад",
+        "Оживление; подъём",
+        "Подъём; рецессия",
+        "Спад",
+        "Оживление; подъём",
+        "Подъём",
+        "Подъём; военные действия",
+        "Военные действия; рецессия",
+        "Оживление; подъём",
+        "Подъём; рецессия, спад",
+        "Спад",
+        "Оживление; подъём",
     )
 
-    df = DataFrame.from_dict(
+    df = pd.DataFrame.from_dict(
         {
-            'period': range(1899, 1923),
-            'pro_com': pro_com,
-            'pro': pro,
-            'dev': dev,
-            'ba': ba,
+            "period": range(1899, 1923),
+            "pro_com": pro_com,
+            "pro": pro,
+            "dev": dev,
+            "ba": ba,
         }
     )
     print(
-        f'Page 153: The average percentage deviation of P` from P without regard to sign is {df.iloc[:, 2].abs().mean():,.6f} per cent.')
+        f"Page 153: The average percentage deviation of P` from P without regard to sign is {df.iloc[:, 2].abs().mean():,.6f} per cent."
+    )
     return df.set_index(df.columns[0], verify_integrity=True).iloc[:, range(4)]
 
 
-def page_0x99_table_0x7() -> DataFrame:
+def page_0x99_table_0x7() -> pd.DataFrame:
     """
     # C.W. Cobb, P.H. Douglas A Theory of Production, 1928, Page 153: Table VII
     """
     df = page_0x98_table_0x6().iloc[:, range(2)]
-    df['sub_pro'] = df.iloc[:, 1].sub(
-        df.iloc[:, 1].rolling(3, center=True).mean())
-    df['sub_pro_com'] = df.iloc[:, 0].sub(
-        df.iloc[:, 0].rolling(3, center=True).mean())
+    df["sub_pro"] = df.iloc[:, 1].sub(
+        df.iloc[:, 1].rolling(3, center=True).mean()
+    )
+    df["sub_pro_com"] = df.iloc[:, 0].sub(
+        df.iloc[:, 0].rolling(3, center=True).mean()
+    )
     return df.iloc[:, -2:].dropna(axis=0).astype(int)
 
 
-def page_0x9f_table_0x8() -> DataFrame:
+def page_0x9f_table_0x8() -> pd.DataFrame:
     """
     # C.W. Cobb, P.H. Douglas A Theory of Production, 1928, Page 159: Table VIII
     """
@@ -555,20 +558,26 @@ def page_0x9f_table_0x8() -> DataFrame:
         223,
     )
 
-    df = DataFrame.from_dict(
+    df = pd.DataFrame.from_dict(
         {
-            'period': range(1899, 1923),
-            'pro': pro,
-            'pro_com': pro_com,
+            "period": range(1899, 1923),
+            "pro": pro,
+            "pro_com": pro_com,
         }
     )
     df.set_index(df.columns[0], inplace=True, verify_integrity=True)
-    df['dev'] = df.iloc[:, 0].sub(df.iloc[:, 1]).div(
-        df.iloc[:, 0]).mul(100).round().astype(int)
+    df["dev"] = (
+        df.iloc[:, 0]
+        .sub(df.iloc[:, 1])
+        .div(df.iloc[:, 0])
+        .mul(100)
+        .round()
+        .astype(int)
+    )
     return df
 
 
-def page_0xa1() -> DataFrame:
+def page_0xa1() -> pd.DataFrame:
     """
     # C.W. Cobb, P.H. Douglas A Theory of Production, 1928, Page 161
     """
@@ -599,16 +608,16 @@ def page_0xa1() -> DataFrame:
         149,
     )
 
-    df = DataFrame.from_dict(
+    df = pd.DataFrame.from_dict(
         {
-            'period': range(1899, 1923),
-            'idx': idx,
+            "period": range(1899, 1923),
+            "idx": idx,
         }
     )
     return df.set_index(df.columns[0], verify_integrity=True)
 
 
-def page_0xa2_table_0x9() -> DataFrame:
+def page_0xa2_table_0x9() -> pd.DataFrame:
     """
     # C.W. Cobb, P.H. Douglas A Theory of Production, 1928, Page 162: Table IX
     """
@@ -665,21 +674,21 @@ def page_0xa2_table_0x9() -> DataFrame:
         199,
     )
 
-    df = DataFrame.from_dict(
+    df = pd.DataFrame.from_dict(
         {
-            'period': range(1899, 1923),
-            'def_mfg': def_mfg,
-            'def_all': def_all,
+            "period": range(1899, 1923),
+            "def_mfg": def_mfg,
+            "def_all": def_all,
         }
     )
     df.set_index(df.columns[0], inplace=True, verify_integrity=True)
-    df['ratio'] = df.iloc[:, 0].mul(100).div(df.iloc[:, 1]).round().astype(int)
+    df["ratio"] = df.iloc[:, 0].mul(100).div(df.iloc[:, 1]).round().astype(int)
     df = pd.concat([df, page_0x95_table_0x4()], axis=1)
-    df['pro'] = df.iloc[:, -1].mul(df.iloc[:, -2]).div(100).round().astype(int)
+    df["pro"] = df.iloc[:, -1].mul(df.iloc[:, -2]).div(100).round().astype(int)
     return df
 
 
-def page_0xa3_footnote_0x25() -> DataFrame:
+def page_0xa3_footnote_0x25() -> pd.DataFrame:
     """
     # C.W. Cobb, P.H. Douglas A Theory of Production, 1928, Page 163: Table X
     """
@@ -710,16 +719,16 @@ def page_0xa3_footnote_0x25() -> DataFrame:
         136,
     )
 
-    df = DataFrame.from_dict(
+    df = pd.DataFrame.from_dict(
         {
-            'period': range(1899, 1923),
-            'idx': idx,
+            "period": range(1899, 1923),
+            "idx": idx,
         }
     )
     return df.set_index(df.columns[0], verify_integrity=True)
 
 
-def page_0xa3_table_0xa() -> DataFrame:
+def page_0xa3_table_0xa() -> pd.DataFrame:
     """
     # C.W. Cobb, P.H. Douglas A Theory of Production, 1928, Page 163: Footnote 37
     """
@@ -748,18 +757,19 @@ def page_0xa3_table_0xa() -> DataFrame:
         78.1,
     )
 
-    df = DataFrame.from_dict(
+    df = pd.DataFrame.from_dict(
         {
-            'period': period,
-            'value': value,
+            "period": period,
+            "value": value,
         }
     )
     print(
-        f'Page 163: They found that wages and salaries formed on the average {df.iloc[:, 0].mean():,.6f} per cent of the total value added by manufactures during these years.[37]')
+        f"Page 163: They found that wages and salaries formed on the average {df.iloc[:, 0].mean():,.6f} per cent of the total value added by manufactures during these years.[37]"
+    )
     return df.set_index(df.columns[0], verify_integrity=True).sort_index()
 
 
-def page_0xa4_table_0xb() -> DataFrame:
+def page_0xa4_table_0xb() -> pd.DataFrame:
     """
     # C.W. Cobb, P.H. Douglas A Theory of Production, 1928, Page 164: Table XI
     """
@@ -816,87 +826,93 @@ def page_0xa4_table_0xb() -> DataFrame:
         119,
     )
     ba = (
-        '',
-        'Brief Recession',
-        '',
-        '',
-        '',
-        'Mild Depression',
-        '',
-        '',
-        '',
-        'Depression',
-        '',
-        '',
-        'Mild Depression',
-        '',
-        '',
-        'Depression',
-        '',
-        '',
-        'War',
-        'War',
-        '',
-        '',
-        'Depression',
-        '',
+        "",
+        "Brief Recession",
+        "",
+        "",
+        "",
+        "Mild Depression",
+        "",
+        "",
+        "",
+        "Depression",
+        "",
+        "",
+        "Mild Depression",
+        "",
+        "",
+        "Depression",
+        "",
+        "",
+        "War",
+        "War",
+        "",
+        "",
+        "Depression",
+        "",
     )
 
-    df = DataFrame.from_dict(
+    df = pd.DataFrame.from_dict(
         {
-            'period': range(1899, 1923),
-            'pro_val': pro_val,
-            'wages': wages,
-            'ba': ba,
+            "period": range(1899, 1923),
+            "pro_val": pro_val,
+            "wages": wages,
+            "ba": ba,
         }
     )
     df.set_index(df.columns[0], inplace=True, verify_integrity=True)
     df.insert(
         2,
-        'dev',
-        df.iloc[:, 1].sub(df.iloc[:, 0]).div(
-            df.iloc[:, 0]).mul(100).round().astype(int)
+        "dev",
+        df.iloc[:, 1]
+        .sub(df.iloc[:, 0])
+        .div(df.iloc[:, 0])
+        .mul(100)
+        .round()
+        .astype(int),
     )
-    df['pro_val_rm_7'] = df.iloc[:, 0].rolling(7, center=True).mean()
-    df['wages_rm_7'] = df.iloc[:, 1].rolling(7, center=True).mean()
+    df["pro_val_rm_7"] = df.iloc[:, 0].rolling(7, center=True).mean()
+    df["wages_rm_7"] = df.iloc[:, 1].rolling(7, center=True).mean()
     print(
-        f'Page 164: (2) Average deviation = {df.iloc[:, 2].abs().mean():,.6f} per cent')
+        f"Page 164: (2) Average deviation = {df.iloc[:, 2].abs().mean():,.6f} per cent"
+    )
     print(
-        f'Page 164: (4) Average deviations with regard to sign = {df.iloc[:, 2].mean():,.6f} per cent')
+        f"Page 164: (4) Average deviations with regard to sign = {df.iloc[:, 2].mean():,.6f} per cent"
+    )
     print(df.corr())
     return df.iloc[:, range(4)]
 
 
 def dump_data():
     MAP = {
-        page_0x8e_table_0x1: 'data_cobb_douglas_theory_of_production_page_0x8e_table_0x1.dat',
-        page_0x90: 'data_cobb_douglas_theory_of_production_page_0x90.dat',
-        page_0x91_table_0x2: 'data_cobb_douglas_theory_of_production_page_0x91_table_0x2.dat',
-        page_0x92: 'data_cobb_douglas_theory_of_production_page_0x92.dat',
-        page_0x94_table_0x3: 'data_cobb_douglas_theory_of_production_page_0x94_table_0x3.dat',
-        page_0x95_table_0x4: 'data_cobb_douglas_theory_of_production_page_0x95_table_0x4.dat',
-        page_0x96_table_0x5: 'data_cobb_douglas_theory_of_production_page_0x96_table_0x5.dat',
-        page_0x98_table_0x6: 'data_cobb_douglas_theory_of_production_page_0x98_table_0x6.dat',
-        page_0x99_table_0x7: 'data_cobb_douglas_theory_of_production_page_0x99_table_0x7.dat',
-        page_0x9f_table_0x8: 'data_cobb_douglas_theory_of_production_page_0x9f_table_0x8.dat',
-        page_0xa1: 'data_cobb_douglas_theory_of_production_page_0xa1.dat',
-        page_0xa2_table_0x9: 'data_cobb_douglas_theory_of_production_page_0xa2_table_0x9.dat',
-        page_0xa3_footnote_0x25: 'data_cobb_douglas_theory_of_production_page_0xa3_footnote_0x25.dat',
+        page_0x8e_table_0x1: "data_cobb_douglas_theory_of_production_page_0x8e_table_0x1.dat",
+        page_0x90: "data_cobb_douglas_theory_of_production_page_0x90.dat",
+        page_0x91_table_0x2: "data_cobb_douglas_theory_of_production_page_0x91_table_0x2.dat",
+        page_0x92: "data_cobb_douglas_theory_of_production_page_0x92.dat",
+        page_0x94_table_0x3: "data_cobb_douglas_theory_of_production_page_0x94_table_0x3.dat",
+        page_0x95_table_0x4: "data_cobb_douglas_theory_of_production_page_0x95_table_0x4.dat",
+        page_0x96_table_0x5: "data_cobb_douglas_theory_of_production_page_0x96_table_0x5.dat",
+        page_0x98_table_0x6: "data_cobb_douglas_theory_of_production_page_0x98_table_0x6.dat",
+        page_0x99_table_0x7: "data_cobb_douglas_theory_of_production_page_0x99_table_0x7.dat",
+        page_0x9f_table_0x8: "data_cobb_douglas_theory_of_production_page_0x9f_table_0x8.dat",
+        page_0xa1: "data_cobb_douglas_theory_of_production_page_0xa1.dat",
+        page_0xa2_table_0x9: "data_cobb_douglas_theory_of_production_page_0xa2_table_0x9.dat",
+        page_0xa3_footnote_0x25: "data_cobb_douglas_theory_of_production_page_0xa3_footnote_0x25.dat",
         page_0xa3_table_0xa: None,
-        page_0xa4_table_0xb: 'data_cobb_douglas_theory_of_production_page_0xa4_table_0xb.dat',
+        page_0xa4_table_0xb: "data_cobb_douglas_theory_of_production_page_0xa4_table_0xb.dat",
     }
     for func, path_or_buf in MAP.items():
         if path_or_buf is not None:
-            func().to_csv(path_or_buf, sep='\t')
+            func().to_csv(path_or_buf, sep="\t")
 
 
-def main() -> DataFrame:
+def main() -> pd.DataFrame:
     """
     Returns Central Dataset
 
     Returns
     -------
-    DataFrame
+    pd.DataFrame
         ================== =================================
         df.index           Period
         df.iloc[:, 0]      Capital
@@ -906,14 +922,14 @@ def main() -> DataFrame:
     """
     return pd.concat(
         [
-            page_0x91_table_0x2().loc[:, 'CDT2S4'],
-            page_0x94_table_0x3().loc[:, 'CDT3S1'],
-            page_0x95_table_0x4().loc[:, 'J0014']
+            page_0x91_table_0x2().loc[:, "CDT2S4"],
+            page_0x94_table_0x3().loc[:, "CDT3S1"],
+            page_0x95_table_0x4().loc[:, "J0014"],
         ],
         axis=1,
-        sort=True
+        sort=True,
     )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

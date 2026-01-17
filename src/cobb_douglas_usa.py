@@ -5,28 +5,25 @@ Created on Mon Apr 12 22:46:08 2021
 @author: Alexander Mikhailov
 """
 
-
 import os
 
 from core.combine import combine_usa_manufacturing_latest
-from core.common import get_fig_map
+from core.common import get_figure_labels
 from core.config import DATA_DIR
 from core.plot import plot_cobb_douglas
 from core.transform import transform_cobb_douglas
 
 
-def main(
-    year_base: int = 2012
-) -> None:
+def main(year_base: int = 2012) -> None:
 
     os.chdir(DATA_DIR)
     plot_cobb_douglas(
         *combine_usa_manufacturing_latest().pipe(
             transform_cobb_douglas, year_base=year_base
         ),
-        get_fig_map(year_base)
+        get_figure_labels(year_base)
     )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

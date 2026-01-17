@@ -7,23 +7,21 @@ Thesis Project
 @author: Alexander Mikhailov
 """
 
-
-import cobb_douglas_can
 import cobb_douglas_complex
+import cobb_douglas_usa
 import elasticity
 import lash_up_spline
 import usa_bea
 import usa_bea_approximation
 import usa_capital
 import usa_complex
+import usa_douglas
+import usa_kendrick
 import uscb
 import uscb_manufacturing_complex
-from core.usa_douglas import usa_douglas
-from core.usa_kendrick import usa_kendrick
 
 
 def main():
-
     # =============================================================================
     # Project I. Approximation
     # =============================================================================
@@ -46,7 +44,7 @@ def main():
     # =============================================================================
     # Project V. Cobb--Douglas CAN
     # =============================================================================
-    cobb_douglas_can()
+    cobb_douglas_usa()
 
     # =============================================================================
     # Project VI. Elasticity
@@ -86,5 +84,5 @@ def main():
     usa_kendrick()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

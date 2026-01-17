@@ -8,27 +8,29 @@ Created on Sun Mar 26 03:26:36 2023
 Project X. USA Census
 """
 
-
+import uscb_capital
+import uscb_commodities
+import uscb_farm_lands
+import uscb_immigration
+import uscb_manufacturing
+import uscb_metals
 from core.backend import stockpile
+from core.classes import Dataset
 from core.combine import (combine_uscb_employment_conflicts,
                           combine_uscb_trade_by_countries,
-                          combine_uscb_unemployment_hours_worked)
+                          combine_uscb_unemployment_hours_worked,
+                          enlist_series_ids)
 from core.plot import (plot_uscb_employment_conflicts, plot_uscb_finance,
                        plot_uscb_gnp, plot_uscb_money_stock, plot_uscb_trade,
                        plot_uscb_trade_by_countries,
                        plot_uscb_trade_gold_silver,
                        plot_uscb_unemployment_hours_worked)
-from uscb_capital import uscb_capital
-from uscb_commodities import uscb_commodities
-from uscb_farm_lands import uscb_farm_lands
-from uscb_manufacturing import uscb_manufacturing
-from uscb_metals import uscb_metals
-
-from thesis.src.uscb_immigration import uscb_immigration
 
 # =============================================================================
 # Census Manufacturing Indexes
 # =============================================================================
+
+
 uscb_manufacturing()
 
 # =============================================================================
@@ -67,7 +69,8 @@ SERIES_IDS = [
     # =========================================================================
     # Census Gross National Product Series
     # =========================================================================
-    'F0003', 'F0004'
+    "F0003",
+    "F0004",
 ]
 
 SERIES_IDS = enlist_series_ids(SERIES_IDS, Dataset.USCB)
@@ -81,7 +84,9 @@ SERIES_IDS = [
     # =========================================================================
     # Census Foreign Trade Series
     # =========================================================================
-    'U0001', 'U0008', 'U0015'
+    "U0001",
+    "U0008",
+    "U0015",
 ]
 
 SERIES_IDS = enlist_series_ids(SERIES_IDS, Dataset.USCB)
@@ -92,7 +97,9 @@ SERIES_IDS = [
     # =========================================================================
     # Census Foreign Trade Series
     # =========================================================================
-    'U0187', 'U0188', 'U0189'
+    "U0187",
+    "U0188",
+    "U0189",
 ]
 
 SERIES_IDS = enlist_series_ids(SERIES_IDS, Dataset.USCB)
@@ -105,7 +112,9 @@ SERIES_IDS = [
     # =========================================================================
     # Census Money Supply Aggregates
     # =========================================================================
-    'X0410', 'X0414', 'X0415'
+    "X0410",
+    "X0414",
+    "X0415",
 ]
 
 SERIES_IDS = enlist_series_ids(SERIES_IDS, Dataset.USCB)

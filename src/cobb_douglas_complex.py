@@ -5,7 +5,6 @@ Created on Sun Mar 15 16:17:13 2020
 @author: Alexander Mikhailov
 """
 
-
 import os
 
 from core.combine import (combine_cobb_douglas,
@@ -57,5 +56,5 @@ def main() -> None:
     combine_usa_manufacturing_latest().pipe(plot_cobb_douglas_complex)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

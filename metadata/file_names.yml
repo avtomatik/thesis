@@ -3,11 +3,6 @@ incomplete_files:
 - incompleteDataFusionUSACostIndex.py
 - incompleteUSABLSV.py
 - incompletedataFetchCAN.py
-project_files:
-- datafetch.py
-- project.py
-- test.py
-- tools.py
 reference_articles:
 - reference_en_douglas_p_h_cobb_douglas_production_function_once_again_en.pdf
 - reference_en_douglas_p_h_cobb_douglas_production_function_once_again_en.tex

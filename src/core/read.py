@@ -6,16 +6,16 @@ Created on Sun Jun 12 00:44:36 2022
 @author: Alexander Mikhailov
 """
 
-
 import io
 from functools import cache
 
 import pandas as pd
 import requests
-from pandas import DataFrame
+
+from core.config import DATA_DIR
 
 
-def read_usa_bls(filepath_or_buffer: str) -> DataFrame:
+def read_usa_bls(filepath_or_buffer: str) -> pd.DataFrame:
     """
     Bureau of Labor Statistics Data Fetch
 
@@ -25,7 +25,7 @@ def read_usa_bls(filepath_or_buffer: str) -> DataFrame:
 
     Returns
     -------
-    DataFrame
+    pd.DataFrame
         ================== =================================
         df.index           Period
         df.iloc[:, 0]      Series IDs
@@ -33,91 +33,92 @@ def read_usa_bls(filepath_or_buffer: str) -> DataFrame:
         ================== =================================
     """
     kwargs = {
-        'filepath_or_buffer': filepath_or_buffer,
-        'sep': '\t',
-        'header': 0,
-        'names': ['series_id', 'period', 'sub_period', 'value'],
-        'index_col': 1,
-        'usecols': range(4),
-        'low_memory': False
+        "filepath_or_buffer": filepath_or_buffer,
+        "sep": "\t",
+        "header": 0,
+        "names": ["series_id", "period", "sub_period", "value"],
+        "index_col": 1,
+        "usecols": range(4),
+        "low_memory": False,
     }
     df = pd.read_csv(**kwargs)
-    df.loc[:, 'series_id'] = df.loc[:, 'series_id'].str.strip()
-    return df[df.loc[:, 'sub_period'] == 'M13'].loc[:, ('series_id', 'value')]
+    df.loc[:, "series_id"] = df.loc[:, "series_id"].str.strip()
+    return df[df.loc[:, "sub_period"] == "M13"].loc[:, ("series_id", "value")]
 
 
 @cache
-def read_usa_frb() -> DataFrame:
+def read_usa_frb() -> pd.DataFrame:
     """
 
 
     Returns
     -------
-    DataFrame
+    pd.DataFrame
         ================== =================================
         df.index           Period
         df.iloc[:, ...]    Series
         ================== =================================
     """
-    FILE_NAME = 'dataset_usa_frb_invest_capital.csv'
+    FILE_NAME = "dataset_usa_frb_invest_capital.csv"
     kwargs = {
-        'filepath_or_buffer': DATA_DIR.joinpath(FILE_NAME),
-        'skiprows': 4,
+        "filepath_or_buffer": DATA_DIR / FILE_NAME,
+        "skiprows": 4,
     }
     # =========================================================================
     # Load
     # =========================================================================
     df = pd.read_csv(**kwargs)
-    kwargs['header'] = 0
-    kwargs['names'] = ('period', *map(int, df.columns[1:]))
-    kwargs['index_col'] = 0
+    kwargs["header"] = 0
+    kwargs["names"] = ("period", *map(int, df.columns[1:]))
+    kwargs["index_col"] = 0
     # =========================================================================
     # Re-Load
     # =========================================================================
     return pd.read_csv(**kwargs).transpose()
 
 
-def read_usa_frb_g17() -> DataFrame:
+def read_usa_frb_g17() -> pd.DataFrame:
     """
 
 
     Returns
     -------
-    DataFrame
+    pd.DataFrame
         ================== =================================
         df.index           Period
         df.iloc[:, ...]    Series
         ================== =================================
     """
     _start = 5
-    FILE_NAME = 'dataset_usa_frb_g17_all_annual_2013_06_23.csv'
+    FILE_NAME = "dataset_usa_frb_g17_all_annual_2013_06_23.csv"
     kwargs = {
-        'filepath_or_buffer': DATA_DIR.joinpath(FILE_NAME),
-        'skiprows': 1,
+        "filepath_or_buffer": DATA_DIR / FILE_NAME,
+        "skiprows": 1,
     }
     # =========================================================================
     # Load
     # =========================================================================
     df = pd.read_csv(**kwargs)
-    kwargs['header'] = 0
-    kwargs['names'] = (
-        'period', *map(int, map(float, df.columns[1 + _start:]))
+    kwargs["header"] = 0
+    kwargs["names"] = (
+        "period",
+        *map(int, map(float, df.columns[1 + _start :])),
     )
-    kwargs['index_col'] = 0
-    kwargs['usecols'] = range(_start, df.shape[1])
+    kwargs["index_col"] = 0
+    kwargs["usecols"] = range(_start, df.shape[1])
     # =========================================================================
     # Re-Load
     # =========================================================================
     return pd.read_csv(**kwargs).transpose()
 
 
-def read_usa_frb_h6() -> DataFrame:
+def read_usa_frb_h6() -> pd.DataFrame:
     """
     Money Stock Measures (H.6) Series
 
     Returns
     -------
-    DataFrame
+    pd.DataFrame
         ================== =================================
         df.index           Period
         df.iloc[:, 0]      M1
@@ -126,40 +127,40 @@ def read_usa_frb_h6() -> DataFrame:
     # =========================================================================
     # hex(3**3 * 23 * 197 * 2039 * 445466883143470280668577791313)
     # =========================================================================
-    url = 'https://www.federalreserve.gov/datadownload/Output.aspx'
+    url = "https://www.federalreserve.gov/datadownload/Output.aspx"
     payload = {
-        'rel': 'H6',
-        'series': '798e2796917702a5f8423426ba7e6b42',
-        'lastobs': None,
-        'from': None,
-        'to': None,
-        'filetype': 'csv',
-        'label': 'include',
-        'layout': 'seriescolumn',
-        'type': 'package'
+        "rel": "H6",
+        "series": "798e2796917702a5f8423426ba7e6b42",
+        "lastobs": None,
+        "from": None,
+        "to": None,
+        "filetype": "csv",
+        "label": "include",
+        "layout": "seriescolumn",
+        "type": "package",
     }
     kwargs = {
-        'filepath_or_buffer': io.BytesIO(
+        "filepath_or_buffer": io.BytesIO(
             requests.get(url, params=payload).content
         ),
-        'header': 0,
-        'names': ['period', 'm1_m'],
-        'index_col': 0,
-        'usecols': range(2),
-        'skiprows': 5,
-        'parse_dates': True
+        "header": 0,
+        "names": ["period", "m1_m"],
+        "index_col": 0,
+        "usecols": range(2),
+        "skiprows": 5,
+        "parse_dates": True,
     }
     df = pd.read_csv(**kwargs)
-    return df.groupby(df.index.year).agg('mean')
+    return df.groupby(df.index.year).agg("mean")
 
 
-def read_usa_frb_us3() -> DataFrame:
+def read_usa_frb_us3() -> pd.DataFrame:
     """
 
 
     Returns
     -------
-    DataFrame
+    pd.DataFrame
         ================== =================================
         df.index           Period
         df.iloc[:, ...]    Series
@@ -176,48 +177,48 @@ def read_usa_frb_us3() -> DataFrame:
     # =========================================================================
     # with ZipFile('FRB_g17.zip').open('G17_data.xml') as f:
     # =========================================================================
-    FILE_NAME = 'dataset_usa_frb_us3_ip_2018_09_02.csv'
+    FILE_NAME = "dataset_usa_frb_us3_ip_2018_09_02.csv"
     kwargs = {
-        'filepath_or_buffer': DATA_DIR.joinpath(FILE_NAME),
-        'skiprows': 7,
-        'parse_dates': True
+        "filepath_or_buffer": DATA_DIR / FILE_NAME,
+        "skiprows": 7,
+        "parse_dates": True,
     }
     # =========================================================================
     # Load
     # =========================================================================
     df = pd.read_csv(**kwargs)
-    kwargs['header'] = 0
-    kwargs['names'] = ('period', *map(str.strip, df.columns[1:]))
-    kwargs['index_col'] = 0
+    kwargs["header"] = 0
+    kwargs["names"] = ("period", *map(str.strip, df.columns[1:]))
+    kwargs["index_col"] = 0
     # =========================================================================
     # Re-Load
     # =========================================================================
     df = pd.read_csv(**kwargs)
-    return df.groupby(df.index.year).agg('mean')
+    return df.groupby(df.index.year).agg("mean")
 
 
-def read_usa_fred(series_id: str) -> DataFrame:
+def read_usa_fred(series_id: str) -> pd.DataFrame:
     """
     ('PCUOMFGOMFG', 'PPIACO', 'PRIME')
 
     Returns
     -------
-    DataFrame
+    pd.DataFrame
         ================== =================================
         df.index           Period
         df.iloc[:, 0]      Series
         ================== =================================
     """
-    url = 'https://fred.stlouisfed.org/graph/fredgraph.csv'
-    payload = {'id': series_id}
+    url = "https://fred.stlouisfed.org/graph/fredgraph.csv"
+    payload = {"id": series_id}
     kwargs = {
-        'filepath_or_buffer': io.BytesIO(
+        "filepath_or_buffer": io.BytesIO(
             requests.get(url, params=payload).content
         ),
-        'header': 0,
-        'names': ['period', series_id.lower()],
-        'index_col': 0,
-        'parse_dates': True
+        "header": 0,
+        "names": ["period", series_id.lower()],
+        "index_col": 0,
+        "parse_dates": True,
     }
     df = pd.read_csv(**kwargs)
-    return df.groupby(df.index.year).agg('mean')
+    return df.groupby(df.index.year).agg("mean")
