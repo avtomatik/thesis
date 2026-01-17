@@ -18,6 +18,31 @@ from core.config import DATA_DIR
 from core.constants import BASE_URL, DATASET_NAMES, INDEX_COL
 
 
+class SeriesGroupingModel(str, Enum):
+    """Defines grouping strategies for series IDs."""
+
+    DOUGLAS_MODEL = "DOUGLAS"
+    KENDRICK_MODEL = "KENDRICK"
+
+    def compute_group_key(
+        self,
+        series_id: str,
+        kendrick_separator: str = "S",
+        douglas_prefix_len: int = 4,
+    ) -> str:
+        """
+        Compute the group key for a given series ID based on the model.
+
+        - KENDRICK_MODEL: group by prefix before the first separator
+        - DOUGLAS_MODEL: group by fixed-length prefix
+        """
+        if self == SeriesGroupingModel.KENDRICK_MODEL:
+            return series_id.split(kendrick_separator, 1)[0]
+        if self == SeriesGroupingModel.DOUGLAS_MODEL:
+            return series_id[:douglas_prefix_len]
+        raise ValueError(f"Unsupported grouping model: {self!r}")
+
+
 class Dataset(str, Enum):
     """
     Enum representing datasets with their respective file names and columns to

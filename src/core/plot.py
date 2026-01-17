@@ -18,7 +18,7 @@ from core.backend import (lookup_uscb_desc, read_get_desc, read_uscb_get_desc,
                           stockpile)
 from core.classes import Dataset
 from core.combine import combine_data_frames_by_columns, enlist_series_ids
-from core.common import get_figure_labels, get_labels, group_series_ids
+from core.common import get_figure_labels, get_labels, group_series_by_model
 from core.config import BASE_DIR
 from core.tools import (cap_productivity, filter_kol_zur, filter_rolling_mean,
                         lab_productivity, simple_linear_regression)
@@ -1199,7 +1199,7 @@ def plot_douglas(
     map_series_ids = read_get_desc(archive_name, key)
 
     series_ids_struct = {}
-    for series_id_group, series_ids in group_series_ids(
+    for series_id_group, series_ids in group_series_by_model(
         sorted(map_series_ids), scenario
     ).items():
         series_ids_struct[series_id_group] = dict(
