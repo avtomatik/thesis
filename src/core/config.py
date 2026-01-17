@@ -12,8 +12,6 @@ DIR = "/home/green-machine/data_science/"
 
 BASE_DIR = Path(DIR)
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+BASE_DIR = Path(__file__).resolve().parents[2]
 
 DATA_DIR = BASE_DIR / "data"
-
-DATA_INTERIM_DIR = DATA_DIR / "interim"
